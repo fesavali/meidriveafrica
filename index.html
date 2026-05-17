@@ -3,7 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MEI DRIVE AFRICA - Driver Training</title>
+    <meta name="description" content="MEI DRIVE AFRICA - NTSA-approved driver training courses for Learner Hub, PSV, EV, and Boda Boda drivers in Kenya.">
+    <meta name="keywords" content="driving school, Kenya, NTSA, driver training, PSV, EV course, boda boda, learner hub">
+    <meta name="author" content="MEI DRIVE AFRICA">
+    <meta name="theme-color" content="#041B3D">
+    <title>MEI DRIVE AFRICA - NTSA Approved Driver Training</title>
     
     <!-- Supabase JS Library -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -25,10 +29,11 @@
             --white: #FFFFFF;
             --soft-gray: #B7C4D6;
             --error: #ff4444;
+            --success: #00FF88;
         }
 
         body {
-            font-family: 'Segoe UI', sans-serif;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: var(--secondary-dark);
             color: var(--white);
             overflow-x: hidden;
@@ -47,9 +52,34 @@
             transition: transform 0.3s;
             z-index: 10000;
             border-left: 4px solid var(--neon-green);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.3);
         }
         .toast.error { border-left-color: var(--error); }
         .toast.show { transform: translateX(0); }
+
+        /* Loading Spinner */
+        .loading-spinner {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            z-index: 9999;
+            display: none;
+            justify-content: center;
+            align-items: center;
+        }
+        .loading-spinner.active { display: flex; }
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 3px solid var(--dark-navy);
+            border-top-color: var(--neon-green);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
 
         /* NAVBAR */
         .navbar {
@@ -68,6 +98,7 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
+            flex-wrap: wrap;
         }
         .logo {
             font-size: 1.6rem;
@@ -76,10 +107,16 @@
             cursor: pointer;
         }
         .logo span { color: var(--white); }
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
         .nav-links a {
             color: var(--white);
             text-decoration: none;
-            margin-left: 2rem;
+            margin-left: 1.5rem;
             transition: .3s;
         }
         .nav-links a:hover { color: var(--neon-green); }
@@ -87,9 +124,12 @@
             display: flex;
             align-items: center;
             gap: 1rem;
-            margin-left: 2rem;
+            margin-left: 1.5rem;
         }
-        .user-name { color: var(--neon-green); }
+        .user-name {
+            color: var(--neon-green);
+            font-weight: 500;
+        }
         .logout-btn {
             background: rgba(255, 68, 68, 0.2);
             border: 1px solid var(--error);
@@ -97,6 +137,25 @@
             padding: 6px 12px;
             border-radius: 20px;
             cursor: pointer;
+            transition: .3s;
+        }
+        .logout-btn:hover {
+            background: var(--error);
+            color: var(--white);
+        }
+        .nav-btn {
+            background: transparent;
+            border: 1px solid var(--neon-green);
+            color: var(--neon-green);
+            padding: 6px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            margin-left: 1rem;
+            transition: .3s;
+        }
+        .nav-btn:hover {
+            background: var(--neon-green);
+            color: var(--dark-navy);
         }
 
         /* HERO */
@@ -110,19 +169,46 @@
             text-align: center;
             padding: 120px 20px 80px;
         }
-        .hero h1 { font-size: 3.5rem; margin-bottom: 1rem; }
-        .hero h1 span { color: var(--neon-green); display: block; }
-        .hero p { max-width: 600px; margin: auto; color: var(--soft-gray); margin-bottom: 2rem; }
-        .hero-buttons { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
+        .hero-content { max-width: 950px; }
+        .hero h1 {
+            font-size: 3.5rem;
+            line-height: 1.15;
+            margin-bottom: 1.5rem;
+            font-weight: 800;
+        }
+        .hero h1 span {
+            color: var(--neon-green);
+            display: block;
+        }
+        .hero p {
+            max-width: 700px;
+            margin: auto;
+            font-size: 1.1rem;
+            color: var(--soft-gray);
+            line-height: 1.7;
+            margin-bottom: 2rem;
+        }
+        .hero-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
         .btn-primary {
             background: var(--neon-green);
             color: var(--dark-navy);
             padding: 14px 34px;
             border-radius: 40px;
-            font-weight: bold;
+            font-weight: 700;
             text-decoration: none;
+            transition: .3s;
             display: inline-block;
             cursor: pointer;
+            border: none;
+        }
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(0, 255, 136, 0.35);
         }
         .btn-outline {
             border: 2px solid var(--neon-green);
@@ -130,9 +216,14 @@
             padding: 14px 34px;
             border-radius: 40px;
             text-decoration: none;
+            transition: .3s;
             background: none;
             cursor: pointer;
             display: inline-block;
+        }
+        .btn-outline:hover {
+            background: var(--neon-green);
+            color: var(--dark-navy);
         }
 
         /* STATS */
@@ -151,13 +242,23 @@
             display: flex;
             justify-content: space-around;
             flex-wrap: wrap;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.35);
         }
+        .stat { text-align: center; margin: 1rem; }
         .stat h2 { font-size: 2.5rem; color: var(--neon-green); }
         .stat p { color: var(--soft-gray); }
 
         /* COURSES */
-        .container { max-width: 1200px; margin: auto; padding: 5rem 2rem; }
-        .section-title { text-align: center; font-size: 2rem; margin-bottom: 3rem; }
+        .container {
+            max-width: 1200px;
+            margin: auto;
+            padding: 5rem 2rem;
+        }
+        .section-title {
+            text-align: center;
+            font-size: 2rem;
+            margin-bottom: 3rem;
+        }
         .section-title span { color: var(--neon-green); }
         .courses-grid {
             display: grid;
@@ -175,6 +276,7 @@
         .course-card:hover {
             transform: translateY(-6px);
             border-color: var(--neon-green);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.35);
         }
         .course-icon { font-size: 2.5rem; margin-bottom: 1rem; }
         .course-badge {
@@ -184,10 +286,16 @@
             padding: 4px 12px;
             border-radius: 20px;
             font-size: 0.7rem;
+            font-weight: bold;
             margin-bottom: 1rem;
         }
-        .course-card h3 { margin-bottom: 1rem; }
-        .course-card p { color: var(--soft-gray); margin-bottom: 1rem; }
+        .course-card h3 { margin-bottom: 1rem; font-size: 1.2rem; }
+        .course-card p {
+            color: var(--soft-gray);
+            line-height: 1.6;
+            margin-bottom: 1.5rem;
+            font-size: 0.9rem;
+        }
         .course-price { font-weight: bold; margin-bottom: 1rem; }
         .course-price.free { color: var(--neon-green); }
         .course-price.premium { color: #ff9800; }
@@ -199,6 +307,7 @@
             padding: 12px;
             border-radius: 30px;
             cursor: pointer;
+            transition: .3s;
         }
         .btn-view:hover {
             background: var(--neon-green);
@@ -212,7 +321,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0,0,0,0.8);
+            background: rgba(0,0,0,0.85);
             z-index: 2000;
             display: flex;
             justify-content: center;
@@ -232,10 +341,12 @@
             width: 100%;
             max-width: 450px;
             border: 1px solid var(--neon-green);
+            position: relative;
         }
         .modal-content h2 {
             text-align: center;
             margin-bottom: 10px;
+            color: var(--white);
         }
         .modal-content input {
             width: 100%;
@@ -245,6 +356,11 @@
             border: 1px solid rgba(0,255,136,0.2);
             border-radius: 12px;
             color: var(--white);
+            font-size: 1rem;
+        }
+        .modal-content input:focus {
+            outline: none;
+            border-color: var(--neon-green);
         }
         .modal-content button {
             width: 100%;
@@ -255,6 +371,11 @@
             border-radius: 12px;
             font-weight: bold;
             cursor: pointer;
+            font-size: 1rem;
+            transition: .3s;
+        }
+        .modal-content button:hover {
+            transform: translateY(-2px);
         }
         .modal-switch {
             text-align: center;
@@ -264,6 +385,7 @@
         .modal-switch a {
             color: var(--neon-green);
             cursor: pointer;
+            text-decoration: none;
         }
         .close-modal {
             margin-top: 15px;
@@ -271,40 +393,146 @@
             color: var(--white) !important;
         }
         #fullNameGroup { display: none; }
+        .modal-error {
+            color: var(--error);
+            font-size: 0.85rem;
+            margin-bottom: 15px;
+            text-align: center;
+            display: none;
+        }
+        .modal-error.show { display: block; }
 
+        /* Footer */
         footer {
             background: var(--dark-navy);
             text-align: center;
             padding: 2rem;
             color: var(--soft-gray);
+            border-top: 1px solid rgba(0, 255, 136, 0.1);
         }
+
+        /* Mobile Menu */
+        .mobile-menu-btn {
+            display: none;
+            font-size: 1.5rem;
+            color: var(--white);
+            cursor: pointer;
+            background: none;
+            border: none;
+        }
+        .mobile-nav {
+            position: fixed;
+            top: 0;
+            right: -100%;
+            width: 80%;
+            max-width: 300px;
+            height: 100vh;
+            background: var(--dark-navy);
+            z-index: 2000;
+            padding: 2rem;
+            transition: right 0.3s;
+        }
+        .mobile-nav.active { right: 0; }
+        .mobile-nav-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 2rem;
+        }
+        .mobile-nav-close {
+            background: none;
+            border: none;
+            color: var(--white);
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+        .mobile-nav-links {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        .mobile-nav-links a {
+            color: var(--white);
+            text-decoration: none;
+            padding: 10px;
+        }
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1999;
+            display: none;
+        }
+        .overlay.active { display: block; }
 
         @media (max-width: 768px) {
             .hero h1 { font-size: 2rem; }
+            .hero p { font-size: 0.9rem; }
             .nav-links { display: none; }
+            .mobile-menu-btn { display: block; }
+            .stats-container { flex-direction: column; margin: 0 1rem; }
+            .hero-buttons { flex-direction: column; align-items: center; }
+            .modal-content { margin: 20px; padding: 30px 20px; }
         }
     </style>
 </head>
 <body>
 
+<!-- Loading Spinner -->
+<div id="loadingSpinner" class="loading-spinner">
+    <div class="spinner"></div>
+</div>
+
+<!-- Toast Notification -->
+<div id="toast" class="toast"></div>
+
 <!-- NAVBAR -->
 <nav class="navbar">
     <div class="nav-container">
         <div class="logo" onclick="location.href='/'">MEI DRIVE <span>AFRICA</span></div>
+        
         <div class="nav-links">
             <a href="#">Home</a>
             <a href="#courses">Courses</a>
             <div id="authLinks">
-                <a href="#" id="loginBtnNav">Login</a>
-                <a href="#" id="registerBtnNav">Register</a>
+                <button class="nav-btn" id="loginBtnNav">Login</button>
+                <button class="nav-btn" id="registerBtnNav">Register</button>
             </div>
             <div id="userInfoNav" class="user-info" style="display: none;">
                 <span class="user-name" id="userNameDisplay"></span>
-                <button class="logout-btn" id="logoutBtn">Logout</button>
+                <button class="logout-btn" id="logoutBtnNav">Logout</button>
             </div>
         </div>
+        
+        <button class="mobile-menu-btn" id="mobileMenuBtn">
+            <i class="fas fa-bars"></i>
+        </button>
     </div>
 </nav>
+
+<!-- Mobile Navigation -->
+<div class="overlay" id="mobileOverlay"></div>
+<div class="mobile-nav" id="mobileNav">
+    <div class="mobile-nav-header">
+        <div class="logo">MEI DRIVE <span>AFRICA</span></div>
+        <button class="mobile-nav-close" id="mobileNavClose">&times;</button>
+    </div>
+    <div class="mobile-nav-links">
+        <a href="#">Home</a>
+        <a href="#courses">Courses</a>
+        <a href="#" id="mobileDashboardLink" style="display: none;">Dashboard</a>
+        <div id="mobileAuthLinks">
+            <a href="#" id="mobileLoginBtn">Login</a>
+            <a href="#" id="mobileRegisterBtn">Register</a>
+        </div>
+        <div id="mobileUserInfo" style="display: none;">
+            <span id="mobileUserName"></span>
+            <a href="#" id="mobileLogoutBtn">Logout</a>
+        </div>
+    </div>
+</div>
 
 <!-- HERO -->
 <section class="hero">
@@ -331,21 +559,22 @@
 <section class="container" id="courses">
     <h2 class="section-title">Our <span>Courses</span></h2>
     <div id="coursesContainer" class="courses-grid">
-        <div class="course-card"><div class="course-icon">🚗</div><h3>Learner Hub</h3><p>Complete NTSA-approved driver training...</p><div class="course-price premium">💰 KES 5,000</div><button class="btn-view">View Course</button></div>
-        <div class="course-card"><div class="course-icon">🚌</div><h3>PSV Training</h3><p>Specialized training for bus/taxi drivers...</p><div class="course-price premium">💰 KES 7,500</div><button class="btn-view">View Course</button></div>
-        <div class="course-card"><div class="course-icon">⚡</div><h3>EV Vehicle Course</h3><p>Master electric vehicle driving...</p><div class="course-price premium">💰 KES 8,000</div><button class="btn-view">View Course</button></div>
+        <div class="course-card"><div class="course-icon">🚗</div><div class="course-badge">PREMIUM</div><h3>Learner Hub</h3><p>Complete NTSA-approved driver training for new drivers...</p><div class="course-price premium">💰 KES 5,000</div><button class="btn-view">View Course</button></div>
+        <div class="course-card"><div class="course-icon">🚌</div><div class="course-badge">PREMIUM</div><h3>PSV Training</h3><p>Specialized training for bus, taxi and matatu drivers...</p><div class="course-price premium">💰 KES 7,500</div><button class="btn-view">View Course</button></div>
+        <div class="course-card"><div class="course-icon">⚡</div><div class="course-badge">PREMIUM</div><h3>EV Vehicle Course</h3><p>Master electric vehicle driving and charging systems...</p><div class="course-price premium">💰 KES 8,000</div><button class="btn-view">View Course</button></div>
     </div>
 </section>
 
 <!-- LOGIN MODAL -->
-<div id="loginModal" class="modal">
+<div id="authModal" class="modal">
     <div class="modal-content">
         <h2 id="modalTitle">Login</h2>
+        <div id="modalError" class="modal-error"></div>
         <form id="authForm">
-            <input type="email" id="authEmail" placeholder="Email" required>
-            <input type="password" id="authPassword" placeholder="Password" required>
+            <input type="email" id="authEmail" placeholder="Email address" required autocomplete="email">
+            <input type="password" id="authPassword" placeholder="Password" required autocomplete="current-password">
             <div id="fullNameGroup">
-                <input type="text" id="authFullName" placeholder="Full Name">
+                <input type="text" id="authFullName" placeholder="Full Name" autocomplete="name">
             </div>
             <button type="submit" id="authSubmitBtn">Login</button>
         </form>
@@ -357,144 +586,304 @@
     </div>
 </div>
 
-<div id="toast" class="toast"></div>
-
+<!-- FOOTER -->
 <footer>
     <p>© 2026 MEI DRIVE AFRICA | NTSA Approved Driver Training</p>
 </footer>
 
-<script>
-    // Supabase Configuration
-    const SUPABASE_URL = 'https://jeksrwrzzrczamxijvwl.supabase.co';
-    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Impla3Nyd3J6enJjemFteGlqdndsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg2NzYyMjAsImV4cCI6MjA5NDI1MjIyMH0.1poYpJKNFEVe2NTBkXBTH2bIHGk2yT8aqCU-OlJc4vs';
+<script type="module">
+    // ============================================
+    // AUTH SERVICE - Complete State Management
+    // ============================================
     
-    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    const API_URL = window.location.origin;
     
+    // Auth State
     let currentUser = null;
+    let isLoading = false;
+    let authListeners = [];
+    
+    // DOM Elements
+    const loadingSpinner = document.getElementById('loadingSpinner');
+    const toast = document.getElementById('toast');
+    const authModal = document.getElementById('authModal');
+    const modalTitle = document.getElementById('modalTitle');
+    const authForm = document.getElementById('authForm');
+    const authSubmitBtn = document.getElementById('authSubmitBtn');
+    const switchLink = document.getElementById('switchLink');
+    const switchText = document.getElementById('switchText');
+    const fullNameGroup = document.getElementById('fullNameGroup');
+    const modalError = document.getElementById('modalError');
+    
     let isLoginMode = true;
     
     // Toast notification
     function showToast(message, isError = false) {
-        const toast = document.getElementById('toast');
         toast.textContent = message;
         toast.className = `toast ${isError ? 'error' : ''}`;
         toast.classList.add('show');
         setTimeout(() => toast.classList.remove('show'), 3000);
     }
     
-    // Update UI after login/logout
-    async function updateUI() {
-        const { data: { session } } = await supabase.auth.getSession();
-        currentUser = session?.user || null;
-        
+    // Loading spinner
+    function setLoading(loading) {
+        isLoading = loading;
+        if (loading) {
+            loadingSpinner.classList.add('active');
+        } else {
+            loadingSpinner.classList.remove('active');
+        }
+    }
+    
+    // Update UI based on auth state
+    function updateUI() {
         const authLinks = document.getElementById('authLinks');
         const userInfo = document.getElementById('userInfoNav');
         const userNameSpan = document.getElementById('userNameDisplay');
+        const mobileAuthLinks = document.getElementById('mobileAuthLinks');
+        const mobileUserInfo = document.getElementById('mobileUserInfo');
+        const mobileUserName = document.getElementById('mobileUserName');
+        const mobileDashboardLink = document.getElementById('mobileDashboardLink');
         
         if (currentUser) {
-            authLinks.style.display = 'none';
-            userInfo.style.display = 'flex';
-            userNameSpan.textContent = currentUser.email.split('@')[0];
+            if (authLinks) authLinks.style.display = 'none';
+            if (userInfo) userInfo.style.display = 'flex';
+            if (userNameSpan) userNameSpan.textContent = currentUser.fullName || currentUser.email.split('@')[0];
+            if (mobileAuthLinks) mobileAuthLinks.style.display = 'none';
+            if (mobileUserInfo) mobileUserInfo.style.display = 'block';
+            if (mobileUserName) mobileUserName.textContent = currentUser.fullName || currentUser.email.split('@')[0];
+            if (mobileDashboardLink) mobileDashboardLink.style.display = 'block';
         } else {
-            authLinks.style.display = 'flex';
-            userInfo.style.display = 'none';
+            if (authLinks) authLinks.style.display = 'flex';
+            if (userInfo) userInfo.style.display = 'none';
+            if (mobileAuthLinks) mobileAuthLinks.style.display = 'block';
+            if (mobileUserInfo) mobileUserInfo.style.display = 'none';
+            if (mobileDashboardLink) mobileDashboardLink.style.display = 'none';
         }
+        
+        // Notify listeners
+        authListeners.forEach(listener => listener(currentUser));
     }
     
-    // Handle login
-    async function handleLogin(email, password) {
-        const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-        if (error) {
-            showToast(error.message, true);
-            return false;
-        }
-        showToast('Login successful!');
-        closeModal();
-        updateUI();
-        return true;
+    // Validation functions
+    function validateEmail(email) {
+        const re = /^[^\s@]+@([^\s@.,]+\.)+[^\s@.,]{2,}$/;
+        return re.test(String(email).toLowerCase());
     }
     
-    // Handle registration
-    async function handleRegister(email, password, fullName) {
-        const { data, error } = await supabase.auth.signUp({
-            email,
-            password,
-            options: { data: { full_name: fullName } }
-        });
-        if (error) {
-            showToast(error.message, true);
-            return false;
-        }
-        if (data.user) {
-            await supabase.from('profiles').insert({
-                id: data.user.id,
-                email: email,
-                full_name: fullName,
-                role: 'learner'
+    function validatePassword(password) {
+        return password && password.length >= 6;
+    }
+    
+    function validateFullName(name) {
+        return name && name.trim().length >= 2;
+    }
+    
+    // API Calls
+    async function apiCall(action, data) {
+        try {
+            const response = await fetch(`${API_URL}/api/auth?action=${action}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
             });
+            return await response.json();
+        } catch (error) {
+            return { success: false, error: error.message };
         }
-        showToast('Registration successful! Please check your email.');
-        closeModal();
-        return true;
     }
     
-    // Handle logout
-    async function handleLogout() {
-        await supabase.auth.signOut();
-        showToast('Logged out successfully');
+    // Login
+    async function login(email, password) {
+        if (!validateEmail(email)) {
+            showToast('Invalid email format', true);
+            return false;
+        }
+        if (!validatePassword(password)) {
+            showToast('Password must be at least 6 characters', true);
+            return false;
+        }
+        
+        setLoading(true);
+        const result = await apiCall('login', { email, password });
+        setLoading(false);
+        
+        if (result.success) {
+            localStorage.setItem('access_token', result.session.access_token);
+            currentUser = result.user;
+            updateUI();
+            closeModal();
+            showToast('Login successful!');
+            return true;
+        } else {
+            showToast(result.error || 'Login failed', true);
+            return false;
+        }
+    }
+    
+    // Register
+    async function register(email, password, fullName) {
+        if (!validateEmail(email)) {
+            showToast('Invalid email format', true);
+            return false;
+        }
+        if (!validatePassword(password)) {
+            showToast('Password must be at least 6 characters', true);
+            return false;
+        }
+        if (!validateFullName(fullName)) {
+            showToast('Full name is required', true);
+            return false;
+        }
+        
+        setLoading(true);
+        const result = await apiCall('register', { email, password, fullName });
+        setLoading(false);
+        
+        if (result.success) {
+            closeModal();
+            showToast('Registration successful! Please check your email.');
+            return true;
+        } else {
+            showToast(result.error || 'Registration failed', true);
+            return false;
+        }
+    }
+    
+    // Logout
+    async function logout() {
+        setLoading(true);
+        await apiCall('logout', {});
+        localStorage.removeItem('access_token');
+        currentUser = null;
         updateUI();
+        setLoading(false);
+        showToast('Logged out successfully');
+        window.location.href = '/';
+    }
+    
+    // Check auth on load
+    async function checkAuth() {
+        const token = localStorage.getItem('access_token');
+        if (!token) {
+            updateUI();
+            return false;
+        }
+        
+        setLoading(true);
+        const result = await apiCall('user', {});
+        setLoading(false);
+        
+        if (result.success && result.user) {
+            currentUser = result.user;
+            updateUI();
+            return true;
+        } else {
+            localStorage.removeItem('access_token');
+            currentUser = null;
+            updateUI();
+            return false;
+        }
     }
     
     // Modal functions
     function openModal(loginMode = true) {
         isLoginMode = loginMode;
-        document.getElementById('modalTitle').textContent = loginMode ? 'Login' : 'Register';
-        document.getElementById('authSubmitBtn').textContent = loginMode ? 'Login' : 'Register';
-        document.getElementById('switchText').innerHTML = loginMode ? "Don't have an account? " : "Already have an account? ";
-        document.getElementById('switchLink').textContent = loginMode ? 'Register' : 'Login';
-        document.getElementById('fullNameGroup').style.display = loginMode ? 'none' : 'block';
-        document.getElementById('authForm').reset();
-        document.getElementById('loginModal').classList.add('active');
+        modalTitle.textContent = loginMode ? 'Login' : 'Create Account';
+        authSubmitBtn.textContent = loginMode ? 'Login' : 'Register';
+        switchText.innerHTML = loginMode ? "Don't have an account? " : "Already have an account? ";
+        switchLink.textContent = loginMode ? 'Register' : 'Login';
+        fullNameGroup.style.display = loginMode ? 'none' : 'block';
+        modalError.classList.remove('show');
+        authForm.reset();
+        authModal.classList.add('active');
     }
     
     function closeModal() {
-        document.getElementById('loginModal').classList.remove('active');
+        authModal.classList.remove('active');
+        modalError.classList.remove('show');
+    }
+    
+    // Mobile menu
+    function initMobileMenu() {
+        const menuBtn = document.getElementById('mobileMenuBtn');
+        const closeBtn = document.getElementById('mobileNavClose');
+        const mobileNav = document.getElementById('mobileNav');
+        const overlay = document.getElementById('mobileOverlay');
+        
+        function openMenu() {
+            mobileNav.classList.add('active');
+            overlay.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+        
+        function closeMenu() {
+            mobileNav.classList.remove('active');
+            overlay.classList.remove('active');
+            document.body.style.overflow = '';
+        }
+        
+        if (menuBtn) menuBtn.addEventListener('click', openMenu);
+        if (closeBtn) closeBtn.addEventListener('click', closeMenu);
+        if (overlay) overlay.addEventListener('click', closeMenu);
     }
     
     // Form submission
-    document.getElementById('authForm').addEventListener('submit', async (e) => {
+    authForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         const email = document.getElementById('authEmail').value;
         const password = document.getElementById('authPassword').value;
         
         if (isLoginMode) {
-            await handleLogin(email, password);
+            await login(email, password);
         } else {
             const fullName = document.getElementById('authFullName').value;
-            if (!fullName) {
-                showToast('Please enter your full name', true);
-                return;
-            }
-            await handleRegister(email, password, fullName);
+            await register(email, password, fullName);
         }
     });
     
     // Event listeners
-    document.getElementById('loginBtnNav').addEventListener('click', () => openModal(true));
-    document.getElementById('registerBtnNav').addEventListener('click', () => openModal(false));
-    document.getElementById('heroGetStarted').addEventListener('click', (e) => { e.preventDefault(); openModal(true); });
-    document.getElementById('logoutBtn').addEventListener('click', handleLogout);
-    document.getElementById('closeModalBtn').addEventListener('click', closeModal);
-    document.getElementById('switchLink').addEventListener('click', () => openModal(!isLoginMode));
+    document.getElementById('loginBtnNav')?.addEventListener('click', () => openModal(true));
+    document.getElementById('registerBtnNav')?.addEventListener('click', () => openModal(false));
+    document.getElementById('mobileLoginBtn')?.addEventListener('click', (e) => { e.preventDefault(); openModal(true); closeMenu(); });
+    document.getElementById('mobileRegisterBtn')?.addEventListener('click', (e) => { e.preventDefault(); openModal(false); closeMenu(); });
+    document.getElementById('heroGetStarted')?.addEventListener('click', (e) => { e.preventDefault(); openModal(true); });
+    document.getElementById('logoutBtnNav')?.addEventListener('click', logout);
+    document.getElementById('mobileLogoutBtn')?.addEventListener('click', (e) => { e.preventDefault(); logout(); });
+    document.getElementById('closeModalBtn')?.addEventListener('click', closeModal);
+    switchLink?.addEventListener('click', () => openModal(!isLoginMode));
     
-    // Close modal when clicking outside
+    // Close modal on outside click
     window.onclick = (e) => {
-        const modal = document.getElementById('loginModal');
-        if (e.target === modal) closeModal();
+        if (e.target === authModal) closeModal();
     };
     
+    // Course click handler with auth check
+    document.querySelectorAll('.course-card').forEach(card => {
+        card.addEventListener('click', (e) => {
+            if (e.target.classList.contains('btn-view') || e.target.classList.contains('course-card')) {
+                if (!currentUser) {
+                    showToast('Please login to view course details', true);
+                    openModal(true);
+                    return;
+                }
+                // Redirect to course page
+                window.location.href = '/course.html';
+            }
+        });
+    });
+    
     // Initialize
-    updateUI();
+    function closeMenu() {
+        const mobileNav = document.getElementById('mobileNav');
+        const overlay = document.getElementById('mobileOverlay');
+        if (mobileNav) mobileNav.classList.remove('active');
+        if (overlay) overlay.classList.remove('active');
+        document.body.style.overflow = '';
+    }
+    
+    initMobileMenu();
+    checkAuth();
 </script>
 </body>
 </html>
