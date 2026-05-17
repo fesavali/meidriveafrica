@@ -3,25 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="MEI DRIVE AFRICA - NTSA-approved driver training courses for Learner Hub, PSV, EV, and Boda Boda drivers in Kenya.">
-    <meta name="keywords" content="driving school, Kenya, NTSA, driver training, PSV, EV course, boda boda, learner hub">
-    <meta name="author" content="MEI DRIVE AFRICA">
-    <meta name="theme-color" content="#041B3D">
-    <title>MEI DRIVE AFRICA - NTSA Approved Driver Training</title>
+    <meta name="description" content="MEI DRIVE AFRICA - NTSA-approved driver training courses">
+    <title>MEI DRIVE AFRICA - Driver Training</title>
     
-    <!-- Supabase JS Library -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    
-    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         :root {
             --neon-green: #00FF88;
             --dark-navy: #041B3D;
@@ -30,15 +19,12 @@
             --soft-gray: #B7C4D6;
             --error: #ff4444;
         }
-
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: var(--secondary-dark);
             color: var(--white);
             overflow-x: hidden;
         }
-
-        /* Toast Notifications */
         .toast {
             position: fixed;
             bottom: 30px;
@@ -54,8 +40,6 @@
         }
         .toast.error { border-left-color: var(--error); }
         .toast.show { transform: translateX(0); }
-
-        /* NAVBAR */
         .navbar {
             position: fixed;
             top: 0;
@@ -92,8 +76,6 @@
             transition: .3s;
         }
         .nav-links a:hover { color: var(--neon-green); }
-        
-        /* Auth Buttons */
         .nav-btn {
             background: transparent;
             border: 1px solid var(--neon-green);
@@ -103,23 +85,18 @@
             cursor: pointer;
             margin-left: 1rem;
             font-weight: 500;
-            transition: .3s;
         }
         .nav-btn:hover {
             background: var(--neon-green);
             color: var(--dark-navy);
         }
-        
         .user-info {
             display: flex;
             align-items: center;
             gap: 1rem;
             margin-left: 1rem;
         }
-        .user-name {
-            color: var(--neon-green);
-            font-weight: 500;
-        }
+        .user-name { color: var(--neon-green); font-weight: 500; }
         .logout-btn {
             background: rgba(255, 68, 68, 0.2);
             border: 1px solid var(--error);
@@ -127,14 +104,7 @@
             padding: 6px 12px;
             border-radius: 20px;
             cursor: pointer;
-            transition: .3s;
         }
-        .logout-btn:hover {
-            background: var(--error);
-            color: var(--white);
-        }
-
-        /* Mobile Menu */
         .mobile-menu-btn {
             display: none;
             font-size: 1.5rem;
@@ -173,11 +143,7 @@
             flex-direction: column;
             gap: 1rem;
         }
-        .mobile-nav-links a {
-            color: var(--white);
-            text-decoration: none;
-            padding: 10px;
-        }
+        .mobile-nav-links a { color: var(--white); text-decoration: none; padding: 10px; }
         .overlay {
             position: fixed;
             top: 0;
@@ -189,8 +155,6 @@
             display: none;
         }
         .overlay.active { display: block; }
-
-        /* HERO */
         .hero {
             min-height: 100vh;
             background: linear-gradient(rgba(4, 27, 61, 0.82), rgba(10, 35, 79, 0.92)),
@@ -208,10 +172,7 @@
             margin-bottom: 1.5rem;
             font-weight: 800;
         }
-        .hero h1 span {
-            color: var(--neon-green);
-            display: block;
-        }
+        .hero h1 span { color: var(--neon-green); display: block; }
         .hero p {
             max-width: 700px;
             margin: auto;
@@ -233,7 +194,6 @@
             border-radius: 40px;
             font-weight: 700;
             text-decoration: none;
-            transition: .3s;
             display: inline-block;
         }
         .btn-primary:hover {
@@ -246,7 +206,6 @@
             padding: 14px 34px;
             border-radius: 40px;
             text-decoration: none;
-            transition: .3s;
             background: none;
             display: inline-block;
             cursor: pointer;
@@ -255,8 +214,6 @@
             background: var(--neon-green);
             color: var(--dark-navy);
         }
-
-        /* STATS */
         .stats {
             margin-top: -60px;
             position: relative;
@@ -276,8 +233,6 @@
         .stat { text-align: center; }
         .stat h2 { font-size: 2.5rem; color: var(--neon-green); }
         .stat p { color: var(--soft-gray); }
-
-        /* COURSES */
         .container {
             max-width: 1200px;
             margin: auto;
@@ -291,7 +246,7 @@
         .section-title span { color: var(--neon-green); }
         .courses-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
             gap: 2rem;
         }
         .course-card {
@@ -316,8 +271,8 @@
             font-size: 0.7rem;
             margin-bottom: 1rem;
         }
-        .course-card h3 { margin-bottom: 1rem; }
-        .course-card p { color: var(--soft-gray); margin-bottom: 1rem; }
+        .course-card h3 { margin-bottom: 0.75rem; font-size: 1.2rem; }
+        .course-card p { color: var(--soft-gray); margin-bottom: 1rem; font-size: 0.9rem; line-height: 1.5; }
         .course-price { font-weight: bold; margin-bottom: 1rem; }
         .course-price.free { color: var(--neon-green); }
         .course-price.premium { color: #ff9800; }
@@ -334,32 +289,29 @@
             background: var(--neon-green);
             color: var(--dark-navy);
         }
-
         footer {
             background: var(--dark-navy);
             text-align: center;
             padding: 2rem;
             color: var(--soft-gray);
         }
-
         @media (max-width: 768px) {
             .hero h1 { font-size: 2rem; }
             .nav-links { display: none; }
             .mobile-menu-btn { display: block; }
             .stats-container { flex-direction: column; gap: 1rem; align-items: center; }
+            .courses-grid { grid-template-columns: 1fr; }
         }
     </style>
 </head>
 <body>
 
-<!-- Toast -->
 <div id="toast" class="toast"></div>
 
 <!-- NAVBAR -->
 <nav class="navbar">
     <div class="nav-container">
         <div class="logo" onclick="location.href='/'">MEI DRIVE <span>AFRICA</span></div>
-        
         <div class="nav-links">
             <a href="#">Home</a>
             <a href="#courses">Courses</a>
@@ -372,14 +324,10 @@
                 <button class="logout-btn" id="logoutBtnNav">Logout</button>
             </div>
         </div>
-        
-        <button class="mobile-menu-btn" id="mobileMenuBtn">
-            <i class="fas fa-bars"></i>
-        </button>
+        <button class="mobile-menu-btn" id="mobileMenuBtn"><i class="fas fa-bars"></i></button>
     </div>
 </nav>
 
-<!-- Mobile Navigation -->
 <div class="overlay" id="mobileOverlay"></div>
 <div class="mobile-nav" id="mobileNav">
     <div class="mobile-nav-header">
@@ -416,38 +364,107 @@
 <section class="stats">
     <div class="stats-container">
         <div class="stat"><h2>10K+</h2><p>Students</p></div>
-        <div class="stat"><h2>7</h2><p>Courses</p></div>
+        <div class="stat"><h2 id="courseCount">7</h2><p>Courses</p></div>
         <div class="stat"><h2>98%</h2><p>Pass Rate</p></div>
     </div>
 </section>
 
-<!-- COURSES -->
+<!-- COURSES - ALL 7 COURSES -->
 <section class="container" id="courses">
     <h2 class="section-title">Our <span>Courses</span></h2>
     <div id="coursesContainer" class="courses-grid">
-        <div class="course-card"><div class="course-icon">🚗</div><div class="course-badge">PREMIUM</div><h3>Learner Hub</h3><p>Complete NTSA-approved driver training...</p><div class="course-price premium">💰 KES 5,000</div><button class="btn-view">View Course</button></div>
-        <div class="course-card"><div class="course-icon">🚌</div><div class="course-badge">PREMIUM</div><h3>PSV Training</h3><p>Specialized training for bus/taxi drivers...</p><div class="course-price premium">💰 KES 7,500</div><button class="btn-view">View Course</button></div>
-        <div class="course-card"><div class="course-icon">⚡</div><div class="course-badge">PREMIUM</div><h3>EV Vehicle Course</h3><p>Master electric vehicle driving...</p><div class="course-price premium">💰 KES 8,000</div><button class="btn-view">View Course</button></div>
+        <!-- Course 1: Learner Hub -->
+        <div class="course-card" data-course-id="1">
+            <div class="course-icon">🚗</div>
+            <div class="course-badge">PREMIUM</div>
+            <h3>Learner Hub</h3>
+            <p>Complete NTSA-approved driver training for new drivers. Covers all 21 units from introduction to advanced driving techniques.</p>
+            <div class="course-price premium">💰 KES 5,000</div>
+            <button class="btn-view">View Course →</button>
+        </div>
+        
+        <!-- Course 2: PSV Training -->
+        <div class="course-card" data-course-id="2">
+            <div class="course-icon">🚌</div>
+            <div class="course-badge">PREMIUM</div>
+            <h3>PSV Training</h3>
+            <p>Specialized training for matatu, bus, and taxi drivers focusing on passenger safety and commercial regulations.</p>
+            <div class="course-price premium">💰 KES 7,500</div>
+            <button class="btn-view">View Course →</button>
+        </div>
+        
+        <!-- Course 3: School Bus/Van -->
+        <div class="course-card" data-course-id="3">
+            <div class="course-icon">🚸</div>
+            <div class="course-badge">PREMIUM</div>
+            <h3>School Bus/Van Driver</h3>
+            <p>Specialized safety training for school transport drivers focusing on child safety and emergency protocols.</p>
+            <div class="course-price premium">💰 KES 6,500</div>
+            <button class="btn-view">View Course →</button>
+        </div>
+        
+        <!-- Course 4: EV Vehicle Course -->
+        <div class="course-card" data-course-id="4">
+            <div class="course-icon">⚡</div>
+            <div class="course-badge">PREMIUM</div>
+            <h3>EV Vehicle Course</h3>
+            <p>Master electric vehicle driving, charging management, and EV-specific safety protocols.</p>
+            <div class="course-price premium">💰 KES 8,000</div>
+            <button class="btn-view">View Course →</button>
+        </div>
+        
+        <!-- Course 5: Boda Boda -->
+        <div class="course-card" data-course-id="5">
+            <div class="course-icon">🛵</div>
+            <div class="course-badge">PREMIUM</div>
+            <h3>Boda Boda (Motorcycle)</h3>
+            <p>Professional motorcycle taxi training covering safety, passenger transport, and defensive riding techniques.</p>
+            <div class="course-price premium">💰 KES 5,500</div>
+            <button class="btn-view">View Course →</button>
+        </div>
+        
+        <!-- Course 6: Professional Driver/Refresher -->
+        <div class="course-card" data-course-id="6">
+            <div class="course-icon">🚛</div>
+            <div class="course-badge">PREMIUM</div>
+            <h3>Professional Driver / Refresher</h3>
+            <p>Advanced training for experienced drivers. Refresher course covering defensive driving and advanced techniques.</p>
+            <div class="course-price premium">💰 KES 7,000</div>
+            <button class="btn-view">View Course →</button>
+        </div>
+        
+        <!-- Course 7: e-Safety Library -->
+        <div class="course-card" data-course-id="7">
+            <div class="course-icon">📚</div>
+            <h3>e-Safety Library</h3>
+            <p>Free comprehensive road safety resources, guides, and educational materials for all road users.</p>
+            <div class="course-price free">🎓 FREE</div>
+            <button class="btn-view">View Course →</button>
+        </div>
+        
+        <!-- Course 8: Quiz Bank -->
+        <div class="course-card" data-course-id="8">
+            <div class="course-icon">📝</div>
+            <div class="course-badge">PREMIUM</div>
+            <h3>Quiz Bank (1000+ Questions)</h3>
+            <p>Comprehensive exam preparation with 1000+ NTSA-style practice questions covering all driving categories.</p>
+            <div class="course-price premium">💰 KES 3,000</div>
+            <button class="btn-view">View Course →</button>
+        </div>
     </div>
 </section>
 
-<!-- FOOTER -->
 <footer>
     <p>© 2026 MEI DRIVE AFRICA | NTSA Approved Driver Training</p>
 </footer>
 
 <script>
-    // ============================================
-    // SUPABASE CONFIGURATION
-    // ============================================
     const SUPABASE_URL = 'https://jeksrwrzzrczamxijvwl.supabase.co';
     const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Impla3Nyd3J6enJjemFteGlqdndsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg2NzYyMjAsImV4cCI6MjA5NDI1MjIyMH0.1poYpJKNFEVe2NTBkXBTH2bIHGk2yT8aqCU-OlJc4vs';
     
     const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-    
     let currentUser = null;
     
-    // Toast function
     function showToast(message, isError = false) {
         const toast = document.getElementById('toast');
         toast.textContent = message;
@@ -456,7 +473,6 @@
         setTimeout(() => toast.classList.remove('show'), 3000);
     }
     
-    // Update UI based on auth state
     async function updateAuthUI() {
         const { data: { session } } = await supabase.auth.getSession();
         currentUser = session?.user || null;
@@ -469,15 +485,12 @@
         const mobileUserName = document.getElementById('mobileUserName');
         
         if (currentUser) {
-            // Get user profile
             const { data: profile } = await supabase
                 .from('profiles')
                 .select('full_name')
                 .eq('id', currentUser.id)
                 .single();
-            
             const displayName = profile?.full_name || currentUser.email.split('@')[0];
-            
             if (authLinks) authLinks.style.display = 'none';
             if (userInfo) userInfo.style.display = 'flex';
             if (userNameSpan) userNameSpan.textContent = displayName;
@@ -492,7 +505,6 @@
         }
     }
     
-    // Logout function
     async function logout() {
         await supabase.auth.signOut();
         localStorage.removeItem('access_token');
@@ -501,114 +513,47 @@
         window.location.href = '/';
     }
     
-    // Mobile menu functions
     function initMobileMenu() {
         const menuBtn = document.getElementById('mobileMenuBtn');
         const closeBtn = document.getElementById('mobileNavClose');
         const mobileNav = document.getElementById('mobileNav');
         const overlay = document.getElementById('mobileOverlay');
-        
         function openMenu() {
             mobileNav.classList.add('active');
             overlay.classList.add('active');
             document.body.style.overflow = 'hidden';
         }
-        
         function closeMenu() {
             mobileNav.classList.remove('active');
             overlay.classList.remove('active');
             document.body.style.overflow = '';
         }
-        
         if (menuBtn) menuBtn.addEventListener('click', openMenu);
         if (closeBtn) closeBtn.addEventListener('click', closeMenu);
         if (overlay) overlay.addEventListener('click', closeMenu);
     }
     
-    // ============================================
-    // WORKING LOGIN/REGISTER BUTTONS
-    // ============================================
+    document.getElementById('loginBtnNav')?.addEventListener('click', () => window.location.href = '/login.html');
+    document.getElementById('mobileLoginBtn')?.addEventListener('click', (e) => { e.preventDefault(); window.location.href = '/login.html'; });
+    document.getElementById('registerBtnNav')?.addEventListener('click', () => window.location.href = '/register.html');
+    document.getElementById('mobileRegisterBtn')?.addEventListener('click', (e) => { e.preventDefault(); window.location.href = '/register.html'; });
+    document.getElementById('heroGetStarted')?.addEventListener('click', () => window.location.href = '/register.html');
+    document.getElementById('logoutBtnNav')?.addEventListener('click', logout);
+    document.getElementById('mobileLogoutBtn')?.addEventListener('click', (e) => { e.preventDefault(); logout(); });
     
-    // Login button redirects to login page
-    const loginBtn = document.getElementById('loginBtnNav');
-    const mobileLoginBtn = document.getElementById('mobileLoginBtn');
-    
-    if (loginBtn) {
-        loginBtn.addEventListener('click', () => {
-            window.location.href = '/login.html';
-        });
-    }
-    
-    if (mobileLoginBtn) {
-        mobileLoginBtn.addEventListener('click', (e) => {
-            e.preventDefault();
-            window.location.href = '/login.html';
-        });
-    }
-    
-    // Register button redirects to register page
-    const registerBtn = document.getElementById('registerBtnNav');
-    const mobileRegisterBtn = document.getElementById('mobileRegisterBtn');
-    
-    if (registerBtn) {
-        registerBtn.addEventListener('click', () => {
-            window.location.href = '/register.html';
-        });
-    }
-    
-    if (mobileRegisterBtn) {
-        mobileRegisterBtn.addEventListener('click', (e) => {
-            e.preventDefault();
-            window.location.href = '/register.html';
-        });
-    }
-    
-    // Get Started button redirects to register
-    const heroGetStarted = document.getElementById('heroGetStarted');
-    if (heroGetStarted) {
-        heroGetStarted.addEventListener('click', () => {
-            window.location.href = '/register.html';
-        });
-    }
-    
-    // Logout button
-    const logoutBtn = document.getElementById('logoutBtnNav');
-    const mobileLogoutBtn = document.getElementById('mobileLogoutBtn');
-    
-    if (logoutBtn) {
-        logoutBtn.addEventListener('click', logout);
-    }
-    
-    if (mobileLogoutBtn) {
-        mobileLogoutBtn.addEventListener('click', (e) => {
-            e.preventDefault();
-            logout();
-        });
-    }
-    
-    // Check if already logged in and redirect to dashboard
-    async function checkAndRedirect() {
-        const { data: { session } } = await supabase.auth.getSession();
-        if (session) {
-            // User is logged in, show dashboard link or redirect
-            console.log('User already logged in:', session.user.email);
-            await updateAuthUI();
-        }
-    }
-    
-    // Course click handler
     document.querySelectorAll('.course-card').forEach(card => {
-        card.addEventListener('click', (e) => {
-            if (e.target.classList.contains('btn-view') || e.target.classList.contains('course-card')) {
+        card.addEventListener('click', () => {
+            if (!currentUser) {
+                showToast('Please login to view course details', true);
+                window.location.href = '/login.html';
+            } else {
                 window.location.href = '/course.html';
             }
         });
     });
     
-    // Initialize
     initMobileMenu();
     updateAuthUI();
-    checkAndRedirect();
 </script>
 </body>
 </html>
