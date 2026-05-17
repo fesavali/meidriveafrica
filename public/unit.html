@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Unit - MEI Drive Africa</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --neon-green: #00FF88;
+            --dark-navy: #041B3D;
+            --secondary-dark: #0A234F;
+            --white: #fff;
+            --soft-gray: #B7C4D6;
+        }
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: var(--secondary-dark);
+            color: var(--white);
+            line-height: 1.6;
+        }
+        .navbar {
+            background: var(--dark-navy);
+            padding: 1rem 2rem;
+            position: fixed;
+            top: 0;
+            width: 100%;
+            z-index: 100;
+        }
+        .container {
+            max-width: 900px;
+            margin: auto;
+            padding: 100px 2rem 2rem;
+        }
+        .unit-content {
+            background: var(--dark-navy);
+            border-radius: 20px;
+            padding: 2rem;
+            border: 1px solid rgba(0,255,136,0.15);
+        }
+        .unit-content h1, .unit-content h2, .unit-content h3 {
+            color: var(--neon-green);
+            margin: 1rem 0;
+        }
+        .unit-content p {
+            margin: 0.5rem 0;
+        }
+        .unit-content ul, .unit-content ol {
+            padding-left: 2rem;
+            margin: 0.5rem 0;
+        }
+        .unit-content li {
+            margin: 0.25rem 0;
+        }
+        .unit-content pre {
+            background: var(--secondary-dark);
+            padding: 1rem;
+            border-radius: 8px;
+            overflow-x: auto;
+        }
+        .btn-back {
+            background: transparent;
+            border: 1px solid var(--neon-green);
+            color: var(--white);
+            padding: 8px 20px;
+            border-radius: 30px;
+            cursor: pointer;
+            margin-bottom: 1rem;
+        }
+        .loading {
+            text-align: center;
+            padding: 3rem;
+        }
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid var(--dark-navy);
+            border-top-color: var(--neon-green);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        @media (max-width: 768px) {
+            .unit-content { padding: 1rem; }
+            .container { padding: 80px 1rem 1rem; }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar"><div style="max-width:1200px;margin:auto;"><div style="font-size:1.5rem;color:var(--neon-green);">MEI DRIVE AFRICA</div></div></nav>
+    <div class="container" id="container"><div class="loading"><div class="spinner"></div><p>Loading unit...</p></div></div>
+    <script>
+        const SUPABASE_URL = 'https://jeksrwrzzrczamxijvwl.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Impla3Nyd3J6enJjemFteGlqdndsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg2NzYyMjAsImV4cCI6MjA5NDI1MjIyMH0.1poYpJKNFEVe2NTBkXBTH2bIHGk2yT8aqCU-OlJc4vs';
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        
+        const urlParams = new URLSearchParams(window.location.search);
+        const courseId = urlParams.get('course_id') || 1;
+        const unitNumber = urlParams.get('unit');
+        
+        async function loadUnit() {
+            const container = document.getElementById('container');
+            
+            const { data: unit, error } = await supabase
+                .from('course_units')
+                .select('*')
+                .eq('course_id', courseId)
+                .eq('unit_number', unitNumber)
+                .single();
+            
+            if (error || !unit) {
+                container.innerHTML = '<div class="loading">Unit not found</div>';
+                return;
+            }
+            
+            // Convert markdown-style content to HTML
+            let content = unit.content || '';
+            content = content.replace(/^# (.*$)/gm, '<h1>$1</h1>');
+            content = content.replace(/^## (.*$)/gm, '<h2>$1</h2>');
+            content = content.replace(/^### (.*$)/gm, '<h3>$1</h3>');
+            content = content.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+            content = content.replace(/\n- (.*$)/gm, '<li>$1</li>');
+            content = content.replace(/<li>(.*?)<\/li>/gs, '<ul>$&</ul>');
+            content = content.replace(/\n\d\. (.*$)/gm, '<li>$1</li>');
+            content = content.replace(/\n\n/g, '</p><p>');
+            content = '<p>' + content + '</p>';
+            
+            container.innerHTML = `
+                <button class="btn-back" onclick="history.back()">← Back to Course</button>
+                <div class="unit-content">
+                    <div style="color:var(--neon-green); margin-bottom:1rem;">Unit ${unit.unit_number}</div>
+                    <h1>${unit.title}</h1>
+                    ${content}
+                    ${unit.key_points ? `
+                        <div style="background:var(--secondary-dark); padding:1rem; border-radius:12px; margin-top:2rem;">
+                            <h3>📌 Key Takeaways</h3>
+                            <ul>
+                                ${unit.key_points.map(point => `<li>${point}</li>`).join('')}
+                            </ul>
+                        </div>
+                    ` : ''}
+                </div>
+            `;
+        }
+        
+        loadUnit();
+    </script>
+</body>
+</html>
