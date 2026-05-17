@@ -3,557 +3,75 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="MEI DRIVE AFRICA - NTSA-approved driver training courses">
-    <title>MEI DRIVE AFRICA - Driver Training</title>
-    
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <title>Course Details - MEI Drive Africa</title>
+    <script type="importmap">
+        {
+            "imports": {
+                "@supabase/supabase-js": "https://esm.sh/@supabase/supabase-js@2"
+            }
+        }
+    </script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        :root {
-            --neon-green: #00FF88;
-            --dark-navy: #041B3D;
-            --secondary-dark: #0A234F;
-            --white: #FFFFFF;
-            --soft-gray: #B7C4D6;
-            --error: #ff4444;
-        }
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: var(--secondary-dark);
-            color: var(--white);
-            overflow-x: hidden;
-        }
-        .toast {
-            position: fixed;
-            bottom: 30px;
-            right: 30px;
-            background: var(--dark-navy);
-            color: var(--white);
-            padding: 12px 24px;
-            border-radius: 8px;
-            transform: translateX(400px);
-            transition: transform 0.3s;
-            z-index: 10000;
-            border-left: 4px solid var(--neon-green);
-        }
-        .toast.error { border-left-color: var(--error); }
-        .toast.show { transform: translateX(0); }
-        .navbar {
-            position: fixed;
-            top: 0;
-            width: 100%;
-            z-index: 1000;
-            background: rgba(4, 27, 61, 0.96);
-            backdrop-filter: blur(10px);
-            border-bottom: 1px solid rgba(0, 255, 136, 0.15);
-            padding: 1rem 2rem;
-        }
-        .nav-container {
-            max-width: 1200px;
-            margin: auto;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .logo {
-            font-size: 1.6rem;
-            font-weight: 700;
-            color: var(--neon-green);
-            cursor: pointer;
-        }
-        .logo span { color: var(--white); }
-        .nav-links {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-        }
-        .nav-links a {
-            color: var(--white);
-            text-decoration: none;
-            margin-left: 1.5rem;
-            transition: .3s;
-        }
-        .nav-links a:hover { color: var(--neon-green); }
-        .nav-btn {
-            background: transparent;
-            border: 1px solid var(--neon-green);
-            color: var(--neon-green);
-            padding: 8px 20px;
-            border-radius: 25px;
-            cursor: pointer;
-            margin-left: 1rem;
-            font-weight: 500;
-        }
-        .nav-btn:hover {
-            background: var(--neon-green);
-            color: var(--dark-navy);
-        }
-        .user-info {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            margin-left: 1rem;
-        }
-        .user-name { color: var(--neon-green); font-weight: 500; }
-        .logout-btn {
-            background: rgba(255, 68, 68, 0.2);
-            border: 1px solid var(--error);
-            color: var(--error);
-            padding: 6px 12px;
-            border-radius: 20px;
-            cursor: pointer;
-        }
-        .mobile-menu-btn {
-            display: none;
-            font-size: 1.5rem;
-            color: var(--white);
-            cursor: pointer;
-            background: none;
-            border: none;
-        }
-        .mobile-nav {
-            position: fixed;
-            top: 0;
-            right: -100%;
-            width: 80%;
-            max-width: 300px;
-            height: 100vh;
-            background: var(--dark-navy);
-            z-index: 2000;
-            padding: 2rem;
-            transition: right 0.3s;
-        }
-        .mobile-nav.active { right: 0; }
-        .mobile-nav-header {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 2rem;
-        }
-        .mobile-nav-close {
-            background: none;
-            border: none;
-            color: var(--white);
-            font-size: 1.5rem;
-            cursor: pointer;
-        }
-        .mobile-nav-links {
-            display: flex;
-            flex-direction: column;
-            gap: 1rem;
-        }
-        .mobile-nav-links a { color: var(--white); text-decoration: none; padding: 10px; }
-        .overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.5);
-            z-index: 1999;
-            display: none;
-        }
-        .overlay.active { display: block; }
-        .hero {
-            min-height: 100vh;
-            background: linear-gradient(rgba(4, 27, 61, 0.82), rgba(10, 35, 79, 0.92)),
-                url('https://images.unsplash.com/photo-1503376780353-7e6692767b70?q=80&w=1600&auto=format&fit=crop') center/cover;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            text-align: center;
-            padding: 120px 20px 80px;
-        }
-        .hero-content { max-width: 950px; }
-        .hero h1 {
-            font-size: 3.5rem;
-            line-height: 1.15;
-            margin-bottom: 1.5rem;
-            font-weight: 800;
-        }
-        .hero h1 span { color: var(--neon-green); display: block; }
-        .hero p {
-            max-width: 700px;
-            margin: auto;
-            font-size: 1.1rem;
-            color: var(--soft-gray);
-            line-height: 1.7;
-            margin-bottom: 2rem;
-        }
-        .hero-buttons {
-            display: flex;
-            gap: 1rem;
-            justify-content: center;
-            flex-wrap: wrap;
-        }
-        .btn-primary {
-            background: var(--neon-green);
-            color: var(--dark-navy);
-            padding: 14px 34px;
-            border-radius: 40px;
-            font-weight: 700;
-            text-decoration: none;
-            display: inline-block;
-        }
-        .btn-primary:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 10px 30px rgba(0, 255, 136, 0.35);
-        }
-        .btn-outline {
-            border: 2px solid var(--neon-green);
-            color: var(--white);
-            padding: 14px 34px;
-            border-radius: 40px;
-            text-decoration: none;
-            background: none;
-            display: inline-block;
-            cursor: pointer;
-        }
-        .btn-outline:hover {
-            background: var(--neon-green);
-            color: var(--dark-navy);
-        }
-        .stats {
-            margin-top: -60px;
-            position: relative;
-            z-index: 10;
-        }
-        .stats-container {
-            max-width: 900px;
-            margin: auto;
-            background: var(--dark-navy);
-            border: 1px solid rgba(0, 255, 136, 0.15);
-            border-radius: 20px;
-            padding: 2rem;
-            display: flex;
-            justify-content: space-around;
-            flex-wrap: wrap;
-        }
-        .stat { text-align: center; }
-        .stat h2 { font-size: 2.5rem; color: var(--neon-green); }
-        .stat p { color: var(--soft-gray); }
-        .container {
-            max-width: 1200px;
-            margin: auto;
-            padding: 5rem 2rem;
-        }
-        .section-title {
-            text-align: center;
-            font-size: 2rem;
-            margin-bottom: 3rem;
-        }
-        .section-title span { color: var(--neon-green); }
-        .courses-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-            gap: 2rem;
-        }
-        .course-card {
-            background: var(--dark-navy);
-            border-radius: 20px;
-            padding: 2rem;
-            border: 1px solid rgba(0, 255, 136, 0.12);
-            transition: .3s;
-            cursor: pointer;
-        }
-        .course-card:hover {
-            transform: translateY(-6px);
-            border-color: var(--neon-green);
-        }
-        .course-icon { font-size: 2.5rem; margin-bottom: 1rem; }
-        .course-badge {
-            display: inline-block;
-            background: var(--neon-green);
-            color: var(--dark-navy);
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 0.7rem;
-            margin-bottom: 1rem;
-        }
-        .course-card h3 { margin-bottom: 0.75rem; font-size: 1.2rem; }
-        .course-card p { color: var(--soft-gray); margin-bottom: 1rem; font-size: 0.9rem; line-height: 1.5; }
-        .course-price { font-weight: bold; margin-bottom: 1rem; }
-        .course-price.free { color: var(--neon-green); }
-        .course-price.premium { color: #ff9800; }
-        .btn-view {
-            width: 100%;
-            background: transparent;
-            border: 1px solid var(--neon-green);
-            color: var(--white);
-            padding: 12px;
-            border-radius: 30px;
-            cursor: pointer;
-        }
-        .btn-view:hover {
-            background: var(--neon-green);
-            color: var(--dark-navy);
-        }
-        footer {
-            background: var(--dark-navy);
-            text-align: center;
-            padding: 2rem;
-            color: var(--soft-gray);
-        }
-        @media (max-width: 768px) {
-            .hero h1 { font-size: 2rem; }
-            .nav-links { display: none; }
-            .mobile-menu-btn { display: block; }
-            .stats-container { flex-direction: column; gap: 1rem; align-items: center; }
-            .courses-grid { grid-template-columns: 1fr; }
-        }
+        :root { --neon-green: #00FF88; --dark-navy: #041B3D; --secondary-dark: #0A234F; --white: #fff; --soft-gray: #B7C4D6; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--secondary-dark); color: var(--white); }
+        .navbar { background: var(--dark-navy); padding: 1rem 2rem; position: fixed; top: 0; width: 100%; z-index: 1000; }
+        .container { max-width: 1200px; margin: auto; padding: 100px 2rem 2rem; }
+        .course-header { background: var(--dark-navy); border-radius: 20px; padding: 2rem; margin-bottom: 2rem; border: 1px solid rgba(0,255,136,0.15); }
+        .course-price { font-size: 2rem; font-weight: bold; color: var(--neon-green); margin: 1rem 0; }
+        .btn-enroll { background: var(--neon-green); color: var(--dark-navy); padding: 14px 34px; border-radius: 40px; font-weight: bold; border: none; cursor: pointer; }
+        .btn-back { background: transparent; border: 1px solid var(--neon-green); color: var(--white); padding: 14px 34px; border-radius: 40px; cursor: pointer; margin-right: 1rem; }
+        .loading { text-align: center; padding: 3rem; }
+        .spinner { width: 50px; height: 50px; border: 3px solid var(--dark-navy); border-top-color: var(--neon-green); border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        @media (max-width: 768px) { .btn-back, .btn-enroll { display: block; width: 100%; margin: 0.5rem 0; } }
     </style>
 </head>
 <body>
-
-<div id="toast" class="toast"></div>
-
-<!-- NAVBAR -->
-<nav class="navbar">
-    <div class="nav-container">
-        <div class="logo" onclick="location.href='/'">MEI DRIVE <span>AFRICA</span></div>
-        <div class="nav-links">
-            <a href="#">Home</a>
-            <a href="#courses">Courses</a>
-            <div id="authLinks">
-                <button class="nav-btn" id="loginBtnNav">Login</button>
-                <button class="nav-btn" id="registerBtnNav">Register</button>
-            </div>
-            <div id="userInfoNav" class="user-info" style="display: none;">
-                <span class="user-name" id="userNameDisplay"></span>
-                <button class="logout-btn" id="logoutBtnNav">Logout</button>
-            </div>
-        </div>
-        <button class="mobile-menu-btn" id="mobileMenuBtn"><i class="fas fa-bars"></i></button>
-    </div>
-</nav>
-
-<div class="overlay" id="mobileOverlay"></div>
-<div class="mobile-nav" id="mobileNav">
-    <div class="mobile-nav-header">
-        <div class="logo">MEI DRIVE <span>AFRICA</span></div>
-        <button class="mobile-nav-close" id="mobileNavClose">&times;</button>
-    </div>
-    <div class="mobile-nav-links">
-        <a href="#">Home</a>
-        <a href="#courses">Courses</a>
-        <div id="mobileAuthLinks">
-            <a href="#" id="mobileLoginBtn">Login</a>
-            <a href="#" id="mobileRegisterBtn">Register</a>
-        </div>
-        <div id="mobileUserInfo" style="display: none;">
-            <span id="mobileUserName"></span>
-            <a href="#" id="mobileLogoutBtn">Logout</a>
-        </div>
-    </div>
-</div>
-
-<!-- HERO -->
-<section class="hero">
-    <div class="hero-content">
-        <h1>Practice Daily.<br><span>Revise Smarter. Pass with Confidence.</span></h1>
-        <p>For Learners and Experienced Drivers — Refresh Your Skills with MEI DRIVE AFRICA. NTSA-approved courses.</p>
-        <div class="hero-buttons">
-            <a href="#courses" class="btn-primary">Explore Courses</a>
-            <button id="heroGetStarted" class="btn-outline">Get Started</button>
-        </div>
-    </div>
-</section>
-
-<!-- STATS -->
-<section class="stats">
-    <div class="stats-container">
-        <div class="stat"><h2>10K+</h2><p>Students</p></div>
-        <div class="stat"><h2 id="courseCount">7</h2><p>Courses</p></div>
-        <div class="stat"><h2>98%</h2><p>Pass Rate</p></div>
-    </div>
-</section>
-
-<!-- COURSES - ALL 7 COURSES -->
-<section class="container" id="courses">
-    <h2 class="section-title">Our <span>Courses</span></h2>
-    <div id="coursesContainer" class="courses-grid">
-        <!-- Course 1: Learner Hub -->
-        <div class="course-card" data-course-id="1">
-            <div class="course-icon">🚗</div>
-            <div class="course-badge">PREMIUM</div>
-            <h3>Learner Hub</h3>
-            <p>Complete NTSA-approved driver training for new drivers. Covers all 21 units from introduction to advanced driving techniques.</p>
-            <div class="course-price premium">💰 KES 5,000</div>
-            <button class="btn-view">View Course →</button>
-        </div>
+    <nav class="navbar"><div class="container" style="padding: 0;"><div class="logo" style="font-size:1.5rem;color:var(--neon-green);cursor:pointer;" onclick="location.href='/'">MEI DRIVE <span style="color:white;">AFRICA</span></div></div></nav>
+    <div class="container" id="courseContainer"><div class="loading"><div class="spinner"></div><p>Loading course...</p></div></div>
+    <script type="module">
+        import { createClient } from '@supabase/supabase-js';
+        const SUPABASE_URL = 'https://jeksrwrzzrczamxijvwl.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Impla3Nyd3J6enJjemFteGlqdndsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg2NzYyMjAsImV4cCI6MjA5NDI1MjIyMH0.1poYpJKNFEVe2NTBkXBTH2bIHGk2yT8aqCU-OlJc4vs';
+        const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
         
-        <!-- Course 2: PSV Training -->
-        <div class="course-card" data-course-id="2">
-            <div class="course-icon">🚌</div>
-            <div class="course-badge">PREMIUM</div>
-            <h3>PSV Training</h3>
-            <p>Specialized training for matatu, bus, and taxi drivers focusing on passenger safety and commercial regulations.</p>
-            <div class="course-price premium">💰 KES 7,500</div>
-            <button class="btn-view">View Course →</button>
-        </div>
+        const urlParams = new URLSearchParams(window.location.search);
+        const courseId = urlParams.get('id');
         
-        <!-- Course 3: School Bus/Van -->
-        <div class="course-card" data-course-id="3">
-            <div class="course-icon">🚸</div>
-            <div class="course-badge">PREMIUM</div>
-            <h3>School Bus/Van Driver</h3>
-            <p>Specialized safety training for school transport drivers focusing on child safety and emergency protocols.</p>
-            <div class="course-price premium">💰 KES 6,500</div>
-            <button class="btn-view">View Course →</button>
-        </div>
-        
-        <!-- Course 4: EV Vehicle Course -->
-        <div class="course-card" data-course-id="4">
-            <div class="course-icon">⚡</div>
-            <div class="course-badge">PREMIUM</div>
-            <h3>EV Vehicle Course</h3>
-            <p>Master electric vehicle driving, charging management, and EV-specific safety protocols.</p>
-            <div class="course-price premium">💰 KES 8,000</div>
-            <button class="btn-view">View Course →</button>
-        </div>
-        
-        <!-- Course 5: Boda Boda -->
-        <div class="course-card" data-course-id="5">
-            <div class="course-icon">🛵</div>
-            <div class="course-badge">PREMIUM</div>
-            <h3>Boda Boda (Motorcycle)</h3>
-            <p>Professional motorcycle taxi training covering safety, passenger transport, and defensive riding techniques.</p>
-            <div class="course-price premium">💰 KES 5,500</div>
-            <button class="btn-view">View Course →</button>
-        </div>
-        
-        <!-- Course 6: Professional Driver/Refresher -->
-        <div class="course-card" data-course-id="6">
-            <div class="course-icon">🚛</div>
-            <div class="course-badge">PREMIUM</div>
-            <h3>Professional Driver / Refresher</h3>
-            <p>Advanced training for experienced drivers. Refresher course covering defensive driving and advanced techniques.</p>
-            <div class="course-price premium">💰 KES 7,000</div>
-            <button class="btn-view">View Course →</button>
-        </div>
-        
-        <!-- Course 7: e-Safety Library -->
-        <div class="course-card" data-course-id="7">
-            <div class="course-icon">📚</div>
-            <h3>e-Safety Library</h3>
-            <p>Free comprehensive road safety resources, guides, and educational materials for all road users.</p>
-            <div class="course-price free">🎓 FREE</div>
-            <button class="btn-view">View Course →</button>
-        </div>
-        
-        <!-- Course 8: Quiz Bank -->
-        <div class="course-card" data-course-id="8">
-            <div class="course-icon">📝</div>
-            <div class="course-badge">PREMIUM</div>
-            <h3>Quiz Bank (1000+ Questions)</h3>
-            <p>Comprehensive exam preparation with 1000+ NTSA-style practice questions covering all driving categories.</p>
-            <div class="course-price premium">💰 KES 3,000</div>
-            <button class="btn-view">View Course →</button>
-        </div>
-    </div>
-</section>
-
-<footer>
-    <p>© 2026 MEI DRIVE AFRICA | NTSA Approved Driver Training</p>
-</footer>
-
-<script>
-    const SUPABASE_URL = 'https://jeksrwrzzrczamxijvwl.supabase.co';
-    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Impla3Nyd3J6enJjemFteGlqdndsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg2NzYyMjAsImV4cCI6MjA5NDI1MjIyMH0.1poYpJKNFEVe2NTBkXBTH2bIHGk2yT8aqCU-OlJc4vs';
-    
-    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-    let currentUser = null;
-    
-    function showToast(message, isError = false) {
-        const toast = document.getElementById('toast');
-        toast.textContent = message;
-        toast.className = `toast ${isError ? 'error' : ''}`;
-        toast.classList.add('show');
-        setTimeout(() => toast.classList.remove('show'), 3000);
-    }
-    
-    async function updateAuthUI() {
-        const { data: { session } } = await supabase.auth.getSession();
-        currentUser = session?.user || null;
-        
-        const authLinks = document.getElementById('authLinks');
-        const userInfo = document.getElementById('userInfoNav');
-        const userNameSpan = document.getElementById('userNameDisplay');
-        const mobileAuthLinks = document.getElementById('mobileAuthLinks');
-        const mobileUserInfo = document.getElementById('mobileUserInfo');
-        const mobileUserName = document.getElementById('mobileUserName');
-        
-        if (currentUser) {
-            const { data: profile } = await supabase
-                .from('profiles')
-                .select('full_name')
-                .eq('id', currentUser.id)
-                .single();
-            const displayName = profile?.full_name || currentUser.email.split('@')[0];
-            if (authLinks) authLinks.style.display = 'none';
-            if (userInfo) userInfo.style.display = 'flex';
-            if (userNameSpan) userNameSpan.textContent = displayName;
-            if (mobileAuthLinks) mobileAuthLinks.style.display = 'none';
-            if (mobileUserInfo) mobileUserInfo.style.display = 'block';
-            if (mobileUserName) mobileUserName.textContent = displayName;
-        } else {
-            if (authLinks) authLinks.style.display = 'flex';
-            if (userInfo) userInfo.style.display = 'none';
-            if (mobileAuthLinks) mobileAuthLinks.style.display = 'block';
-            if (mobileUserInfo) mobileUserInfo.style.display = 'none';
+        async function loadCourse() {
+            if (!courseId) { document.getElementById('courseContainer').innerHTML = '<div class="loading">Course not found</div>'; return; }
+            
+            const { data: course, error } = await supabase.from('courses').select('*').eq('id', courseId).single();
+            if (error || !course) { document.getElementById('courseContainer').innerHTML = '<div class="loading">Course not found</div>'; return; }
+            
+            document.getElementById('courseContainer').innerHTML = `
+                <button class="btn-back" onclick="history.back()"><i class="fas fa-arrow-left"></i> Back</button>
+                <div class="course-header">
+                    <div style="font-size:3rem;">${course.icon || '📘'}</div>
+                    <div class="course-badge" style="display:inline-block;background:#00FF88;color:#041B3D;padding:4px 12px;border-radius:20px;margin:1rem 0;">${course.type === 'free' ? 'FREE COURSE' : 'PREMIUM COURSE'}</div>
+                    <h1>${course.title}</h1>
+                    <p>${course.description}</p>
+                    <div class="course-price">${course.type === 'free' ? 'FREE' : `KES ${course.price.toLocaleString()}`}</div>
+                    <p><strong>Duration:</strong> ${course.duration || 'Self-paced'} | <strong>Level:</strong> ${course.level || 'All levels'}</p>
+                    <button class="btn-enroll" onclick="enroll(${course.id}, '${course.type}')">${course.type === 'free' ? 'Enroll Now' : `Pay KES ${course.price.toLocaleString()}`}</button>
+                </div>
+            `;
         }
-    }
-    
-    async function logout() {
-        await supabase.auth.signOut();
-        localStorage.removeItem('access_token');
-        showToast('Logged out successfully');
-        await updateAuthUI();
-        window.location.href = '/';
-    }
-    
-    function initMobileMenu() {
-        const menuBtn = document.getElementById('mobileMenuBtn');
-        const closeBtn = document.getElementById('mobileNavClose');
-        const mobileNav = document.getElementById('mobileNav');
-        const overlay = document.getElementById('mobileOverlay');
-        function openMenu() {
-            mobileNav.classList.add('active');
-            overlay.classList.add('active');
-            document.body.style.overflow = 'hidden';
-        }
-        function closeMenu() {
-            mobileNav.classList.remove('active');
-            overlay.classList.remove('active');
-            document.body.style.overflow = '';
-        }
-        if (menuBtn) menuBtn.addEventListener('click', openMenu);
-        if (closeBtn) closeBtn.addEventListener('click', closeMenu);
-        if (overlay) overlay.addEventListener('click', closeMenu);
-    }
-    
-    document.getElementById('loginBtnNav')?.addEventListener('click', () => window.location.href = '/login.html');
-    document.getElementById('mobileLoginBtn')?.addEventListener('click', (e) => { e.preventDefault(); window.location.href = '/login.html'; });
-    document.getElementById('registerBtnNav')?.addEventListener('click', () => window.location.href = '/register.html');
-    document.getElementById('mobileRegisterBtn')?.addEventListener('click', (e) => { e.preventDefault(); window.location.href = '/register.html'; });
-    document.getElementById('heroGetStarted')?.addEventListener('click', () => window.location.href = '/register.html');
-    document.getElementById('logoutBtnNav')?.addEventListener('click', logout);
-    document.getElementById('mobileLogoutBtn')?.addEventListener('click', (e) => { e.preventDefault(); logout(); });
-    
-    document.querySelectorAll('.course-card').forEach(card => {
-        card.addEventListener('click', () => {
-            if (!currentUser) {
-                showToast('Please login to view course details', true);
-                window.location.href = '/login.html';
+        
+        window.enroll = async (courseId, courseType) => {
+            const { data: { session } } = await supabase.auth.getSession();
+            if (!session) { alert('Please login to enroll'); window.location.href = '/login.html'; return; }
+            if (courseType === 'free') {
+                await supabase.from('enrollments').insert({ user_id: session.user.id, course_id: courseId, progress: 0 });
+                alert('Enrolled successfully!');
             } else {
-                window.location.href = '/course.html';
+                window.location.href = `/payment.html?course_id=${courseId}`;
             }
-        });
-    });
-    
-    initMobileMenu();
-    updateAuthUI();
-</script>
+        };
+        
+        loadCourse();
+    </script>
 </body>
 </html>
