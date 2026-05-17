@@ -1,20 +1,23 @@
+import esbuild from 'esbuild';
 import fs from 'fs';
 
-// Create public directory
-if (!fs.existsSync('public')) {
-    fs.mkdirSync('public', { recursive: true });
+// Clean dist
+if (fs.existsSync('dist')) {
+    fs.rmSync('dist', { recursive: true, force: true });
 }
+fs.mkdirSync('dist', { recursive: true });
+fs.mkdirSync('dist/js', { recursive: true });
 
-// Copy HTML files to public
-const htmlFiles = ['index.html', 'login.html', 'register.html', 'dashboard.html', 'course.html', 'admin-login.html', 'admin-dashboard.html'];
-
-htmlFiles.forEach(file => {
-    const sourcePath = `public/${file}`;
-    if (fs.existsSync(sourcePath)) {
-        console.log(`✅ File exists: ${file}`);
-    } else {
-        console.log(`⚠️ File not found: ${file} - make sure HTML files are in public folder`);
-    }
+// Build with minification
+await esbuild.build({
+    entryPoints: ['src/supabase.js', 'src/auth.js', 'public/js/auth-guard.js'],
+    bundle: true,
+    outdir: 'dist/js',
+    minify: true,
+    sourcemap: false,
+    platform: 'browser',
+    format: 'esm',
+    target: ['chrome58', 'edge16', 'firefox57', 'safari11']
 });
 
 console.log('✅ Build complete!');
