@@ -3,41 +3,113 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard - MEI Drive Africa</title>
+    <title>Course Details - MEI Drive Africa</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script type="module">
+        import { auth } from './src/auth.js';
+        import { requireAuth } from './src/routeGuard.js';
+        
+        // Get course ID from URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const courseId = urlParams.get('id');
+        
+        let courseData = null;
+        
+        async function loadCourse() {
+            const loadingDiv = document.getElementById('loading');
+            const contentDiv = document.getElementById('courseContent');
+            
+            try {
+                // First check if user has access
+                const hasAccess = await auth.checkCourseAccess(courseId);
+                
+                const response = await fetch(`/api/courses/${courseId}`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    courseData = data.course;
+                    
+                    // Check if course requires premium and user has access
+                    if (courseData.type === 'premium' && !hasAccess && !auth.isAuthenticated()) {
+                        requireAuth();
+                        return;
+                    }
+                    
+                    if (courseData.type === 'premium' && !hasAccess && auth.isAuthenticated()) {
+                        contentDiv.innerHTML = `
+                            <div class="premium-locked">
+                                <h2>Premium Course</h2>
+                                <p>This course requires payment to access.</p>
+                                <button onclick="window.location.href='/payment.html?course_id=${courseId}'">
+                                    Pay KES ${courseData.price}
+                                </button>
+                            </div>
+                        `;
+                        loadingDiv.style.display = 'none';
+                        return;
+                    }
+                    
+                    // Display course content
+                    displayCourse(courseData);
+                }
+                
+                loadingDiv.style.display = 'none';
+                
+            } catch (error) {
+                console.error('Error:', error);
+                loadingDiv.innerHTML = '<p>Error loading course. Please try again.</p>';
+            }
+        }
+        
+        function displayCourse(course) {
+            const contentDiv = document.getElementById('courseContent');
+            contentDiv.innerHTML = `
+                <h1>${escapeHtml(course.title)}</h1>
+                <p>${escapeHtml(course.description)}</p>
+                <div class="course-content">
+                    ${escapeHtml(course.content || 'Course content coming soon...')}
+                </div>
+                <button onclick="markComplete()" class="complete-btn">Mark as Complete</button>
+            `;
+        }
+        
+        function escapeHtml(str) {
+            if (!str) return '';
+            return str.replace(/[&<>]/g, m => {
+                if (m === '&') return '&amp;';
+                if (m === '<') return '&lt;';
+                if (m === '>') return '&gt;';
+                return m;
+            });
+        }
+        
+        async function markComplete() {
+            // Update progress in database
+            alert('Course progress saved!');
+        }
+        
+        // Initialize
+        loadCourse();
+    </script>
     <style>
-        :root { --neon-green: #00FF88; --dark-blue: #041B3D; }
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Segoe UI', sans-serif; background: #f5f7fb; }
-        .navbar { background: var(--dark-blue); padding: 1rem 2rem; color: white; }
-        .container { max-width: 1200px; margin: 0 auto; padding: 4rem 2rem; }
-        .btn { background: var(--neon-green); color: var(--dark-blue); padding: 10px 20px; border: none; border-radius: 8px; cursor: pointer; }
+        .premium-locked {
+            text-align: center;
+            padding: 50px;
+            background: #f0f0f0;
+            border-radius: 10px;
+        }
+        .premium-locked button {
+            background: #00FF88;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-top: 20px;
+        }
     </style>
 </head>
 <body>
-    <nav class="navbar">
-        <div style="max-width: 1200px; margin: 0 auto; display: flex; justify-content: space-between;">
-            <div style="font-size: 1.5rem; font-weight: bold; color: var(--neon-green);">MEI Drive Africa</div>
-            <button onclick="logout()" class="btn">Logout</button>
-        </div>
-    </nav>
-    <div class="container">
-        <h1>My Dashboard</h1>
-        <p>Welcome to your learning dashboard!</p>
-    </div>
-    <script>
-        const SUPABASE_URL = 'https://jeksrwrzzrczamxijvwl.supabase.co';
-        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Impla3Nyd3J6enJjemFteGlqdndsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg2NzYyMjAsImV4cCI6MjA5NDI1MjIyMH0.1poYpJKNFEVe2NTBkXBTH2bIHGk2yT8aqCU-OlJc4vs';
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-        
-        async function logout() {
-            await supabase.auth.signOut();
-            window.location.href = '/';
-        }
-        
-        supabase.auth.getSession().then(({ data }) => {
-            if (!data.session) window.location.href = '/';
-        });
-    </script>
+    <div id="loading">Loading course...</div>
+    <div id="courseContent"></div>
 </body>
 </html>
