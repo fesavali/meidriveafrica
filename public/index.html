@@ -34,6 +34,9 @@
     <!-- Stylesheets -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     
+    <!-- Supabase JS Library - Global CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
     <!-- JSON-LD Structured Data -->
     <script type="application/ld+json">
     {
@@ -384,14 +387,13 @@
     <p style="margin-top: 0.5rem; font-size: 0.8rem;"><i class="fas fa-shield-alt"></i> Kenya's Premier Driving School</p>
 </footer>
 
-<script type="module">
-    import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
-    
-    // Supabase Configuration
+<script>
+    // Supabase Configuration - Using Global CDN
     const SUPABASE_URL = 'https://jeksrwrzzrczamxijvwl.supabase.co';
     const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Impla3Nyd3J6enJjemFteGlqdndsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg2NzYyMjAsImV4cCI6MjA5NDI1MjIyMH0.1poYpJKNFEVe2NTBkXBTH2bIHGk2yT8aqCU-OlJc4vs';
     
-    const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+    // Create client using global supabase
+    const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
     
     // Global state
     let currentUser = null;
