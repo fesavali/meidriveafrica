@@ -1,13 +1,15 @@
 {
   "name": "meidriveafrica",
   "version": "1.0.0",
-  "description": "MEI Drive Africa - NTSA Approved Driver Training Platform",
+  "description": "MEI Drive Africa - Driver Training Platform",
   "type": "module",
   "scripts": {
-    "dev": "node esbuild.dev.js",
-    "build": "node esbuild.build.js",
-    "start": "node api/server.js",
-    "vercel-build": "node esbuild.build.js"
+    "dev": "node build.js --serve",
+    "build": "node build.js",
+    "start": "node backend/server.js",
+    "vercel-build": "node build.js",
+    "render-build": "npm install && node build.js",
+    "render-start": "node backend/server.js"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.38.0",
