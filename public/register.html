@@ -6,9 +6,13 @@
     <title>Register - MEI Drive Africa</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
         body {
-            font-family: 'Segoe UI', sans-serif;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: linear-gradient(135deg, #667eea, #764ba2);
             min-height: 100vh;
             display: flex;
@@ -25,8 +29,19 @@
             text-align: center;
             box-shadow: 0 20px 60px rgba(0,0,0,0.3);
         }
-        .logo { font-size: 48px; margin-bottom: 20px; }
-        h2 { color: #041B3D; margin-bottom: 20px; }
+        .logo {
+            font-size: 48px;
+            margin-bottom: 20px;
+        }
+        h2 {
+            color: #041B3D;
+            margin-bottom: 10px;
+        }
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
         input {
             width: 100%;
             padding: 12px;
@@ -34,6 +49,11 @@
             border: 1px solid #ddd;
             border-radius: 8px;
             font-size: 16px;
+            transition: border-color 0.3s;
+        }
+        input:focus {
+            outline: none;
+            border-color: #00FF88;
         }
         button {
             width: 100%;
@@ -46,74 +66,145 @@
             cursor: pointer;
             font-size: 16px;
             margin-top: 10px;
+            transition: transform 0.2s;
         }
-        button:hover { opacity: 0.9; }
-        .error { color: red; margin-top: 10px; font-size: 14px; }
-        .success { color: green; margin-top: 10px; font-size: 14px; }
-        .back { margin-top: 20px; display: inline-block; color: #666; text-decoration: none; margin: 10px; }
-        .back:hover { color: #00FF88; }
+        button:hover {
+            transform: translateY(-2px);
+        }
+        .error {
+            color: #e74c3c;
+            margin-top: 10px;
+            font-size: 14px;
+            background: #fde8e8;
+            padding: 10px;
+            border-radius: 8px;
+            display: none;
+        }
+        .success {
+            color: #27ae60;
+            margin-top: 10px;
+            font-size: 14px;
+            background: #d5f4e6;
+            padding: 10px;
+            border-radius: 8px;
+            display: none;
+        }
+        .back {
+            margin-top: 20px;
+            display: inline-block;
+            color: #666;
+            text-decoration: none;
+            margin: 10px;
+        }
+        .back:hover {
+            color: #00FF88;
+        }
+        .password-hint {
+            font-size: 12px;
+            color: #999;
+            text-align: left;
+            margin-top: -5px;
+            margin-bottom: 10px;
+        }
     </style>
 </head>
 <body>
     <div class="register-container">
         <div class="logo">🚗</div>
         <h2>Create Account</h2>
+        <p class="subtitle">Join MEI Drive Africa today</p>
+        
         <input type="text" id="fullName" placeholder="Full Name">
-        <input type="email" id="email" placeholder="Email">
-        <input type="password" id="password" placeholder="Password (min 6 characters)">
+        <input type="email" id="email" placeholder="Email Address">
+        <input type="password" id="password" placeholder="Password">
+        <div class="password-hint">Password must be at least 6 characters</div>
         <input type="password" id="confirmPassword" placeholder="Confirm Password">
+        
         <button onclick="register()">Register</button>
+        
         <div id="error" class="error"></div>
         <div id="success" class="success"></div>
+        
         <div>
             <a href="/login.html" class="back">Already have an account? Login</a>
             <a href="/" class="back">← Back to Home</a>
         </div>
     </div>
+
     <script>
         const SUPABASE_URL = 'https://jeksrwrzzrczamxijvwl.supabase.co';
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Impla3Nyd3J6enJjemFteGlqdndsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg2NzYyMjAsImV4cCI6MjA5NDI1MjIyMH0.1poYpJKNFEVe2NTBkXBTH2bIHGk2yT8aqCU-OlJc4vs';
+        
         const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
         
         async function register() {
-            const fullName = document.getElementById('fullName').value;
-            const email = document.getElementById('email').value;
+            const fullName = document.getElementById('fullName').value.trim();
+            const email = document.getElementById('email').value.trim();
             const password = document.getElementById('password').value;
             const confirmPassword = document.getElementById('confirmPassword').value;
             
-            document.getElementById('error').textContent = '';
-            document.getElementById('success').textContent = '';
+            // Hide previous messages
+            document.getElementById('error').style.display = 'none';
+            document.getElementById('success').style.display = 'none';
             
+            // Validation
             if (!fullName || !email || !password || !confirmPassword) {
-                document.getElementById('error').textContent = 'Please fill in all fields';
+                const errorDiv = document.getElementById('error');
+                errorDiv.textContent = 'Please fill in all fields';
+                errorDiv.style.display = 'block';
                 return;
             }
             
             if (password.length < 6) {
-                document.getElementById('error').textContent = 'Password must be at least 6 characters';
+                const errorDiv = document.getElementById('error');
+                errorDiv.textContent = 'Password must be at least 6 characters';
+                errorDiv.style.display = 'block';
                 return;
             }
             
             if (password !== confirmPassword) {
-                document.getElementById('error').textContent = 'Passwords do not match';
+                const errorDiv = document.getElementById('error');
+                errorDiv.textContent = 'Passwords do not match';
+                errorDiv.style.display = 'block';
                 return;
             }
             
+            // Register with Supabase
             try {
                 const { data, error } = await supabase.auth.signUp({
                     email: email,
                     password: password,
-                    options: { data: { full_name: fullName } }
+                    options: {
+                        data: {
+                            full_name: fullName
+                        }
+                    }
                 });
                 
                 if (error) {
-                    document.getElementById('error').textContent = error.message;
+                    const errorDiv = document.getElementById('error');
+                    errorDiv.textContent = error.message;
+                    errorDiv.style.display = 'block';
                 } else {
-                    document.getElementById('success').textContent = 'Registration successful! Please check your email.';
-                    setTimeout(() => window.location.href = '/login.html', 3000);
+                    const successDiv = document.getElementById('success');
+                    successDiv.textContent = 'Registration successful! Please check your email to confirm your account.';
+                    successDiv.style.display = 'block';
+                    
+                    // Clear form
+                    document.getElementById('fullName').value = '';
+                    document.getElementById('email').value = '';
+                    document.getElementById('password').value = '';
+                    document.getElementById('confirmPassword').value = '';
+                    
+                    // Redirect to login after 3 seconds
+                    setTimeout(() => {
+                        window.location.href = '/login.html';
+                    }, 3000);
                 }
             } catch (err) {
-                document.getElementById('error').textContent = 'Network error. Please try again.';
+                const errorDiv = document.getElementById('error');
+                errorDiv.textContent = 'Network error. Please try again.';
+                errorDiv.style.display = 'block';
             }
         }
     </script>
