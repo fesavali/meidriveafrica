@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - MEI Drive Africa</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -35,89 +36,127 @@
         .input-group { margin-bottom: 20px; text-align: left; }
         .input-group label { display: block; margin-bottom: 8px; color: #555; font-weight: 500; }
         .input-group input {
-            width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 12px;
-            font-size: 16px; transition: all 0.3s;
+            width: 100%; padding: 12px; border: 2px solid #e0e0e0;
+            border-radius: 12px; font-size: 16px; transition: all 0.3s;
         }
         .input-group input:focus { outline: none; border-color: #00FF88; }
         button {
             width: 100%; padding: 14px; background: #00FF88; color: #041B3D;
             border: none; border-radius: 12px; font-weight: bold; cursor: pointer;
-            transition: transform 0.2s;
+            font-size: 16px; transition: transform 0.2s;
         }
-        button:hover:not(:disabled) { transform: translateY(-2px); }
+        button:hover { transform: translateY(-2px); }
         button:disabled { opacity: 0.6; cursor: not-allowed; }
-        .error { color: #e74c3c; margin-top: 10px; font-size: 14px; display: none; background: #fde8e8; padding: 10px; border-radius: 8px; }
-        .success { color: #00FF88; margin-top: 10px; font-size: 14px; display: none; background: #e8f5e9; padding: 10px; border-radius: 8px; }
-        .back { margin-top: 20px; display: inline-block; color: #666; text-decoration: none; }
-        .back:hover { color: #00FF88; }
+        .error { color: #e74c3c; margin-top: 10px; font-size: 14px; background: #fde8e8; padding: 10px; border-radius: 8px; display: none; }
         .spinner { display: none; width: 20px; height: 20px; border: 2px solid #041B3D; border-top-color: #00FF88; border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto; }
         @keyframes spin { to { transform: rotate(360deg); } }
+        .auth-switch { margin-top: 20px; color: #666; }
+        .auth-switch a { color: #00FF88; text-decoration: none; font-weight: bold; }
+        .back-home { margin-top: 20px; display: inline-block; color: #666; text-decoration: none; }
+        @media (max-width: 480px) { .login-container { padding: 30px 20px; } }
     </style>
 </head>
 <body>
     <div class="login-container">
         <div class="logo">🚗</div>
         <h2>MEI DRIVE AFRICA</h2>
+        
+        <div id="error" class="error"></div>
+        
         <form id="loginForm">
-            <div class="input-group"><label>📧 Email Address</label><input type="email" id="email" required autocomplete="email"></div>
-            <div class="input-group"><label>🔒 Password</label><input type="password" id="password" required autocomplete="current-password"></div>
+            <div class="input-group">
+                <label><i class="fas fa-envelope"></i> Email Address</label>
+                <input type="email" id="email" placeholder="Enter your email" required>
+            </div>
+            <div class="input-group">
+                <label><i class="fas fa-lock"></i> Password</label>
+                <input type="password" id="password" placeholder="Enter your password" required>
+            </div>
             <button type="submit" id="loginBtn">Login</button>
-            <div id="error" class="error"></div>
-            <div id="success" class="success"></div>
-            <div id="spinner" class="spinner"></div>
         </form>
-        <div style="margin-top: 1rem;"><a href="/reset-password.html" class="back">Forgot Password?</a></div>
-        <div><a href="/register.html" class="back">Create Account</a> | <a href="/" class="back">← Back to Home</a></div>
+        
+        <div id="loadingSpinner" class="spinner"></div>
+        
+        <div class="auth-switch">
+            Don't have an account? <a href="/register.html">Create Account</a>
+        </div>
+        <div>
+            <a href="/" class="back-home">← Back to Home</a>
+        </div>
     </div>
-    <script type="importmap">
-        { "imports": { "@supabase/supabase-js": "https://esm.sh/@supabase/supabase-js@2" } }
-    </script>
-    <script type="module">
-        import { createClient } from '@supabase/supabase-js';
+
+    <script>
         const SUPABASE_URL = 'https://jeksrwrzzrczamxijvwl.supabase.co';
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Impla3Nyd3J6enJjemFteGlqdndsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg2NzYyMjAsImV4cCI6MjA5NDI1MjIyMH0.1poYpJKNFEVe2NTBkXBTH2bIHGk2yT8aqCU-OlJc4vs';
-        const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+        
+        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
         
         const form = document.getElementById('loginForm');
         const emailInput = document.getElementById('email');
         const passwordInput = document.getElementById('password');
         const loginBtn = document.getElementById('loginBtn');
         const errorDiv = document.getElementById('error');
-        const successDiv = document.getElementById('success');
-        const spinner = document.getElementById('spinner');
+        const loadingSpinner = document.getElementById('loadingSpinner');
         
-        const urlParams = new URLSearchParams(window.location.search);
-        if (urlParams.get('verified') === 'true') {
-            successDiv.textContent = 'Email verified! You can now login.';
-            successDiv.style.display = 'block';
-        }
-        if (urlParams.get('expired') === 'true') {
-            errorDiv.textContent = 'Your session expired. Please login again.';
+        function showError(message) {
+            errorDiv.textContent = message;
             errorDiv.style.display = 'block';
+            setTimeout(() => errorDiv.style.display = 'none', 5000);
+        }
+        
+        function setLoading(loading) {
+            if (loading) {
+                loadingSpinner.style.display = 'block';
+                loginBtn.disabled = true;
+                loginBtn.textContent = '';
+            } else {
+                loadingSpinner.style.display = 'none';
+                loginBtn.disabled = false;
+                loginBtn.textContent = 'Login';
+            }
         }
         
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
-            errorDiv.style.display = 'none';
-            successDiv.style.display = 'none';
-            loginBtn.disabled = true;
-            spinner.style.display = 'block';
             
-            const { error } = await supabase.auth.signInWithPassword({
-                email: emailInput.value.trim(),
-                password: passwordInput.value
+            const email = emailInput.value.trim();
+            const password = passwordInput.value;
+            
+            if (!email || !password) {
+                showError('Please enter both email and password');
+                return;
+            }
+            
+            setLoading(true);
+            
+            const { data, error } = await supabase.auth.signInWithPassword({
+                email: email,
+                password: password
             });
             
-            spinner.style.display = 'none';
-            loginBtn.disabled = false;
+            setLoading(false);
             
             if (error) {
-                errorDiv.textContent = error.message === 'Invalid login credentials' ? 'Invalid email or password' : error.message;
-                errorDiv.style.display = 'block';
-            } else {
-                successDiv.textContent = 'Login successful! Redirecting...';
-                successDiv.style.display = 'block';
-                setTimeout(() => { window.location.href = '/dashboard.html'; }, 1000);
+                showError(error.message === 'Invalid login credentials' ? 'Invalid email or password' : error.message);
+                return;
+            }
+            
+            if (data.session) {
+                localStorage.setItem('access_token', data.session.access_token);
+                window.location.href = '/dashboard.html';
+            }
+        });
+        
+        // Check existing session
+        supabase.auth.getSession().then(({ data }) => {
+            if (data.session) {
+                window.location.href = '/dashboard.html';
+            }
+        });
+        
+        passwordInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                form.dispatchEvent(new Event('submit'));
             }
         });
     </script>
