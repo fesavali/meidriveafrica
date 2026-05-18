@@ -180,7 +180,7 @@
         .stat h2 { font-size: 2.5rem; color: var(--neon-green); margin-bottom: 0.25rem; }
         .stat p { color: var(--soft-gray); }
         
-        /* Courses Section - IMPROVED RESPONSIVENESS */
+        /* Courses Section */
         .container { max-width: 1200px; margin: 0 auto; padding: 5rem 2rem; }
         .section-title { text-align: center; font-size: 2rem; margin-bottom: 3rem; position: relative; }
         .section-title:after { content: ''; display: block; width: 60px; height: 3px; background: var(--neon-green); margin: 10px auto 0; border-radius: 2px; }
@@ -207,9 +207,7 @@
         .btn-view:hover { background: var(--neon-green); color: var(--dark-navy); }
         
         /* Responsive Course Grid */
-        @media (max-width: 1024px) {
-            .courses-grid { grid-template-columns: repeat(3, 1fr); gap: 1.25rem; }
-        }
+        @media (max-width: 1024px) { .courses-grid { grid-template-columns: repeat(3, 1fr); gap: 1.25rem; } }
         @media (max-width: 768px) {
             .courses-grid { grid-template-columns: repeat(2, 1fr); gap: 1rem; }
             .container { padding: 3rem 1rem; }
@@ -217,9 +215,7 @@
             .course-icon { font-size: 1.5rem; }
             .course-card h3 { font-size: 0.95rem; }
         }
-        @media (max-width: 480px) {
-            .courses-grid { grid-template-columns: 1fr; }
-        }
+        @media (max-width: 480px) { .courses-grid { grid-template-columns: 1fr; } }
         
         /* Skeleton Loader */
         .skeleton-card { background: var(--dark-navy); border-radius: 20px; padding: 1.5rem; border: 1px solid rgba(0,255,136,0.12); }
@@ -229,7 +225,7 @@
         .skeleton-price { width: 40%; height: 18px; background: var(--secondary-dark); border-radius: 4px; margin-bottom: 0.75rem; animation: pulse 1.5s infinite; }
         @keyframes pulse { 0%, 100% { opacity: 0.5; } 50% { opacity: 0.8; } }
         
-        /* Modal - IMPROVED LOGIN RESPONSIVENESS */
+        /* Modal */
         .modal-overlay { 
             position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
             background: rgba(0,0,0,0.85); z-index: 3000; display: none; 
@@ -276,10 +272,7 @@
             .hero-buttons { flex-direction: column; align-items: center; }
             .toast { bottom: 20px; right: 20px; left: 20px; max-width: calc(100% - 40px); }
         }
-        @media (max-width: 480px) {
-            .hero h1 { font-size: 1.5rem; }
-            .stat h2 { font-size: 1.8rem; }
-        }
+        @media (max-width: 480px) { .hero h1 { font-size: 1.5rem; } .stat h2 { font-size: 1.8rem; } }
     </style>
 </head>
 <body>
@@ -297,6 +290,7 @@
         <div class="nav-links">
             <a href="#">Home</a>
             <a href="#courses">Courses</a>
+            <a href="/admin-login.html" style="color: #ff9800;">Admin</a>
             <div id="authLinks">
                 <button class="nav-btn" id="loginBtnNav">Login</button>
                 <button class="nav-btn" id="registerBtnNav">Register</button>
@@ -308,16 +302,7 @@
         </div>
         <button class="mobile-menu-btn" id="mobileMenuBtn"><i class="fas fa-bars"></i></button>
     </div>
-</nav><div class="nav-links">
-    <a href="#">Home</a>
-    <a href="#courses">Courses</a>
-    <a href="/admin-login.html" class="admin-link" style="color: #ff9800;">Admin</a>
-    <div id="authLinks">
-        <button class="nav-btn" id="loginBtnNav">Login</button>
-        <button class="nav-btn" id="registerBtnNav">Register</button>
-    </div>
-    ...
-</div>
+</nav>
 
 <!-- Mobile Navigation -->
 <div class="overlay" id="mobileOverlay"></div>
@@ -329,6 +314,7 @@
     <div class="mobile-nav-links">
         <a href="#">Home</a>
         <a href="#courses">Courses</a>
+        <a href="/admin-login.html" style="color: #ff9800;">Admin</a>
         <div id="mobileAuthLinks">
             <a href="#" id="mobileLoginBtn">Login</a>
             <a href="#" id="mobileRegisterBtn">Register</a>
@@ -347,7 +333,7 @@
         <p>For Learners and Experienced Drivers — Refresh Your Skills with MEI DRIVE AFRICA. NTSA-approved courses.</p>
         <div class="hero-buttons">
             <a href="#courses" class="btn-primary">Explore Courses</a>
-            <button id="heroGetStarted" class="btn-outline">Register</button>
+            <button id="heroGetStarted" class="btn-outline">Get Started</button>
         </div>
     </div>
 </section>
@@ -356,7 +342,7 @@
 <section class="stats">
     <div class="stats-container">
         <div class="stat"><h2 id="totalStudents">10K+</h2><p>Students</p></div>
-        <div class="stat"><h2 id="totalCourses">--</h2><p>Courses</p></div>
+        <div class="stat"><h2 id="totalCourses">8</h2><p>Courses</p></div>
         <div class="stat"><h2>98%</h2><p>Pass Rate</p></div>
     </div>
 </section>
@@ -373,7 +359,7 @@
     </div>
 </section>
 
-<!-- LOGIN MODAL - IMPROVED -->
+<!-- LOGIN MODAL -->
 <div id="loginModal" class="modal-overlay">
     <div class="modal-content">
         <h2><i class="fas fa-sign-in-alt"></i> Login</h2>
@@ -471,7 +457,7 @@
         try {
             const { data, error } = await supabase
                 .from('courses')
-                .select('id, title, description, type, price, icon, duration, level')
+                .select('id, name, description, type, price, icon, duration, level')
                 .order('id', { ascending: true })
                 .limit(8);
             
@@ -499,16 +485,21 @@
         
         courses.forEach((course, index) => {
             const isFree = course.type === 'free';
+            const title = course.name || course.title;
+            const desc = course.description || 'Professional driver training course';
+            const price = course.price || 0;
+            const icon = course.icon || icons[index % icons.length];
+            
             const card = document.createElement('div');
             card.className = 'course-card';
             card.onclick = () => window.location.href = `/course.html?id=${course.id}`;
             
             card.innerHTML = `
-                <div class="course-icon">${course.icon || icons[index % icons.length]}</div>
+                <div class="course-icon">${icon}</div>
                 ${!isFree ? '<div class="course-badge">PREMIUM</div>' : ''}
-                <h3>${escapeHtml(course.title)}</h3>
-                <p>${escapeHtml(course.description?.substring(0, 80) || 'Professional driver training')}...</p>
-                <div class="course-price ${isFree ? 'free' : 'premium'}">${isFree ? 'FREE' : `KES ${(course.price || 0).toLocaleString()}`}</div>
+                <h3>${escapeHtml(title)}</h3>
+                <p>${escapeHtml(desc.substring(0, 80))}...</p>
+                <div class="course-price ${isFree ? 'free' : 'premium'}">${isFree ? 'FREE' : `KES ${price.toLocaleString()}`}</div>
                 <button class="btn-view">View Course →</button>
             `;
             coursesContainer.appendChild(card);
@@ -517,14 +508,14 @@
     
     function displayFallbackCourses() {
         const fallbackCourses = [
-            { id: 1, title: 'Learner Hub', description: 'Complete NTSA-approved driver training', type: 'premium', price: 5000, icon: '🚗' },
-            { id: 2, title: 'PSV Training', description: 'Specialized training for bus/taxi drivers', type: 'premium', price: 7500, icon: '🚌' },
-            { id: 3, title: 'School Bus/Van', description: 'Safety training for school transport', type: 'premium', price: 6500, icon: '🚸' },
-            { id: 4, title: 'EV Vehicle Course', description: 'Master electric vehicle driving', type: 'premium', price: 8000, icon: '⚡' },
-            { id: 5, title: 'Boda Boda', description: 'Professional motorcycle taxi training', type: 'premium', price: 5500, icon: '🛵' },
-            { id: 6, title: 'Professional Driver', description: 'Advanced training for experienced drivers', type: 'premium', price: 7000, icon: '🚛' },
-            { id: 7, title: 'e-Safety Library', description: 'Free road safety resources', type: 'free', price: 0, icon: '📚' },
-            { id: 8, title: 'Quiz Bank', description: '1000+ NTSA practice questions', type: 'premium', price: 3000, icon: '📝' }
+            { id: 1, name: 'Learner Hub', description: 'Complete NTSA-approved driver training', type: 'premium', price: 5000, icon: '🚗' },
+            { id: 2, name: 'PSV Training', description: 'Specialized training for bus/taxi drivers', type: 'premium', price: 7500, icon: '🚌' },
+            { id: 3, name: 'School Bus/Van', description: 'Safety training for school transport', type: 'premium', price: 6500, icon: '🚸' },
+            { id: 4, name: 'EV Vehicle Course', description: 'Master electric vehicle driving', type: 'premium', price: 8000, icon: '⚡' },
+            { id: 5, name: 'Boda Boda', description: 'Professional motorcycle taxi training', type: 'premium', price: 5500, icon: '🛵' },
+            { id: 6, name: 'Professional Driver', description: 'Advanced training for experienced drivers', type: 'premium', price: 7000, icon: '🚛' },
+            { id: 7, name: 'e-Safety Library', description: 'Free road safety resources', type: 'free', price: 0, icon: '📚' },
+            { id: 8, name: 'Quiz Bank', description: '1000+ NTSA practice questions', type: 'premium', price: 3000, icon: '📝' }
         ];
         totalCoursesSpan.textContent = '8';
         displayCourses(fallbackCourses);
@@ -610,14 +601,35 @@
         document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeMenu(); });
     }
     
-    // Event listeners
-    document.getElementById('loginBtnNav')?.addEventListener('click', openModal);
-    document.getElementById('registerBtnNav')?.addEventListener('click', () => window.location.href = '/register.html');
-    document.getElementById('mobileLoginBtn')?.addEventListener('click', (e) => { e.preventDefault(); openModal(); });
-    document.getElementById('mobileRegisterBtn')?.addEventListener('click', (e) => { e.preventDefault(); window.location.href = '/register.html'; });
-    document.getElementById('heroGetStarted')?.addEventListener('click', openModal);
+    // Event listeners - FIXED CONNECTIONS
+    document.getElementById('loginBtnNav')?.addEventListener('click', () => {
+        window.location.href = '/login.html';
+    });
+    
+    document.getElementById('registerBtnNav')?.addEventListener('click', () => {
+        window.location.href = '/register.html';
+    });
+    
+    document.getElementById('mobileLoginBtn')?.addEventListener('click', (e) => {
+        e.preventDefault();
+        window.location.href = '/login.html';
+    });
+    
+    document.getElementById('mobileRegisterBtn')?.addEventListener('click', (e) => {
+        e.preventDefault();
+        window.location.href = '/register.html';
+    });
+    
+    // Get Started button - goes to register page (not login modal)
+    document.getElementById('heroGetStarted')?.addEventListener('click', () => {
+        window.location.href = '/register.html';
+    });
+    
     document.getElementById('logoutBtnNav')?.addEventListener('click', logout);
-    document.getElementById('mobileLogoutBtn')?.addEventListener('click', (e) => { e.preventDefault(); logout(); });
+    document.getElementById('mobileLogoutBtn')?.addEventListener('click', (e) => {
+        e.preventDefault();
+        logout();
+    });
     document.getElementById('closeLoginModal')?.addEventListener('click', closeModal);
     
     document.getElementById('loginSubmitBtn')?.addEventListener('click', async () => {
