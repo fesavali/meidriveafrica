@@ -141,11 +141,11 @@
         <form id="adminLoginForm">
             <div class="input-group">
                 <label><i class="fas fa-envelope"></i> Admin Email</label>
-                <input type="email" id="email" placeholder="admin@meidriveafrica.com" required>
+                <input type="email" id="email" placeholder="admin@meidriveafrica.com" value="admin@meidriveafrica.com">
             </div>
             <div class="input-group">
                 <label><i class="fas fa-lock"></i> Password</label>
-                <input type="password" id="password" placeholder="Enter your password" required>
+                <input type="password" id="password" placeholder="Enter your password" value="Admin@2026">
             </div>
             <button type="submit" id="loginBtn">Login as Admin</button>
         </form>
@@ -204,6 +204,7 @@
             setLoading(true);
             
             try {
+                // Login with Supabase
                 const { data, error } = await supabase.auth.signInWithPassword({
                     email: email,
                     password: password
@@ -216,24 +217,33 @@
                 }
                 
                 if (data.user) {
+                    // Check admin role
                     const { data: profile, error: profileError } = await supabase
                         .from('profiles')
                         .select('role, full_name')
                         .eq('id', data.user.id)
                         .single();
                     
-                    if (profileError || profile?.role !== 'admin') {
+                    if (profileError) {
                         setLoading(false);
-                        showError('Unauthorized access. Admin privileges required.');
+                        showError('Error verifying admin privileges');
                         await supabase.auth.signOut();
                         return;
                     }
                     
-                    localStorage.setItem('adminToken', data.session.access_token);
-                    localStorage.setItem('adminEmail', email);
-                    localStorage.setItem('adminName', profile?.full_name || 'Administrator');
-                    
-                    window.location.href = '/admin-dashboard.html';
+                    if (profile?.role === 'admin') {
+                        // Store admin session
+                        localStorage.setItem('adminToken', data.session.access_token);
+                        localStorage.setItem('adminEmail', email);
+                        localStorage.setItem('adminName', profile.full_name || 'Administrator');
+                        
+                        // Redirect to admin dashboard
+                        window.location.href = '/admin-dashboard.html';
+                    } else {
+                        setLoading(false);
+                        showError('Access denied. Admin privileges required.');
+                        await supabase.auth.signOut();
+                    }
                 }
             } catch (err) {
                 setLoading(false);
@@ -242,7 +252,7 @@
             }
         });
         
-        // Check existing session
+        // Check existing admin session
         const adminToken = localStorage.getItem('adminToken');
         if (adminToken) {
             supabase.auth.getUser(adminToken).then(({ data, error }) => {
