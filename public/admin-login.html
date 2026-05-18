@@ -3,262 +3,397 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Login - MEI Drive Africa</title>
+    <title>Admin Login | MEI DRIVE AFRICA</title>
+
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+        *{
+            margin:0;
+            padding:0;
+            box-sizing:border-box;
         }
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #1a1a2e, #16213e);
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
+
+        :root{
+            --primary:#041B3D;
+            --secondary:#0A234F;
+            --accent:#00FF88;
+            --white:#ffffff;
+            --gray:#B7C4D6;
+            --danger:#ff4444;
         }
-        .login-container {
-            background: #0f3460;
-            padding: 40px;
-            border-radius: 20px;
-            width: 100%;
-            max-width: 400px;
-            text-align: center;
-            border: 1px solid rgba(0,255,136,0.2);
+
+        body{
+            font-family:'Segoe UI',sans-serif;
+            min-height:100vh;
+            display:flex;
+            justify-content:center;
+            align-items:center;
+            padding:20px;
+            background:
+                linear-gradient(rgba(4,27,61,.9), rgba(10,35,79,.92)),
+                url('https://images.unsplash.com/photo-1503376780353-7e6692767b70?q=80&w=1600&auto=format&fit=crop')
+                center/cover;
         }
-        .logo {
-            font-size: 48px;
-            margin-bottom: 20px;
+
+        .login-box{
+            width:100%;
+            max-width:420px;
+            background:rgba(4,27,61,.96);
+            border:1px solid rgba(0,255,136,.15);
+            border-radius:24px;
+            padding:40px 30px;
+            box-shadow:0 10px 40px rgba(0,0,0,.35);
+            backdrop-filter:blur(8px);
         }
-        h2 {
-            color: #00FF88;
-            margin-bottom: 10px;
+
+        .logo{
+            font-size:54px;
+            text-align:center;
+            margin-bottom:10px;
         }
-        .admin-badge {
-            background: #00FF88;
-            color: #0f3460;
-            padding: 5px 15px;
-            border-radius: 20px;
-            display: inline-block;
-            margin-bottom: 30px;
-            font-size: 12px;
-            font-weight: bold;
+
+        h1{
+            color:var(--accent);
+            text-align:center;
+            margin-bottom:10px;
         }
-        .input-group {
-            margin-bottom: 20px;
-            text-align: left;
+
+        .badge{
+            display:inline-block;
+            background:var(--accent);
+            color:var(--primary);
+            padding:6px 16px;
+            border-radius:30px;
+            font-size:.75rem;
+            font-weight:700;
+            margin:0 auto 30px;
         }
-        .input-group label {
-            display: block;
-            margin-bottom: 8px;
-            color: #B7C4D6;
-            font-weight: 500;
+
+        .badge-wrap{
+            text-align:center;
         }
-        .input-group input {
-            width: 100%;
-            padding: 14px;
-            border: 2px solid rgba(0,255,136,0.2);
-            border-radius: 12px;
-            font-size: 16px;
-            background: #1a1a2e;
-            color: white;
+
+        .input-group{
+            margin-bottom:18px;
         }
-        .input-group input:focus {
-            outline: none;
-            border-color: #00FF88;
+
+        .input-group label{
+            display:block;
+            margin-bottom:8px;
+            color:var(--white);
+            font-size:.92rem;
+            font-weight:600;
         }
-        button {
-            width: 100%;
-            padding: 14px;
-            background: #00FF88;
-            color: #0f3460;
-            border: none;
-            border-radius: 12px;
-            font-weight: bold;
-            cursor: pointer;
-            font-size: 16px;
-            transition: all 0.3s;
+
+        .input-group input{
+            width:100%;
+            padding:14px;
+            border-radius:14px;
+            border:2px solid rgba(0,255,136,.15);
+            background:#08172e;
+            color:white;
+            font-size:15px;
+            transition:.3s;
         }
-        button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 20px rgba(0,255,136,0.3);
+
+        .input-group input:focus{
+            outline:none;
+            border-color:var(--accent);
         }
-        .error {
-            color: #ff4444;
-            margin-top: 10px;
-            padding: 10px;
-            background: rgba(255,68,68,0.1);
-            border-radius: 8px;
-            display: none;
+
+        .btn{
+            width:100%;
+            padding:14px;
+            border:none;
+            border-radius:14px;
+            background:var(--accent);
+            color:var(--primary);
+            font-weight:700;
+            font-size:1rem;
+            cursor:pointer;
+            transition:.3s;
         }
-        .success {
-            color: #00FF88;
-            margin-top: 10px;
-            padding: 10px;
-            background: rgba(0,255,136,0.1);
-            border-radius: 8px;
-            display: none;
+
+        .btn:hover{
+            transform:translateY(-2px);
+            box-shadow:0 10px 30px rgba(0,255,136,.3);
         }
-        .back-home {
-            margin-top: 20px;
-            display: inline-block;
-            color: #B7C4D6;
-            text-decoration: none;
+
+        .btn:disabled{
+            opacity:.6;
+            cursor:not-allowed;
         }
-        .back-home:hover {
-            color: #00FF88;
+
+        .message{
+            display:none;
+            margin-bottom:20px;
+            padding:12px;
+            border-radius:12px;
+            font-size:.9rem;
         }
-        @media (max-width: 480px) {
-            .login-container { padding: 30px 20px; }
+
+        .error{
+            background:rgba(255,68,68,.12);
+            color:#ffb3b3;
+            border:1px solid rgba(255,68,68,.3);
         }
+
+        .success{
+            background:rgba(0,255,136,.12);
+            color:#9dffd1;
+            border:1px solid rgba(0,255,136,.3);
+        }
+
+        .back{
+            display:block;
+            text-align:center;
+            margin-top:20px;
+            color:var(--gray);
+            text-decoration:none;
+        }
+
+        .back:hover{
+            color:var(--accent);
+        }
+
     </style>
 </head>
+
 <body>
-    <div class="login-container">
-        <div class="logo">🚗</div>
-        <h2>MEI DRIVE AFRICA</h2>
-        <div class="admin-badge">Administrator Panel</div>
-        
-        <div id="error" class="error"></div>
-        <div id="success" class="success"></div>
-        
-        <form id="adminLoginForm">
-            <div class="input-group">
-                <label><i class="fas fa-envelope"></i> Admin Email</label>
-                <input type="email" id="email" placeholder="admin@meidriveafrica.com" required>
-            </div>
-            <div class="input-group">
-                <label><i class="fas fa-lock"></i> Password</label>
-                <input type="password" id="password" placeholder="Enter your password" required>
-            </div>
-            <button type="submit" id="loginBtn">Login as Admin</button>
-        </form>
-        
-        <div>
-            <a href="/" class="back-home">← Back to Home</a>
+
+<div class="login-box">
+
+    <div class="logo">🚗</div>
+
+    <h1>MEI DRIVE AFRICA</h1>
+
+    <div class="badge-wrap">
+        <div class="badge">
+            ADMINISTRATOR PANEL
         </div>
     </div>
 
-    <script>
-        const SUPABASE_URL = 'https://jeksrwrzzrczamxijvwl.supabase.co';
-        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Impla3Nyd3J6enJjemFteGlqdndsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg2NzYyMjAsImV4cCI6MjA5NDI1MjIyMH0.1poYpJKNFEVe2NTBkXBTH2bIHGk2yT8aqCU-OlJc4vs';
-        
-        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-        
-        const form = document.getElementById('adminLoginForm');
-        const emailInput = document.getElementById('email');
-        const passwordInput = document.getElementById('password');
-        const loginBtn = document.getElementById('loginBtn');
-        const errorDiv = document.getElementById('error');
-        const successDiv = document.getElementById('success');
-        
-        function showError(message) {
-            errorDiv.textContent = message;
-            errorDiv.style.display = 'block';
-            successDiv.style.display = 'none';
-            setTimeout(() => {
-                errorDiv.style.display = 'none';
-            }, 5000);
+    <div id="errorBox" class="message error"></div>
+    <div id="successBox" class="message success"></div>
+
+    <form id="loginForm">
+
+        <div class="input-group">
+            <label>Admin Email</label>
+
+            <input
+                type="email"
+                id="email"
+                placeholder="admin@meidriveafrica.com"
+                required
+            >
+        </div>
+
+        <div class="input-group">
+            <label>Password</label>
+
+            <input
+                type="password"
+                id="password"
+                placeholder="Enter password"
+                required
+            >
+        </div>
+
+        <button
+            type="submit"
+            class="btn"
+            id="loginBtn"
+        >
+            Login as Admin
+        </button>
+
+    </form>
+
+    <a href="/" class="back">
+        ← Back Home
+    </a>
+
+</div>
+
+<script>
+
+    // SUPABASE
+    const SUPABASE_URL =
+        'https://jeksrwrzzrczamxijvwl.supabase.co';
+
+    const SUPABASE_ANON_KEY =
+        'YOUR_SUPABASE_ANON_KEY';
+
+    const { createClient } = window.supabase;
+
+    const supabase =
+        createClient(
+            SUPABASE_URL,
+            SUPABASE_ANON_KEY
+        );
+
+    // ELEMENTS
+    const form =
+        document.getElementById('loginForm');
+
+    const emailInput =
+        document.getElementById('email');
+
+    const passwordInput =
+        document.getElementById('password');
+
+    const loginBtn =
+        document.getElementById('loginBtn');
+
+    const errorBox =
+        document.getElementById('errorBox');
+
+    const successBox =
+        document.getElementById('successBox');
+
+    // HELPERS
+    function showError(message){
+        errorBox.style.display = 'block';
+        successBox.style.display = 'none';
+        errorBox.textContent = message;
+    }
+
+    function showSuccess(message){
+        successBox.style.display = 'block';
+        errorBox.style.display = 'none';
+        successBox.textContent = message;
+    }
+
+    function setLoading(state){
+        loginBtn.disabled = state;
+        loginBtn.textContent =
+            state
+            ? 'Logging in...'
+            : 'Login as Admin';
+    }
+
+    // CHECK EXISTING SESSION
+    async function checkSession(){
+
+        const {
+            data:{ session }
+        } = await supabase.auth.getSession();
+
+        if(!session) return;
+
+        const { data:profile } =
+            await supabase
+                .from('profiles')
+                .select('role')
+                .eq('id', session.user.id)
+                .single();
+
+        if(profile?.role === 'admin'){
+            window.location.href =
+                '/admin-dashboard.html';
         }
-        
-        function showSuccess(message) {
-            successDiv.textContent = message;
-            successDiv.style.display = 'block';
-            errorDiv.style.display = 'none';
-            setTimeout(() => {
-                successDiv.style.display = 'none';
-            }, 2000);
+    }
+
+    checkSession();
+
+    // LOGIN
+    form.addEventListener('submit', async (e) => {
+
+        e.preventDefault();
+
+        const email =
+            emailInput.value.trim();
+
+        const password =
+            passwordInput.value;
+
+        if(!email || !password){
+            return showError(
+                'Please enter email and password'
+            );
         }
-        
-        form.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            
-            const email = emailInput.value.trim();
-            const password = passwordInput.value;
-            
-            if (!email || !password) {
-                showError('Please enter both email and password');
-                return;
-            }
-            
-            // Disable button during login
-            loginBtn.disabled = true;
-            loginBtn.textContent = 'Logging in...';
-            
-            try {
-                // Attempt login
-                const { data, error } = await supabase.auth.signInWithPassword({
-                    email: email,
-                    password: password
+
+        try{
+
+            setLoading(true);
+
+            // LOGIN
+            const { data, error } =
+                await supabase.auth.signInWithPassword({
+                    email,
+                    password
                 });
-                
-                if (error) {
-                    showError(error.message);
-                    loginBtn.disabled = false;
-                    loginBtn.textContent = 'Login as Admin';
-                    return;
-                }
-                
-                if (data.user) {
-                    // Check if user has admin role
-                    const { data: profile, error: profileError } = await supabase
-                        .from('profiles')
-                        .select('role')
-                        .eq('id', data.user.id)
-                        .single();
-                    
-                    if (profileError) {
-                        showError('Error verifying admin status');
-                        await supabase.auth.signOut();
-                        loginBtn.disabled = false;
-                        loginBtn.textContent = 'Login as Admin';
-                        return;
-                    }
-                    
-                    if (profile?.role === 'admin') {
-                        // Store session
-                        localStorage.setItem('adminToken', data.session.access_token);
-                        localStorage.setItem('adminEmail', email);
-                        
-                        showSuccess('Login successful! Redirecting...');
-                        
-                        setTimeout(() => {
-                            window.location.href = '/admin-dashboard.html';
-                        }, 1000);
-                    } else {
-                        showError('Access denied. Admin privileges required.');
-                        await supabase.auth.signOut();
-                        loginBtn.disabled = false;
-                        loginBtn.textContent = 'Login as Admin';
-                    }
-                }
-            } catch (err) {
-                showError('Network error. Please try again.');
-                loginBtn.disabled = false;
-                loginBtn.textContent = 'Login as Admin';
+
+            if(error){
+
+                setLoading(false);
+
+                return showError(
+                    error.message
+                );
             }
-        });
-        
-        // Check for existing session
-        const existingToken = localStorage.getItem('adminToken');
-        if (existingToken) {
-            // Verify token is still valid
-            supabase.auth.getUser(existingToken).then(({ data, error }) => {
-                if (!error && data.user) {
-                    window.location.href = '/admin-dashboard.html';
-                } else {
-                    localStorage.removeItem('adminToken');
-                    localStorage.removeItem('adminEmail');
-                }
-            });
+
+            // VERIFY ADMIN
+            const { data:profile, error:profileError } =
+                await supabase
+                    .from('profiles')
+                    .select('role')
+                    .eq('id', data.user.id)
+                    .single();
+
+            if(profileError){
+
+                await supabase.auth.signOut();
+
+                setLoading(false);
+
+                return showError(
+                    'Failed to verify admin account'
+                );
+            }
+
+            // CHECK ROLE
+            if(profile?.role !== 'admin'){
+
+                await supabase.auth.signOut();
+
+                setLoading(false);
+
+                return showError(
+                    'Access denied'
+                );
+            }
+
+            showSuccess(
+                'Login successful. Redirecting...'
+            );
+
+            setTimeout(() => {
+
+                window.location.href =
+                    '/admin-dashboard.html';
+
+            }, 1200);
+
+        }catch(err){
+
+            console.error(err);
+
+            showError(
+                'Something went wrong'
+            );
+
+        }finally{
+
+            setLoading(false);
+
         }
-        
-        // Pre-fill for convenience (remove in production)
-        emailInput.value = 'admin@meidriveafrica.com';
-        passwordInput.value = 'Admin@2026';
-    </script>
+
+    });
+
+</script>
+
 </body>
 </html>
