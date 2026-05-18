@@ -1,874 +1,317 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Dashboard - MEI Drive Africa</title>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        :root {
-            --neon-green: #00FF88;
-            --dark-navy: #041B3D;
-            --secondary-dark: #0A234F;
-            --white: #FFFFFF;
-            --soft-gray: #B7C4D6;
-            --error: #ff4444;
-            --success: #00FF88;
-            --warning: #ff9800;
-        }
-        body {
-            font-family: 'Segoe UI', sans-serif;
-            background: var(--secondary-dark);
-            color: var(--white);
-        }
-        
-        /* Sidebar */
-        .sidebar {
-            position: fixed;
-            left: 0;
-            top: 0;
-            width: 260px;
-            height: 100vh;
-            background: var(--dark-navy);
-            border-right: 1px solid rgba(0,255,136,0.15);
-            padding: 1.5rem;
-            transition: all 0.3s;
-            z-index: 100;
-            overflow-y: auto;
-        }
-        .sidebar-header {
-            text-align: center;
-            padding-bottom: 1.5rem;
-            border-bottom: 1px solid rgba(0,255,136,0.15);
-            margin-bottom: 1.5rem;
-        }
-        .sidebar-header .logo { font-size: 2rem; margin-bottom: 0.5rem; }
-        .sidebar-header h3 { color: var(--neon-green); font-size: 1rem; }
-        .nav-item {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 12px 15px;
-            margin: 5px 0;
-            border-radius: 10px;
-            cursor: pointer;
-            transition: all 0.3s;
-            color: var(--soft-gray);
-        }
-        .nav-item:hover, .nav-item.active {
-            background: rgba(0,255,136,0.1);
-            color: var(--neon-green);
-        }
-        .logout-btn {
-            position: absolute;
-            bottom: 20px;
-            left: 20px;
-            right: 20px;
-            background: rgba(255,68,68,0.2);
-            border: 1px solid var(--error);
-            color: var(--error);
-            padding: 12px;
-            border-radius: 10px;
-            cursor: pointer;
-            font-weight: bold;
-            transition: all 0.3s;
-        }
-        .logout-btn:hover {
-            background: var(--error);
-            color: var(--white);
-        }
-        
-        /* Main Content */
-        .main-content {
-            margin-left: 260px;
-            padding: 1.5rem;
-        }
-        
-        /* Top Bar */
-        .top-bar {
-            background: var(--dark-navy);
-            border-radius: 12px;
-            padding: 1rem 1.5rem;
-            margin-bottom: 1.5rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border: 1px solid rgba(0,255,136,0.15);
-        }
-        .admin-info {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-        .admin-avatar {
-            width: 45px;
-            height: 45px;
-            background: var(--neon-green);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.5rem;
-        }
-        .admin-name { font-weight: bold; color: var(--neon-green); }
-        
-        /* Stats Cards */
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-            gap: 1.5rem;
-            margin-bottom: 1.5rem;
-        }
-        .stat-card {
-            background: var(--dark-navy);
-            border-radius: 16px;
-            padding: 1.5rem;
-            text-align: center;
-            border: 1px solid rgba(0,255,136,0.15);
-            transition: all 0.3s;
-        }
-        .stat-card:hover {
-            transform: translateY(-3px);
-            border-color: var(--neon-green);
-        }
-        .stat-card i { font-size: 2rem; color: var(--neon-green); margin-bottom: 1rem; display: block; }
-        .stat-card h2 { font-size: 2rem; margin-bottom: 0.25rem; }
-        .stat-card p { color: var(--soft-gray); font-size: 0.85rem; }
-        
-        /* Sections */
-        .section-card {
-            background: var(--dark-navy);
-            border-radius: 16px;
-            padding: 1.5rem;
-            margin-bottom: 1.5rem;
-            border: 1px solid rgba(0,255,136,0.15);
-        }
-        .section-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 1rem;
-            padding-bottom: 0.75rem;
-            border-bottom: 1px solid rgba(0,255,136,0.15);
-        }
-        .section-header h3 { color: var(--neon-green); }
-        .btn-add {
-            background: var(--neon-green);
-            color: var(--dark-navy);
-            border: none;
-            padding: 8px 16px;
-            border-radius: 20px;
-            cursor: pointer;
-            font-weight: bold;
-            transition: all 0.3s;
-        }
-        .btn-add:hover { transform: scale(1.05); }
-        .btn-edit {
-            background: rgba(255,152,0,0.2);
-            color: #ff9800;
-            border: 1px solid #ff9800;
-            padding: 4px 10px;
-            border-radius: 15px;
-            cursor: pointer;
-            margin-right: 5px;
-            transition: all 0.3s;
-        }
-        .btn-edit:hover { background: #ff9800; color: var(--dark-navy); }
-        .btn-delete {
-            background: rgba(255,68,68,0.2);
-            color: var(--error);
-            border: 1px solid var(--error);
-            padding: 4px 10px;
-            border-radius: 15px;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-        .btn-delete:hover { background: var(--error); color: var(--white); }
-        
-        /* Tables */
-        .table-wrapper {
-            overflow-x: auto;
-        }
-        table { width: 100%; border-collapse: collapse; }
-        th, td { padding: 12px; text-align: left; border-bottom: 1px solid rgba(183,196,214,0.1); }
-        th { color: var(--neon-green); font-weight: 600; }
-        td { color: var(--soft-gray); }
-        .badge {
-            padding: 4px 10px;
-            border-radius: 20px;
-            font-size: 0.75rem;
-            font-weight: bold;
-            display: inline-block;
-        }
-        .badge-success { background: rgba(0,255,136,0.2); color: var(--neon-green); }
-        .badge-warning { background: rgba(255,152,0,0.2); color: #ff9800; }
-        .badge-info { background: rgba(0,255,255,0.2); color: #00ffff; }
-        
-        /* Modal */
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.8);
-            z-index: 2000;
-            justify-content: center;
-            align-items: center;
-        }
-        .modal.active { display: flex; }
-        .modal-content {
-            background: var(--dark-navy);
-            border-radius: 16px;
-            padding: 2rem;
-            width: 500px;
-            max-width: 90%;
-            border: 1px solid var(--neon-green);
-        }
-        .modal-content h3 { margin-bottom: 1rem; color: var(--neon-green); }
-        .modal-content input, .modal-content select, .modal-content textarea {
-            width: 100%;
-            padding: 10px;
-            margin: 10px 0;
-            background: var(--secondary-dark);
-            border: 1px solid rgba(0,255,136,0.2);
-            border-radius: 8px;
-            color: var(--white);
-            font-size: 14px;
-        }
-        .modal-content textarea { resize: vertical; }
-        .modal-buttons {
-            display: flex;
-            gap: 1rem;
-            margin-top: 1.5rem;
-        }
-        .modal-buttons button {
-            flex: 1;
-            padding: 10px;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: bold;
-            transition: all 0.3s;
-        }
-        .btn-save {
-            background: var(--neon-green);
-            color: var(--dark-navy);
-        }
-        .btn-cancel {
-            background: var(--secondary-dark);
-            color: var(--white);
-            border: 1px solid var(--soft-gray);
-        }
-        
-        /* Toast */
-        .toast {
-            position: fixed;
-            bottom: 30px;
-            right: 30px;
-            background: var(--dark-navy);
-            color: white;
-            padding: 12px 20px;
-            border-radius: 8px;
-            transform: translateX(400px);
-            transition: transform 0.3s;
-            z-index: 10000;
-            border-left: 4px solid var(--neon-green);
-        }
-        .toast.error { border-left-color: var(--error); }
-        .toast.show { transform: translateX(0); }
-        
-        /* Loading */
-        .loading { text-align: center; padding: 2rem; }
-        .spinner {
-            width: 40px;
-            height: 40px;
-            border: 3px solid var(--dark-navy);
-            border-top-color: var(--neon-green);
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 1rem;
-        }
-        @keyframes spin { to { transform: rotate(360deg); } }
-        
-        /* Responsive */
-        @media (max-width: 768px) {
-            .sidebar { transform: translateX(-100%); }
-            .sidebar.active { transform: translateX(0); }
-            .main-content { margin-left: 0; }
-            .mobile-menu-btn { display: block !important; }
-        }
-    </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Admin Dashboard | MEI Drive Africa</title>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
+
+<style>
+body{
+    margin:0;
+    font-family:Segoe UI;
+    background:#041B3D;
+    color:#fff;
+}
+
+.sidebar{
+    position:fixed;
+    width:250px;
+    height:100vh;
+    background:#0A234F;
+    padding:20px;
+}
+
+.sidebar h2{
+    color:#00FF88;
+}
+
+.sidebar a{
+    display:block;
+    color:#B7C4D6;
+    padding:10px;
+    text-decoration:none;
+    margin-top:10px;
+    border-radius:8px;
+}
+
+.sidebar a:hover{
+    background:#00FF88;
+    color:#041B3D;
+}
+
+.main{
+    margin-left:250px;
+    padding:20px;
+}
+
+.card{
+    background:#0A234F;
+    padding:20px;
+    border-radius:12px;
+    margin-bottom:20px;
+}
+
+.grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
+    gap:15px;
+}
+
+.stat{
+    background:#041B3D;
+    padding:20px;
+    border-radius:12px;
+    text-align:center;
+    border:1px solid #00FF88;
+}
+
+button{
+    background:#00FF88;
+    border:none;
+    padding:10px;
+    border-radius:8px;
+    cursor:pointer;
+    font-weight:bold;
+}
+
+table{
+    width:100%;
+    border-collapse:collapse;
+}
+
+th,td{
+    padding:10px;
+    border-bottom:1px solid #333;
+}
+
+th{
+    color:#00FF88;
+}
+
+.logout{
+    margin-top:20px;
+    background:red;
+    color:white;
+}
+</style>
 </head>
+
 <body>
 
-<!-- Toast -->
-<div id="toast" class="toast"></div>
+<!-- SIDEBAR -->
+<div class="sidebar">
+<h2>🚗 MEI ADMIN</h2>
 
-<!-- Sidebar -->
-<div class="sidebar" id="sidebar">
-    <div class="sidebar-header">
-        <div class="logo">🚗</div>
-        <h3>MEI DRIVE AFRICA</h3>
-        <p style="font-size: 0.7rem; margin-top: 5px;">Admin Panel</p>
-    </div>
-    
-    <div class="nav-item active" data-section="dashboard">
-        <i class="fas fa-tachometer-alt"></i> Dashboard
-    </div>
-    <div class="nav-item" data-section="courses">
-        <i class="fas fa-book"></i> Courses
-    </div>
-    <div class="nav-item" data-section="users">
-        <i class="fas fa-users"></i> Users
-    </div>
-    <div class="nav-item" data-section="enrollments">
-        <i class="fas fa-graduation-cap"></i> Enrollments
-    </div>
-    
-    <button class="logout-btn" id="logoutBtn">
-        <i class="fas fa-sign-out-alt"></i> Logout
-    </button>
+<a href="#" onclick="show('dashboard')">Dashboard</a>
+<a href="#" onclick="show('courses')">Courses</a>
+<a href="#" onclick="show('users')">Users</a>
+<a href="#" onclick="show('enrollments')">Enrollments</a>
+
+<button class="logout" onclick="logout()">Logout</button>
 </div>
 
-<!-- Main Content -->
-<div class="main-content">
-    <div class="top-bar">
-        <button class="mobile-menu-btn" id="mobileMenuBtn" style="display: none;">
-            <i class="fas fa-bars"></i>
-        </button>
-        <div></div>
-        <div class="admin-info">
-            <div class="admin-avatar">👨‍💼</div>
-            <div>
-                <div class="admin-name" id="adminName">Admin</div>
-                <div style="font-size: 0.75rem; color: var(--soft-gray);" id="adminEmail">admin@meidriveafrica.com</div>
-            </div>
-        </div>
-    </div>
-    
-    <!-- Dashboard Section -->
-    <div id="dashboardSection">
-        <div class="stats-grid" id="statsGrid">
-            <div class="stat-card"><i class="fas fa-book"></i><h2 id="totalCourses">--</h2><p>Total Courses</p></div>
-            <div class="stat-card"><i class="fas fa-users"></i><h2 id="totalUsers">--</h2><p>Total Users</p></div>
-            <div class="stat-card"><i class="fas fa-graduation-cap"></i><h2 id="totalEnrollments">--</h2><p>Enrollments</p></div>
-            <div class="stat-card"><i class="fas fa-credit-card"></i><h2 id="totalRevenue">KES --</h2><p>Total Revenue</p></div>
-        </div>
-        
-        <div class="section-card">
-            <div class="section-header"><h3>Recent Courses</h3><button class="btn-add" id="dashboardAddCourseBtn"><i class="fas fa-plus"></i> Add Course</button></div>
-            <div id="coursesTable"><div class="loading"><div class="spinner"></div></div></div>
-        </div>
-    </div>
-    
-    <!-- Courses Section -->
-    <div id="coursesSection" style="display: none;">
-        <div class="section-card">
-            <div class="section-header"><h3>Manage Courses</h3><button class="btn-add" id="addCourseBtn"><i class="fas fa-plus"></i> Add Course</button></div>
-            <div id="allCoursesTable"><div class="loading"><div class="spinner"></div></div></div>
-        </div>
-    </div>
-    
-    <!-- Users Section -->
-    <div id="usersSection" style="display: none;">
-        <div class="section-card">
-            <div class="section-header"><h3>All Users</h3></div>
-            <div id="usersTable"><div class="loading"><div class="spinner"></div></div></div>
-        </div>
-    </div>
-    
-    <!-- Enrollments Section -->
-    <div id="enrollmentsSection" style="display: none;">
-        <div class="section-card">
-            <div class="section-header"><h3>All Enrollments</h3></div>
-            <div id="enrollmentsTable"><div class="loading"><div class="spinner"></div></div></div>
-        </div>
-    </div>
+<!-- MAIN -->
+<div class="main">
+
+<!-- DASHBOARD -->
+<div id="dashboard">
+
+<h2>Dashboard</h2>
+
+<div class="grid">
+<div class="stat">
+<h3 id="coursesCount">0</h3>
+<p>Courses</p>
 </div>
 
-<!-- Course Modal -->
-<div id="courseModal" class="modal">
-    <div class="modal-content">
-        <h3 id="modalTitle">Add New Course</h3>
-        <input type="hidden" id="courseId">
-        <label>Course Name</label>
-        <input type="text" id="courseName" placeholder="Enter course name" required>
-        <label>Description</label>
-        <textarea id="courseDesc" rows="3" placeholder="Enter course description"></textarea>
-        <label>Course Type</label>
-        <select id="courseType">
-            <option value="free">Free</option>
-            <option value="premium">Premium</option>
-        </select>
-        <label>Price (KES)</label>
-        <input type="number" id="coursePrice" placeholder="Enter price" value="0">
-        <label>Duration (weeks)</label>
-        <input type="number" id="courseDuration" placeholder="Duration in weeks" value="4">
-        <label>Level</label>
-        <select id="courseLevel">
-            <option value="Beginner">Beginner</option>
-            <option value="Intermediate">Intermediate</option>
-            <option value="Advanced">Advanced</option>
-        </select>
-        <div class="modal-buttons">
-            <button class="btn-save" id="saveCourseBtn">Save Course</button>
-            <button class="btn-cancel" id="cancelModalBtn">Cancel</button>
-        </div>
-    </div>
+<div class="stat">
+<h3 id="usersCount">0</h3>
+<p>Users</p>
+</div>
+
+<div class="stat">
+<h3 id="enrollmentsCount">0</h3>
+<p>Enrollments</p>
+</div>
+</div>
+
+</div>
+
+<!-- COURSES -->
+<div id="courses" style="display:none">
+<div class="card">
+<h2>Courses</h2>
+<button onclick="loadCourses()">Refresh</button>
+<div id="coursesTable"></div>
+</div>
+</div>
+
+<!-- USERS -->
+<div id="users" style="display:none">
+<div class="card">
+<h2>Users</h2>
+<div id="usersTable"></div>
+</div>
+</div>
+
+<!-- ENROLLMENTS -->
+<div id="enrollments" style="display:none">
+<div class="card">
+<h2>Enrollments</h2>
+<div id="enrollmentsTable"></div>
+</div>
+</div>
+
 </div>
 
 <script>
-    const SUPABASE_URL = 'https://jeksrwrzzrczamxijvwl.supabase.co';
-    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Impla3Nyd3J6enJjemFteGlqdndsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg2NzYyMjAsImV4cCI6MjA5NDI1MjIyMH0.1poYpJKNFEVe2NTBkXBTH2bIHGk2yT8aqCU-OlJc4vs';
-    
-    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-    
-    let currentUser = null;
-    
-    function showToast(message, isError = false) {
-        const toast = document.getElementById('toast');
-        toast.textContent = message;
-        toast.className = `toast ${isError ? 'error' : ''}`;
-        toast.classList.add('show');
-        setTimeout(() => toast.classList.remove('show'), 3000);
-    }
-    
-    // Check admin authentication
-    async function checkAdminAuth() {
-        const { data: { session }, error } = await supabase.auth.getSession();
-        
-        if (error || !session) {
-            window.location.href = '/admin-login.html';
-            return false;
-        }
-        
-        currentUser = session.user;
-        
-        const { data: profile, error: profileError } = await supabase
-            .from('profiles')
-            .select('role, full_name')
-            .eq('id', currentUser.id)
-            .single();
-        
-        if (profileError || profile?.role !== 'admin') {
-            showToast('Admin access required', true);
-            setTimeout(() => window.location.href = '/login.html', 1500);
-            return false;
-        }
-        
-        document.getElementById('adminName').textContent = profile?.full_name || 'Admin';
-        document.getElementById('adminEmail').textContent = currentUser.email;
-        
-        return true;
-    }
-    
-    // Load Dashboard Stats
-    async function loadDashboard() {
-        try {
-            const { count: coursesCount } = await supabase
-                .from('courses')
-                .select('*', { count: 'exact', head: true });
-            
-            const { count: usersCount } = await supabase
-                .from('profiles')
-                .select('*', { count: 'exact', head: true });
-            
-            const { count: enrollmentsCount } = await supabase
-                .from('enrollments')
-                .select('*', { count: 'exact', head: true });
-            
-            const { data: premiumCourses } = await supabase
-                .from('courses')
-                .select('price')
-                .eq('type', 'premium');
-            
-            const totalRevenue = premiumCourses?.reduce((sum, c) => sum + (c.price || 0), 0) || 0;
-            
-            document.getElementById('totalCourses').textContent = coursesCount || 0;
-            document.getElementById('totalUsers').textContent = usersCount || 0;
-            document.getElementById('totalEnrollments').textContent = enrollmentsCount || 0;
-            document.getElementById('totalRevenue').textContent = `KES ${totalRevenue.toLocaleString()}`;
-            
-            await loadCoursesTable();
-        } catch (error) {
-            console.error('Error loading dashboard:', error);
-        }
-    }
-    
-    // Load Courses Table
-    async function loadCoursesTable() {
-        const { data: courses, error } = await supabase
-            .from('courses')
-            .select('*')
-            .order('id')
-            .limit(5);
-        
-        const container = document.getElementById('coursesTable');
-        if (error || !courses) {
-            container.innerHTML = '<p>Error loading courses</p>';
-            return;
-        }
-        
-        if (courses.length > 0) {
-            container.innerHTML = `
-                <div class="table-wrapper">
-                    <table>
-                        <thead>
-                            <tr><th>ID</th><th>Course Name</th><th>Type</th><th>Price</th><th>Actions</th></tr>
-                        </thead>
-                        <tbody>
-                            ${courses.map(course => `
-                                <tr>
-                                    <td>${course.id}</td>
-                                    <td>${escapeHtml(course.name)}</td>
-                                    <td><span class="badge ${course.type === 'free' ? 'badge-success' : 'badge-warning'}">${course.type}</span></td>
-                                    <td>${course.type === 'free' ? 'FREE' : `KES ${course.price?.toLocaleString()}`}</td>
-                                    <td>
-                                        <button class="btn-edit" onclick="editCourse(${course.id})">
-                                            <i class="fas fa-edit"></i> Edit
-                                        </button>
-                                        <button class="btn-delete" onclick="deleteCourse(${course.id})">
-                                            <i class="fas fa-trash"></i> Delete
-                                        </button>
-                                    </td>
-                                </tr>
-                            `).join('')}
-                        </tbody>
-                    </table>
-                </div>
-            `;
-        } else {
-            container.innerHTML = '<p>No courses found. Click "Add Course" to create one.</p>';
-        }
-    }
-    
-    // Load All Courses
-    async function loadAllCourses() {
-        const { data: courses, error } = await supabase
-            .from('courses')
-            .select('*')
-            .order('id');
-        
-        const container = document.getElementById('allCoursesTable');
-        if (error || !courses) {
-            container.innerHTML = '<p>Error loading courses</p>';
-            return;
-        }
-        
-        if (courses.length > 0) {
-            container.innerHTML = `
-                <div class="table-wrapper">
-                    <table>
-                        <thead>
-                            <tr><th>ID</th><th>Course Name</th><th>Description</th><th>Type</th><th>Price</th><th>Duration</th><th>Level</th><th>Actions</th></tr>
-                        </thead>
-                        <tbody>
-                            ${courses.map(course => `
-                                <tr>
-                                    <td>${course.id}</td>
-                                    <td>${escapeHtml(course.name)}</td>
-                                    <td>${escapeHtml(course.description?.substring(0, 50))}...</td>
-                                    <td><span class="badge ${course.type === 'free' ? 'badge-success' : 'badge-warning'}">${course.type}</span></td>
-                                    <td>${course.type === 'free' ? 'FREE' : `KES ${course.price?.toLocaleString()}`}</td>
-                                    <td>${course.duration || 'N/A'} weeks</td>
-                                    <td><span class="badge badge-info">${course.level || 'Beginner'}</span></td>
-                                    <td>
-                                        <button class="btn-edit" onclick="editCourse(${course.id})">
-                                            <i class="fas fa-edit"></i> Edit
-                                        </button>
-                                        <button class="btn-delete" onclick="deleteCourse(${course.id})">
-                                            <i class="fas fa-trash"></i> Delete
-                                        </button>
-                                    </td>
-                                </tr>
-                            `).join('')}
-                        </tbody>
-                    </table>
-                </div>
-            `;
-        } else {
-            container.innerHTML = '<p>No courses found. Click "Add Course" to create one.</p>';
-        }
-    }
-    
-    // Edit Course
-    window.editCourse = async (id) => {
-        const { data: course, error } = await supabase
-            .from('courses')
-            .select('*')
-            .eq('id', id)
-            .single();
-        
-        if (error) {
-            showToast('Error loading course', true);
-            return;
-        }
-        
-        document.getElementById('modalTitle').textContent = `Edit Course: ${course.name}`;
-        document.getElementById('courseId').value = course.id;
-        document.getElementById('courseName').value = course.name;
-        document.getElementById('courseDesc').value = course.description || '';
-        document.getElementById('courseType').value = course.type;
-        document.getElementById('coursePrice').value = course.price || 0;
-        document.getElementById('courseDuration').value = course.duration || 4;
-        document.getElementById('courseLevel').value = course.level || 'Beginner';
-        document.getElementById('courseModal').classList.add('active');
-    };
-    
-    // Delete Course
-    window.deleteCourse = async (id) => {
-        if (confirm('Are you sure you want to delete this course? This action cannot be undone.')) {
-            const { error } = await supabase
-                .from('courses')
-                .delete()
-                .eq('id', id);
-            
-            if (error) {
-                showToast('Error deleting course', true);
-            } else {
-                showToast('Course deleted successfully!');
-                await loadAllCourses();
-                await loadDashboard();
-            }
-        }
-    };
-    
-    // Save Course (Add/Edit)
-    async function saveCourse() {
-        const id = document.getElementById('courseId').value;
-        const name = document.getElementById('courseName').value.trim();
-        const description = document.getElementById('courseDesc').value.trim();
-        const type = document.getElementById('courseType').value;
-        const price = type === 'free' ? 0 : parseInt(document.getElementById('coursePrice').value) || 0;
-        const duration = parseInt(document.getElementById('courseDuration').value) || 4;
-        const level = document.getElementById('courseLevel').value;
-        
-        if (!name) {
-            showToast('Please enter course name', true);
-            return;
-        }
-        
-        const courseData = {
-            name: name,
-            description: description,
-            type: type,
-            price: price,
-            duration: duration,
-            level: level,
-            updated_at: new Date()
-        };
-        
-        let error;
-        
-        if (id) {
-            // Update existing course
-            const result = await supabase
-                .from('courses')
-                .update(courseData)
-                .eq('id', id);
-            error = result.error;
-        } else {
-            // Add new course
-            const result = await supabase
-                .from('courses')
-                .insert([{ ...courseData, created_at: new Date() }]);
-            error = result.error;
-        }
-        
-        if (error) {
-            showToast(`Error ${id ? 'updating' : 'adding'} course`, true);
-            console.error(error);
-        } else {
-            showToast(`Course ${id ? 'updated' : 'added'} successfully!`);
-            closeModal();
-            await loadAllCourses();
-            await loadDashboard();
-        }
-    }
-    
-    function closeModal() {
-        document.getElementById('courseModal').classList.remove('active');
-        document.getElementById('courseId').value = '';
-        document.getElementById('courseName').value = '';
-        document.getElementById('courseDesc').value = '';
-        document.getElementById('courseType').value = 'free';
-        document.getElementById('coursePrice').value = '0';
-        document.getElementById('courseDuration').value = '4';
-        document.getElementById('courseLevel').value = 'Beginner';
-    }
-    
-    // Load Users
-    async function loadUsers() {
-        const { data: users, error } = await supabase
-            .from('profiles')
-            .select('*')
-            .order('created_at', { ascending: false });
-        
-        const container = document.getElementById('usersTable');
-        if (error || !users) {
-            container.innerHTML = '<p>Error loading users</p>';
-            return;
-        }
-        
-        if (users.length > 0) {
-            container.innerHTML = `
-                <div class="table-wrapper">
-                    <table>
-                        <thead>
-                            <tr><th>Name</th><th>Email</th><th>Role</th><th>Joined</th></tr>
-                        </thead>
-                        <tbody>
-                            ${users.map(user => `
-                                <tr>
-                                    <td>${escapeHtml(user.full_name || 'N/A')}</td>
-                                    <td>${escapeHtml(user.email)}</td>
-                                    <td><span class="badge ${user.role === 'admin' ? 'badge-warning' : 'badge-success'}">${user.role || 'learner'}</span></td>
-                                    <td>${new Date(user.created_at).toLocaleDateString()}</td>
-                                </tr>
-                            `).join('')}
-                        </tbody>
-                    </table>
-                </div>
-            `;
-        } else {
-            container.innerHTML = '<p>No users found</p>';
-        }
-    }
-    
-    // Load Enrollments
-    async function loadEnrollments() {
-        const { data: enrollments, error } = await supabase
-            .from('enrollments')
-            .select(`
-                *,
-                profiles:user_id (full_name, email),
-                courses:course_id (name)
-            `)
-            .order('enrolled_at', { ascending: false });
-        
-        const container = document.getElementById('enrollmentsTable');
-        if (error || !enrollments) {
-            container.innerHTML = '<p>Error loading enrollments</p>';
-            return;
-        }
-        
-        if (enrollments.length > 0) {
-            container.innerHTML = `
-                <div class="table-wrapper">
-                    <table>
-                        <thead>
-                            <tr><th>User</th><th>Course</th><th>Enrolled</th><th>Progress</th></tr>
-                        </thead>
-                        <tbody>
-                            ${enrollments.map(e => {
-                                const profile = e.profiles || {};
-                                const course = e.courses || {};
-                                return `
-                                    <tr>
-                                        <td>${escapeHtml(profile.full_name || profile.email || 'N/A')}</td>
-                                        <td>${escapeHtml(course.name || 'N/A')}</td>
-                                        <td>${new Date(e.enrolled_at).toLocaleDateString()}</td>
-                                        <td><span class="badge badge-success">${e.progress || 0}%</span></td>
-                                    </tr>
-                                `;
-                            }).join('')}
-                        </tbody>
-                    </table>
-                </div>
-            `;
-        } else {
-            container.innerHTML = '<p>No enrollments found</p>';
-        }
-    }
-    
-    // Navigation
-    function showSection(section) {
-        document.getElementById('dashboardSection').style.display = section === 'dashboard' ? 'block' : 'none';
-        document.getElementById('coursesSection').style.display = section === 'courses' ? 'block' : 'none';
-        document.getElementById('usersSection').style.display = section === 'users' ? 'block' : 'none';
-        document.getElementById('enrollmentsSection').style.display = section === 'enrollments' ? 'block' : 'none';
-        
-        document.querySelectorAll('.nav-item').forEach(item => {
-            item.classList.remove('active');
-            if (item.dataset.section === section) {
-                item.classList.add('active');
-            }
-        });
-        
-        if (section === 'courses') loadAllCourses();
-        if (section === 'users') loadUsers();
-        if (section === 'enrollments') loadEnrollments();
-    }
-    
-    // Logout
-    async function logout() {
-        await supabase.auth.signOut();
-        window.location.href = '/login.html';
-    }
-    
-    function escapeHtml(str) {
-        if (!str) return '';
-        return str.replace(/[&<>]/g, m => {
-            if (m === '&') return '&amp;';
-            if (m === '<') return '&lt;';
-            if (m === '>') return '&gt;';
-            return m;
-        });
-    }
-    
-    // Mobile menu
-    function initMobileMenu() {
-        const menuBtn = document.getElementById('mobileMenuBtn');
-        const sidebar = document.getElementById('sidebar');
-        
-        menuBtn?.addEventListener('click', () => {
-            sidebar.classList.toggle('active');
-        });
-        
-        document.addEventListener('click', (e) => {
-            if (!sidebar.contains(e.target) && e.target !== menuBtn) {
-                sidebar.classList.remove('active');
-            }
-        });
-    }
-    
-    // Event Listeners
-    document.querySelectorAll('.nav-item').forEach(item => {
-        item.addEventListener('click', () => showSection(item.dataset.section));
-    });
-    
-    document.getElementById('logoutBtn').addEventListener('click', logout);
-    document.getElementById('saveCourseBtn').addEventListener('click', saveCourse);
-    document.getElementById('cancelModalBtn').addEventListener('click', closeModal);
-    document.getElementById('addCourseBtn').addEventListener('click', () => {
-        document.getElementById('modalTitle').textContent = 'Add New Course';
-        document.getElementById('courseId').value = '';
-        document.getElementById('courseName').value = '';
-        document.getElementById('courseDesc').value = '';
-        document.getElementById('courseType').value = 'free';
-        document.getElementById('coursePrice').value = '0';
-        document.getElementById('courseDuration').value = '4';
-        document.getElementById('courseLevel').value = 'Beginner';
-        document.getElementById('courseModal').classList.add('active');
-    });
-    document.getElementById('dashboardAddCourseBtn').addEventListener('click', () => {
-        document.getElementById('addCourseBtn').click();
-    });
-    
-    // Initialize
-    async function init() {
-        initMobileMenu();
-        const isAdmin = await checkAdminAuth();
-        if (isAdmin) {
-            await loadDashboard();
-        }
-    }
-    
-    init();
+
+const supabase = supabase.createClient(
+"https://jeksrwrzzrczamxijvwl.supabase.co",
+"YOUR_SUPABASE_ANON_KEY"
+);
+
+let user = null;
+
+/* CHECK ADMIN */
+async function checkAdmin(){
+
+const { data:{ session } } = await supabase.auth.getSession();
+
+if(!session){
+window.location.href = "/admin-login.html";
+return;
+}
+
+user = session.user;
+
+/* check role */
+const { data:profile } = await supabase
+.from("profiles")
+.select("role")
+.eq("id", user.id)
+.single();
+
+if(profile?.role !== "admin"){
+alert("Not admin");
+await supabase.auth.signOut();
+window.location.href = "/login.html";
+}
+
+}
+
+/* LOAD STATS */
+async function loadStats(){
+
+const { count: courses } = await supabase.from("courses").select("*", { count:"exact", head:true });
+const { count: users } = await supabase.from("profiles").select("*", { count:"exact", head:true });
+const { count: enrollments } = await supabase.from("enrollments").select("*", { count:"exact", head:true });
+
+document.getElementById("coursesCount").innerText = courses || 0;
+document.getElementById("usersCount").innerText = users || 0;
+document.getElementById("enrollmentsCount").innerText = enrollments || 0;
+
+}
+
+/* COURSES */
+async function loadCourses(){
+
+const { data } = await supabase.from("courses").select("*");
+
+let html = `<table>
+<tr><th>Name</th><th>Type</th><th>Price</th></tr>`;
+
+data.forEach(c=>{
+html += `
+<tr>
+<td>${c.name}</td>
+<td>${c.type}</td>
+<td>${c.price}</td>
+</tr>`;
+});
+
+html += "</table>";
+
+document.getElementById("coursesTable").innerHTML = html;
+
+}
+
+/* USERS */
+async function loadUsers(){
+
+const { data } = await supabase.from("profiles").select("*");
+
+let html = `<table>
+<tr><th>Name</th><th>Email</th><th>Role</th></tr>`;
+
+data.forEach(u=>{
+html += `
+<tr>
+<td>${u.full_name || ""}</td>
+<td>${u.email}</td>
+<td>${u.role}</td>
+</tr>`;
+});
+
+html += "</table>";
+
+document.getElementById("usersTable").innerHTML = html;
+
+}
+
+/* ENROLLMENTS */
+async function loadEnrollments(){
+
+const { data } = await supabase
+.from("enrollments")
+.select("*, profiles(full_name), courses(name)");
+
+let html = `<table>
+<tr><th>User</th><th>Course</th><th>Progress</th></tr>`;
+
+data.forEach(e=>{
+html += `
+<tr>
+<td>${e.profiles?.full_name}</td>
+<td>${e.courses?.name}</td>
+<td>${e.progress}%</td>
+</tr>`;
+});
+
+html += "</table>";
+
+document.getElementById("enrollmentsTable").innerHTML = html;
+
+}
+
+/* NAV */
+function show(page){
+
+document.querySelectorAll(".main > div")
+.forEach(d => d.style.display = "none");
+
+document.getElementById(page).style.display = "block";
+
+if(page==="courses") loadCourses();
+if(page==="users") loadUsers();
+if(page==="enrollments") loadEnrollments();
+
+}
+
+/* LOGOUT */
+async function logout(){
+await supabase.auth.signOut();
+window.location.href="/login.html";
+}
+
+/* INIT */
+checkAdmin();
+loadStats();
+
 </script>
+
 </body>
 </html>
