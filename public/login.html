@@ -25,11 +25,6 @@
             max-width: 400px;
             text-align: center;
             box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-            animation: slideUp 0.5s ease;
-        }
-        @keyframes slideUp {
-            from { opacity: 0; transform: translateY(30px); }
-            to { opacity: 1; transform: translateY(0); }
         }
         .logo { font-size: 48px; margin-bottom: 20px; }
         h2 { color: #041B3D; margin-bottom: 10px; }
@@ -37,13 +32,13 @@
         .input-group label { display: block; margin-bottom: 8px; color: #555; font-weight: 500; }
         .input-group input {
             width: 100%; padding: 12px; border: 2px solid #e0e0e0;
-            border-radius: 12px; font-size: 16px; transition: all 0.3s;
+            border-radius: 12px; font-size: 16px;
         }
         .input-group input:focus { outline: none; border-color: #00FF88; }
         button {
             width: 100%; padding: 14px; background: #00FF88; color: #041B3D;
             border: none; border-radius: 12px; font-weight: bold; cursor: pointer;
-            font-size: 16px; transition: transform 0.2s;
+            font-size: 16px;
         }
         button:hover { transform: translateY(-2px); }
         .error {
@@ -58,7 +53,7 @@
         }
         @keyframes spin { to { transform: rotate(360deg); } }
         .auth-switch { margin-top: 20px; color: #666; }
-        .auth-switch a { color: #00FF88; text-decoration: none; font-weight: bold; }
+        .auth-switch a { color: #00FF88; text-decoration: none; }
         .back-home { margin-top: 20px; display: inline-block; color: #666; text-decoration: none; }
         @media (max-width: 480px) { .login-container { padding: 30px 20px; } }
     </style>
