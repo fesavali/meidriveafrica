@@ -208,34 +208,36 @@
         <form id="registerForm">
             <div class="form-group">
                 <label>Full Name <span class="required">*</span></label>
-                <input type="text" id="fullName" required placeholder="John Doe">
+                <input type="text" id="fullName" autocomplete="name" required placeholder="John Doe">
             </div>
             
             <div class="form-group">
                 <label>Email Address <span class="required">*</span></label>
-                <input type="email" id="email" required placeholder="john@example.com">
+                <input type="email" id="email" autocomplete="email" required placeholder="john@example.com">
             </div>
             
             <div class="form-group">
                 <label>Phone Number</label>
-                <input type="tel" id="phone" placeholder="0712345678">
+                <input type="tel" id="phone" autocomplete="tel" placeholder="0712345678">
                 <div class="requirements">Format: 07XX XXX XXX (Kenyan number)</div>
             </div>
             
             <div class="form-group">
                 <label>Password <span class="required">*</span></label>
-                <input type="password" id="password" required placeholder="Min 6 characters">
+                <input type="password" id="password" autocomplete="new-password" required placeholder="Min 6 characters">
                 <div class="requirements">
                     Password must:
                     <ul>
                         <li id="lengthReq">✓ Be at least 6 characters</li>
+                        <li id="numberReq">✗ Contain at least 1 number</li>
+                        <li id="uppercaseReq">✗ Contain at least 1 uppercase letter</li>
                     </ul>
                 </div>
             </div>
             
             <div class="form-group">
                 <label>Confirm Password <span class="required">*</span></label>
-                <input type="password" id="confirmPassword" required placeholder="Type password again">
+                <input type="password" id="confirmPassword" autocomplete="new-password" required placeholder="Type password again">
                 <div id="passwordMatchMsg" class="password-match"></div>
             </div>
             
@@ -243,25 +245,29 @@
         </form>
         
         <div class="login-link">
-            Already have an account? <a href="#" onclick="window.location.href='/'">Login here</a>
+            Already have an account? <a href="/login.html">Login here</a>
         </div>
         
         <div class="ntsa-badge">
-            <i class="fas fa-id-card"></i> NTSA Certified: ILR-7WA1P62
+            🎓 NTSA Certified: ILR-7WA1P62
         </div>
         
         <div id="message" class="message"></div>
     </div>
     
     <script>
-        // Supabase configuration
+        // ============================================
+        // SUPABASE CONFIGURATION
+        // ============================================
         const SUPABASE_URL = 'https://jeksrwrzzrczamxijvwl.supabase.co';
-        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Impla3Nyd3J6enJjemFteGlqdndsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg2NzYyMjAsImV4cCI6MjA5NDI1MjIyMH0.1poYpJKNFEVe2NTBkXBTH2bIHGk2yT8aqCU-OlJc4vs';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Impla3Nyd3J6enJjemFteGlqdndsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg2NzYyMjAsImV4cCI6MjA5NDI1MjIyMH0.1poYpJKNFEVe2NTBkXBTH2bIHGk2yT8aqCU-OlJc4vs';
         
-        // Initialize Supabase
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        // Initialize Supabase Client
+        const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         
-        // Get form elements
+        // ============================================
+        // DOM ELEMENTS
+        // ============================================
         const form = document.getElementById('registerForm');
         const registerBtn = document.getElementById('registerBtn');
         const messageDiv = document.getElementById('message');
@@ -269,7 +275,9 @@
         const confirmPasswordInput = document.getElementById('confirmPassword');
         const passwordMatchMsg = document.getElementById('passwordMatchMsg');
         
-        // Function to show message
+        // ============================================
+        // HELPER FUNCTIONS
+        // ============================================
         function showMessage(text, type) {
             messageDiv.textContent = text;
             messageDiv.className = `message ${type}`;
@@ -278,10 +286,17 @@
             }, 5000);
         }
         
+        function setLoading(loading) {
+            registerBtn.disabled = loading;
+            registerBtn.textContent = loading ? 'Creating Account...' : 'Create Account';
+        }
+        
         // Password strength validation
         function validatePassword() {
             const password = passwordInput.value;
             const lengthReq = document.getElementById('lengthReq');
+            const numberReq = document.getElementById('numberReq');
+            const uppercaseReq = document.getElementById('uppercaseReq');
             
             let isValid = true;
             
@@ -295,7 +310,27 @@
                 isValid = false;
             }
             
-            return isValid && password.length >= 6;
+            // Check number
+            if (/\d/.test(password)) {
+                numberReq.className = 'valid';
+                numberReq.innerHTML = '✓ Contain at least 1 number';
+            } else {
+                numberReq.className = 'invalid';
+                numberReq.innerHTML = '✗ Contain at least 1 number';
+                isValid = false;
+            }
+            
+            // Check uppercase
+            if (/[A-Z]/.test(password)) {
+                uppercaseReq.className = 'valid';
+                uppercaseReq.innerHTML = '✓ Contain at least 1 uppercase letter';
+            } else {
+                uppercaseReq.className = 'invalid';
+                uppercaseReq.innerHTML = '✗ Contain at least 1 uppercase letter';
+                isValid = false;
+            }
+            
+            return isValid;
         }
         
         // Password match validation
@@ -324,12 +359,39 @@
             }
         }
         
-        // Real-time validation
+        // Create profile in profiles table
+        async function createProfile(userId, fullName, email, phone) {
+            try {
+                const { error } = await supabaseClient
+                    .from('profiles')
+                    .insert({
+                        id: userId,
+                        full_name: fullName,
+                        email: email.toLowerCase(),
+                        phone: phone || null,
+                        role: 'student',
+                        created_at: new Date().toISOString()
+                    });
+                
+                if (error) {
+                    console.error('Profile creation error:', error);
+                    return false;
+                }
+                return true;
+            } catch (err) {
+                console.error('Profile creation exception:', err);
+                return false;
+            }
+        }
+        
+        // ============================================
+        // EVENT LISTENERS
+        // ============================================
         passwordInput.addEventListener('input', () => {
             validatePassword();
             validatePasswordMatch();
             
-            if (passwordInput.value.length >= 6) {
+            if (validatePassword()) {
                 passwordInput.classList.add('success');
                 passwordInput.classList.remove('error');
             } else if (passwordInput.value.length > 0) {
@@ -372,13 +434,15 @@
             }
         });
         
-        // Registration handler
+        // ============================================
+        // REGISTRATION HANDLER
+        // ============================================
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
             
             // Get form values
             const fullName = document.getElementById('fullName').value.trim();
-            const email = document.getElementById('email').value.trim();
+            const email = document.getElementById('email').value.trim().toLowerCase();
             const phone = document.getElementById('phone').value.trim();
             const password = passwordInput.value;
             const confirmPassword = confirmPasswordInput.value;
@@ -409,8 +473,8 @@
                 return;
             }
             
-            if (password.length < 6) {
-                showMessage('Password must be at least 6 characters long', 'error');
+            if (!validatePassword()) {
+                showMessage('Please meet all password requirements', 'error');
                 passwordInput.focus();
                 return;
             }
@@ -422,15 +486,12 @@
             }
             
             // Disable button and show loading
-            registerBtn.disabled = true;
-            registerBtn.textContent = 'Creating Account...';
-            
-            console.log('Attempting to register:', email);
+            setLoading(true);
             showMessage('Creating your account...', 'info');
             
             try {
                 // Sign up with Supabase
-                const { data, error } = await supabase.auth.signUp({
+                const { data, error } = await supabaseClient.auth.signUp({
                     email: email,
                     password: password,
                     options: {
@@ -443,45 +504,81 @@
                 
                 if (error) {
                     console.error('Registration error:', error);
-                    showMessage(error.message, 'error');
-                    registerBtn.disabled = false;
-                    registerBtn.textContent = 'Create Account';
+                    
+                    if (error.message.includes('User already registered')) {
+                        showMessage('This email is already registered. Please login instead.', 'error');
+                    } else {
+                        showMessage(error.message, 'error');
+                    }
+                    setLoading(false);
                     return;
                 }
                 
                 if (data.user) {
                     console.log('Registration successful:', data.user);
-                    showMessage('Account created successfully! Please check your email for verification.', 'success');
                     
-                    // Clear form
-                    form.reset();
+                    // Create profile in profiles table
+                    const profileCreated = await createProfile(data.user.id, fullName, email, phone);
                     
-                    // Remove success classes
-                    document.querySelectorAll('input').forEach(input => {
-                        input.classList.remove('success', 'error');
-                    });
-                    passwordMatchMsg.className = 'password-match';
-                    passwordMatchMsg.innerHTML = '';
+                    if (!profileCreated) {
+                        console.warn('Profile not created - you may need to create the profiles table');
+                    }
                     
-                    // Redirect to login after 3 seconds
-                    setTimeout(() => {
-                        window.location.href = '/';
-                    }, 3000);
+                    // Check if user is automatically logged in (email confirmation OFF)
+                    if (data.session) {
+                        // User is already logged in
+                        localStorage.setItem('userLoggedIn', 'true');
+                        localStorage.setItem('userEmail', email);
+                        localStorage.setItem('userName', fullName);
+                        
+                        showMessage('Account created successfully! Redirecting to dashboard...', 'success');
+                        
+                        setTimeout(() => {
+                            window.location.href = '/dashboard.html';
+                        }, 1500);
+                    } else {
+                        // Email confirmation required
+                        showMessage('Account created! Please check your email for verification link.', 'success');
+                        
+                        // Clear form
+                        form.reset();
+                        document.querySelectorAll('input').forEach(input => {
+                            input.classList.remove('success', 'error');
+                        });
+                        passwordMatchMsg.className = 'password-match';
+                        passwordMatchMsg.innerHTML = '';
+                        
+                        setTimeout(() => {
+                            window.location.href = '/login.html';
+                        }, 3000);
+                    }
                 } else {
                     showMessage('Registration failed. Please try again.', 'error');
-                    registerBtn.disabled = false;
-                    registerBtn.textContent = 'Create Account';
+                    setLoading(false);
                 }
                 
             } catch (err) {
                 console.error('Unexpected error:', err);
                 showMessage('Network error. Please check your connection.', 'error');
-                registerBtn.disabled = false;
-                registerBtn.textContent = 'Create Account';
+                setLoading(false);
             }
         });
         
-        // Add some CSS for the validation classes
+        // ============================================
+        // CHECK EXISTING SESSION
+        // ============================================
+        async function checkSession() {
+            const { data: { session } } = await supabaseClient.auth.getSession();
+            if (session) {
+                // User is already logged in, redirect to dashboard
+                window.location.href = '/dashboard.html';
+            }
+        }
+        
+        // Check session on page load
+        checkSession();
+        
+        // Add CSS for validation classes
         const style = document.createElement('style');
         style.textContent = `
             input.success {
