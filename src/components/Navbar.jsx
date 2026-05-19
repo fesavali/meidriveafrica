@@ -1,34 +1,34 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { signOut } from '../auth';
+import { supabase } from '../lib/supabase';
 
 function Navbar({ user }) {
     const navigate = useNavigate();
 
     const handleLogout = async () => {
-        await signOut();
+        await supabase.auth.signOut();
         navigate('/');
-        window.location.reload();
+        // Don't need window.location.reload() - React Router handles it
     };
 
     return (
         <nav className="navbar">
             <div className="nav-container">
-                <div className="logo" onClick={() => navigate('/')}>
+                <div className="logo" onClick={() => navigate('/')} style={{ cursor: 'pointer' }}>
                     MEI DRIVE <span>AFRICA</span>
                 </div>
                 <div className="nav-links">
                     <Link to="/">Home</Link>
-                    <a href="/#courses">Courses</a>
+                    <Link to="/#courses">Courses</Link> {/* Changed a to Link */}
                     {user ? (
                         <>
-                            <Link to="/dashboard.html">Dashboard</Link>
-                            <button onClick={handleLogout}>Logout</button>
+                            <Link to="/dashboard">Dashboard</Link> {/* Changed .html to path */}
+                            <button onClick={handleLogout} className="logout-btn">Logout</button>
                         </>
                     ) : (
                         <>
-                            <Link to="/login.html">Login</Link>
-                            <Link to="/register.html">Register</Link>
+                            <Link to="/login">Login</Link> {/* Changed .html to path */}
+                            <Link to="/register">Register</Link> {/* Changed .html to path */}
                         </>
                     )}
                 </div>
