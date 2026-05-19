@@ -4,10 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Dashboard | MEI Drive Africa</title>
-    
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    
     <style>
         * {
             margin: 0;
@@ -39,12 +37,15 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
         }
 
         .logo {
             font-size: 1.5rem;
             font-weight: bold;
             color: #00FF88;
+            cursor: pointer;
         }
 
         .logo span {
@@ -59,6 +60,7 @@
 
         .user-email {
             color: #00FF88;
+            font-size: 0.9rem;
         }
 
         .logout-btn {
@@ -140,7 +142,7 @@
             font-size: 0.9rem;
         }
 
-        /* Enrollments Section */
+        /* Section Title */
         .section-title {
             font-size: 1.5rem;
             margin-bottom: 1.5rem;
@@ -150,35 +152,45 @@
             gap: 0.5rem;
         }
 
+        /* Enrollments Grid */
         .enrollments-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 1rem;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 1.5rem;
         }
 
         .enrollment-card {
             background: rgba(4, 27, 61, 0.8);
             border-radius: 12px;
-            padding: 1rem;
+            padding: 1.25rem;
             border: 1px solid rgba(0, 255, 136, 0.15);
             transition: all 0.3s ease;
         }
 
         .enrollment-card:hover {
             border-color: #00FF88;
+            transform: translateY(-3px);
         }
 
         .enrollment-title {
             font-weight: bold;
+            font-size: 1.1rem;
             margin-bottom: 0.5rem;
             color: #00FF88;
+        }
+
+        .enrollment-description {
+            font-size: 0.85rem;
+            color: #B7C4D6;
+            margin-bottom: 0.75rem;
+            line-height: 1.4;
         }
 
         .enrollment-status {
             display: inline-block;
             padding: 4px 12px;
             border-radius: 20px;
-            font-size: 0.75rem;
+            font-size: 0.7rem;
             font-weight: bold;
             margin-top: 0.5rem;
         }
@@ -201,10 +213,39 @@
             border: 1px solid #00C851;
         }
 
+        .status-cancelled {
+            background: rgba(255, 77, 79, 0.2);
+            color: #ff4d4f;
+            border: 1px solid #ff4d4f;
+        }
+
         .enrollment-date {
-            font-size: 0.75rem;
+            font-size: 0.7rem;
             color: #B7C4D6;
-            margin-top: 0.5rem;
+            margin-top: 0.75rem;
+        }
+
+        .progress-bar {
+            margin-top: 0.75rem;
+        }
+
+        .progress-bar-bg {
+            background: #0A234F;
+            border-radius: 10px;
+            height: 6px;
+            overflow: hidden;
+        }
+
+        .progress-bar-fill {
+            background: #00FF88;
+            height: 100%;
+            transition: width 0.3s ease;
+        }
+
+        .progress-text {
+            font-size: 0.7rem;
+            margin-top: 0.25rem;
+            color: #00FF88;
         }
 
         /* Loading States */
@@ -242,6 +283,10 @@
             opacity: 0.5;
         }
 
+        .empty-state button {
+            margin-top: 1rem;
+        }
+
         /* Error State */
         .error-state {
             text-align: center;
@@ -252,15 +297,21 @@
             border: 1px solid #ff4d4f;
         }
 
-        .retry-btn {
+        /* Buttons */
+        .btn-primary {
             background: #00FF88;
             color: #041B3D;
             border: none;
-            padding: 8px 20px;
+            padding: 10px 24px;
             border-radius: 8px;
             cursor: pointer;
             font-weight: bold;
-            margin-top: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 255, 136, 0.3);
         }
 
         /* Toast Notification */
@@ -272,7 +323,7 @@
             border-left: 4px solid #00FF88;
             padding: 12px 20px;
             border-radius: 8px;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
             z-index: 1000;
             animation: slideIn 0.3s ease;
         }
@@ -302,8 +353,16 @@
             
             .nav-container {
                 flex-direction: column;
-                gap: 1rem;
+                text-align: center;
             }
+        }
+
+        footer {
+            text-align: center;
+            padding: 2rem;
+            color: #B7C4D6;
+            border-top: 1px solid rgba(0, 255, 136, 0.1);
+            margin-top: 2rem;
         }
     </style>
 </head>
@@ -311,7 +370,7 @@
 
 <nav class="navbar">
     <div class="nav-container">
-        <div class="logo">
+        <div class="logo" onclick="window.location.href='/'">
             MEI DRIVE <span>AFRICA</span>
         </div>
         <div class="user-info">
@@ -359,306 +418,249 @@
         <span>My Enrollments</span>
     </div>
     <div id="enrollmentsContainer">
-        <!-- Enrollments will load here -->
-    </div>
-</div>
-
-<script>
-// ============================================
-// SUPABASE CONFIGURATION
-// ============================================
-const SUPABASE_URL = 'https://jeksrwrzzrczamxijvwl.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Impla3Nyd3J6enJjemFteGlqdndsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg2NzYyMjAsImV4cCI6MjA5NDI1MjIyMH0.1poYpJKNFEVe2NTBkXBTH2bIHGk2yT8aqCU-OlJc4vs';
-
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-// ============================================
-// GLOBAL VARIABLES
-// ============================================
-let currentUser = null;
-let isLoading = false;
-
-// ============================================
-// TOAST NOTIFICATION
-// ============================================
-function showToast(message, type = 'info') {
-    const existingToast = document.querySelector('.toast');
-    if (existingToast) existingToast.remove();
-    
-    const toast = document.createElement('div');
-    toast.className = `toast ${type}`;
-    toast.innerHTML = `<i class="fas ${type === 'error' ? 'fa-exclamation-circle' : 'fa-info-circle'}"></i> ${message}`;
-    document.body.appendChild(toast);
-    
-    setTimeout(() => toast.remove(), 4000);
-}
-
-// ============================================
-// CHECK ADMIN ROLE (Security Fix)
-// ============================================
-async function checkUserRole(userId) {
-    try {
-        const { data: profile, error } = await supabase
-            .from('profiles')
-            .select('role')
-            .eq('id', userId)
-            .maybeSingle();
-        
-        if (error) {
-            console.error('Error fetching profile:', error);
-            return 'user';
-        }
-        
-        return profile?.role || 'user';
-    } catch (err) {
-        console.error('Role check error:', err);
-        return 'user';
-    }
-}
-
-// ============================================
-// LOAD USER DATA
-// ============================================
-async function loadUserData() {
-    if (isLoading) return;
-    isLoading = true;
-    
-    try {
-        // Get current session
-        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-        
-        if (sessionError || !session) {
-            window.location.href = '/login.html';
-            return;
-        }
-        
-        currentUser = session.user;
-        
-        // Update UI with user email
-        const userEmailEl = document.getElementById('userEmail');
-        if (userEmailEl) {
-            userEmailEl.textContent = currentUser.email;
-        }
-        
-        // Check user role for security
-        const userRole = await checkUserRole(currentUser.id);
-        console.log('User role:', userRole);
-        
-        // Load enrollments
-        await loadEnrollments();
-        
-    } catch (err) {
-        console.error('Error loading user data:', err);
-        showToast('Failed to load user data', 'error');
-        
-        // Redirect to login on critical error
-        if (err.message.includes('JWT')) {
-            window.location.href = '/login.html';
-        }
-    } finally {
-        isLoading = false;
-    }
-}
-
-// ============================================
-// LOAD ENROLLMENTS (With Error Handling)
-// ============================================
-async function loadEnrollments() {
-    const container = document.getElementById('enrollmentsContainer');
-    
-    if (!container) return;
-    
-    // Show loading state
-    container.innerHTML = `
         <div class="loading">
             <div class="spinner"></div>
             <p style="margin-top: 1rem;">Loading your enrollments...</p>
         </div>
-    `;
+    </div>
+</div>
+
+<footer>
+    <p>&copy; 2025 MEI DRIVE AFRICA | NTSA Approved Driver Training</p>
+    <p style="margin-top: 0.5rem; font-size: 0.8rem;">NTSA Certified Instructor: ILR-7WA1P62</p>
+</footer>
+
+<script>
+    // ============================================
+    // SUPABASE CONFIGURATION - CORRECT WAY
+    // ============================================
+    const SUPABASE_URL = 'https://jeksrwrzzrczamxijvwl.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Impla3Nyd3J6enJjemFteGlqdndsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg2NzYyMjAsImV4cCI6MjA5NDI1MjIyMH0.1poYpJKNFEVe2NTBkXBTH2bIHGk2yT8aqCU-OlJc4vs';
     
-    try {
-        // Fetch enrollments with error handling
-        const { data: enrollments, error: enrollmentsError } = await supabase
-            .from('enrollments')
-            .select(`
-                *,
-                courses:course_id (
-                    id,
-                    name,
-                    description,
-                    type,
-                    duration,
-                    level
-                )
-            `)
-            .eq('user_id', currentUser.id)
-            .order('enrolled_at', { ascending: false });
+    // Initialize Supabase correctly
+    const { createClient } = supabase;
+    const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    
+    console.log('Supabase client initialized');
+    
+    // ============================================
+    // GLOBAL VARIABLES
+    // ============================================
+    let currentUser = null;
+    
+    // ============================================
+    // TOAST NOTIFICATION
+    // ============================================
+    function showToast(message, type = 'info') {
+        const existingToast = document.querySelector('.toast');
+        if (existingToast) existingToast.remove();
         
-        if (enrollmentsError) {
-            throw enrollmentsError;
+        const toast = document.createElement('div');
+        toast.className = `toast ${type}`;
+        toast.innerHTML = `<i class="fas ${type === 'error' ? 'fa-exclamation-circle' : 'fa-info-circle'}"></i> ${message}`;
+        document.body.appendChild(toast);
+        
+        setTimeout(() => toast.remove(), 4000);
+    }
+    
+    // ============================================
+    // CHECK AUTHENTICATION
+    // ============================================
+    async function checkAuth() {
+        try {
+            const { data: { session }, error } = await supabaseClient.auth.getSession();
+            
+            if (error || !session) {
+                console.log('No session found, redirecting to login');
+                window.location.href = 'login.html';
+                return null;
+            }
+            
+            currentUser = session.user;
+            
+            // Update UI with user email
+            const userEmailEl = document.getElementById('userEmail');
+            if (userEmailEl) {
+                userEmailEl.textContent = currentUser.email;
+            }
+            
+            return currentUser;
+            
+        } catch (err) {
+            console.error('Auth check error:', err);
+            window.location.href = 'login.html';
+            return null;
         }
+    }
+    
+    // ============================================
+    // LOAD ENROLLMENTS
+    // ============================================
+    async function loadEnrollments() {
+        const container = document.getElementById('enrollmentsContainer');
         
-        // Update stats
-        const enrollmentsList = enrollments || [];
-        const enrollmentsCount = enrollmentsList.length;
-        const completedCount = enrollmentsList.filter(e => e.status === 'completed').length;
+        if (!container) return;
         
-        // Update UI stats
-        const enrollmentsCountEl = document.getElementById('enrollmentsCount');
-        const completedCountEl = document.getElementById('completedCount');
-        
-        if (enrollmentsCountEl) enrollmentsCountEl.textContent = enrollmentsCount;
-        if (completedCountEl) completedCountEl.textContent = completedCount;
-        
-        // Calculate average progress (if you have progress field)
-        const avgProgress = enrollmentsList.length > 0 
-            ? Math.round(enrollmentsList.reduce((sum, e) => sum + (e.progress || 0), 0) / enrollmentsList.length)
-            : 0;
-        
-        const progressCountEl = document.getElementById('progressCount');
-        if (progressCountEl) progressCountEl.textContent = `${avgProgress}%`;
-        
-        // Display enrollments
-        if (enrollmentsList.length === 0) {
+        try {
+            // Fetch enrollments with course details
+            const { data: enrollments, error } = await supabaseClient
+                .from('enrollments')
+                .select(`
+                    *,
+                    courses:course_id (
+                        id,
+                        name,
+                        description,
+                        type,
+                        duration,
+                        level
+                    )
+                `)
+                .eq('user_id', currentUser.id)
+                .order('enrolled_at', { ascending: false });
+            
+            if (error) {
+                console.error('Error fetching enrollments:', error);
+                throw error;
+            }
+            
+            const enrollmentsList = enrollments || [];
+            const enrollmentsCount = enrollmentsList.length;
+            const completedCount = enrollmentsList.filter(e => e.status === 'completed').length;
+            const avgProgress = enrollmentsList.length > 0 
+                ? Math.round(enrollmentsList.reduce((sum, e) => sum + (e.progress || 0), 0) / enrollmentsList.length)
+                : 0;
+            
+            // Update stats
+            document.getElementById('enrollmentsCount').textContent = enrollmentsCount;
+            document.getElementById('completedCount').textContent = completedCount;
+            document.getElementById('progressCount').textContent = `${avgProgress}%`;
+            
+            // Display enrollments
+            if (enrollmentsList.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-book-open"></i>
+                        <p>You haven't enrolled in any courses yet.</p>
+                        <button class="btn-primary" onclick="window.location.href='courses.html'">
+                            Browse Courses
+                        </button>
+                    </div>
+                `;
+                return;
+            }
+            
+            // Build enrollments grid
+            let html = '<div class="enrollments-grid">';
+            
+            for (const enrollment of enrollmentsList) {
+                const course = enrollment.courses;
+                const statusClass = enrollment.status === 'active' ? 'status-active' : 
+                                   (enrollment.status === 'completed' ? 'status-completed' : 
+                                   (enrollment.status === 'cancelled' ? 'status-cancelled' : 'status-pending'));
+                const statusIcon = enrollment.status === 'active' ? 'fa-play' : 
+                                  (enrollment.status === 'completed' ? 'fa-check' : 'fa-clock');
+                
+                html += `
+                    <div class="enrollment-card">
+                        <div class="enrollment-title">${escapeHtml(course?.name || 'Course not found')}</div>
+                        <div class="enrollment-description">
+                            ${escapeHtml(course?.description?.substring(0, 120) || 'No description available')}
+                            ${course?.description?.length > 120 ? '...' : ''}
+                        </div>
+                        <div class="enrollment-status ${statusClass}">
+                            <i class="fas ${statusIcon}"></i> ${enrollment.status?.toUpperCase() || 'PENDING'}
+                        </div>
+                        <div class="enrollment-date">
+                            <i class="fas fa-calendar-alt"></i> Enrolled: ${new Date(enrollment.enrolled_at).toLocaleDateString()}
+                        </div>
+                        ${enrollment.progress ? `
+                            <div class="progress-bar">
+                                <div class="progress-bar-bg">
+                                    <div class="progress-bar-fill" style="width: ${enrollment.progress}%"></div>
+                                </div>
+                                <div class="progress-text">${enrollment.progress}% Complete</div>
+                            </div>
+                        ` : ''}
+                    </div>
+                `;
+            }
+            
+            html += '</div>';
+            container.innerHTML = html;
+            
+        } catch (err) {
+            console.error('Error loading enrollments:', err);
             container.innerHTML = `
-                <div class="empty-state">
-                    <i class="fas fa-book-open"></i>
-                    <p>You haven't enrolled in any courses yet.</p>
-                    <button class="retry-btn" onclick="window.location.href='/courses.html'">
-                        Browse Courses
+                <div class="error-state">
+                    <i class="fas fa-exclamation-triangle" style="font-size: 2rem; margin-bottom: 1rem;"></i>
+                    <p>Failed to load your enrollments</p>
+                    <button class="btn-primary" onclick="loadEnrollments()" style="margin-top: 1rem;">
+                        <i class="fas fa-sync-alt"></i> Retry
                     </button>
                 </div>
             `;
-            return;
+            showToast('Failed to load enrollments', 'error');
+        }
+    }
+    
+    // ============================================
+    // ESCAPE HTML (XSS Protection)
+    // ============================================
+    function escapeHtml(str) {
+        if (!str) return '';
+        return String(str)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
+    }
+    
+    // ============================================
+    // LOGOUT
+    // ============================================
+    async function handleLogout() {
+        try {
+            await supabaseClient.auth.signOut();
+            window.location.href = 'login.html';
+        } catch (err) {
+            console.error('Logout error:', err);
+            showToast('Failed to logout', 'error');
+        }
+    }
+    
+    // ============================================
+    // AUTH STATE LISTENER
+    // ============================================
+    supabaseClient.auth.onAuthStateChange((event, session) => {
+        console.log('Auth event:', event);
+        
+        if (event === 'SIGNED_OUT') {
+            window.location.href = 'login.html';
         }
         
-        // Build enrollments grid
-        let html = '<div class="enrollments-grid">';
-        
-        for (const enrollment of enrollmentsList) {
-            const course = enrollment.courses;
-            const statusClass = enrollment.status === 'active' ? 'status-active' : 
-                               (enrollment.status === 'completed' ? 'status-completed' : 'status-pending');
-            const statusText = enrollment.status?.toUpperCase() || 'PENDING';
-            
-            html += `
-                <div class="enrollment-card">
-                    <div class="enrollment-title">${escapeHtml(course?.name || 'Course not found')}</div>
-                    <p style="font-size: 0.85rem; color: #B7C4D6; margin-top: 0.25rem;">
-                        ${escapeHtml(course?.description?.substring(0, 100) || 'No description')}${course?.description?.length > 100 ? '...' : ''}
-                    </p>
-                    <div class="enrollment-status ${statusClass}">
-                        <i class="fas ${enrollment.status === 'active' ? 'fa-play' : (enrollment.status === 'completed' ? 'fa-check' : 'fa-clock')}"></i>
-                        ${statusText}
-                    </div>
-                    <div class="enrollment-date">
-                        <i class="fas fa-calendar-alt"></i> Enrolled: ${new Date(enrollment.enrolled_at).toLocaleDateString()}
-                    </div>
-                    ${enrollment.progress ? `
-                        <div style="margin-top: 0.75rem;">
-                            <div style="background: #0A234F; border-radius: 10px; height: 6px; overflow: hidden;">
-                                <div style="background: #00FF88; width: ${enrollment.progress}%; height: 100%;"></div>
-                            </div>
-                            <div style="font-size: 0.7rem; margin-top: 0.25rem; color: #00FF88;">${enrollment.progress}% Complete</div>
-                        </div>
-                    ` : ''}
-                </div>
-            `;
+        if (event === 'TOKEN_REFRESHED') {
+            console.log('Session refreshed');
         }
-        
-        html += '</div>';
-        container.innerHTML = html;
-        
-    } catch (err) {
-        console.error('Error loading enrollments:', err);
-        container.innerHTML = `
-            <div class="error-state">
-                <i class="fas fa-exclamation-triangle" style="font-size: 2rem; margin-bottom: 1rem;"></i>
-                <p>Failed to load your enrollments</p>
-                <button class="retry-btn" onclick="loadEnrollments()">
-                    <i class="fas fa-sync-alt"></i> Retry
-                </button>
-            </div>
-        `;
-        showToast('Failed to load enrollments', 'error');
-    }
-}
-
-// ============================================
-// LOGOUT FUNCTION
-// ============================================
-async function handleLogout() {
-    try {
-        const { error } = await supabase.auth.signOut();
-        if (error) throw error;
-        
-        // Clear any local data
-        currentUser = null;
-        
-        // Redirect to login
-        window.location.href = '/login.html';
-    } catch (err) {
-        console.error('Logout error:', err);
-        showToast('Failed to logout. Please try again.', 'error');
-    }
-}
-
-// ============================================
-// AUTH STATE LISTENER
-// ============================================
-supabase.auth.onAuthStateChange((event, session) => {
-    console.log('Auth event:', event);
+    });
     
-    if (event === 'SIGNED_OUT') {
-        window.location.href = '/login.html';
-    }
-    
-    if (event === 'TOKEN_REFRESHED') {
-        console.log('Session refreshed successfully');
-    }
-    
-    if (event === 'USER_UPDATED') {
-        console.log('User updated, reloading data');
-        loadUserData();
-    }
-});
-
-// ============================================
-// ESCAPE HTML FUNCTION (XSS Protection)
-// ============================================
-function escapeHtml(str) {
-    if (!str) return '';
-    return String(str)
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#39;');
-}
-
-// ============================================
-// INITIALIZATION
-// ============================================
-async function init() {
-    // Load user data
-    await loadUserData();
-    
-    // Check session periodically
-    setInterval(async () => {
-        const { data: { session } } = await supabase.auth.getSession();
-        if (!session && currentUser) {
-            console.log('Session expired, redirecting to login');
-            window.location.href = '/login.html';
+    // ============================================
+    // INITIALIZATION
+    // ============================================
+    async function init() {
+        const user = await checkAuth();
+        if (user) {
+            await loadEnrollments();
         }
-    }, 60000); // Check every minute
-}
-
-// Start the app
-init();
-
-// Make functions global for onclick handlers
-window.handleLogout = handleLogout;
-window.loadEnrollments = loadEnrollments;
+    }
+    
+    // Start the app
+    init();
+    
+    // Make functions global for onclick handlers
+    window.handleLogout = handleLogout;
+    window.loadEnrollments = loadEnrollments;
 </script>
 </body>
 </html>
