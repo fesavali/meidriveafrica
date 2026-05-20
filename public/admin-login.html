@@ -262,6 +262,7 @@ h1{
                 type="email"
                 id="email"
                 placeholder="admin@meidriveafrica.com"
+                value="admin@meidriveafrica.com"
                 required
             >
         </div>
@@ -294,7 +295,7 @@ h1{
 </div>
 
 <script>
-// Supabase configuration
+// Supabase configuration - CORRECT
 const SUPABASE_URL = 'https://jeksrwrzzrczamxijvwl.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Impla3Nyd3J6enJjemFteGlqdndsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg2NzYyMjAsImV4cCI6MjA5NDI1MjIyMH0.1poYpJKNFEVe2NTBkXBTH2bIHGk2yT8aqCU-OlJc4vs';
 
@@ -304,20 +305,23 @@ const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 // DOM elements
 const form = document.getElementById('loginForm');
 const loginBtn = document.getElementById('loginBtn');
+const emailInput = document.getElementById('email');
+const passwordInput = document.getElementById('password');
 const errorBox = document.getElementById('errorBox');
 const successBox = document.getElementById('successBox');
 
 // Helper functions
 function showError(message) {
+    errorBox.textContent = message;
     errorBox.style.display = 'block';
     successBox.style.display = 'none';
-    errorBox.textContent = message;
+    setTimeout(() => errorBox.style.display = 'none', 5000);
 }
 
 function showSuccess(message) {
+    successBox.textContent = message;
     successBox.style.display = 'block';
     errorBox.style.display = 'none';
-    successBox.textContent = message;
 }
 
 function setLoading(state) {
@@ -327,20 +331,23 @@ function setLoading(state) {
         : 'Login as Admin';
 }
 
-// Verify if user is admin
+// Verify if user is admin (with better error handling)
 async function verifyAdmin(userId) {
     try {
+        console.log('Verifying admin for user:', userId);
+        
         const { data, error } = await supabase
             .from('profiles')
             .select('role')
             .eq('id', userId)
-            .single();
+            .maybeSingle(); // Use maybeSingle to avoid 406 error
 
         if (error) {
             console.error('Error verifying admin:', error);
             return false;
         }
 
+        console.log('Profile data:', data);
         return data?.role === 'admin';
     } catch (err) {
         console.error('Verify admin error:', err);
@@ -361,50 +368,63 @@ async function checkExistingSession() {
     }
 }
 
-// Login function
-async function login(email, password) {
-    const { data, error } = await supabase.auth.signInWithPassword({
-        email: email,
-        password: password
-    });
-
-    return { data, error };
-}
-
 // Form submit handler
 form.addEventListener('submit', async (e) => {
     e.preventDefault();
 
-    const email = document.getElementById('email').value.trim();
-    const password = document.getElementById('password').value;
+    const email = emailInput.value.trim();
+    const password = passwordInput.value;
 
     if (!email || !password) {
         return showError('Please enter email and password');
     }
 
     setLoading(true);
-    showError('');
+    errorBox.style.display = 'none';
+    successBox.style.display = 'none';
     
     try {
+        console.log('Attempting login for:', email);
+        
         // Attempt login
-        const { data, error } = await login(email, password);
+        const { data, error } = await supabase.auth.signInWithPassword({
+            email: email,
+            password: password
+        });
 
         if (error) {
+            console.error('Login error:', error);
             setLoading(false);
+            
+            if (error.message === 'Invalid login credentials') {
+                return showError('Invalid email or password');
+            } else if (error.message.includes('Email not confirmed')) {
+                return showError('Please verify your email before logging in');
+            }
             return showError(error.message);
         }
 
+        if (!data.user) {
+            setLoading(false);
+            return showError('Login failed. Please try again.');
+        }
+
+        console.log('Login successful, verifying admin role...');
+        
         // Verify admin role
         const isAdmin = await verifyAdmin(data.user.id);
 
         if (!isAdmin) {
+            console.log('User is not admin, signing out');
             await supabase.auth.signOut();
             setLoading(false);
-            return showError('Access denied. Admin only.');
+            return showError('Access denied. Admin privileges required.');
         }
 
+        console.log('Admin verified, redirecting...');
+        
         // Login successful
-        showSuccess('Login successful. Redirecting to admin dashboard...');
+        showSuccess('Login successful! Redirecting to admin dashboard...');
 
         setTimeout(() => {
             window.location.href = '/admin-dashboard.html';
@@ -412,13 +432,31 @@ form.addEventListener('submit', async (e) => {
 
     } catch (err) {
         console.error('Login error:', err);
-        showError('Something went wrong. Please try again.');
+        showError('Network error. Please check your connection.');
         setLoading(false);
+    }
+});
+
+// Add enter key support
+passwordInput.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') {
+        form.dispatchEvent(new Event('submit'));
     }
 });
 
 // Check existing session on page load
 checkExistingSession();
+
+// Log connection test
+(async function testConnection() {
+    console.log('Testing Supabase connection...');
+    const { data, error } = await supabase.from('profiles').select('count', { count: 'exact', head: true });
+    if (error) {
+        console.error('Connection test failed:', error);
+    } else {
+        console.log('Supabase connection OK');
+    }
+})();
 </script>
 
 </body>
