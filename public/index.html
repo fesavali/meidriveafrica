@@ -33,7 +33,7 @@
     <!-- Stylesheets -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     
-    <!-- Supabase - CORRECT CDN -->
+    <!-- Supabase -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     
     <!-- JSON-LD Structured Data -->
@@ -76,7 +76,6 @@
             overflow-x: hidden;
         }
         
-        /* Loading Spinner */
         .loading-spinner {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.85); z-index: 9999; display: none;
@@ -90,7 +89,6 @@
         }
         @keyframes spin { to { transform: rotate(360deg); } }
         
-        /* Toast Notification */
         .toast {
             position: fixed; bottom: 30px; right: 30px; z-index: 10000;
             background: var(--dark-navy); color: var(--white);
@@ -102,7 +100,6 @@
         .toast.error { border-left-color: var(--error); }
         .toast.show { transform: translateX(0); }
         
-        /* Floating WhatsApp Button */
         .whatsapp-float {
             position: fixed;
             bottom: 30px;
@@ -132,7 +129,6 @@
             50% { box-shadow: 0 4px 25px rgba(37, 211, 102, 0.8); }
         }
         
-        /* WhatsApp Tab (Desktop Side Tab) */
         .whatsapp-tab {
             position: fixed;
             left: -120px;
@@ -155,7 +151,6 @@
         .whatsapp-tab:hover { left: 0; }
         .whatsapp-tab i { font-size: 1.5rem; }
         
-        /* Navbar */
         .navbar {
             position: fixed;
             top: 0;
@@ -224,7 +219,6 @@
         }
         .logout-btn:hover { background: var(--error); color: var(--white); }
         
-        /* NTSA Instructor Badge */
         .ntsa-badge {
             background: linear-gradient(135deg, var(--dark-navy), var(--secondary-dark));
             border: 1px solid var(--neon-green);
@@ -238,7 +232,6 @@
         }
         .ntsa-badge i { color: var(--neon-green); }
         
-        /* Mobile Menu */
         .mobile-menu-btn { display: none; font-size: 1.5rem; color: var(--white); cursor: pointer; background: none; border: none; padding: 8px; }
         .mobile-nav {
             position: fixed;
@@ -294,7 +287,6 @@
         }
         .overlay.active { display: block; }
         
-        /* Hero Section */
         .hero {
             min-height: 100vh;
             width: 100%;
@@ -376,7 +368,6 @@
             color: var(--dark-navy);
         }
         
-        /* Stats */
         .stats {
             margin-top: -60px;
             position: relative;
@@ -399,7 +390,6 @@
         .stat h2 { font-size: 2.5rem; color: var(--neon-green); margin-bottom: 0.25rem; }
         .stat p { color: var(--soft-gray); }
         
-        /* Courses Section */
         .container {
             max-width: 1200px;
             margin: 0 auto;
@@ -480,7 +470,6 @@
         }
         .btn-view:hover { background: var(--neon-green); color: var(--dark-navy); }
         
-        /* Contact Section */
         .contact-section {
             background: var(--dark-navy);
             padding: 4rem 2rem;
@@ -535,7 +524,6 @@
             opacity: 0.9;
         }
         
-        /* Responsive Course Grid */
         @media (max-width: 1024px) {
             .courses-grid { grid-template-columns: repeat(3, 1fr); gap: 1.25rem; }
             .hero h1 { font-size: 2.8rem; }
@@ -564,7 +552,6 @@
             .stat h2 { font-size: 1.8rem; }
         }
         
-        /* Skeleton Loader */
         .skeleton-card {
             background: var(--dark-navy);
             border-radius: 20px;
@@ -720,7 +707,7 @@
 <section class="stats">
     <div class="stats-container">
         <div class="stat"><h2 id="totalStudents">10K+</h2><p>Students</p></div>
-        <div class="stat"><h2 id="totalCourses">8</h2><p>Courses</p></div>
+        <div class="stat"><h2 id="totalCourses">0</h2><p>Courses</p></div>
         <div class="stat"><h2>98%</h2><p>Pass Rate</p></div>
     </div>
 </section>
@@ -728,9 +715,7 @@
 <!-- COURSES -->
 <section class="container" id="courses">
     <h2 class="section-title">Our <span>Courses</span></h2>
-    <div id="coursesContainer" class="courses-grid">
-        <!-- Skeleton loaders will be replaced -->
-    </div>
+    <div id="coursesContainer" class="courses-grid"></div>
 </section>
 
 <!-- CONTACT SECTION -->
@@ -778,23 +763,15 @@
 
 <script>
     // ============================================
-    // SUPABASE CONFIGURATION - CORRECT ANON KEY
+    // SUPABASE CONFIGURATION
     // ============================================
     const SUPABASE_URL = 'https://jeksrwrzzrczamxijvwl.supabase.co';
-    // IMPORTANT: Use the EXACT anon key from your Supabase dashboard
-    // Go to: Project Settings → API → Project API keys → anon public
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Impla3Nyd3J6enJjemFteGlqdndsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg2NzYyMjAsImV4cCI6MjA5NDI1MjIyMH0.1poYpJKNFEVe2NTBkXBTH2bIHGk2yT8aqCU-OlJc4vs';
     
-    // Initialize Supabase client
     const { createClient } = window.supabase;
     const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
     
-    console.log('Supabase client initialized with URL:', SUPABASE_URL);
-    
-    // ============================================
-    // GLOBAL VARIABLES
-    // ============================================
-    let currentUser = null;
+    console.log('Supabase client initialized');
     
     // DOM Elements
     const toast = document.getElementById('toast');
@@ -808,9 +785,8 @@
     const mobileUserInfo = document.getElementById('mobileUserInfo');
     const mobileUserName = document.getElementById('mobileUserName');
     
-    // ============================================
-    // HELPER FUNCTIONS
-    // ============================================
+    let currentUser = null;
+    
     function showToast(message, isError = false) {
         toast.textContent = message;
         toast.className = `toast ${isError ? 'error' : ''}`;
@@ -827,9 +803,6 @@
         return str.replace(/[&<>]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[m]));
     }
     
-    // ============================================
-    // AUTH UI UPDATE
-    // ============================================
     async function updateAuthUI() {
         try {
             const { data: { session } } = await supabaseClient.auth.getSession();
@@ -860,16 +833,14 @@
         }
     }
     
-    // ============================================
-    // DISPLAY COURSES
-    // ============================================
+    // Display courses from Supabase (NO HARDCODED PRICES)
     function displayCourses(courses) {
         coursesContainer.innerHTML = '';
         const icons = ['🚗', '🚌', '🚸', '⚡', '🛵', '🚛', '📚', '📝'];
         
         courses.forEach((course, index) => {
             const isFree = course.type === 'free' || course.price === 0;
-            const title = course.name || course.title;
+            const title = course.name;
             const desc = course.description || 'Professional driver training course';
             const price = course.price || 0;
             const icon = course.icon || icons[index % icons.length];
@@ -878,7 +849,7 @@
             card.className = 'course-card';
             card.onclick = () => {
                 if (currentUser) {
-                    window.location.href = `/course.html?id=${course.id}`;
+                    window.location.href = `/course-learner.html`;
                 } else {
                     showToast('Please login to view course details', true);
                     window.location.href = '/login.html';
@@ -897,80 +868,58 @@
         });
     }
     
-    // ============================================
-    // FALLBACK COURSES (when Supabase fails)
-    // ============================================
-    function displayFallbackCourses() {
-        const fallbackCourses = [
-            { id: 1, name: 'Learner Hub', description: 'Complete NTSA-approved driver training with certified instructors', type: 'premium', price: 5000, icon: '🚗' },
-            { id: 2, name: 'PSV Training', description: 'Specialized training for bus/taxi drivers - NTSA compliant', type: 'premium', price: 7500, icon: '🚌' },
-            { id: 3, name: 'School Bus/Van', description: 'Safety training for school transport with certification', type: 'premium', price: 6500, icon: '🚸' },
-            { id: 4, name: 'EV Vehicle Course', description: 'Master electric vehicle driving and maintenance', type: 'premium', price: 8000, icon: '⚡' },
-            { id: 5, name: 'Boda Boda', description: 'Professional motorcycle taxi training with NTSA approval', type: 'premium', price: 5500, icon: '🛵' },
-            { id: 6, name: 'Professional Driver', description: 'Advanced training for experienced drivers', type: 'premium', price: 7000, icon: '🚛' },
-            { id: 7, name: 'e-Safety Library', description: 'Free road safety resources and e-learning materials', type: 'free', price: 0, icon: '📚' },
-            { id: 8, name: 'Quiz Bank', description: '1000+ NTSA practice questions with explanations', type: 'premium', price: 3000, icon: '📝' }
-        ];
-        totalCoursesSpan.textContent = '8';
-        displayCourses(fallbackCourses);
-        showToast('Demo courses loaded. Connect Supabase for live data.', false);
-    }
-    
-    // ============================================
-    // LOAD COURSES FROM SUPABASE
-    // ============================================
-    async function loadCourses() {
-        setLoading(true);
-        
-        // Show skeleton loaders
+    // Show skeleton loaders while fetching
+    function showSkeletons() {
         coursesContainer.innerHTML = `
             <div class="skeleton-card"><div class="skeleton-icon"></div><div class="skeleton-title"></div><div class="skeleton-text"></div><div class="skeleton-price"></div></div>
             <div class="skeleton-card"><div class="skeleton-icon"></div><div class="skeleton-title"></div><div class="skeleton-text"></div><div class="skeleton-price"></div></div>
             <div class="skeleton-card"><div class="skeleton-icon"></div><div class="skeleton-title"></div><div class="skeleton-text"></div><div class="skeleton-price"></div></div>
             <div class="skeleton-card"><div class="skeleton-icon"></div><div class="skeleton-title"></div><div class="skeleton-text"></div><div class="skeleton-price"></div></div>
         `;
+    }
+    
+    // Load courses directly from Supabase (NO FALLBACK, NO HARDCODED PRICES)
+    async function loadCourses() {
+        setLoading(true);
+        showSkeletons();
         
         try {
             console.log('Fetching courses from Supabase...');
             const { data, error } = await supabaseClient
                 .from('courses')
                 .select('id, name, description, type, price, icon, duration, level')
-                .order('id', { ascending: true })
-                .limit(8);
+                .order('id', { ascending: true });
             
-            console.log('Courses data:', data);
-            console.log('Error:', error);
+            console.log('Courses from Supabase:', data);
             
             if (error) {
                 console.error('Supabase error:', error);
-                if (error.message.includes('row-level security') || error.message.includes('permission') || error.code === '42501') {
-                    showToast('RLS policy needs configuration. Using demo courses.', true);
-                } else if (error.message.includes('API key') || error.message.includes('Invalid')) {
-                    showToast('Invalid API key. Please check your Supabase configuration.', true);
-                } else {
-                    showToast(error.message, true);
-                }
-                displayFallbackCourses();
+                showToast('Failed to load courses. Please refresh the page.', true);
+                coursesContainer.innerHTML = `<div style="text-align:center; padding:40px; color:#ff4d4f;">
+                    <i class="fas fa-exclamation-circle"></i> Error loading courses. 
+                    <button onclick="loadCourses()" style="margin-top:10px; padding:8px 16px; background:#00FF88; border:none; border-radius:8px; cursor:pointer;">Retry</button>
+                </div>`;
             } else if (data && data.length > 0) {
                 totalCoursesSpan.textContent = data.length.toString();
                 displayCourses(data);
-                showToast(`✅ Loaded ${data.length} courses from database!`, false);
+                console.log(`✅ Loaded ${data.length} courses with dynamic prices from database`);
             } else {
-                console.log('No courses found in database, using fallback');
-                displayFallbackCourses();
+                console.log('No courses found in database');
+                coursesContainer.innerHTML = `<div style="text-align:center; padding:40px;">
+                    <i class="fas fa-book-open"></i><br>No courses available yet. Please check back later.
+                </div>`;
             }
         } catch (error) {
             console.error('Error loading courses:', error);
-            showToast('Failed to connect to database. Using demo courses.', true);
-            displayFallbackCourses();
+            showToast('Failed to connect to database. Please refresh the page.', true);
+            coursesContainer.innerHTML = `<div style="text-align:center; padding:40px; color:#ff4d4f;">
+                <i class="fas fa-exclamation-circle"></i> Connection error. Please refresh the page.
+            </div>`;
         } finally {
             setLoading(false);
         }
     }
     
-    // ============================================
-    // LOGOUT
-    // ============================================
     async function logout() {
         setLoading(true);
         await supabaseClient.auth.signOut();
@@ -980,9 +929,6 @@
         window.location.href = '/';
     }
     
-    // ============================================
-    // MOBILE MENU
-    // ============================================
     function initMobileMenu() {
         const menuBtn = document.getElementById('mobileMenuBtn');
         const closeBtn = document.getElementById('mobileNavClose');
@@ -1006,9 +952,7 @@
         document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeMenu(); });
     }
     
-    // ============================================
-    // EVENT LISTENERS
-    // ============================================
+    // Event Listeners
     document.getElementById('loginBtnNav')?.addEventListener('click', () => {
         window.location.href = '/login.html';
     });
@@ -1037,33 +981,14 @@
         logout();
     });
     
-    // ============================================
-    // INITIALIZATION
-    // ============================================
     async function init() {
         console.log('Initializing MEI DRIVE AFRICA...');
-        
-        // Test connection
-        try {
-            const { data, error } = await supabaseClient.from('courses').select('count', { count: 'exact', head: true });
-            if (error) {
-                console.error('Connection test failed:', error);
-            } else {
-                console.log('Supabase connection successful!');
-            }
-        } catch (err) {
-            console.error('Connection test error:', err);
-        }
-        
         initMobileMenu();
         await updateAuthUI();
         await loadCourses();
-        
-        // Listen for auth changes
         supabaseClient.auth.onAuthStateChange(() => { updateAuthUI(); });
     }
     
-    // Start the app
     init();
 </script>
 </body>
