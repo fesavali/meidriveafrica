@@ -22,32 +22,14 @@
     <meta name="twitter:title" content="MEI DRIVE AFRICA - Professional Driver Training">
     <meta name="twitter:description" content="NTSA-approved driver training courses in Kenya">
     
-    <!-- Canonical URL -->
     <link rel="canonical" href="https://meidriveafrica.com">
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%2300FF88'/%3E%3Ctext x='50' y='70' font-size='60' text-anchor='middle' fill='%23041B3D'%3E🚗%3C/text%3E%3C/svg%3E">
     
-    <!-- Preconnect for performance -->
     <link rel="preconnect" href="https://cdn.jsdelivr.net">
     <link rel="preconnect" href="https://cdnjs.cloudflare.com">
     
-    <!-- Stylesheets -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    
-    <!-- Supabase -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    
-    <!-- JSON-LD Structured Data -->
-    <script type="application/ld+json">
-    {
-        "@context": "https://schema.org",
-        "@type": "EducationalOrganization",
-        "name": "MEI DRIVE AFRICA",
-        "description": "NTSA-approved driver training courses in Kenya",
-        "url": "https://meidriveafrica.com",
-        "address": { "@type": "PostalAddress", "addressCountry": "KE", "addressLocality": "Nairobi" },
-        "instructor": { "@type": "Person", "name": "NTSA Certified Instructor", "identifier": "ILR-7WA1P62" }
-    }
-    </script>
     
     <title>MEI DRIVE AFRICA | NTSA Approved Driver Training in Kenya</title>
     
@@ -312,7 +294,7 @@
             to { opacity: 1; transform: translateY(0); }
         }
         .hero h1 {
-            font-size: 3.5rem;
+            font-size: 3rem;
             line-height: 1.2;
             margin-bottom: 1.5rem;
             font-weight: 800;
@@ -320,7 +302,7 @@
         .hero h1 span {
             color: var(--neon-green);
             display: block;
-            font-size: 2.2rem;
+            font-size: 2rem;
             margin-top: 0.5rem;
         }
         .hero p {
@@ -387,7 +369,7 @@
             gap: 1rem;
         }
         .stat { text-align: center; }
-        .stat h2 { font-size: 2.5rem; color: var(--neon-green); margin-bottom: 0.25rem; }
+        .stat h2 { font-size: 2rem; color: var(--neon-green); margin-bottom: 0.25rem; }
         .stat p { color: var(--soft-gray); }
         
         .container {
@@ -442,12 +424,12 @@
             font-weight: bold;
             margin-bottom: 0.75rem;
         }
-        .course-card h3 { margin-bottom: 0.5rem; font-size: 1.1rem; }
+        .course-card h3 { margin-bottom: 0.5rem; font-size: 1rem; }
         .course-card p {
             color: var(--soft-gray);
             margin-bottom: 0.75rem;
             line-height: 1.4;
-            font-size: 0.85rem;
+            font-size: 0.8rem;
             display: -webkit-box;
             -webkit-line-clamp: 2;
             -webkit-box-orient: vertical;
@@ -466,7 +448,7 @@
             cursor: pointer;
             transition: var(--transition);
             font-weight: 600;
-            font-size: 0.85rem;
+            font-size: 0.8rem;
         }
         .btn-view:hover { background: var(--neon-green); color: var(--dark-navy); }
         
@@ -524,32 +506,39 @@
             opacity: 0.9;
         }
         
+        .footer {
+            background: var(--dark-navy);
+            text-align: center;
+            padding: 2rem;
+            color: var(--soft-gray);
+            border-top: 1px solid rgba(0,255,136,0.1);
+            margin-top: 2rem;
+        }
+        
         @media (max-width: 1024px) {
             .courses-grid { grid-template-columns: repeat(3, 1fr); gap: 1.25rem; }
-            .hero h1 { font-size: 2.8rem; }
-            .hero h1 span { font-size: 1.8rem; }
+            .hero h1 { font-size: 2.5rem; }
         }
         @media (max-width: 768px) {
             .courses-grid { grid-template-columns: repeat(2, 1fr); gap: 1rem; }
             .container { padding: 3rem 1rem; }
             .course-card { padding: 1rem; }
             .course-icon { font-size: 1.5rem; }
-            .course-card h3 { font-size: 0.95rem; }
-            .hero h1 { font-size: 2rem; }
-            .hero h1 span { font-size: 1.3rem; }
-            .hero p { font-size: 0.95rem; }
+            .course-card h3 { font-size: 0.9rem; }
+            .hero h1 { font-size: 1.8rem; }
+            .hero h1 span { font-size: 1.2rem; }
+            .hero p { font-size: 0.9rem; }
             .nav-links { display: none; }
             .mobile-menu-btn { display: block; }
             .stats-container { margin: 0 20px; flex-direction: column; gap: 1.5rem; }
             .hero-buttons { flex-direction: column; align-items: center; }
-            .toast { bottom: 20px; right: 20px; left: 20px; max-width: calc(100% - 40px); }
             .whatsapp-tab { display: none; }
             .whatsapp-float { bottom: 20px; left: 20px; width: 50px; height: 50px; font-size: 1.5rem; }
         }
         @media (max-width: 480px) {
             .courses-grid { grid-template-columns: 1fr; }
             .hero h1 { font-size: 1.5rem; }
-            .stat h2 { font-size: 1.8rem; }
+            .stat h2 { font-size: 1.5rem; }
         }
         
         .skeleton-card {
@@ -595,14 +584,6 @@
             50% { opacity: 0.8; }
         }
         
-        footer {
-            background: var(--dark-navy);
-            text-align: center;
-            padding: 2rem;
-            color: var(--soft-gray);
-            border-top: 1px solid rgba(0,255,136,0.1);
-        }
-        
         .instructor-credit {
             margin-top: 1rem;
             font-size: 0.8rem;
@@ -622,26 +603,15 @@
 </head>
 <body>
 
-<!-- Loading Spinner -->
 <div id="loadingSpinner" class="loading-spinner"><div class="spinner"></div></div>
-
-<!-- Toast -->
 <div id="toast" class="toast"></div>
 
-<!-- Floating WhatsApp Button (Mobile) -->
 <a href="https://wa.me/254703738707?text=Hello%21%20I%27m%20interested%20in%20your%20driving%20courses%20at%20MEI%20DRIVE%20AFRICA" 
-   class="whatsapp-float" target="_blank">
-    <i class="fab fa-whatsapp"></i>
-</a>
+   class="whatsapp-float" target="_blank"><i class="fab fa-whatsapp"></i></a>
 
-<!-- WhatsApp Side Tab (Desktop) -->
 <a href="https://wa.me/254703738707?text=Hello%21%20I%27m%20interested%20in%20your%20driving%20courses%20at%20MEI%20DRIVE%20AFRICA" 
-   class="whatsapp-tab" target="_blank">
-    <i class="fab fa-whatsapp"></i>
-    <span>Chat on WhatsApp</span>
-</a>
+   class="whatsapp-tab" target="_blank"><i class="fab fa-whatsapp"></i><span>Chat on WhatsApp</span></a>
 
-<!-- NAVBAR -->
 <nav class="navbar">
     <div class="nav-container">
         <div class="logo" onclick="location.href='/'">MEI DRIVE <span>AFRICA</span></div>
@@ -666,7 +636,6 @@
     </div>
 </nav>
 
-<!-- Mobile Navigation -->
 <div class="overlay" id="mobileOverlay"></div>
 <div class="mobile-nav" id="mobileNav">
     <div class="mobile-nav-header">
@@ -691,7 +660,6 @@
     </div>
 </div>
 
-<!-- HERO SECTION -->
 <section class="hero">
     <div class="hero-content">
         <h1>Practice Daily.<br><span>Revise Smarter. Pass with Confidence.</span></h1>
@@ -703,7 +671,6 @@
     </div>
 </section>
 
-<!-- STATS -->
 <section class="stats">
     <div class="stats-container">
         <div class="stat"><h2 id="totalStudents">10K+</h2><p>Students</p></div>
@@ -712,13 +679,11 @@
     </div>
 </section>
 
-<!-- COURSES -->
 <section class="container" id="courses">
     <h2 class="section-title">Our <span>Courses</span></h2>
     <div id="coursesContainer" class="courses-grid"></div>
 </section>
 
-<!-- CONTACT SECTION -->
 <section class="contact-section" id="contact">
     <h2 class="section-title">Get In <span>Touch</span></h2>
     <div class="contact-grid">
@@ -728,32 +693,26 @@
             <p>Fastest response - Chat with us</p>
             <p><strong>0703 738 707</strong></p>
             <a href="https://wa.me/254703738707?text=Hello%21%20I%27m%20interested%20in%20your%20driving%20courses" 
-               class="contact-btn whatsapp-btn" target="_blank">
-                <i class="fab fa-whatsapp"></i> Chat Now
-            </a>
+               class="contact-btn whatsapp-btn" target="_blank"><i class="fab fa-whatsapp"></i> Chat Now</a>
         </div>
         <div class="contact-card call">
             <i class="fas fa-phone-alt"></i>
             <h3>Call Us</h3>
             <p>Mon-Sat: 8am - 6pm</p>
             <p><strong>0703 738 707</strong></p>
-            <a href="tel:+254703738707" class="contact-btn call-btn">
-                <i class="fas fa-phone"></i> Call Now
-            </a>
+            <a href="tel:+254703738707" class="contact-btn call-btn"><i class="fas fa-phone"></i> Call Now</a>
         </div>
         <div class="contact-card email">
             <i class="fas fa-envelope"></i>
             <h3>Email Us</h3>
             <p>We'll respond within 24hrs</p>
             <p><strong>info@meidriveafrica.com</strong></p>
-            <a href="mailto:info@meidriveafrica.com" class="contact-btn call-btn">
-                <i class="fas fa-envelope"></i> Send Email
-            </a>
+            <a href="mailto:info@meidriveafrica.com" class="contact-btn call-btn"><i class="fas fa-envelope"></i> Send Email</a>
         </div>
     </div>
 </section>
 
-<footer>
+<footer class="footer">
     <p>&copy; 2026 MEI DRIVE AFRICA | NTSA Approved Driver Training</p>
     <p class="instructor-credit">
         <i class="fas fa-certificate"></i> NTSA Certified Instructor: ILR-7WA1P62
@@ -762,9 +721,7 @@
 </footer>
 
 <script>
-    // ============================================
-    // SUPABASE CONFIGURATION
-    // ============================================
+    // Supabase Configuration
     const SUPABASE_URL = 'https://jeksrwrzzrczamxijvwl.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Impla3Nyd3J6enJjemFteGlqdndsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg2NzYyMjAsImV4cCI6MjA5NDI1MjIyMH0.1poYpJKNFEVe2NTBkXBTH2bIHGk2yT8aqCU-OlJc4vs';
     
@@ -833,10 +790,8 @@
         }
     }
     
-    // Display courses from Supabase
     function displayCourses(courses) {
         coursesContainer.innerHTML = '';
-        const icons = ['🚗', '🚌', '🚸', '⚡', '🛵', '🚛', '📚', '📝', '🛡️', '🔄'];
         
         if (!courses || courses.length === 0) {
             coursesContainer.innerHTML = `
@@ -850,22 +805,18 @@
             return;
         }
         
-        courses.forEach((course, index) => {
+        courses.forEach(course => {
             const isFree = course.type === 'free' || course.price === 0;
             const title = course.name;
             const desc = course.description || 'Professional driver training course';
             const price = course.price || 0;
-            const icon = course.icon || icons[index % icons.length];
+            const icon = course.icon || '🚗';
             
             const card = document.createElement('div');
             card.className = 'course-card';
             card.onclick = () => {
                 if (currentUser) {
-                    if (title === 'Learner Hub') {
-                        window.location.href = '/course-learner.html';
-                    } else {
-                        showToast(`Coming soon! The ${title} course will be available shortly.`, false);
-                    }
+                    window.location.href = `/course-learner.html`;
                 } else {
                     showToast('Please login to view course details', true);
                     window.location.href = '/login.html';
@@ -878,13 +829,12 @@
                 <h3>${escapeHtml(title)}</h3>
                 <p>${escapeHtml(desc.substring(0, 80))}...</p>
                 <div class="course-price ${isFree ? 'free' : 'premium'}">${isFree ? 'FREE' : `KES ${price.toLocaleString()}`}</div>
-                <button class="btn-view">${title === 'Learner Hub' ? 'Start Learning →' : 'View Course →'}</button>
+                <button class="btn-view">View Course →</button>
             `;
             coursesContainer.appendChild(card);
         });
     }
     
-    // Show skeleton loaders while fetching
     function showSkeletons() {
         coursesContainer.innerHTML = `
             <div class="skeleton-card"><div class="skeleton-icon"></div><div class="skeleton-title"></div><div class="skeleton-text"></div><div class="skeleton-price"></div></div>
@@ -894,7 +844,6 @@
         `;
     }
     
-    // Load courses directly from Supabase
     async function loadCourses() {
         setLoading(true);
         showSkeletons();
@@ -903,11 +852,10 @@
             console.log('Fetching courses from Supabase...');
             const { data, error } = await supabaseClient
                 .from('courses')
-                .select('id, name, description, type, price, icon, duration, level')
+                .select('*')
                 .order('id', { ascending: true });
             
-            console.log('Courses from Supabase:', data);
-            console.log('Total courses found:', data?.length || 0);
+            console.log('Courses loaded:', data?.length || 0);
             
             if (error) {
                 console.error('Supabase error:', error);
@@ -924,7 +872,7 @@
             }
         } catch (error) {
             console.error('Error loading courses:', error);
-            showToast('Failed to connect to database. Please refresh the page.', true);
+            showToast('Failed to connect to database.', true);
             displayCourses([]);
         } finally {
             setLoading(false);
