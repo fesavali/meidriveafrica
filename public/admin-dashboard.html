@@ -204,8 +204,10 @@
         .badge.learner { background: #0A234F; color: #00FF88; border: 1px solid #00FF88; }
         .badge.premium { background: rgba(255, 152, 0, 0.2); color: #ff9800; border: 1px solid #ff9800; }
         .badge.free { background: rgba(0, 255, 136, 0.2); color: #00FF88; border: 1px solid #00FF88; }
+        .badge.approved { background: rgba(0, 200, 81, 0.2); color: #00C851; border: 1px solid #00C851; }
+        .badge.pending { background: rgba(255, 152, 0, 0.2); color: #ff9800; border: 1px solid #ff9800; }
 
-        .btn-primary, .btn-edit, .btn-delete {
+        .btn-primary, .btn-edit, .btn-delete, .btn-approve {
             border: none;
             padding: 8px 16px;
             border-radius: 6px;
@@ -217,7 +219,8 @@
         .btn-primary { background: #00FF88; color: #041B3D; }
         .btn-edit { background: #ff9800; color: #fff; }
         .btn-delete { background: #ff4d4f; color: #fff; }
-        .btn-primary:hover, .btn-edit:hover, .btn-delete:hover { transform: translateY(-2px); }
+        .btn-approve { background: #00C851; color: #fff; }
+        .btn-primary:hover, .btn-edit:hover, .btn-delete:hover, .btn-approve:hover { transform: translateY(-2px); }
 
         .modal {
             display: none;
@@ -310,7 +313,8 @@
 <div class="sidebar" id="sidebar">
     <h2><i class="fas fa-car"></i> MEI ADMIN</h2>
     <a href="javascript:void(0)" data-section="dashboard" onclick="showSection('dashboard')"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
-    <a href="javascript:void(0)" data-section="courses" onclick="showSection('courses')"><i class="fas fa-book"></i> Courses</a>
+    <a href="javascript:void(0)" data-section="courses" onclick="showSection('courses')"><i class="fas fa-book"></i> Course Management</a>
+    <a href="javascript:void(0)" data-section="payments" onclick="showSection('payments')"><i class="fas fa-credit-card"></i> Payment Matrix</a>
     <a href="javascript:void(0)" data-section="units" onclick="showSection('units')"><i class="fas fa-layer-group"></i> Learner Units</a>
     <a href="javascript:void(0)" data-section="quiz" onclick="showSection('quiz')"><i class="fas fa-question-circle"></i> Quiz Bank</a>
     <a href="javascript:void(0)" data-section="users" onclick="showSection('users')"><i class="fas fa-users"></i> Users</a>
@@ -326,16 +330,42 @@
             <div class="stat-card" onclick="showSection('units')"><i class="fas fa-layer-group"></i><h3 id="unitsCount">0</h3><p>Learner Units</p></div>
             <div class="stat-card" onclick="showSection('quiz')"><i class="fas fa-question-circle"></i><h3 id="quizCount">0</h3><p>Quiz Questions</p></div>
             <div class="stat-card" onclick="showSection('users')"><i class="fas fa-users"></i><h3 id="usersCount">0</h3><p>Total Users</p></div>
+            <div class="stat-card" onclick="showSection('payments')"><i class="fas fa-money-bill-wave"></i><h3 id="totalRevenue">KES 0</h3><p>Total Revenue</p></div>
+            <div class="stat-card" onclick="showSection('payments')"><i class="fas fa-clock"></i><h3 id="pendingCount">0</h3><p>Pending Payments</p></div>
         </div>
     </div>
 
-    <!-- COURSES SECTION -->
+    <!-- COURSE MANAGEMENT SECTION -->
     <div id="coursesSection" style="display:none">
         <div class="card">
             <h2><i class="fas fa-book"></i> Course Management</h2>
             <button class="btn-primary" onclick="openCourseModal()"><i class="fas fa-plus"></i> Add Course</button>
             <button class="btn-primary" onclick="loadCourses()"><i class="fas fa-sync-alt"></i> Refresh</button>
             <div id="coursesTable" class="table-wrapper"><div class="loading"><div class="spinner"></div></div></div>
+        </div>
+    </div>
+
+    <!-- PAYMENT MATRIX SECTION -->
+    <div id="paymentsSection" style="display:none">
+        <div class="card">
+            <h2><i class="fas fa-chart-line"></i> Payment & Revenue Matrix</h2>
+            
+            <!-- Revenue Summary Cards -->
+            <div class="revenue-grid" style="margin-bottom: 30px;">
+                <div class="revenue-card"><h4>Today's Revenue</h4><div class="amount" id="todayRevenue">KES 0</div></div>
+                <div class="revenue-card"><h4>This Week</h4><div class="amount" id="weeklyRevenue">KES 0</div></div>
+                <div class="revenue-card"><h4>This Month</h4><div class="amount" id="monthlyRevenue">KES 0</div></div>
+                <div class="revenue-card"><h4>All Time</h4><div class="amount" id="allTimeRevenue">KES 0</div></div>
+            </div>
+            
+            <!-- Revenue by Course -->
+            <h3><i class="fas fa-chart-simple"></i> Revenue by Course</h3>
+            <div id="revenueByCourseTable" class="table-wrapper"><div class="loading"><div class="spinner"></div></div></div>
+            
+            <!-- Payment Approvals -->
+            <h3 style="margin-top: 30px;"><i class="fas fa-credit-card"></i> Payment Approvals</h3>
+            <button class="btn-primary" onclick="openPaymentModal()"><i class="fas fa-plus"></i> Add Payment</button>
+            <div id="paymentsTable" class="table-wrapper"><div class="loading"><div class="spinner"></div></div></div>
         </div>
     </div>
 
@@ -374,11 +404,34 @@
         <input type="hidden" id="courseId">
         <input type="text" id="courseName" placeholder="Course Name" required>
         <textarea id="courseDesc" rows="3" placeholder="Description"></textarea>
-        <select id="courseType"><option value="free">Free</option><option value="premium">Premium</option></select>
+        <select id="courseType">
+            <option value="free">Free</option>
+            <option value="premium">Premium</option>
+        </select>
         <input type="number" id="coursePrice" placeholder="Price (KES)">
         <input type="number" id="courseDuration" placeholder="Duration (weeks)">
-        <select id="courseLevel"><option value="Beginner">Beginner</option><option value="Intermediate">Intermediate</option><option value="Advanced">Advanced</option></select>
+        <select id="courseLevel">
+            <option value="Beginner">Beginner</option>
+            <option value="Intermediate">Intermediate</option>
+            <option value="Advanced">Advanced</option>
+        </select>
         <div class="modal-buttons"><button class="btn-primary" onclick="saveCourse()">Save</button><button onclick="closeCourseModal()">Cancel</button></div>
+    </div>
+</div>
+
+<!-- Payment Modal -->
+<div id="paymentModal" class="modal">
+    <div class="modal-content">
+        <h3>Add Payment Record</h3>
+        <input type="hidden" id="paymentId">
+        <select id="paymentUserId" required><option value="">Select User</option></select>
+        <select id="paymentCourseId" required><option value="">Select Course</option></select>
+        <input type="number" id="paymentAmount" placeholder="Amount (KES)" required>
+        <select id="paymentStatus">
+            <option value="pending">Pending</option>
+            <option value="approved">Approved</option>
+        </select>
+        <div class="modal-buttons"><button class="btn-primary" onclick="savePayment()">Save Payment</button><button onclick="closePaymentModal()">Cancel</button></div>
     </div>
 </div>
 
@@ -433,11 +486,16 @@
         const { count: units } = await supabaseClient.from('learner_units').select('*', { count: 'exact', head: true });
         const { count: quiz } = await supabaseClient.from('quiz_questions').select('*', { count: 'exact', head: true });
         const { count: users } = await supabaseClient.from('profiles').select('*', { count: 'exact', head: true });
+        const { data: payments } = await supabaseClient.from('payments').select('amount, status');
+        const totalRevenue = payments?.filter(p => p.status === 'approved').reduce((sum, p) => sum + (p.amount || 0), 0) || 0;
+        const pendingCount = payments?.filter(p => p.status === 'pending').length || 0;
         
         document.getElementById('coursesCount').textContent = courses || 0;
         document.getElementById('unitsCount').textContent = units || 0;
         document.getElementById('quizCount').textContent = quiz || 0;
         document.getElementById('usersCount').textContent = users || 0;
+        document.getElementById('totalRevenue').innerHTML = `KES ${totalRevenue.toLocaleString()}`;
+        document.getElementById('pendingCount').textContent = pendingCount;
     }
 
     async function loadCourses() {
@@ -446,12 +504,63 @@
         if (error) { container.innerHTML = '<p>Error loading courses</p>'; return; }
         if (!data.length) { container.innerHTML = '<div class="empty-state"><i class="fas fa-book-open"></i><p>No courses found. Click "Add Course" to create one.</p></div>'; return; }
         
-        let html = `<table><thead><tr><th>ID</th><th>Name</th><th>Type</th><th>Price</th><th>Duration</th><th>Level</th><th>Actions</th></tr></thead><tbody>`;
+        let html = `<tr><thead><tr><th>ID</th><th>Name</th><th>Type</th><th>Price</th><th>Duration</th><th>Level</th><th>Actions</th></tr></thead><tbody>`;
         data.forEach(c => {
-            html += `<tr><td data-label="ID">${c.id}</td><td data-label="Name">${escapeHtml(c.name)}</td><td data-label="Type"><span class="badge ${c.type}">${c.type}</span></td><td data-label="Price">${c.type === 'free' ? 'FREE' : `KES ${c.price?.toLocaleString()}`}</td><td data-label="Duration">${c.duration || 'N/A'} weeks</td><td data-label="Level">${c.level || 'Beginner'}</td><td data-label="Actions"><button class="btn-edit" onclick="editCourse(${c.id})"><i class="fas fa-edit"></i> Edit</button> <button class="btn-delete" onclick="deleteCourse(${c.id})"><i class="fas fa-trash"></i> Delete</button></td></tr>`;
+            html += `<tr><td data-label="ID">${c.id}</td><td data-label="Name">${escapeHtml(c.name)}</td><td data-label="Type"><span class="badge ${c.type}">${c.type}</span></td><td data-label="Price">${c.type === 'free' ? 'FREE' : `KES ${c.price?.toLocaleString()}`}</td><td data-label="Duration">${c.duration || 'N/A'} weeks</td><td data-label="Level">${c.level || 'Beginner'}</td><td data-label="Actions"><button class="btn-edit" onclick="editCourse(${c.id})"><i class="fas fa-edit"></i> Edit Price</button> <button class="btn-delete" onclick="deleteCourse(${c.id})"><i class="fas fa-trash"></i> Delete</button></td></tr>`;
         });
         html += `</tbody></table>`;
         container.innerHTML = html;
+    }
+
+    async function loadPayments() {
+        const { data: payments, error } = await supabaseClient.from('payments').select('*, profiles:user_id(id, full_name, email), courses:course_id(id, name)').order('created_at', { ascending: false });
+        const container = document.getElementById('paymentsTable');
+        if (error) { container.innerHTML = '<p>Error loading payments</p>'; return; }
+        if (!payments?.length) { container.innerHTML = '<div class="empty-state"><i class="fas fa-credit-card"></i><p>No payments found</p></div>'; return; }
+        
+        let html = `社<thead><tr><th>User</th><th>Course</th><th>Amount</th><th>Status</th><th>Date</th><th>Actions</th></tr></thead><tbody>`;
+        payments.forEach(p => {
+            html += `<tr><td data-label="User">${escapeHtml(p.profiles?.full_name || p.profiles?.email || 'N/A')}</td><td data-label="Course">${escapeHtml(p.courses?.name)}</td><td data-label="Amount">KES ${p.amount?.toLocaleString()}</td><td data-label="Status"><span class="badge ${p.status}">${p.status}</span></td><td data-label="Date">${new Date(p.created_at).toLocaleDateString()}</td><td data-label="Actions">${p.status === 'pending' ? `<button class="btn-approve" onclick="approvePayment(${p.id}, ${p.amount})">Approve</button>` : '✅ Approved'} <button class="btn-delete" onclick="deletePayment(${p.id})">Delete</button></td></tr>`;
+        });
+        html += `</tbody><table>`;
+        container.innerHTML = html;
+    }
+
+    async function loadRevenueData() {
+        const { data: payments } = await supabaseClient.from('payments').select('amount, status, created_at, course_id, courses:course_id(name)').eq('status', 'approved').order('created_at', { ascending: false });
+        
+        const today = new Date().toISOString().split('T')[0];
+        const weekAgo = new Date(); weekAgo.setDate(weekAgo.getDate() - 7);
+        const monthAgo = new Date(); monthAgo.setDate(monthAgo.getDate() - 30);
+        
+        let daily = 0, weekly = 0, monthly = 0, allTime = 0;
+        const courseRevenue = {};
+        
+        payments?.forEach(p => {
+            const amount = p.amount || 0;
+            const date = p.created_at?.split('T')[0];
+            allTime += amount;
+            if (date === today) daily += amount;
+            if (new Date(p.created_at) >= weekAgo) weekly += amount;
+            if (new Date(p.created_at) >= monthAgo) monthly += amount;
+            
+            const courseName = p.courses?.name || 'Unknown';
+            courseRevenue[courseName] = (courseRevenue[courseName] || 0) + amount;
+        });
+        
+        document.getElementById('todayRevenue').innerHTML = `KES ${daily.toLocaleString()}`;
+        document.getElementById('weeklyRevenue').innerHTML = `KES ${weekly.toLocaleString()}`;
+        document.getElementById('monthlyRevenue').innerHTML = `KES ${monthly.toLocaleString()}`;
+        document.getElementById('allTimeRevenue').innerHTML = `KES ${allTime.toLocaleString()}`;
+        
+        // Revenue by Course Table
+        let courseHtml = `<tr><thead><tr><th>Course Name</th><th>Total Revenue</th><th>Enrollments</th></tr></thead><tbody>`;
+        for (const [course, revenue] of Object.entries(courseRevenue).sort((a,b) => b[1] - a[1])) {
+            const { count } = await supabaseClient.from('enrollments').select('*', { count: 'exact', head: true });
+            courseHtml += `<tr><td data-label="Course">${escapeHtml(course)}</td><td data-label="Revenue">KES ${revenue.toLocaleString()}</td><td data-label="Enrollments">${count || 0}</td></tr>`;
+        }
+        courseHtml += `</tbody></table>`;
+        document.getElementById('revenueByCourseTable').innerHTML = courseHtml;
     }
 
     async function loadUnits() {
@@ -460,9 +569,9 @@
         if (error) { container.innerHTML = '<p>Error loading units</p>'; return; }
         if (!data.length) { container.innerHTML = '<div class="empty-state"><i class="fas fa-layer-group"></i><p>No units found</p></div>'; return; }
         
-        let html = `社<thead><tr><th>Unit #</th><th>Title</th><th>Slug</th><th>Description</th><th>Actions</th></tr></thead><tbody>`;
+        let html = `社<thead><tr><th>Unit #</th><th>Title</th><th>Slug</th><th>Description</th></tr></thead><tbody>`;
         data.forEach(u => {
-            html += `<tr><td data-label="Unit">${u.unit_number}</td><td data-label="Title">${escapeHtml(u.title)}</td><td data-label="Slug">${escapeHtml(u.slug)}</td><td data-label="Description">${escapeHtml(u.description?.substring(0, 50)) || 'N/A'}...</td><td data-label="Actions"><button class="btn-edit" onclick="editUnit(${u.id})"><i class="fas fa-edit"></i> Edit</button></td></tr>`;
+            html += `<tr><td data-label="Unit">${u.unit_number}</td><td data-label="Title">${escapeHtml(u.title)}</td><td data-label="Slug">${escapeHtml(u.slug)}</td><td data-label="Description">${escapeHtml(u.description?.substring(0, 50)) || 'N/A'}...</td></tr>`;
         });
         html += `</tbody></table>`;
         container.innerHTML = html;
@@ -474,9 +583,9 @@
         if (error) { container.innerHTML = '<p>Error loading quiz questions</p>'; return; }
         if (!data.length) { container.innerHTML = '<div class="empty-state"><i class="fas fa-question-circle"></i><p>No quiz questions found</p></div>'; return; }
         
-        let html = `社<thead><tr><th>ID</th><th>Unit</th><th>Question</th><th>Correct</th><th>Actions</th><tr></thead><tbody>`;
+        let html = `社<thead><tr><th>ID</th><th>Unit</th><th>Question</th><th>Correct</th><th>Actions</th></tr></thead><tbody>`;
         data.forEach(q => {
-            html += `<tr><td data-label="ID">${q.id}</td><td data-label="Unit">${q.unit_id || '-'}</td><td data-label="Question">${escapeHtml(q.question?.substring(0, 50)) || 'N/A'}...</td><td data-label="Correct">${escapeHtml(q.correct_answer) || '-'}</td><td data-label="Actions"><button class="btn-edit" onclick="editQuizQuestion(${q.id})"><i class="fas fa-edit"></i> Edit</button> <button class="btn-delete" onclick="deleteQuizQuestion(${q.id})"><i class="fas fa-trash"></i> Delete</button></td></tr>`;
+            html += `<tr><td data-label="ID">${q.id}</td><td data-label="Unit">${q.unit_id || '-'}</td><td data-label="Question">${escapeHtml(q.question?.substring(0, 50)) || 'N/A'}...</td><td data-label="Correct">${escapeHtml(q.correct_answer) || '-'}</td><td data-label="Actions"><button class="btn-edit" onclick="editQuizQuestion(${q.id})">Edit</button> <button class="btn-delete" onclick="deleteQuizQuestion(${q.id})">Delete</button></td></tr>`;
         });
         html += `</tbody></table>`;
         container.innerHTML = html;
@@ -488,10 +597,28 @@
         if (!data?.length) { container.innerHTML = '<div class="empty-state"><i class="fas fa-users"></i><p>No users found</p></div>'; return; }
         let html = `社<thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Joined</th><th>Actions</th></tr></thead><tbody>`;
         data.forEach(u => {
-            html += `<tr><td data-label="Name">${escapeHtml(u.full_name || 'N/A')}</td><td data-label="Email">${escapeHtml(u.email)}</td><td data-label="Role"><span class="badge ${u.role || 'learner'}">${u.role || 'learner'}</span></td><td data-label="Joined">${new Date(u.created_at).toLocaleDateString()}</td><td data-label="Actions"><button class="btn-edit" onclick="toggleUserRole('${u.id}', '${u.role}')"><i class="fas fa-user-shield"></i> Toggle Role</button></td></tr>`;
+            html += `<tr><td data-label="Name">${escapeHtml(u.full_name || 'N/A')}</td><td data-label="Email">${escapeHtml(u.email)}</td><td data-label="Role"><span class="badge ${u.role || 'learner'}">${u.role || 'learner'}</span></td><td data-label="Joined">${new Date(u.created_at).toLocaleDateString()}</td><td data-label="Actions"><button class="btn-edit" onclick="toggleUserRole('${u.id}', '${u.role}')">Toggle Role</button></td></tr>`;
         });
         html += `</tbody></table>`;
         container.innerHTML = html;
+    }
+
+    async function loadUserOptions() {
+        const { data } = await supabaseClient.from('profiles').select('id, full_name, email');
+        const select = document.getElementById('paymentUserId');
+        if (select && data) {
+            select.innerHTML = '<option value="">Select User</option>';
+            data.forEach(u => { select.innerHTML += `<option value="${u.id}">${escapeHtml(u.full_name || u.email)}</option>`; });
+        }
+    }
+
+    async function loadCourseOptions() {
+        const { data } = await supabaseClient.from('courses').select('id, name');
+        const select = document.getElementById('paymentCourseId');
+        if (select && data) {
+            select.innerHTML = '<option value="">Select Course</option>';
+            data.forEach(c => { select.innerHTML += `<option value="${c.id}">${escapeHtml(c.name)}</option>`; });
+        }
     }
 
     async function loadUnitOptions() {
@@ -502,6 +629,55 @@
             data.forEach(u => { select.innerHTML += `<option value="${u.id}">Unit ${u.unit_number}: ${escapeHtml(u.title)}</option>`; });
         }
     }
+
+    window.approvePayment = async (id, amount) => {
+        await supabaseClient.from('payments').update({ status: 'approved', approved_at: new Date() }).eq('id', id);
+        showToast(`Payment of KES ${amount.toLocaleString()} approved`, 'success');
+        loadPayments();
+        loadRevenueData();
+        loadStats();
+    };
+
+    window.deletePayment = async (id) => {
+        if (confirm('Delete this payment record?')) {
+            await supabaseClient.from('payments').delete().eq('id', id);
+            showToast('Payment deleted');
+            loadPayments();
+            loadRevenueData();
+            loadStats();
+        }
+    };
+
+    window.openPaymentModal = async () => {
+        await loadUserOptions();
+        await loadCourseOptions();
+        document.getElementById('paymentId').value = '';
+        document.getElementById('paymentAmount').value = '';
+        document.getElementById('paymentStatus').value = 'pending';
+        document.getElementById('paymentModal').classList.add('active');
+    };
+
+    window.savePayment = async () => {
+        const data = {
+            user_id: document.getElementById('paymentUserId').value,
+            course_id: document.getElementById('paymentCourseId').value,
+            amount: parseInt(document.getElementById('paymentAmount').value) || 0,
+            status: document.getElementById('paymentStatus').value,
+            created_at: new Date()
+        };
+        if (!data.user_id || !data.course_id || !data.amount) {
+            showToast('Please fill all fields', 'error');
+            return;
+        }
+        await supabaseClient.from('payments').insert([data]);
+        closePaymentModal();
+        loadPayments();
+        loadRevenueData();
+        loadStats();
+        showToast('Payment added');
+    };
+
+    window.closePaymentModal = () => document.getElementById('paymentModal').classList.remove('active');
 
     window.openQuizModal = async () => {
         await loadUnitOptions();
@@ -536,8 +712,20 @@
     window.saveQuizQuestion = async () => {
         const id = document.getElementById('quizId').value;
         const unitId = document.getElementById('quizUnitId').value;
-        const data = { unit_id: unitId || null, question: document.getElementById('quizQuestion').value, option_a: document.getElementById('quizOptionA').value, option_b: document.getElementById('quizOptionB').value, option_c: document.getElementById('quizOptionC').value, option_d: document.getElementById('quizOptionD').value, correct_answer: document.getElementById('quizCorrectAnswer').value, explanation: document.getElementById('quizExplanation').value };
-        if (!data.question || !data.option_a || !data.option_b || !data.correct_answer) { showToast('Please fill required fields', 'error'); return; }
+        const data = { 
+            unit_id: unitId || null, 
+            question: document.getElementById('quizQuestion').value, 
+            option_a: document.getElementById('quizOptionA').value, 
+            option_b: document.getElementById('quizOptionB').value, 
+            option_c: document.getElementById('quizOptionC').value, 
+            option_d: document.getElementById('quizOptionD').value, 
+            correct_answer: document.getElementById('quizCorrectAnswer').value, 
+            explanation: document.getElementById('quizExplanation').value 
+        };
+        if (!data.question || !data.option_a || !data.option_b || !data.correct_answer) { 
+            showToast('Please fill required fields', 'error'); 
+            return; 
+        }
         if (id) await supabaseClient.from('quiz_questions').update(data).eq('id', id);
         else await supabaseClient.from('quiz_questions').insert([data]);
         closeQuizModal();
@@ -547,7 +735,12 @@
     };
 
     window.deleteQuizQuestion = async (id) => {
-        if (confirm('Delete this question?')) { await supabaseClient.from('quiz_questions').delete().eq('id', id); showToast('Question deleted'); loadQuizQuestions(); loadStats(); }
+        if (confirm('Delete this question?')) { 
+            await supabaseClient.from('quiz_questions').delete().eq('id', id); 
+            showToast('Question deleted'); 
+            loadQuizQuestions(); 
+            loadStats(); 
+        }
     };
 
     window.closeQuizModal = () => document.getElementById('quizModal').classList.remove('active');
@@ -588,7 +781,14 @@
 
     window.saveCourse = async () => {
         const id = document.getElementById('courseId').value;
-        const data = { name: document.getElementById('courseName').value, description: document.getElementById('courseDesc').value, type: document.getElementById('courseType').value, price: document.getElementById('courseType').value === 'free' ? 0 : parseInt(document.getElementById('coursePrice').value) || 0, duration: parseInt(document.getElementById('courseDuration').value) || 4, level: document.getElementById('courseLevel').value };
+        const data = { 
+            name: document.getElementById('courseName').value, 
+            description: document.getElementById('courseDesc').value, 
+            type: document.getElementById('courseType').value, 
+            price: document.getElementById('courseType').value === 'free' ? 0 : parseInt(document.getElementById('coursePrice').value) || 0, 
+            duration: parseInt(document.getElementById('courseDuration').value) || 4, 
+            level: document.getElementById('courseLevel').value 
+        };
         if (id) await supabaseClient.from('courses').update(data).eq('id', id);
         else await supabaseClient.from('courses').insert([data]);
         closeCourseModal();
@@ -598,7 +798,6 @@
     };
 
     window.closeCourseModal = () => document.getElementById('courseModal').classList.remove('active');
-    
     window.toggleUserRole = async (userId, currentRole) => {
         const newRole = currentRole === 'admin' ? 'learner' : 'admin';
         await supabaseClient.from('profiles').update({ role: newRole }).eq('id', userId);
@@ -609,24 +808,21 @@
     async function showSection(section) {
         document.getElementById('dashboardSection').style.display = section === 'dashboard' ? 'block' : 'none';
         document.getElementById('coursesSection').style.display = section === 'courses' ? 'block' : 'none';
+        document.getElementById('paymentsSection').style.display = section === 'payments' ? 'block' : 'none';
         document.getElementById('unitsSection').style.display = section === 'units' ? 'block' : 'none';
         document.getElementById('quizSection').style.display = section === 'quiz' ? 'block' : 'none';
         document.getElementById('usersSection').style.display = section === 'users' ? 'block' : 'none';
         
         if (section === 'dashboard') await loadStats();
         if (section === 'courses') await loadCourses();
+        if (section === 'payments') { await loadPayments(); await loadRevenueData(); }
         if (section === 'units') await loadUnits();
         if (section === 'quiz') await loadQuizQuestions();
         if (section === 'users') await loadUsers();
     }
 
     async function handleLogout() { await supabaseClient.auth.signOut(); window.location.href = 'admin-login.html'; }
-    
-    function escapeHtml(str) { 
-        if (!str) return ''; 
-        return String(str).replace(/[&<>]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[m])); 
-    }
-    
+    function escapeHtml(str) { if (!str) return ''; return String(str).replace(/[&<>]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[m])); }
     function openMobileMenu() { document.getElementById('sidebar').classList.add('active'); document.getElementById('overlay').classList.add('active'); }
     function closeMobileMenu() { document.getElementById('sidebar').classList.remove('active'); document.getElementById('overlay').classList.remove('active'); }
     
@@ -640,10 +836,6 @@
 
     window.showSection = showSection;
     window.handleLogout = handleLogout;
-    window.loadCourses = loadCourses;
-    window.loadUnits = loadUnits;
-    window.loadQuizQuestions = loadQuizQuestions;
-    window.loadUsers = loadUsers;
 </script>
 </body>
 </html>
