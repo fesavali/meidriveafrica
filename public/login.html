@@ -133,7 +133,7 @@
         /* Courses Grid */
         .courses-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
             gap: 25px;
             margin-bottom: 40px;
         }
@@ -152,6 +152,13 @@
         .course-card h3 {
             color: #00FF88;
             margin-bottom: 10px;
+            font-size: 1.2rem;
+        }
+        .course-card p {
+            color: #B7C4D6;
+            font-size: 0.85rem;
+            line-height: 1.4;
+            margin-bottom: 15px;
         }
         .course-card .price {
             font-size: 1.2rem;
@@ -172,17 +179,20 @@
         .badge.enrolled { background: #00FF88; color: #041B3D; }
         .badge.free-badge { background: #00FF88; color: #041B3D; }
         .badge.premium-badge { background: #ff9800; color: #041B3D; }
-        .btn-enroll {
+        
+        .btn-enroll, .btn-start {
             width: 100%;
             padding: 10px;
-            margin-top: 15px;
-            background: #00FF88;
-            color: #041B3D;
+            margin-top: 10px;
             border: none;
             border-radius: 8px;
             font-weight: bold;
             cursor: pointer;
             transition: all 0.3s;
+        }
+        .btn-enroll {
+            background: #00FF88;
+            color: #041B3D;
         }
         .btn-enroll:hover { transform: translateY(-2px); }
         .btn-enroll:disabled {
@@ -190,85 +200,34 @@
             cursor: not-allowed;
         }
         .btn-start {
-            width: 100%;
-            padding: 10px;
-            margin-top: 15px;
             background: #ff9800;
             color: #041B3D;
-            border: none;
-            border-radius: 8px;
-            font-weight: bold;
-            cursor: pointer;
         }
+        .btn-start:hover { transform: translateY(-2px); }
         .btn-quiz {
             background: #9c27b0;
-            margin-top: 10px;
+            color: white;
+            margin-top: 5px;
         }
+        .btn-quiz:hover { background: #7b1fa2; }
 
-        /* Quiz Section */
-        .quiz-card {
-            background: #0A234F;
-            border-radius: 16px;
-            padding: 20px;
-            margin-bottom: 20px;
-            border: 1px solid rgba(0, 255, 136, 0.1);
-        }
-        .quiz-question {
-            margin-bottom: 20px;
-            padding: 15px;
-            background: #041B3D;
-            border-radius: 12px;
-        }
-        .quiz-options {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            margin-top: 10px;
-        }
-        .quiz-option {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding: 10px;
-            background: #0A234F;
-            border-radius: 8px;
-            cursor: pointer;
-        }
-        .quiz-option:hover { background: #1a3a5f; }
-        .quiz-option input { cursor: pointer; }
-        .quiz-result {
-            margin-top: 15px;
-            padding: 10px;
-            border-radius: 8px;
-            display: none;
-        }
-        .quiz-result.correct { background: rgba(0, 255, 136, 0.2); color: #00FF88; display: block; }
-        .quiz-result.incorrect { background: rgba(255, 68, 68, 0.2); color: #ff4d4f; display: block; }
-
-        /* Modal */
-        .modal {
-            display: none;
+        /* Toast */
+        .toast {
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.9);
-            z-index: 2000;
-            justify-content: center;
-            align-items: center;
-        }
-        .modal.active { display: flex; }
-        .modal-content {
+            bottom: 20px;
+            right: 20px;
             background: #0A234F;
-            border-radius: 20px;
-            padding: 30px;
-            max-width: 600px;
-            width: 90%;
-            max-height: 80vh;
-            overflow-y: auto;
+            border-left: 4px solid #00FF88;
+            padding: 12px 20px;
+            border-radius: 8px;
+            z-index: 1000;
+            animation: slideIn 0.3s ease;
         }
-        .modal-content h2 { color: #00FF88; margin-bottom: 20px; }
+        .toast.error { border-left-color: #ff4d4f; }
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
 
         footer {
             background: #0A234F;
@@ -290,6 +249,7 @@
     <div class="nav-container">
         <div class="logo" onclick="location.href='/'">MEI DRIVE <span>AFRICA</span></div>
         <div class="nav-links">
+            <a href="/dashboard.html"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
             <span class="user-name" id="userName">User</span>
             <button class="logout-btn" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</button>
         </div>
@@ -331,19 +291,13 @@
         <!-- Available Courses -->
         <h2 class="section-title"><i class="fas fa-book-open"></i> Available Courses</h2>
         <div class="courses-grid" id="coursesGrid">
-            <div style="text-align:center; padding:40px;">Loading courses...</div>
+            <div style="text-align:center; padding:40px;"><div class="spinner"></div> Loading courses...</div>
         </div>
 
         <!-- My Enrolled Courses -->
         <h2 class="section-title"><i class="fas fa-graduation-cap"></i> My Enrolled Courses</h2>
         <div class="courses-grid" id="enrolledGrid">
             <div style="text-align:center; padding:40px;">Loading your courses...</div>
-        </div>
-
-        <!-- Quiz Section -->
-        <h2 class="section-title"><i class="fas fa-question-circle"></i> Practice Quiz</h2>
-        <div class="quiz-card" id="quizSection">
-            <div style="text-align:center; padding:40px;">Select a course to start quiz</div>
         </div>
     </div>
 </div>
@@ -352,7 +306,25 @@
     <p>&copy; 2026 MEI DRIVE AFRICA | NTSA Approved Driver Training</p>
 </footer>
 
+<style>
+    .spinner {
+        display: inline-block;
+        width: 40px;
+        height: 40px;
+        border: 3px solid rgba(0, 255, 136, 0.3);
+        border-top-color: #00FF88;
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+</style>
+
 <script>
+    // ============================================
+    // SUPABASE CONFIGURATION
+    // ============================================
     const SUPABASE_URL = 'https://jeksrwrzzrczamxijvwl.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Impla3Nyd3J6enJjemFteGlqdndsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg2NzYyMjAsImV4cCI6MjA5NDI1MjIyMH0.1poYpJKNFEVe2NTBkXBTH2bIHGk2yT8aqCU-OlJc4vs';
     
@@ -360,9 +332,12 @@
     
     let currentUser = null;
     let currentProfile = null;
-    let enrolledCourses = [];
+    let enrolledCourseIds = new Set();
     let allCourses = [];
     
+    // ============================================
+    // AUTHENTICATION
+    // ============================================
     async function checkAuth() {
         const { data: { session } } = await supabase.auth.getSession();
         if (!session) {
@@ -378,273 +353,296 @@
             .maybeSingle();
         currentProfile = profile;
         
-        document.getElementById('userName').textContent = profile?.full_name?.split(' ')[0] || currentUser.email.split('@')[0];
-        document.getElementById('welcomeMsg').textContent = `Welcome back, ${profile?.full_name?.split(' ')[0] || 'Learner'}!`;
+        const displayName = profile?.full_name?.split(' ')[0] || currentUser.email.split('@')[0];
+        document.getElementById('userName').textContent = displayName;
+        document.getElementById('welcomeMsg').textContent = `Welcome back, ${displayName}!`;
         
         return true;
     }
     
+    // ============================================
+    // LOAD STATISTICS
+    // ============================================
     async function loadStats() {
-        // Get enrolled courses
-        const { data: enrollments } = await supabase
-            .from('enrollments')
-            .select('*')
-            .eq('profile_id', currentProfile?.id);
-        
-        const enrolledCount = enrollments?.length || 0;
-        document.getElementById('enrolledCount').textContent = enrolledCount;
-        
-        // Get user progress
-        const { data: progress } = await supabase
-            .from('user_progress')
-            .select('overall_progress')
-            .eq('profile_id', currentProfile?.id);
-        
-        const avgProgress = progress?.length ? Math.round(progress.reduce((a,b) => a + (b.overall_progress || 0), 0) / progress.length) : 0;
-        document.getElementById('avgProgress').textContent = `${avgProgress}%`;
-        
-        // Get completed units
-        const { data: completedUnits } = await supabase
-            .from('user_progress')
-            .select('unit_id')
-            .eq('profile_id', currentProfile?.id)
-            .eq('completed', true);
-        document.getElementById('completedUnits').textContent = completedUnits?.length || 0;
-    }
-    
-    async function loadCourses() {
-        const { data: courses, error } = await supabase
-            .from('courses')
-            .select('*')
-            .order('id');
-        
-        if (error) {
-            console.error('Error loading courses:', error);
-            return;
+        try {
+            // Get enrolled courses count
+            const { data: enrollments, error: enrollError } = await supabase
+                .from('enrollments')
+                .select('course_id')
+                .eq('profile_id', currentProfile?.id);
+            
+            if (!enrollError && enrollments) {
+                document.getElementById('enrolledCount').textContent = enrollments.length;
+                enrolledCourseIds = new Set(enrollments.map(e => e.course_id));
+            }
+            
+            // Get user progress
+            const { data: progress } = await supabase
+                .from('user_progress')
+                .select('overall_progress')
+                .eq('profile_id', currentProfile?.id);
+            
+            if (progress && progress.length) {
+                const avg = Math.round(progress.reduce((a, b) => a + (b.overall_progress || 0), 0) / progress.length);
+                document.getElementById('avgProgress').textContent = `${avg}%`;
+            }
+            
+            // Get completed units
+            const { data: completed } = await supabase
+                .from('user_progress')
+                .select('unit_id')
+                .eq('profile_id', currentProfile?.id)
+                .eq('completed', true);
+            
+            document.getElementById('completedUnits').textContent = completed?.length || 0;
+            
+        } catch (err) {
+            console.error('Error loading stats:', err);
         }
-        
-        allCourses = courses || [];
-        
-        // Get user's enrollments
-        const { data: enrollments } = await supabase
-            .from('enrollments')
-            .select('course_id')
-            .eq('profile_id', currentProfile?.id);
-        
-        const enrolledIds = new Set(enrollments?.map(e => e.course_id) || []);
-        enrolledCourses = courses?.filter(c => enrolledIds.has(c.id)) || [];
-        
-        renderAvailableCourses(courses, enrolledIds);
-        renderEnrolledCourses(enrolledCourses);
     }
     
-    function renderAvailableCourses(courses, enrolledIds) {
+    // ============================================
+    // LOAD COURSES FROM SUPABASE
+    // ============================================
+    async function loadCourses() {
+        try {
+            console.log('Fetching courses from Supabase...');
+            
+            const { data: courses, error } = await supabase
+                .from('courses')
+                .select('*')
+                .order('id', { ascending: true });
+            
+            if (error) {
+                console.error('Error loading courses:', error);
+                document.getElementById('coursesGrid').innerHTML = `
+                    <div style="text-align:center; padding:40px; color:#ff4d4f;">
+                        <i class="fas fa-exclamation-circle"></i> Error loading courses. 
+                        <button onclick="loadCourses()" style="margin-top:10px; padding:8px 16px; background:#00FF88; border:none; border-radius:8px; cursor:pointer;">Retry</button>
+                    </div>`;
+                return;
+            }
+            
+            console.log('Courses loaded:', courses?.length || 0);
+            allCourses = courses || [];
+            
+            // Separate available and enrolled courses
+            const availableCourses = allCourses.filter(c => !enrolledCourseIds.has(c.id));
+            const enrolledCourses = allCourses.filter(c => enrolledCourseIds.has(c.id));
+            
+            renderAvailableCourses(availableCourses);
+            renderEnrolledCourses(enrolledCourses);
+            
+        } catch (err) {
+            console.error('Error:', err);
+            document.getElementById('coursesGrid').innerHTML = '<div style="text-align:center; padding:40px; color:#ff4d4f;">Failed to load courses. Please refresh the page.</div>';
+        }
+    }
+    
+    // ============================================
+    // RENDER AVAILABLE COURSES
+    // ============================================
+    function renderAvailableCourses(courses) {
         const container = document.getElementById('coursesGrid');
-        const availableCourses = courses?.filter(c => !enrolledIds.has(c.id)) || [];
         
-        if (availableCourses.length === 0) {
-            container.innerHTML = '<div style="text-align:center; padding:40px;">🎉 You are enrolled in all courses!</div>';
+        if (!courses.length) {
+            container.innerHTML = '<div style="text-align:center; padding:40px;">🎉 You are enrolled in all available courses!</div>';
             return;
         }
         
         container.innerHTML = '';
-        availableCourses.forEach(course => {
-            const isFree = course.type === 'free';
+        
+        courses.forEach(course => {
+            const isFree = course.type === 'free' || course.price === 0;
             const card = document.createElement('div');
             card.className = 'course-card';
             card.innerHTML = `
                 <span class="badge ${isFree ? 'free-badge' : 'premium-badge'}">${isFree ? 'FREE' : 'PREMIUM'}</span>
-                <h3>${escapeHtml(course.name)}</h3>
-                <p>${escapeHtml(course.description?.substring(0, 100)) || 'Learn safe driving techniques'}</p>
-                <div class="price ${isFree ? 'free' : 'premium'}">${isFree ? 'FREE' : `KES ${course.price?.toLocaleString()}`}</div>
-                <button class="btn-enroll" onclick="enrollInCourse(${course.id})">Enroll Now →</button>
+                <h3><i class="fas fa-car"></i> ${escapeHtml(course.name)}</h3>
+                <p>${escapeHtml(course.description) || 'Professional driver training course approved by NTSA.'}</p>
+                <div class="price ${isFree ? 'free' : 'premium'}">
+                    ${isFree ? 'FREE' : `KES ${course.price?.toLocaleString() || 0}`}
+                </div>
+                <div style="display: flex; gap: 10px;">
+                    <button class="btn-enroll" onclick="enrollInCourse(${course.id})">
+                        <i class="fas fa-plus-circle"></i> Enroll Now
+                    </button>
+                </div>
             `;
             container.appendChild(card);
         });
     }
     
+    // ============================================
+    // RENDER ENROLLED COURSES
+    // ============================================
     function renderEnrolledCourses(courses) {
         const container = document.getElementById('enrolledGrid');
         
-        if (courses.length === 0) {
+        if (!courses.length) {
             container.innerHTML = '<div style="text-align:center; padding:40px;">You haven\'t enrolled in any courses yet. Browse available courses above!</div>';
             return;
         }
         
         container.innerHTML = '';
+        
         courses.forEach(course => {
             const card = document.createElement('div');
             card.className = 'course-card';
             card.innerHTML = `
-                <span class="badge enrolled">ENROLLED</span>
-                <h3>${escapeHtml(course.name)}</h3>
-                <p>${escapeHtml(course.description?.substring(0, 100)) || 'Continue your learning journey'}</p>
-                <button class="btn-start" onclick="startCourse(${course.id})">Continue Learning →</button>
-                <button class="btn-start btn-quiz" onclick="startQuiz(${course.id}, '${escapeHtml(course.name)}')"><i class="fas fa-question-circle"></i> Take Quiz</button>
+                <span class="badge enrolled"><i class="fas fa-check-circle"></i> ENROLLED</span>
+                <h3><i class="fas fa-car"></i> ${escapeHtml(course.name)}</h3>
+                <p>${escapeHtml(course.description) || 'Continue your learning journey.'}</p>
+                <div style="display: flex; gap: 10px; flex-direction: column;">
+                    <button class="btn-start" onclick="startCourse(${course.id})">
+                        <i class="fas fa-play-circle"></i> Continue Learning
+                    </button>
+                    <button class="btn-start btn-quiz" onclick="startQuiz(${course.id})">
+                        <i class="fas fa-question-circle"></i> Take Practice Quiz
+                    </button>
+                </div>
             `;
             container.appendChild(card);
         });
     }
     
-    async function enrollInCourse(courseId) {
-        const { error } = await supabase
-            .from('enrollments')
-            .insert([{
-                profile_id: currentProfile.id,
-                course_id: courseId,
-                status: 'active',
-                enrolled_at: new Date()
-            }]);
-        
-        if (error) {
-            showToast('Failed to enroll. Please try again.', 'error');
-            console.error(error);
-        } else {
-            showToast('Successfully enrolled!', 'success');
-            loadCourses();
-            loadStats();
-        }
-    }
-    
-    function startCourse(courseId) {
-        // Redirect to course page
-        window.location.href = `/course-learner.html?id=${courseId}`;
-    }
-    
-    async function startQuiz(courseId, courseName) {
-        // Load random quiz questions
-        const { data: questions, error } = await supabase
-            .from('quiz_questions')
-            .select('*')
-            .limit(10);
-        
-        if (error || !questions?.length) {
-            showToast('No quiz questions available yet.', 'error');
-            return;
-        }
-        
-        showQuizModal(courseName, questions);
-    }
-    
-    function showQuizModal(courseName, questions) {
-        const modal = document.createElement('div');
-        modal.className = 'modal active';
-        modal.id = 'quizModal';
-        
-        let html = `
-            <div class="modal-content">
-                <h2><i class="fas fa-question-circle"></i> Quiz: ${escapeHtml(courseName)}</h2>
-                <div id="quizQuestionsContainer">
-        `;
-        
-        questions.forEach((q, idx) => {
-            html += `
-                <div class="quiz-question" data-qid="${q.id}" data-correct="${q.correct_answer}">
-                    <p><strong>${idx + 1}. ${escapeHtml(q.question)}</strong></p>
-                    <div class="quiz-options">
-                        <label class="quiz-option"><input type="radio" name="q${idx}" value="A"> A) ${escapeHtml(q.option_a)}</label>
-                        <label class="quiz-option"><input type="radio" name="q${idx}" value="B"> B) ${escapeHtml(q.option_b)}</label>
-                        <label class="quiz-option"><input type="radio" name="q${idx}" value="C"> C) ${escapeHtml(q.option_c)}</label>
-                        <label class="quiz-option"><input type="radio" name="q${idx}" value="D"> D) ${escapeHtml(q.option_d)}</label>
-                    </div>
-                    <div id="result-${idx}" class="quiz-result"></div>
-                </div>
-            `;
-        });
-        
-        html += `
-                </div>
-                <button class="btn-enroll" onclick="submitQuiz()" style="margin-top:20px;">Submit Answers</button>
-                <button class="btn-start" onclick="closeQuizModal()" style="margin-top:10px;">Close</button>
-            </div>
-        `;
-        
-        modal.innerHTML = html;
-        document.body.appendChild(modal);
-        
-        window.currentQuizQuestions = questions;
-    }
-    
-    window.submitQuiz = function() {
-        let score = 0;
-        const questions = window.currentQuizQuestions;
-        
-        questions.forEach((q, idx) => {
-            const selected = document.querySelector(`input[name="q${idx}"]:checked`);
-            const resultDiv = document.getElementById(`result-${idx}`);
+    // ============================================
+    // ENROLL IN COURSE
+    // ============================================
+    window.enrollInCourse = async function(courseId) {
+        try {
+            const { error } = await supabase
+                .from('enrollments')
+                .insert([{
+                    profile_id: currentProfile.id,
+                    course_id: courseId,
+                    status: 'active',
+                    enrolled_at: new Date().toISOString()
+                }]);
             
-            if (selected) {
-                const selectedValue = selected.value;
-                const correctLetter = q.correct_answer;
-                
-                if (selectedValue === correctLetter) {
-                    score++;
-                    resultDiv.innerHTML = '✅ Correct!';
-                    resultDiv.className = 'quiz-result correct';
-                } else {
-                    let correctText = '';
-                    if (correctLetter === 'A') correctText = q.option_a;
-                    else if (correctLetter === 'B') correctText = q.option_b;
-                    else if (correctLetter === 'C') correctText = q.option_c;
-                    else correctText = q.option_d;
-                    resultDiv.innerHTML = `❌ Incorrect. The correct answer is: ${correctText}`;
-                    resultDiv.className = 'quiz-result incorrect';
-                }
+            if (error) {
+                console.error('Enrollment error:', error);
+                showToast(error.message || 'Failed to enroll. Please try again.', 'error');
             } else {
-                resultDiv.innerHTML = '❌ Not answered';
-                resultDiv.className = 'quiz-result incorrect';
+                showToast('Successfully enrolled in course!', 'success');
+                enrolledCourseIds.add(courseId);
+                await loadCourses();
+                await loadStats();
             }
-        });
-        
-        const percent = Math.round((score / questions.length) * 100);
-        showToast(`Quiz completed! Score: ${score}/${questions.length} (${percent}%)`, 'success');
-        document.getElementById('quizScore').textContent = `${percent}%`;
+        } catch (err) {
+            console.error('Error:', err);
+            showToast('Failed to enroll. Please try again.', 'error');
+        }
     };
     
-    window.closeQuizModal = function() {
-        const modal = document.getElementById('quizModal');
-        if (modal) modal.remove();
+    // ============================================
+    // START COURSE
+    // ============================================
+    window.startCourse = function(courseId) {
+        window.location.href = `/course-learner.html`;
     };
     
-    async function logout() {
+    // ============================================
+    // START QUIZ
+    // ============================================
+    window.startQuiz = async function(courseId) {
+        try {
+            const { data: questions, error } = await supabase
+                .from('quiz_questions')
+                .select('*')
+                .limit(10);
+            
+            if (error) {
+                showToast('No quiz questions available yet.', 'error');
+                return;
+            }
+            
+            if (!questions || questions.length === 0) {
+                showToast('Quiz questions coming soon!', 'error');
+                return;
+            }
+            
+            // Simple alert-based quiz for now
+            let score = 0;
+            for (let i = 0; i < questions.length; i++) {
+                const q = questions[i];
+                const userAnswer = prompt(`
+Question ${i+1}/${questions.length}:
+${q.question}
+
+A) ${q.option_a}
+B) ${q.option_b}
+C) ${q.option_c}
+D) ${q.option_d}
+
+Enter A, B, C, or D:`);
+                
+                if (userAnswer && userAnswer.toUpperCase() === q.correct_answer) {
+                    score++;
+                    alert('✅ Correct!');
+                } else if (userAnswer) {
+                    let correctText = '';
+                    if (q.correct_answer === 'A') correctText = q.option_a;
+                    else if (q.correct_answer === 'B') correctText = q.option_b;
+                    else if (q.correct_answer === 'C') correctText = q.option_c;
+                    else correctText = q.option_d;
+                    alert(`❌ Incorrect. The correct answer is: ${correctText}`);
+                }
+            }
+            
+            const percent = Math.round((score / questions.length) * 100);
+            showToast(`Quiz completed! Score: ${score}/${questions.length} (${percent}%)`, 'success');
+            document.getElementById('quizScore').textContent = `${percent}%`;
+            
+        } catch (err) {
+            console.error('Quiz error:', err);
+            showToast('Error loading quiz. Please try again.', 'error');
+        }
+    };
+    
+    // ============================================
+    // LOGOUT
+    // ============================================
+    window.logout = async function() {
         await supabase.auth.signOut();
         window.location.href = '/login.html';
-    }
+    };
     
+    // ============================================
+    // TOAST NOTIFICATION
+    // ============================================
     function showToast(message, type = 'info') {
+        const existingToast = document.querySelector('.toast');
+        if (existingToast) existingToast.remove();
+        
         const toast = document.createElement('div');
         toast.className = `toast ${type}`;
         toast.innerHTML = `<i class="fas ${type === 'error' ? 'fa-exclamation-circle' : 'fa-check-circle'}"></i> ${message}`;
-        toast.style.cssText = `
-            position: fixed; bottom: 20px; right: 20px; background: #0A234F;
-            border-left: 4px solid ${type === 'error' ? '#ff4d4f' : '#00FF88'};
-            padding: 12px 20px; border-radius: 8px; z-index: 1000;
-            animation: slideIn 0.3s ease;
-        `;
         document.body.appendChild(toast);
+        
         setTimeout(() => toast.remove(), 4000);
     }
     
+    // ============================================
+    // ESCAPE HTML
+    // ============================================
     function escapeHtml(str) {
         if (!str) return '';
         return str.replace(/[&<>]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[m]));
     }
     
+    // ============================================
+    // INITIALIZE
+    // ============================================
     async function init() {
-        if (!await checkAuth()) return;
+        const isAuthenticated = await checkAuth();
+        if (!isAuthenticated) return;
+        
         await loadStats();
         await loadCourses();
     }
     
     init();
-    
-    // Make functions global
-    window.enrollInCourse = enrollInCourse;
-    window.startCourse = startCourse;
-    window.startQuiz = startQuiz;
-    window.logout = logout;
-    window.submitQuiz = submitQuiz;
-    window.closeQuizModal = closeQuizModal;
 </script>
 </body>
 </html>
