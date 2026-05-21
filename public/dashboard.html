@@ -336,6 +336,7 @@
     
     async function loadStats() {
         try {
+            // Get enrolled courses
             const { data: enrollments } = await supabase
                 .from('enrollments')
                 .select('course_id')
@@ -346,6 +347,7 @@
                 enrolledCourseIds = new Set(enrollments.map(e => e.course_id));
             }
             
+            // Get user progress
             const { data: progress } = await supabase
                 .from('user_progress')
                 .select('overall_progress')
@@ -357,6 +359,7 @@
                 document.getElementById('avgProgress').textContent = `${avg}%`;
             }
             
+            // Get completed units
             const { data: completed } = await supabase
                 .from('user_progress')
                 .select('unit_id')
@@ -392,8 +395,18 @@
             console.log('Courses loaded:', courses?.length || 0);
             allCourses = courses || [];
             
-            const availableCourses = allCourses.filter(c => !enrolledCourseIds.has(c.id));
-            const enrolledCourses = allCourses.filter(c => enrolledCourseIds.has(c.id));
+            // Remove duplicates by name (keep first occurrence)
+            const uniqueCourses = [];
+            const seenNames = new Set();
+            for (const course of allCourses) {
+                if (!seenNames.has(course.name)) {
+                    seenNames.add(course.name);
+                    uniqueCourses.push(course);
+                }
+            }
+            
+            const availableCourses = uniqueCourses.filter(c => !enrolledCourseIds.has(c.id));
+            const enrolledCourses = uniqueCourses.filter(c => enrolledCourseIds.has(c.id));
             
             renderAvailableCourses(availableCourses);
             renderEnrolledCourses(enrolledCourses);
@@ -453,7 +466,7 @@
                 <button class="btn-start" onclick="startCourse(${course.id})">
                     <i class="fas fa-play-circle"></i> Continue Learning
                 </button>
-                <button class="btn-start btn-quiz" onclick="startQuiz()">
+                <button class="btn-start btn-quiz" onclick="startQuiz(${course.id})">
                     <i class="fas fa-question-circle"></i> Take Practice Quiz
                 </button>
             `;
@@ -463,6 +476,19 @@
     
     window.enrollInCourse = async function(courseId) {
         try {
+            // Check if already enrolled
+            const { data: existing } = await supabase
+                .from('enrollments')
+                .select('id')
+                .eq('user_id', currentUser.id)
+                .eq('course_id', courseId)
+                .maybeSingle();
+            
+            if (existing) {
+                showToast('You are already enrolled in this course!', 'error');
+                return;
+            }
+            
             const { error } = await supabase
                 .from('enrollments')
                 .insert([{
@@ -488,15 +514,22 @@
     };
     
     window.startCourse = function(courseId) {
-        window.location.href = `/course-learner.html`;
+        // Find the course name
+        const course = allCourses.find(c => c.id === courseId);
+        if (course && course.name === 'Learner Hub') {
+            window.location.href = `/course-learner.html`;
+        } else {
+            showToast(`The ${course?.name || 'course'} content is coming soon!`, 'error');
+        }
     };
     
-    window.startQuiz = async function() {
+    window.startQuiz = async function(courseId) {
         try {
+            // Fetch quiz questions from Supabase
             const { data: questions, error } = await supabase
                 .from('quiz_questions')
                 .select('*')
-                .limit(5);
+                .limit(10);
             
             if (error || !questions || questions.length === 0) {
                 showToast('Quiz questions coming soon!', 'error');
@@ -507,14 +540,15 @@
             for (let i = 0; i < questions.length; i++) {
                 const q = questions[i];
                 const userAnswer = prompt(`
-Question ${i+1}/${questions.length}:
+📝 QUIZ QUESTION ${i+1}/${questions.length}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ${q.question}
 
 A) ${q.option_a}
 B) ${q.option_b}
 C) ${q.option_c}
 D) ${q.option_d}
-
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 Enter A, B, C, or D:`);
                 
                 if (userAnswer && userAnswer.toUpperCase() === q.correct_answer) {
@@ -531,8 +565,17 @@ Enter A, B, C, or D:`);
             }
             
             const percent = Math.round((score / questions.length) * 100);
-            showToast(`Quiz completed! Score: ${score}/${questions.length} (${percent}%)`, 'success');
+            showToast(`🎉 Quiz completed! Score: ${score}/${questions.length} (${percent}%)`, 'success');
             document.getElementById('quizScore').textContent = `${percent}%`;
+            
+            // Save quiz score to database
+            await supabase
+                .from('user_progress')
+                .upsert({
+                    user_id: currentUser.id,
+                    score: percent,
+                    updated_at: new Date()
+                });
             
         } catch (err) {
             console.error('Quiz error:', err);
@@ -540,19 +583,11 @@ Enter A, B, C, or D:`);
         }
     };
     
-    // FIXED: Working logout function
     window.logout = async function() {
         try {
-            const { error } = await supabase.auth.signOut();
-            if (error) {
-                console.error('Logout error:', error);
-                showToast('Error logging out. Please try again.', 'error');
-            } else {
-                // Clear local storage
-                localStorage.clear();
-                // Redirect to home page
-                window.location.href = '/';
-            }
+            await supabase.auth.signOut();
+            localStorage.clear();
+            window.location.href = '/';
         } catch (err) {
             console.error('Logout error:', err);
             window.location.href = '/';
@@ -575,7 +610,6 @@ Enter A, B, C, or D:`);
         return str.replace(/[&<>]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[m]));
     }
     
-    // FIXED: Attach logout event listener correctly
     document.getElementById('logoutButton').addEventListener('click', function(e) {
         e.preventDefault();
         logout();
