@@ -3,152 +3,379 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Course Details - MEI Drive Africa</title>
+    <title>Course | MEI DRIVE AFRICA</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        :root {
-            --neon-green: #00FF88;
-            --dark-navy: #041B3D;
-            --secondary-dark: #0A234F;
-            --white: #FFFFFF;
-            --soft-gray: #B7C4D6;
-        }
-        body {
-            font-family: 'Segoe UI', sans-serif;
-            background: var(--secondary-dark);
-            color: var(--white);
-        }
+        body { font-family: 'Segoe UI', sans-serif; background: #041B3D; color: #fff; }
         .navbar {
-            background: var(--dark-navy);
-            padding: 1rem 2rem;
-            position: fixed;
-            top: 0;
-            width: 100%;
-            z-index: 1000;
+            position: fixed; top: 0; width: 100%; background: rgba(4, 27, 61, 0.96);
+            backdrop-filter: blur(10px); border-bottom: 1px solid rgba(0, 255, 136, 0.15);
+            padding: 1rem 2rem; z-index: 1000;
         }
-        .container {
-            max-width: 1200px;
-            margin: auto;
-            padding: 100px 20px 40px;
+        .nav-container { max-width: 1200px; margin: auto; display: flex; justify-content: space-between; align-items: center; }
+        .logo { font-size: 1.6rem; font-weight: 700; color: #00FF88; cursor: pointer; }
+        .logo span { color: #fff; }
+        .nav-links { display: flex; align-items: center; gap: 1.5rem; }
+        .nav-links a { color: #fff; text-decoration: none; transition: all 0.3s; }
+        .nav-links a:hover { color: #00FF88; }
+        .logout-btn {
+            background: rgba(255, 68, 68, 0.2); border: 1px solid #ff4d4f;
+            color: #ff4d4f; padding: 6px 14px; border-radius: 30px;
+            cursor: pointer; transition: all 0.3s;
         }
+        .main { padding-top: 80px; padding-bottom: 40px; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 0 20px; }
         .course-header {
-            background: var(--dark-navy);
-            border-radius: 20px;
-            padding: 2rem;
-            margin-bottom: 2rem;
-            border: 1px solid rgba(0,255,136,0.15);
+            background: linear-gradient(135deg, #0A234F, #041B3D);
+            border-radius: 20px; padding: 30px; margin-bottom: 30px;
+            border: 1px solid rgba(0, 255, 136, 0.2);
         }
-        .btn-primary, .btn-secondary {
-            padding: 12px 30px;
-            border-radius: 30px;
-            font-weight: bold;
-            cursor: pointer;
-            margin-top: 1rem;
-            display: inline-block;
+        .course-header h1 { color: #00FF88; font-size: 2rem; margin-bottom: 10px; }
+        .progress-bar-container {
+            background: rgba(255,255,255,0.1); border-radius: 10px;
+            height: 10px; margin: 20px 0; overflow: hidden;
         }
-        .btn-primary {
-            background: var(--neon-green);
-            color: var(--dark-navy);
-            border: none;
+        .progress-bar { background: #00FF88; width: 0%; height: 100%; transition: width 0.3s ease; }
+        .units-container { background: #0A234F; border-radius: 16px; padding: 20px; }
+        .units-title { font-size: 1.3rem; margin-bottom: 20px; color: #00FF88; }
+        .unit-card {
+            background: rgba(4, 27, 61, 0.8); border-radius: 12px; padding: 15px 20px;
+            margin-bottom: 12px; display: flex; justify-content: space-between;
+            align-items: center; border: 1px solid rgba(0, 255, 136, 0.1);
+            cursor: pointer; transition: all 0.3s;
         }
-        .btn-secondary {
-            background: transparent;
-            border: 1px solid var(--neon-green);
-            color: var(--white);
-            margin-left: 1rem;
-        }
-        .btn-back {
-            background: transparent;
-            border: 1px solid var(--neon-green);
-            color: var(--white);
-            padding: 8px 20px;
-            border-radius: 30px;
-            cursor: pointer;
-            margin-bottom: 1rem;
-        }
-        .loading {
-            text-align: center;
-            padding: 3rem;
-        }
-        .spinner {
-            width: 40px;
-            height: 40px;
-            border: 3px solid var(--dark-navy);
-            border-top-color: var(--neon-green);
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin: 0 auto;
-        }
+        .unit-card:hover { border-color: #00FF88; transform: translateX(5px); }
+        .unit-info { flex: 1; }
+        .unit-number { font-size: 0.8rem; color: #00FF88; margin-bottom: 5px; }
+        .unit-title { font-size: 1rem; font-weight: 600; margin-bottom: 5px; }
+        .unit-description { font-size: 0.8rem; color: #B7C4D6; }
+        .unit-status i { font-size: 1.2rem; }
+        .completed { color: #00FF88; }
+        .locked { color: #ff4d4f; }
+        .spinner { width: 40px; height: 40px; border: 3px solid rgba(0,255,136,0.3); border-top-color: #00FF88; border-radius: 50%; animation: spin 0.8s linear infinite; margin: 20px auto; }
         @keyframes spin { to { transform: rotate(360deg); } }
+        .toast { position: fixed; bottom: 20px; right: 20px; background: #0A234F; border-left: 4px solid #00FF88; padding: 12px 20px; border-radius: 8px; z-index: 1000; }
+        .modal {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.8); z-index: 2000; justify-content: center; align-items: center;
+        }
+        .modal-content {
+            background: #0A234F; border-radius: 20px; padding: 30px; max-width: 600px; width: 90%;
+            border: 1px solid #00FF88;
+        }
+        .quiz-option {
+            background: #041B3D; padding: 12px; margin: 10px 0; border-radius: 10px;
+            cursor: pointer; transition: all 0.3s;
+        }
+        .quiz-option:hover { background: #00FF88; color: #041B3D; }
+        footer { background: #0A234F; text-align: center; padding: 30px; color: #B7C4D6; margin-top: 40px; }
     </style>
 </head>
 <body>
-    <nav class="navbar"><div style="max-width:1200px;margin:auto;"><div style="font-size:1.5rem;color:var(--neon-green);">MEI DRIVE AFRICA</div></div></nav>
-    <div class="container" id="container"><div class="loading"><div class="spinner"></div><p>Loading course details...</p></div></div>
-    <script>
-        const SUPABASE_URL = 'https://jeksrwrzzrczamxijvwl.supabase.co';
-        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Impla3Nyd3J6enJjemFteGlqdndsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg2NzYyMjAsImV4cCI6MjA5NDI1MjIyMH0.1poYpJKNFEVe2NTBkXBTH2bIHGk2yT8aqCU-OlJc4vs';
-        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-        
-        const urlParams = new URLSearchParams(window.location.search);
-        const courseId = urlParams.get('id');
-        
-        const courseIcons = { 1: '🚗', 2: '🚌', 3: '🚸', 4: '⚡', 5: '🛵', 6: '🚛', 7: '📚', 8: '📝' };
-        
-        async function loadCourse() {
-            const container = document.getElementById('container');
-            if (!courseId) {
-                container.innerHTML = '<div class="loading">No course selected</div>';
-                return;
-            }
-            
-            const { data: course, error } = await supabase
+
+<nav class="navbar">
+    <div class="nav-container">
+        <div class="logo" onclick="location.href='/'">MEI DRIVE <span>AFRICA</span></div>
+        <div class="nav-links">
+            <a href="/dashboard.html"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
+            <button class="logout-btn" id="logoutButton"><i class="fas fa-sign-out-alt"></i> Logout</button>
+        </div>
+    </div>
+</nav>
+
+<div class="main">
+    <div class="container">
+        <div class="course-header" id="courseHeader">
+            <div class="spinner"></div>
+        </div>
+        <div class="units-container">
+            <div class="units-title"><i class="fas fa-book"></i> Course Units</div>
+            <div id="unitsContainer"><div class="spinner"></div></div>
+        </div>
+    </div>
+</div>
+
+<div id="quizModal" class="modal">
+    <div class="modal-content">
+        <h2 id="quizTitle" style="color:#00FF88; margin-bottom:20px;">Quiz</h2>
+        <div id="quizQuestions"></div>
+        <button id="submitQuiz" style="margin-top:20px; background:#00FF88; color:#041B3D; padding:10px 20px; border:none; border-radius:8px; cursor:pointer;">Submit Answers</button>
+        <button onclick="closeModal()" style="margin-top:10px; background:transparent; border:1px solid #ff4d4f; color:#ff4d4f; padding:10px 20px; border-radius:8px; cursor:pointer; margin-left:10px;">Close</button>
+    </div>
+</div>
+
+<footer>
+    <p>&copy; 2026 MEI DRIVE AFRICA | NTSA Approved Driver Training</p>
+</footer>
+
+<script>
+    const SUPABASE_URL = 'https://jeksrwrzzrczamxijvwl.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Impla3Nyd3J6enJjemFteGlqdndsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg2NzYyMjAsImV4cCI6MjA5NDI1MjIyMH0.1poYpJKNFEVe2NTBkXBTH2bIHGk2yT8aqCU-OlJc4vs';
+    
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    
+    let currentUser = null;
+    let course = null;
+    let units = [];
+    let completedUnits = new Set();
+    
+    // Get course ID from URL parameter
+    const urlParams = new URLSearchParams(window.location.search);
+    const courseId = parseInt(urlParams.get('id')) || 1;
+    
+    async function loadCourseAndUnits() {
+        try {
+            // Load course details
+            const { data: courseData, error: courseError } = await supabase
                 .from('courses')
                 .select('*')
                 .eq('id', courseId)
                 .single();
             
-            if (error || !course) {
-                container.innerHTML = '<div class="loading">Course not found</div>';
-                return;
-            }
+            if (courseError) throw courseError;
+            course = courseData;
             
-            const isFree = course.type === 'free';
-            const icon = courseIcons[course.id] || '📘';
-            const courseName = course.name || course.title;
+            document.getElementById('courseHeader').innerHTML = `
+                <h1><i class="fas fa-car"></i> ${course.name}</h1>
+                <p>${course.description}</p>
+                <div class="progress-bar-container">
+                    <div class="progress-bar" id="progressBar"></div>
+                </div>
+                <div class="progress-text" id="progressText">0% Complete</div>
+            `;
             
-            container.innerHTML = `
-                <button class="btn-back" onclick="location.href='/'"><i class="fas fa-arrow-left"></i> Back to Courses</button>
-                <div class="course-header">
-                    <div style="font-size:3rem;">${icon}</div>
-                    <div class="course-badge" style="display:inline-block;background:#00FF88;color:#041B3D;padding:4px 12px;border-radius:20px;margin:1rem 0;">${isFree ? 'FREE COURSE' : 'PREMIUM COURSE'}</div>
-                    <h1>${escapeHtml(courseName)}</h1>
-                    <p>${escapeHtml(course.description)}</p>
-                    <div class="course-price" style="font-size:1.5rem;font-weight:bold;color:var(--neon-green);margin:1rem 0;">${isFree ? 'FREE' : `KES ${(course.price || 0).toLocaleString()}`}</div>
-                    <div>
-                        <button class="btn-primary" onclick="viewMaterials(${course.id})">📖 View Course Materials</button>
-                        <button class="btn-secondary" onclick="enrollCourse(${course.id})">${isFree ? 'Enroll Now' : 'Purchase Course'}</button>
-                    </div>
+            // Load units
+            const { data: unitsData, error: unitsError } = await supabase
+                .from('course_units')
+                .select('*')
+                .eq('course_id', courseId)
+                .order('unit_number', { ascending: true });
+            
+            if (unitsError) throw unitsError;
+            units = unitsData || [];
+            
+            // Load user progress
+            await loadProgress();
+            renderUnits();
+            updateProgress();
+            
+        } catch (err) {
+            console.error('Error:', err);
+            document.getElementById('courseHeader').innerHTML = `<div style="color:#ff4d4f;">Error loading course: ${err.message}</div>`;
+        }
+    }
+    
+    async function loadProgress() {
+        const { data: progress } = await supabase
+            .from('user_progress')
+            .select('unit_id')
+            .eq('user_id', currentUser.id)
+            .eq('course_id', courseId)
+            .eq('completed', true);
+        
+        if (progress) {
+            completedUnits = new Set(progress.map(p => p.unit_id));
+        }
+    }
+    
+    function renderUnits() {
+        const container = document.getElementById('unitsContainer');
+        
+        if (!units.length) {
+            container.innerHTML = '<div style="text-align:center; padding:40px;">No units available for this course.</div>';
+            return;
+        }
+        
+        container.innerHTML = '';
+        
+        units.forEach((unit, index) => {
+            const isCompleted = completedUnits.has(unit.id);
+            const isLocked = index > 0 && !completedUnits.has(units[index - 1]?.id);
+            
+            const card = document.createElement('div');
+            card.className = 'unit-card';
+            card.onclick = () => openUnit(unit, isLocked);
+            card.innerHTML = `
+                <div class="unit-info">
+                    <div class="unit-number">Unit ${unit.unit_number}</div>
+                    <div class="unit-title">${escapeHtml(unit.title)}</div>
+                    <div class="unit-description">${escapeHtml(unit.description)}</div>
+                </div>
+                <div class="unit-status">
+                    <i class="fas ${isCompleted ? 'fa-check-circle completed' : (isLocked ? 'fa-lock locked' : 'fa-play-circle')}"></i>
                 </div>
             `;
+            container.appendChild(card);
+        });
+    }
+    
+    async function openUnit(unit, isLocked) {
+        if (isLocked) {
+            showToast('Complete previous units first!', 'error');
+            return;
         }
         
-        function viewMaterials(courseId) {
-            window.location.href = `/materials-display.html?id=${courseId}`;
-        }
+        // Check if unit has quiz
+        const { data: quiz } = await supabase
+            .from('quiz_questions')
+            .select('*')
+            .eq('unit_id', unit.id)
+            .limit(5);
         
-        function enrollCourse(courseId) {
-            window.location.href = `/login.html`;
+        if (quiz && quiz.length > 0) {
+            showQuiz(unit, quiz);
+        } else {
+            // Simple completion
+            const confirmComplete = confirm(`${unit.title}\n\n${unit.description}\n\nClick OK to mark this unit as completed.`);
+            if (confirmComplete) {
+                await markUnitComplete(unit.id);
+            }
         }
+    }
+    
+    async function showQuiz(unit, questions) {
+        const modal = document.getElementById('quizModal');
+        const quizDiv = document.getElementById('quizQuestions');
         
-        function escapeHtml(str) {
-            if (!str) return '';
-            return str.replace(/[&<>]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[m]));
+        document.getElementById('quizTitle').textContent = `Quiz: ${unit.title}`;
+        
+        let answers = {};
+        
+        quizDiv.innerHTML = questions.map((q, idx) => `
+            <div style="margin-bottom:20px;">
+                <p style="margin-bottom:10px;"><strong>${idx + 1}. ${q.question}</strong></p>
+                ${['A', 'B', 'C', 'D'].map(opt => `
+                    <div class="quiz-option" onclick="selectAnswer(${idx}, '${opt}')" id="opt_${idx}_${opt}">
+                        ${opt}) ${q[`option_${opt.toLowerCase()}`]}
+                    </div>
+                `).join('')}
+                <input type="hidden" id="answer_${idx}" value="">
+            </div>
+        `).join('');
+        
+        window.selectAnswer = (idx, opt) => {
+            answers[idx] = opt;
+            document.getElementById(`answer_${idx}`).value = opt;
+            ['A', 'B', 'C', 'D'].forEach(o => {
+                const el = document.getElementById(`opt_${idx}_${o}`);
+                if (el) el.style.background = '#041B3D';
+            });
+            document.getElementById(`opt_${idx}_${opt}`).style.background = '#00FF88';
+            document.getElementById(`opt_${idx}_${opt}`).style.color = '#041B3D';
+        };
+        
+        modal.style.display = 'flex';
+        
+        document.getElementById('submitQuiz').onclick = async () => {
+            let score = 0;
+            questions.forEach((q, idx) => {
+                if (answers[idx] === q.correct_answer) score++;
+            });
+            const percent = (score / questions.length) * 100;
+            
+            if (percent >= 70) {
+                await markUnitComplete(unit.id, percent);
+                showToast(`Quiz passed! Score: ${score}/${questions.length} (${Math.round(percent)}%)`, 'success');
+                modal.style.display = 'none';
+            } else {
+                showToast(`Quiz failed! Score: ${score}/${questions.length} (${Math.round(percent)}%). Need 70% to pass.`, 'error');
+            }
+        };
+    }
+    
+    async function markUnitComplete(unitId, score = 100) {
+        const { error } = await supabase
+            .from('user_progress')
+            .upsert({
+                user_id: currentUser.id,
+                course_id: courseId,
+                unit_id: unitId,
+                completed: true,
+                score: score,
+                last_accessed: new Date()
+            });
+        
+        if (!error) {
+            completedUnits.add(unitId);
+            renderUnits();
+            updateProgress();
+            
+            // Check if course is complete
+            if (completedUnits.size === units.length) {
+                await generateCertificate();
+            }
         }
+    }
+    
+    async function generateCertificate() {
+        const { data: existing } = await supabase
+            .from('certificates')
+            .select('id')
+            .eq('user_id', currentUser.id)
+            .eq('course_id', courseId)
+            .single();
         
-        loadCourse();
-    </script>
+        if (!existing) {
+            const certNumber = `MEI-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+            await supabase.from('certificates').insert({
+                user_id: currentUser.id,
+                course_id: courseId,
+                certificate_number: certNumber
+            });
+            showToast(`🎉 Congratulations! Certificate earned for ${course.name}!`, 'success');
+        }
+    }
+    
+    function updateProgress() {
+        const percent = units.length ? Math.floor((completedUnits.size / units.length) * 100) : 0;
+        const progressBar = document.getElementById('progressBar');
+        const progressText = document.getElementById('progressText');
+        if (progressBar) progressBar.style.width = `${percent}%`;
+        if (progressText) progressText.textContent = `${percent}% Complete`;
+    }
+    
+    window.closeModal = () => {
+        document.getElementById('quizModal').style.display = 'none';
+    };
+    
+    async function checkAuth() {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) {
+            window.location.href = '/login.html';
+            return false;
+        }
+        currentUser = session.user;
+        return true;
+    }
+    
+    async function handleLogout() {
+        await supabase.auth.signOut();
+        window.location.href = '/';
+    }
+    
+    function showToast(message, type = 'info') {
+        const toast = document.createElement('div');
+        toast.className = 'toast';
+        toast.innerHTML = message;
+        document.body.appendChild(toast);
+        setTimeout(() => toast.remove(), 3000);
+    }
+    
+    function escapeHtml(str) {
+        if (!str) return '';
+        return str.replace(/[&<>]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[m]));
+    }
+    
+    document.getElementById('logoutButton').addEventListener('click', handleLogout);
+    
+    async function init() {
+        const authenticated = await checkAuth();
+        if (authenticated) await loadCourseAndUnits();
+    }
+    
+    init();
+</script>
 </body>
 </html>
