@@ -28,26 +28,31 @@
             overflow-x: hidden;
         }
         
-        .loading-spinner {
+        .loading-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.85); z-index: 9999; display: none;
-            justify-content: center; align-items: center;
+            justify-content: center; align-items: center; flex-direction: column;
+            backdrop-filter: blur(4px);
         }
-        .loading-spinner.active { display: flex; }
+        .loading-overlay.active { display: flex; }
         .spinner {
             width: 50px; height: 50px; border: 3px solid var(--dark-navy);
             border-top-color: var(--neon-green); border-radius: 50%;
             animation: spin 1s linear infinite;
         }
         @keyframes spin { to { transform: rotate(360deg); } }
+        .loading-text { margin-top: 15px; color: var(--neon-green); font-weight: 600; }
         
         .toast {
             position: fixed; bottom: 30px; right: 30px; z-index: 10000;
             background: var(--dark-navy); padding: 14px 24px; border-radius: 12px;
-            transform: translateX(400px); transition: transform 0.3s;
+            transform: translateX(400px); transition: transform 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
             border-left: 4px solid var(--neon-green);
             box-shadow: 0 10px 40px rgba(0,0,0,0.3);
             font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
         .toast.error { border-left-color: var(--error); }
         .toast.show { transform: translateX(0); }
@@ -97,7 +102,9 @@
         .stat-card {
             background: var(--dark-navy); border-radius: 20px; padding: 1.5rem 2rem;
             text-align: center; min-width: 160px; border: 1px solid rgba(0,255,136,0.2);
+            transition: var(--transition);
         }
+        .stat-card:hover { transform: translateY(-3px); border-color: var(--neon-green); }
         .stat-card i { font-size: 2rem; color: var(--neon-green); margin-bottom: 0.5rem; }
         .stat-number { font-size: 2rem; font-weight: 700; }
         .stat-label { color: var(--soft-gray); font-size: 0.8rem; }
@@ -160,13 +167,19 @@
         }
         .course-price.free { color: var(--neon-green); }
         .course-price.premium { color: var(--warning); }
+        .progress-section {
+            margin-bottom: 1rem;
+        }
         .progress-bar-small {
             background: rgba(255,255,255,0.1); border-radius: 10px;
-            height: 4px; overflow: hidden; margin: 0.5rem 0;
+            height: 6px; overflow: hidden; margin: 0.5rem 0;
         }
         .progress-fill-small {
             background: var(--neon-green); width: 0%; height: 100%;
             border-radius: 10px; transition: width 0.3s;
+        }
+        .progress-text {
+            font-size: 0.7rem; color: var(--soft-gray); text-align: center;
         }
         .btn-action {
             width: 100%; background: transparent; border: 1px solid var(--neon-green);
@@ -185,6 +198,7 @@
         .skeleton-title { width: 70%; height: 20px; background: var(--secondary-dark); border-radius: 4px; margin-bottom: 0.75rem; }
         .skeleton-text { width: 100%; height: 60px; background: var(--secondary-dark); border-radius: 4px; margin-bottom: 1rem; }
         .skeleton-price { width: 40%; height: 18px; background: var(--secondary-dark); border-radius: 4px; margin-bottom: 1rem; }
+        .skeleton-button { width: 100%; height: 38px; background: var(--secondary-dark); border-radius: 30px; }
         
         @keyframes pulse {
             0%, 100% { opacity: 0.5; }
@@ -214,21 +228,25 @@
             .stat-card { padding: 1rem; min-width: 120px; }
             .stat-number { font-size: 1.5rem; }
             .nav-links { gap: 0.8rem; }
+            .container { padding: 1rem; }
         }
     </style>
 </head>
 <body>
 
-<div id="loadingSpinner" class="loading-spinner"><div class="spinner"></div></div>
+<div id="loadingOverlay" class="loading-overlay">
+    <div class="spinner"></div>
+    <div class="loading-text">Loading your dashboard...</div>
+</div>
 <div id="toast" class="toast"></div>
 
 <nav class="navbar">
     <div class="nav-container">
         <div class="logo" onclick="location.href='/'">MEI DRIVE <span>AFRICA</span></div>
         <div class="nav-links">
-            <a href="/dashboard.html" class="active">Dashboard</a>
-            <a href="#">My Courses</a>
-            <a href="#">Support</a>
+            <a href="/dashboard.html" class="active"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
+            <a href="/my-courses.html"><i class="fas fa-book-open"></i> My Courses</a>
+            <a href="/support.html"><i class="fas fa-headset"></i> Support</a>
             <div id="userInfoNav" class="user-info">
                 <span class="user-name" id="userNameDisplay"></span>
                 <button class="logout-btn" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> Logout</button>
@@ -246,28 +264,46 @@
 
 <div class="container">
     <div class="stats-row">
-        <div class="stat-card"><i class="fas fa-book-open"></i><div class="stat-number" id="totalCourses">0</div><div class="stat-label">Total Courses</div></div>
-        <div class="stat-card"><i class="fas fa-graduation-cap"></i><div class="stat-number" id="enrolledCount">0</div><div class="stat-label">Enrolled</div></div>
-        <div class="stat-card"><i class="fas fa-chart-line"></i><div class="stat-number" id="avgProgress">0%</div><div class="stat-label">Avg Progress</div></div>
+        <div class="stat-card">
+            <i class="fas fa-book-open"></i>
+            <div class="stat-number" id="totalCourses">0</div>
+            <div class="stat-label">Total Courses</div>
+        </div>
+        <div class="stat-card">
+            <i class="fas fa-graduation-cap"></i>
+            <div class="stat-number" id="enrolledCount">0</div>
+            <div class="stat-label">Enrolled</div>
+        </div>
+        <div class="stat-card">
+            <i class="fas fa-chart-line"></i>
+            <div class="stat-number" id="avgProgress">0%</div>
+            <div class="stat-label">Avg Progress</div>
+        </div>
+        <div class="stat-card">
+            <i class="fas fa-certificate"></i>
+            <div class="stat-number" id="completedCourses">0</div>
+            <div class="stat-label">Completed</div>
+        </div>
     </div>
     
     <h2 class="section-title">Our <span>Courses</span></h2>
     <div id="coursesContainer" class="courses-grid">
         <!-- Skeleton loaders -->
-        <div class="skeleton-card"><div class="skeleton-icon"></div><div class="skeleton-title"></div><div class="skeleton-text"></div><div class="skeleton-price"></div></div>
-        <div class="skeleton-card"><div class="skeleton-icon"></div><div class="skeleton-title"></div><div class="skeleton-text"></div><div class="skeleton-price"></div></div>
-        <div class="skeleton-card"><div class="skeleton-icon"></div><div class="skeleton-title"></div><div class="skeleton-text"></div><div class="skeleton-price"></div></div>
-        <div class="skeleton-card"><div class="skeleton-icon"></div><div class="skeleton-title"></div><div class="skeleton-text"></div><div class="skeleton-price"></div></div>
+        <div class="skeleton-card"><div class="skeleton-icon"></div><div class="skeleton-title"></div><div class="skeleton-text"></div><div class="skeleton-price"></div><div class="skeleton-button"></div></div>
+        <div class="skeleton-card"><div class="skeleton-icon"></div><div class="skeleton-title"></div><div class="skeleton-text"></div><div class="skeleton-price"></div><div class="skeleton-button"></div></div>
+        <div class="skeleton-card"><div class="skeleton-icon"></div><div class="skeleton-title"></div><div class="skeleton-text"></div><div class="skeleton-price"></div><div class="skeleton-button"></div></div>
+        <div class="skeleton-card"><div class="skeleton-icon"></div><div class="skeleton-title"></div><div class="skeleton-text"></div><div class="skeleton-price"></div><div class="skeleton-button"></div></div>
     </div>
 </div>
 
 <footer class="footer">
     <p>&copy; 2026 MEI DRIVE AFRICA | NTSA Approved Driver Training | Instructor: ILR-7WA1P62</p>
+    <p style="margin-top: 0.5rem; font-size: 0.8rem;"><i class="fas fa-shield-alt"></i> Kenya's Premier Driving School</p>
 </footer>
 
 <script>
     // ============================================
-    // SUPABASE CONFIGURATION - PRODUCTION
+    // SUPABASE PRODUCTION CONFIGURATION
     // ============================================
     const SUPABASE_URL = 'https://jeksrwrzzrczamxijvwl.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Impla3Nyd3J6enJjemFteGlqdndsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg2NzYyMjAsImV4cCI6MjA5NDI1MjIyMH0.1poYpJKNFEVe2NTBkXBTH2bIHGk2yT8aqCU-OlJc4vs';
@@ -275,23 +311,32 @@
     const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
     
     // DOM Elements
+    const loadingOverlay = document.getElementById('loadingOverlay');
     const toast = document.getElementById('toast');
-    const loadingSpinner = document.getElementById('loadingSpinner');
     const coursesContainer = document.getElementById('coursesContainer');
     
     let currentUser = null;
     let allCourses = [];
     let userEnrollments = new Map();
+    let userProgress = new Map();
+    
+    // ============================================
+    // UI HELPER FUNCTIONS
+    // ============================================
+    function showLoading(show, message = 'Loading...') {
+        if (show) {
+            document.querySelector('.loading-text').textContent = message;
+            loadingOverlay.classList.add('active');
+        } else {
+            loadingOverlay.classList.remove('active');
+        }
+    }
     
     function showToast(message, isError = false) {
         toast.textContent = message;
         toast.className = `toast ${isError ? 'error' : ''}`;
         toast.classList.add('show');
         setTimeout(() => toast.classList.remove('show'), 4000);
-    }
-    
-    function setLoading(loading) {
-        loading ? loadingSpinner.classList.add('active') : loadingSpinner.classList.remove('active');
     }
     
     function escapeHtml(str) {
@@ -304,16 +349,33 @@
     // ============================================
     async function checkAuth() {
         try {
-            const { data: { session } } = await supabase.auth.getSession();
-            if (!session) {
+            const { data: { session }, error } = await supabase.auth.getSession();
+            
+            if (error || !session) {
+                console.log('No active session, redirecting to login...');
                 showToast('Please login to continue', true);
                 setTimeout(() => { window.location.href = '/login.html'; }, 1500);
                 return false;
             }
+            
             currentUser = session.user;
-            let displayName = currentUser.user_metadata?.full_name || currentUser.email?.split('@')[0] || 'Driver';
+            
+            // Get user profile or use email
+            let displayName = currentUser.email?.split('@')[0] || 'Driver';
+            try {
+                const { data: profile } = await supabase
+                    .from('profiles')
+                    .select('full_name')
+                    .eq('id', currentUser.id)
+                    .maybeSingle();
+                if (profile?.full_name) displayName = profile.full_name;
+            } catch (err) {
+                console.log('Profiles table not ready, using email name');
+            }
+            
             document.getElementById('userNameDisplay').textContent = displayName;
             document.getElementById('heroUserName').textContent = displayName;
+            
             return true;
         } catch (err) {
             console.error('Auth error:', err);
@@ -356,30 +418,49 @@
     }
     
     // ============================================
-    // LOAD USER ENROLLMENTS
+    // LOAD USER ENROLLMENTS AND PROGRESS
     // ============================================
-    async function loadUserEnrollments() {
+    async function loadUserData() {
         if (!currentUser) return;
         
         try {
-            const { data, error } = await supabase
+            // Load enrollments
+            const { data: enrollData, error: enrollError } = await supabase
                 .from('enrollments')
                 .select('course_id, progress, completed_units')
                 .eq('user_id', currentUser.id);
             
-            if (!error && data) {
+            if (!enrollError && enrollData) {
                 userEnrollments.clear();
-                data.forEach(e => {
+                enrollData.forEach(e => {
                     userEnrollments.set(e.course_id, {
                         enrolled: true,
                         progress: e.progress || 0,
                         completed_units: e.completed_units || 0
                     });
                 });
-                console.log(`📊 Loaded ${data.length} enrollments for user`);
+                console.log(`📊 Loaded ${enrollData.length} enrollments`);
+            }
+            
+            // Load detailed progress for each unit (if needed)
+            const { data: progData, error: progError } = await supabase
+                .from('user_progress')
+                .select('course_id, unit_id, completed')
+                .eq('user_id', currentUser.id);
+            
+            if (!progError && progData) {
+                userProgress.clear();
+                progData.forEach(p => {
+                    if (!userProgress.has(p.course_id)) {
+                        userProgress.set(p.course_id, []);
+                    }
+                    if (p.completed) {
+                        userProgress.get(p.course_id).push(p.unit_id);
+                    }
+                });
             }
         } catch (err) {
-            console.log('Enrollments table not ready yet');
+            console.log('Error loading user data:', err);
         }
     }
     
@@ -392,19 +473,19 @@
             return false;
         }
         
-        setLoading(true);
+        // Check if already enrolled
+        if (userEnrollments.has(courseId)) {
+            goToCourse(courseId);
+            return true;
+        }
+        
+        showLoading(true, `Enrolling in ${courseTitle}...`);
+        
         try {
-            // Check if already enrolled
-            if (userEnrollments.has(courseId)) {
-                goToCourse(courseId);
-                return true;
-            }
-            
-            // For premium courses, you would integrate payment here
+            // For premium courses, show payment info
             if (coursePrice > 0) {
-                showToast(`Redirecting to payment for ${courseTitle}...`, false);
-                // Integrate M-Pesa or other payment gateway here
-                // For now, we'll still enroll (demo mode)
+                showToast(`💰 ${courseTitle} costs KES ${coursePrice.toLocaleString()}. Please contact support for payment.`, false);
+                // You can integrate M-Pesa or other payment gateway here
             }
             
             const { error } = await supabase
@@ -424,12 +505,14 @@
                 return false;
             }
             
+            // Update local state
             userEnrollments.set(courseId, { enrolled: true, progress: 0, completed_units: 0 });
+            
             showToast(`✅ Successfully enrolled in ${courseTitle}!`, false);
             renderCourses();
             updateStats();
             
-            // Redirect to course view
+            // Redirect to course view after short delay
             setTimeout(() => { goToCourse(courseId); }, 1500);
             return true;
         } catch (err) {
@@ -437,7 +520,7 @@
             showToast('Enrollment failed', true);
             return false;
         } finally {
-            setLoading(false);
+            showLoading(false);
         }
     }
     
@@ -472,12 +555,25 @@
             const isFree = course.type === 'free' || course.price === 0;
             const price = course.price || 0;
             
+            // Map icons to Font Awesome classes
+            const iconMap = {
+                'fa-car': 'fa-car',
+                'fa-bus': 'fa-bus',
+                'fa-bolt': 'fa-bolt',
+                'fa-motorcycle': 'fa-motorcycle',
+                'fa-book': 'fa-book',
+                'fa-clipboard-list': 'fa-clipboard-list',
+                'fa-shield-alt': 'fa-shield-alt',
+                'fa-sync-alt': 'fa-sync-alt'
+            };
+            const icon = iconMap[course.icon] || 'fa-car';
+            
             const card = document.createElement('div');
             card.className = 'course-card';
             
             card.innerHTML = `
                 ${isEnrolled ? '<div class="enrolled-badge"><i class="fas fa-check"></i> Enrolled</div>' : ''}
-                <div class="course-icon"><i class="fas ${course.icon || 'fa-car'}"></i></div>
+                <div class="course-icon"><i class="fas ${icon}"></i></div>
                 <div class="course-badge ${isFree ? 'free' : 'premium'}">${isFree ? 'FREE' : 'PREMIUM'}</div>
                 <h3>${escapeHtml(course.name)}</h3>
                 <p>${escapeHtml(course.description || 'Professional driver training course')}</p>
@@ -485,10 +581,12 @@
                     ${isFree ? 'FREE' : `KES ${price.toLocaleString()}`}
                 </div>
                 ${isEnrolled ? `
-                    <div class="progress-bar-small">
-                        <div class="progress-fill-small" style="width: ${progressPercent}%;"></div>
+                    <div class="progress-section">
+                        <div class="progress-bar-small">
+                            <div class="progress-fill-small" style="width: ${progressPercent}%;"></div>
+                        </div>
+                        <div class="progress-text">Progress: ${progressPercent}%</div>
                     </div>
-                    <div style="font-size: 0.7rem; color: var(--soft-gray); text-align: center; margin-bottom: 0.5rem;">Progress: ${progressPercent}%</div>
                 ` : ''}
                 <button class="btn-action ${isEnrolled ? 'enrolled' : ''}" data-course-id="${course.id}">
                     ${isEnrolled ? '<i class="fas fa-play"></i> Continue Learning' : '<i class="fas fa-plus-circle"></i> Enroll Now'}
@@ -511,27 +609,47 @@
         console.log(`🎓 Displayed ${allCourses.length} courses on dashboard`);
     }
     
+    // ============================================
+    // UPDATE STATISTICS
+    // ============================================
     function updateStats() {
         document.getElementById('totalCourses').textContent = allCourses.length;
         
         let enrolledCount = 0;
         let totalProgress = 0;
-        userEnrollments.forEach((value) => {
+        let completedCourses = 0;
+        
+        userEnrollments.forEach((value, courseId) => {
             if (value.enrolled) {
                 enrolledCount++;
                 totalProgress += value.progress || 0;
+                if ((value.progress || 0) >= 100) {
+                    completedCourses++;
+                }
             }
         });
         
         document.getElementById('enrolledCount').textContent = enrolledCount;
         const avgProgressVal = enrolledCount > 0 ? Math.floor(totalProgress / enrolledCount) : 0;
         document.getElementById('avgProgress').textContent = `${avgProgressVal}%`;
+        document.getElementById('completedCourses').textContent = completedCourses;
     }
     
+    // ============================================
+    // LOGOUT
+    // ============================================
     async function handleLogout() {
-        setLoading(true);
-        await supabase.auth.signOut();
-        window.location.href = '/';
+        showLoading(true, 'Logging out...');
+        try {
+            await supabase.auth.signOut();
+            showToast('Logged out successfully', false);
+            setTimeout(() => { window.location.href = '/'; }, 500);
+        } catch (err) {
+            console.error('Logout error:', err);
+            window.location.href = '/';
+        } finally {
+            showLoading(false);
+        }
     }
     
     // ============================================
@@ -540,24 +658,37 @@
     document.getElementById('logoutBtn')?.addEventListener('click', handleLogout);
     
     async function init() {
-        const authenticated = await checkAuth();
-        if (!authenticated) return;
+        showLoading(true, 'Authenticating...');
         
+        const authenticated = await checkAuth();
+        if (!authenticated) {
+            showLoading(false);
+            return;
+        }
+        
+        showLoading(true, 'Loading courses...');
         const coursesLoaded = await fetchCourses();
+        
         if (coursesLoaded) {
-            await loadUserEnrollments();
+            showLoading(true, 'Loading your progress...');
+            await loadUserData();
             renderCourses();
             updateStats();
         }
+        
+        showLoading(false);
         
         // Listen for auth state changes
         supabase.auth.onAuthStateChange(async (event) => {
             if (event === 'SIGNED_OUT') {
                 window.location.href = '/';
+            } else if (event === 'SIGNED_IN') {
+                window.location.reload();
             }
         });
     }
     
+    // Start the application
     init();
 </script>
 </body>
