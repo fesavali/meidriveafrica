@@ -708,14 +708,20 @@
 </footer>
 
 <script>
+    // ============================================
+    // SUPABASE CONFIGURATION
+    // ============================================
     const SUPABASE_URL = 'https://jeksrwrzzrczamxijvwl.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Impla3Nyd3J6enJjemFteGlqdndsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg2NzYyMjAsImV4cCI6MjA5NDI1MjIyMH0.1poYpJKNFEVe2NTBkXBTH2bIHGk2yT8aqCU-OlJc4vs';
     
     const { createClient } = window.supabase;
     const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
     
-    console.log('Supabase client initialized');
+    console.log('✅ Supabase client initialized');
     
+    // ============================================
+    // DOM ELEMENTS
+    // ============================================
     const toast = document.getElementById('toast');
     const loadingSpinner = document.getElementById('loadingSpinner');
     const coursesContainer = document.getElementById('coursesContainer');
@@ -729,6 +735,9 @@
     
     let currentUser = null;
     
+    // ============================================
+    // HELPER FUNCTIONS
+    // ============================================
     function showToast(message, isError = false) {
         toast.textContent = message;
         toast.className = `toast ${isError ? 'error' : ''}`;
@@ -737,7 +746,11 @@
     }
     
     function setLoading(loading) {
-        loading ? loadingSpinner.classList.add('active') : loadingSpinner.classList.remove('active');
+        if (loading) {
+            loadingSpinner.classList.add('active');
+        } else {
+            loadingSpinner.classList.remove('active');
+        }
     }
     
     function escapeHtml(str) {
@@ -745,18 +758,36 @@
         return str.replace(/[&<>]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[m]));
     }
     
+    function showSkeletons() {
+        coursesContainer.innerHTML = `
+            <div class="skeleton-card"><div class="skeleton-icon"></div><div class="skeleton-title"></div><div class="skeleton-text"></div><div class="skeleton-price"></div></div>
+            <div class="skeleton-card"><div class="skeleton-icon"></div><div class="skeleton-title"></div><div class="skeleton-text"></div><div class="skeleton-price"></div></div>
+            <div class="skeleton-card"><div class="skeleton-icon"></div><div class="skeleton-title"></div><div class="skeleton-text"></div><div class="skeleton-price"></div></div>
+            <div class="skeleton-card"><div class="skeleton-icon"></div><div class="skeleton-title"></div><div class="skeleton-text"></div><div class="skeleton-price"></div></div>
+        `;
+    }
+    
+    // ============================================
+    // AUTHENTICATION
+    // ============================================
     async function updateAuthUI() {
         try {
             const { data: { session } } = await supabaseClient.auth.getSession();
             currentUser = session?.user || null;
             
             if (currentUser) {
-                const { data: profile } = await supabaseClient
-                    .from('profiles')
-                    .select('full_name')
-                    .eq('id', currentUser.id)
-                    .maybeSingle();
-                const displayName = profile?.full_name || currentUser.email.split('@')[0];
+                // Try to get profile, but don't fail if table doesn't exist
+                let displayName = currentUser.email.split('@')[0];
+                try {
+                    const { data: profile } = await supabaseClient
+                        .from('profiles')
+                        .select('full_name')
+                        .eq('id', currentUser.id)
+                        .maybeSingle();
+                    if (profile?.full_name) displayName = profile.full_name;
+                } catch (err) {
+                    console.log('Profiles table not ready yet, using email name');
+                }
                 
                 if (authLinks) authLinks.style.display = 'none';
                 if (userInfo) userInfo.style.display = 'flex';
@@ -775,16 +806,19 @@
         }
     }
     
+    // ============================================
+    // COURSE FUNCTIONS
+    // ============================================
     function displayCourses(courses) {
         coursesContainer.innerHTML = '';
         
         if (!courses || courses.length === 0) {
             coursesContainer.innerHTML = `
                 <div style="text-align:center; padding:60px; background:#0A234F; border-radius:20px; grid-column:1/-1;">
-                    <i class="fas fa-tools" style="font-size:4rem; color:#00FF88; margin-bottom:20px; display:block;"></i>
-                    <h3 style="color:#00FF88; margin-bottom:10px;">Courses Coming Soon!</h3>
-                    <p style="color:#B7C4D6;">We are adding new courses. Check back regularly!</p>
-                    <button onclick="location.href='/register.html'" style="margin-top:20px; background:#00FF88; color:#041B3D; border:none; padding:12px 30px; border-radius:30px; cursor:pointer; font-weight:bold;">Get Notified</button>
+                    <i class="fas fa-database" style="font-size:4rem; color:#FF4444; margin-bottom:20px; display:block;"></i>
+                    <h3 style="color:#FF4444; margin-bottom:10px;">No Courses Found</h3>
+                    <p style="color:#B7C4D6;">Please add courses to your Supabase database.</p>
+                    <button onclick="location.href='/register.html'" style="margin-top:20px; background:#00FF88; color:#041B3D; border:none; padding:12px 30px; border-radius:30px; cursor:pointer; font-weight:bold;">Get Started</button>
                 </div>
             `;
             return;
@@ -824,93 +858,171 @@
     async function handleCourseAccess(course) {
         setLoading(true);
         try {
-            const { data: existingEnrollment } = await supabaseClient
-                .from('enrollments')
-                .select('id')
-                .eq('user_id', currentUser.id)
-                .eq('course_id', course.id)
-                .maybeSingle();
-            
-            if (!existingEnrollment) {
-                const { error: enrollError } = await supabaseClient
+            // Check if already enrolled (if enrollments table exists)
+            let isEnrolled = false;
+            try {
+                const { data: existingEnrollment } = await supabaseClient
                     .from('enrollments')
-                    .insert([{
-                        user_id: currentUser.id,
-                        course_id: course.id,
-                        status: 'active',
-                        enrolled_at: new Date().toISOString()
-                    }]);
-
-                if (enrollError) throw enrollError;
+                    .select('id')
+                    .eq('user_id', currentUser.id)
+                    .eq('course_id', course.id)
+                    .maybeSingle();
+                isEnrolled = !!existingEnrollment;
+            } catch (err) {
+                console.log('Enrollments table not ready yet');
+            }
+            
+            if (!isEnrolled) {
+                try {
+                    const { error: enrollError } = await supabaseClient
+                        .from('enrollments')
+                        .insert([{
+                            user_id: currentUser.id,
+                            course_id: course.id,
+                            status: 'active',
+                            enrolled_at: new Date().toISOString()
+                        }]);
+                    
+                    if (enrollError && enrollError.code !== '42P01') {
+                        console.error('Enrollment error:', enrollError);
+                    }
+                } catch (err) {
+                    console.log('Enrollment table may not exist yet');
+                }
             }
             
             window.location.href = `/course.html?id=${course.id}`;
         } catch (err) {
-            console.error('Enrollment error:', err);
-            showToast('Failed to access course. Please try again.', true);
+            console.error('Error:', err);
+            window.location.href = `/course.html?id=${course.id}`;
         } finally {
             setLoading(false);
         }
     }
-
+    
     async function fetchCourses() {
         setLoading(true);
+        showSkeletons();
+        
         try {
+            console.log('Fetching courses from Supabase...');
             const { data, error } = await supabaseClient
                 .from('courses')
                 .select('*')
-                .order('created_at', { ascending: false });
-
-            if (error) throw error;
-
-            if (totalCoursesSpan) totalCoursesSpan.textContent = data ? data.length : 0;
-            displayCourses(data);
-        } catch (err) {
-            console.error('Error fetching courses:', err);
-            showToast('Could not load courses from the server.', true);
-            displayCourses([]); 
+                .order('id', { ascending: true });
+            
+            if (error) {
+                console.error('Supabase error:', error);
+                showToast('Failed to load courses: ' + error.message, true);
+                displayCourses([]);
+            } else if (data && data.length > 0) {
+                totalCoursesSpan.textContent = data.length.toString();
+                displayCourses(data);
+                console.log(`✅ Loaded ${data.length} courses from database`);
+            } else {
+                console.log('No courses found in database');
+                totalCoursesSpan.textContent = '0';
+                displayCourses([]);
+                showToast('No courses found. Please add courses to your database.', true);
+            }
+        } catch (error) {
+            console.error('Error loading courses:', error);
+            showToast('Failed to connect to database. Please check your connection.', true);
+            displayCourses([]);
         } finally {
             setLoading(false);
         }
     }
-
-    document.addEventListener('DOMContentLoaded', () => {
-        updateAuthUI();
-        fetchCourses();
-
-        // Navigation actions
-        document.getElementById('loginBtnNav')?.addEventListener('click', () => window.location.href = '/login.html');
-        document.getElementById('registerBtnNav')?.addEventListener('click', () => window.location.href = '/register.html');
-        document.getElementById('mobileLoginBtn')?.addEventListener('click', (e) => { e.preventDefault(); window.location.href = '/login.html'; });
-        document.getElementById('mobileRegisterBtn')?.addEventListener('click', (e) => { e.preventDefault(); window.location.href = '/register.html'; });
-        document.getElementById('heroGetStarted')?.addEventListener('click', () => window.location.href = '/register.html');
-        
-        const logoutHandler = async (e) => {
-            e.preventDefault();
-            setLoading(true);
-            await supabaseClient.auth.signOut();
-            window.location.reload();
-        };
-
-        document.getElementById('logoutBtnNav')?.addEventListener('click', logoutHandler);
-        document.getElementById('mobileLogoutBtn')?.addEventListener('click', logoutHandler);
-
-        // Responsive mobile menu navigation handler
-        const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+    
+    // ============================================
+    // RLS POLICY SETUP (Run once in Supabase)
+    // ============================================
+    // To fix RLS issues, run this SQL in your Supabase SQL editor:
+    /*
+    -- Allow public read access to courses
+    CREATE POLICY "Enable read access for all users" ON courses
+        FOR SELECT USING (true);
+    
+    -- Allow authenticated users to enroll
+    CREATE POLICY "Enable insert for authenticated users" ON enrollments
+        FOR INSERT WITH CHECK (auth.role() = 'authenticated');
+    
+    -- Allow users to view their own enrollments
+    CREATE POLICY "Enable read for own enrollments" ON enrollments
+        FOR SELECT USING (auth.uid() = user_id);
+    */
+    
+    // ============================================
+    // INITIALIZATION
+    // ============================================
+    function initMobileMenu() {
+        const menuBtn = document.getElementById('mobileMenuBtn');
+        const closeBtn = document.getElementById('mobileNavClose');
         const mobileNav = document.getElementById('mobileNav');
-        const mobileNavClose = document.getElementById('mobileNavClose');
-        const mobileOverlay = document.getElementById('mobileOverlay');
-
-        function toggleMobileMenu(e) {
-            e.preventDefault();
-            mobileNav.classList.toggle('active');
-            mobileOverlay.classList.toggle('active');
-        }
-
-        mobileMenuBtn?.addEventListener('click', toggleMobileMenu);
-        mobileNavClose?.addEventListener('click', toggleMobileMenu);
-        mobileOverlay?.addEventListener('click', toggleMobileMenu);
+        const overlay = document.getElementById('mobileOverlay');
+        
+        const openMenu = () => {
+            mobileNav.classList.add('active');
+            overlay.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        };
+        const closeMenu = () => {
+            mobileNav.classList.remove('active');
+            overlay.classList.remove('active');
+            document.body.style.overflow = '';
+        };
+        
+        if (menuBtn) menuBtn.addEventListener('click', openMenu);
+        if (closeBtn) closeBtn.addEventListener('click', closeMenu);
+        if (overlay) overlay.addEventListener('click', closeMenu);
+        document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeMenu(); });
+    }
+    
+    // Event Listeners
+    document.getElementById('loginBtnNav')?.addEventListener('click', () => {
+        window.location.href = '/login.html';
     });
+    
+    document.getElementById('registerBtnNav')?.addEventListener('click', () => {
+        window.location.href = '/register.html';
+    });
+    
+    document.getElementById('mobileLoginBtn')?.addEventListener('click', (e) => {
+        e.preventDefault();
+        window.location.href = '/login.html';
+    });
+    
+    document.getElementById('mobileRegisterBtn')?.addEventListener('click', (e) => {
+        e.preventDefault();
+        window.location.href = '/register.html';
+    });
+    
+    document.getElementById('heroGetStarted')?.addEventListener('click', () => {
+        window.location.href = '/register.html';
+    });
+    
+    document.getElementById('logoutBtnNav')?.addEventListener('click', async () => {
+        setLoading(true);
+        await supabaseClient.auth.signOut();
+        window.location.reload();
+    });
+    
+    document.getElementById('mobileLogoutBtn')?.addEventListener('click', async (e) => {
+        e.preventDefault();
+        setLoading(true);
+        await supabaseClient.auth.signOut();
+        window.location.reload();
+    });
+    
+    async function init() {
+        console.log('Initializing MEI DRIVE AFRICA...');
+        initMobileMenu();
+        await updateAuthUI();
+        await fetchCourses();
+        supabaseClient.auth.onAuthStateChange(() => { updateAuthUI(); });
+    }
+    
+    init();
 </script>
 </body>
 </html>
