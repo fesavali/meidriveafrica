@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Learner Hub | MEI DRIVE AFRICA - Complete Driver Training</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        :root {
+            --neon-green: #00FF88;
+            --dark-navy: #041B3D;
+            --secondary-dark: #0A234F;
+            --white: #FFFFFF;
+            --soft-gray: #B7C4D6;
+            --error: #ff4444;
+            --warning: #ff9800;
+            --success: #00FF88;
+            --transition: all 0.3s ease;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--secondary-dark);
+            color: var(--white);
+            overflow-x: hidden;
+        }
+        
+        .loading-spinner {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.85); z-index: 9999; display: none;
+            justify-content: center; align-items: center;
+        }
+        .loading-spinner.active { display: flex; }
+        .spinner {
+            width: 50px; height: 50px; border: 3px solid var(--dark-navy);
+            border-top-color: var(--neon-green); border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        
+        .toast {
+            position: fixed; bottom: 30px; right: 30px; z-index: 10000;
+            background: var(--dark-navy); padding: 14px 24px; border-radius: 12px;
+            transform: translateX(400px); transition: transform 0.3s;
+            border-left: 4px solid var(--neon-green);
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+        }
+        .toast.error { border-left-color: var(--error); }
+        .toast.show { transform: translateX(0); }
+        
+        .navbar {
+            position: fixed; top: 0; width: 100%; z-index: 1000;
+            background: rgba(4, 27, 61, 0.96); backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(0, 255, 136, 0.15);
+            padding: 1rem 2rem;
+        }
+        .nav-container {
+            max-width: 1200px; margin: auto; display: flex;
+            justify-content: space-between; align-items: center;
+        }
+        .logo { font-size: 1.6rem; font-weight: 700; color: var(--neon-green); cursor: pointer; }
+        .logo span { color: var(--white); }
+        .nav-links { display: flex; align-items: center; gap: 1.5rem; }
+        .nav-links a { color: var(--white); text-decoration: none; transition: var(--transition); }
+        .nav-links a:hover { color: var(--neon-green); }
+        .logout-btn {
+            background: rgba(255,68,68,0.2); border: 1px solid var(--error);
+            color: var(--error); padding: 8px 20px; border-radius: 30px;
+            cursor: pointer; font-weight: 600;
+        }
+        .logout-btn:hover { background: var(--error); color: var(--white); }
+        
+        .hero {
+            min-height: 40vh;
+            background: linear-gradient(135deg, rgba(4,27,61,0.95), rgba(10,35,79,0.98));
+            display: flex; align-items: center; text-align: center; padding-top: 80px;
+        }
+        .hero-content { max-width: 800px; margin: 0 auto; padding: 0 20px; }
+        .hero h1 { font-size: 2.5rem; margin-bottom: 1rem; }
+        .hero h1 span { color: var(--neon-green); }
+        
+        .container { max-width: 1200px; margin: 0 auto; padding: 2rem; }
+        
+        .stats-row {
+            display: flex; gap: 1.5rem; justify-content: center; margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+        .stat-card {
+            background: var(--dark-navy); border-radius: 20px; padding: 1.5rem;
+            text-align: center; min-width: 150px; border: 1px solid rgba(0,255,136,0.2);
+        }
+        .stat-card i { font-size: 2rem; color: var(--neon-green); margin-bottom: 0.5rem; }
+        .stat-number { font-size: 1.8rem; font-weight: 700; }
+        .stat-label { color: var(--soft-gray); font-size: 0.8rem; }
+        
+        .units-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 1.2rem;
+        }
+        
+        .unit-card {
+            background: var(--dark-navy);
+            border-radius: 16px;
+            padding: 1.2rem;
+            border: 1px solid rgba(0,255,136,0.15);
+            transition: var(--transition);
+            cursor: pointer;
+        }
+        .unit-card:hover {
+            transform: translateY(-3px);
+            border-color: var(--neon-green);
+        }
+        .unit-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+        .unit-num {
+            background: var(--neon-green);
+            color: var(--dark-navy);
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            font-weight: bold;
+        }
+        .unit-status i { font-size: 1.2rem; }
+        .unit-status .completed { color: var(--success); }
+        .unit-status .locked { color: var(--error); }
+        .unit-title {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+        .unit-desc {
+            font-size: 0.75rem;
+            color: var(--soft-gray);
+            margin-bottom: 0.5rem;
+            line-height: 1.4;
+        }
+        
+        .progress-section {
+            background: var(--dark-navy);
+            border-radius: 20px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        .progress-bar-bg {
+            background: rgba(255,255,255,0.1);
+            border-radius: 20px;
+            height: 10px;
+            overflow: hidden;
+        }
+        .progress-bar-fill {
+            background: var(--neon-green);
+            width: 0%;
+            height: 100%;
+            transition: width 0.3s;
+        }
+        
+        .modal {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0,0,0,0.9);
+            z-index: 2000;
+            display: none;
+            overflow-y: auto;
+        }
+        .modal.active { display: block; }
+        .modal-content {
+            max-width: 800px;
+            margin: 50px auto;
+            background: var(--dark-navy);
+            border-radius: 24px;
+            padding: 2rem;
+            border: 1px solid var(--neon-green);
+            position: relative;
+        }
+        .modal-close {
+            position: absolute;
+            top: 1rem;
+            right: 1.5rem;
+            font-size: 2rem;
+            cursor: pointer;
+            color: var(--soft-gray);
+        }
+        .modal-close:hover { color: var(--error); }
+        .modal-title {
+            color: var(--neon-green);
+            margin-bottom: 1rem;
+            padding-right: 2rem;
+        }
+        .modal-body {
+            line-height: 1.6;
+            max-height: 60vh;
+            overflow-y: auto;
+            padding-right: 0.5rem;
+        }
+        .modal-body h3, .modal-body h4 { color: var(--neon-green); margin: 1rem 0 0.5rem; }
+        .modal-body ul, .modal-body ol { margin-left: 1.5rem; margin-bottom: 1rem; }
+        .modal-body li { margin: 0.25rem 0; }
+        .modal-body p { margin-bottom: 0.75rem; }
+        .sign-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 1rem;
+            margin: 1rem 0;
+        }
+        .sign-item {
+            background: rgba(0,0,0,0.3);
+            border-radius: 12px;
+            padding: 0.5rem;
+            text-align: center;
+        }
+        .sign-img {
+            font-size: 2rem;
+            font-weight: bold;
+            background: var(--secondary-dark);
+            padding: 0.5rem;
+            border-radius: 8px;
+            margin-bottom: 0.25rem;
+        }
+        .sign-name { font-size: 0.7rem; }
+        
+        .quiz-option {
+            background: var(--secondary-dark);
+            padding: 0.75rem;
+            border-radius: 12px;
+            margin: 0.5rem 0;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        .quiz-option:hover { background: var(--neon-green); color: var(--dark-navy); }
+        .quiz-option.selected { background: var(--neon-green); color: var(--dark-navy); }
+        
+        .btn-complete {
+            background: var(--neon-green);
+            color: var(--dark-navy);
+            border: none;
+            padding: 12px 28px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-weight: bold;
+            margin-top: 1rem;
+        }
+        
+        .footer {
+            background: var(--dark-navy);
+            text-align: center;
+            padding: 2rem;
+            color: var(--soft-gray);
+            border-top: 1px solid rgba(0,255,136,0.1);
+            margin-top: 2rem;
+        }
+        
+        @media (max-width: 768px) {
+            .units-grid { grid-template-columns: 1fr; }
+            .nav-links { display: none; }
+            .hero h1 { font-size: 1.8rem; }
+            .modal-content { margin: 20px; padding: 1.2rem; }
+        }
+    </style>
+</head>
+<body>
+
+<div id="loadingSpinner" class="loading-spinner"><div class="spinner"></div></div>
+<div id="toast" class="toast"></div>
+
+<nav class="navbar">
+    <div class="nav-container">
+        <div class="logo" onclick="location.href='/'">MEI DRIVE <span>AFRICA</span></div>
+        <div class="nav-links">
+            <a href="/dashboard.html">Dashboard</a>
+            <button class="logout-btn" id="logoutBtn">Logout</button>
+        </div>
+    </div>
+</nav>
+
+<section class="hero">
+    <div class="hero-content">
+        <h1><span>Learner Hub</span><br>Complete Driver Training</h1>
+        <p>NTSA-approved curriculum - from basics to road readiness</p>
+    </div>
+</section>
+
+<div class="container">
+    <div class="stats-row">
+        <div class="stat-card"><i class="fas fa-book"></i><div class="stat-number" id="totalUnits">0</div><div class="stat-label">Total Units</div></div>
+        <div class="stat-card"><i class="fas fa-check-circle"></i><div class="stat-number" id="completedUnits">0</div><div class="stat-label">Completed</div></div>
+        <div class="stat-card"><i class="fas fa-chart-line"></i><div class="stat-number" id="progressPercent">0%</div><div class="stat-label">Progress</div></div>
+    </div>
+    
+    <div class="progress-section">
+        <div class="progress-bar-bg"><div class="progress-bar-fill" id="mainProgress"></div></div>
+        <p style="margin-top: 0.5rem; text-align: center; font-size: 0.85rem;">Your learning journey progress</p>
+    </div>
+    
+    <div id="unitsContainer" class="units-grid"></div>
+</div>
+
+<footer class="footer">
+    <p>&copy; 2026 MEI DRIVE AFRICA | NTSA Approved Driver Training | Instructor: ILR-7WA1P62</p>
+</footer>
+
+<div id="unitModal" class="modal">
+    <div class="modal-content">
+        <span class="modal-close" id="closeModal">&times;</span>
+        <h2 class="modal-title" id="modalTitle">Unit Title</h2>
+        <div class="modal-body" id="modalBody"></div>
+        <button class="btn-complete" id="completeUnitBtn">Mark as Completed ✓</button>
+    </div>
+</div>
+
+<script>
+    // Supabase config
+    const SUPABASE_URL = 'https://jeksrwrzzrczamxijvwl.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Impla3Nyd3J6enJjemFteGlqdndsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg2NzYyMjAsImV4cCI6MjA5NDI1MjIyMH0.1poYpJKNFEVe2NTBkXBTH2bIHGk2yT8aqCU-OlJc4vs';
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    
+    // ========== 21 UNITS + TRAFFIC SIGNS + QUIZ ==========
+    const UNITS = [
+        { id: 1, title: "Introduction to Driving", desc: "Motor vehicles and driver responsibility. Goal of driver training and accident prevention.", content: "<p><strong>Motor vehicles</strong> are an important part of our day-to-day living and provide a means for people and goods to be transported from one location to another.</p><p>The goal of driver training is ensure that you, as the driver, are equipped with the right knowledge of how to handle your vehicle and how to act appropriately when using the road.</p><p>Most traffic accidents are caused by human error, however this can be easily prevented when the driver is adequately prepared for the traffic situation.</p>" },
+        { id: 2, title: "Fundamental Driving Rules", desc: "Traffic Act, Highway Code, horn usage, right-of-way rules.", content: "<p><strong>The Traffic Act</strong> sets out the laws that govern the use of roads and the expected conduct of road users.</p><p><strong>The Highway Code</strong> is a set of information, advice, guides and mandatory rules for all road users in Kenya.</p><h4>Horn Rules:</h4><ul><li>Only use horn while moving to warn others</li><li>Do not use horn aggressively</li><li>No hooting near hospitals/schools</li></ul><h4>Right-of-way:</h4><ul><li>Police cars, ambulances, fire engines</li><li>Presidential motorcade</li><li>When directed by traffic officer</li></ul>" },
+        { id: 3, title: "Model Town", desc: "Road types, roundabout rules, parking zones, stop/give way signs.", content: "<h4>One Way Traffic Road (Dual Carriageway)</h4><p>All vehicles move in one direction. White continuous line = no changing lanes. White broken line = can overtake if safe.</p><h4>Two Way Traffic Road</h4><p>Vehicles move in opposite directions. Yellow continuous line = no overtaking. Yellow broken line = overtake if clear.</p><h4>Roundabout Rules:</h4><ul><li>No stopping, no parking, no overtaking on roundabout</li><li>Keep left, move clockwise</li><li>Lane 1: left or straight | Lane 2: straight only | Lane 3: straight or right | Lane 4: right, U-turn, full circle</li></ul><h4>Parking:</h4><p>Angle parking: park forward, exit reverse. Flush parking: park reverse, exit forward.</p><p><strong>Stop Sign:</strong> Red octagon - stop completely, look right, left, right then proceed.</p><p><strong>Give Way Sign:</strong> Red triangle pointing down - slow down, yield if necessary.</p>" },
+        { id: 4, title: "Human Factors in Traffic", desc: "Observation, health, fatigue, distractions, alcohol, safety belts.", content: "<h4>Observation Rules:</h4><ul><li>Keep eyes moving, get wide view</li><li>Use all mirrors</li><li>Watch for vulnerable road users: children, elderly, disabled, cyclists</li></ul><h4>Fatigue:</h4><p>Get quality sleep, take regular breaks, avoid night driving if tired.</p><h4>Distractions:</h4><p>No hand-held phones while driving. No grooming, eating, or video devices in driver's view.</p><h4>Alcohol & Drugs:</h4><p>Do not drink and drive. Alcohol slows brain function, reduces judgment, gives false confidence. Police breathalyzer (ALCOBLOW) measures BAC.</p><h4>Safety Equipment:</h4><ul><li>Reflector triangles (60m ahead & behind)</li><li>First aid kit</li><li>Fire extinguisher</li><li>Spare tyre, tools, jumpstart cables</li></ul>" },
+        { id: 5, title: "Vehicle Construction & Controls", desc: "Dashboard instruments, pedals, mirrors, steering, gears.", content: "<h4>Controls & Functions:</h4><ul><li><strong>Steering Wheel:</strong> Both hands at 10-and-2 or 9-and-3 position</li><li><strong>Gear Lever:</strong> 5 forward gears + reverse</li><li><strong>Pedals:</strong> Clutch (left), Brake (center), Accelerator (right)</li><li><strong>Handbrake:</strong> Keeps vehicle stationary on inclines</li><li><strong>Mirrors:</strong> Rear-view (flat glass), Side mirrors (convex - wider view)</li><li><strong>Speedometer:</strong> Shows current speed</li><li><strong>Temperature Gauge:</strong> Monitors engine temperature</li></ul><h4>Vehicle Systems:</h4><p>Braking system, steering system, transmission, suspension, tyres, lights and reflectors.</p>" },
+        { id: 6, title: "Self-Inspection of Vehicle", desc: "Pre-journey checks - tyres, lights, mirrors, fluids, paperwork.", content: "<h4>Exterior Inspection:</h4><ul><li>Tyres: pressure, tread condition, spare tyre</li><li>Reflectors & lights: headlights, turn signals, hazard lights</li><li>Mirrors: present, properly adjusted</li><li>Windshield wipers & fluid</li><li>Windows: open/close properly</li><li>Body: dents, scratches</li><li>Cleanliness</li><li>Safety belts & car seats</li><li>Emergency equipment</li><li>Paperwork: license, insurance, registration</li></ul><h4>Interior Inspection:</h4><ul><li>Brakes: properly adjusted</li><li>Steering: full 360° range</li><li>Indicators: operational</li><li>Gears: shift smoothly</li><li>Oil level, coolant, battery, leaks</li></ul>" },
+        { id: 7, title: "Observation", desc: "Driver visibility, mirrors, blind spots, hazard detection.", content: "<p><strong>Driver visibility</strong> is the maximum distance at which a driver can clearly identify objects around the car.</p><h4>Mirrors Types:</h4><ul><li><strong>Rear View Mirror (Interior):</strong> Flat glass - accurate distance judgment. Adjust when stationary.</li><li><strong>Exterior Mirrors:</strong> Convex - wider view but vehicles appear smaller and further away.</li><li><strong>Nearside Mirror:</strong> Closest to kerb</li><li><strong>Offside Mirror:</strong> Closest to inner lane</li></ul><h4>Blind Spot:</h4><p>Area around vehicle that driver cannot directly observe. Check blind spot before changing direction, especially near cyclists/motorcyclists.</p>" },
+        { id: 8, title: "Vehicle Control", desc: "Starting, stopping, gears, steering, parking, turning, reversing.", content: "<h4>To Start Vehicle:</h4><ol><li>Depress clutch, wait 3 seconds</li><li>Hand brake ON, ignition ON</li><li>Start motor, release key when engine starts</li><li>Check mirrors, signal</li><li>Select appropriate gear</li><li>Release handbrake, slowly release clutch while pressing accelerator</li></ol><h4>To Stop Vehicle:</h4><ol><li>Check mirrors</li><li>Signal properly</li><li>Release accelerator, apply brake</li><li>Depress clutch as car comes to rest</li><li>Apply handbrake, select 1st gear</li></ol><h4>Gear Speeds:</h4><ul><li>1st: 0-30 km/h (moving off)</li><li>2nd: Slow traffic, downhill start</li><li>3rd: 35-70 km/h</li><li>4th: 60-110 km/h (overtaking)</li><li>5th: 80-110 km/h (highway)</li></ul><h4>Parking:</h4><p>Angle parking (small cars): park forward, exit reverse. Flush parking: park reverse, exit forward. Parallel parking: practice required.</p>" },
+        { id: 9, title: "Communication on the Road", desc: "MSM technique, hand signals, light signals, traffic lights.", content: "<h4>MSM Technique (Mirror, Signal, Manoeuvre)</h4><p><strong>Mirror:</strong> Check interior mirror, then door mirror. Look for hazards - vehicles too close, fast approaching, cyclists.</p><p><strong>Signal:</strong> Apply signal in good time. Too early causes confusion, too late gives no reaction time.</p><p><strong>Manoeuvre:</strong> Execute turn, lane change, or stop.</p><h4>Hand Signals:</h4><ul><li>Left turn: Left arm out horizontal</li><li>Right turn: Right arm out horizontal or left arm up</li><li>Slow down: Left arm down with palm facing back</li></ul><h4>Traffic Lights:</h4><ul><li>RED: STOP</li><li>RED + AMBER: STOP, prepare to go</li><li>GREEN: Go if clear</li><li>AMBER: STOP (unless unsafe to do so)</li></ul>" },
+        { id: 10, title: "Speed Management", desc: "Speed limits, 4-second rule, braking distance, stopping distance.", content: "<h4>4-Second Rule (Adverse Weather):</h4><p>When vehicle ahead passes landmark, count 'one thousand and one, two, three, four'. If you pass landmark before finishing, increase following distance.</p><h4>Braking Distance:</h4><p>Distance traveled between hitting brakes and stopping. Increases with speed, wet/icy roads, worn tyres, overloaded vehicle.</p><h4>Thinking Distance:</h4><p>Distance after deciding to brake until actually braking. Affected by speed, fatigue, distractions.</p><h4>Stopping Distance = Thinking Distance + Braking Distance</h4><p>At 30 km/h: 6m thinking + 6m braking = 12m total<br>At 80 km/h: 18m thinking + 55m braking = 73m total</p><h4>Freewheeling/Coasting:</h4><p>Depressing clutch while moving. Risky - reduces control, increases brake wear, does NOT save fuel.</p>" },
+        { id: 11, title: "Space Management", desc: "Open/closed/changing conditions, safe following distance, position to see and be seen.", content: "<h4>Road Conditions:</h4><ul><li><strong>Open:</strong> Clear view, easy to adjust speed/lanes</li><li><strong>Closed:</strong> Limited space, restricted view</li><li><strong>Changing:</strong> Speed limits, road surface, weather, traffic flow changes</li></ul><h4>Space Management:</h4><ul><li>Drive at same speed as surrounding traffic</li><li>Maintain safe following distance (4 seconds in wet conditions)</li><li>Position vehicle to 'see and be seen'</li><li>Signal before slowing to give others warning</li></ul>" },
+        { id: 12, title: "Emergency Manoeuvres", desc: "Brake failure, blowouts, off-road recovery, headlight failure, defensive driving.", content: "<h4>Brake Failure:</h4><p>Pump brake pedal to restore pressure. If not working, apply handbrake gently while holding release button.</p><h4>Blowout:</h4><ol><li>Keep firm grip on steering wheel</li><li>Do NOT slam brakes</li><li>Let car slow gradually</li><li>Pull to side when safe, activate hazard lights</li></ol><h4>Wheel off Pavement:</h4><p>Hold steering firmly, release accelerator, avoid heavy braking, steer back when under control.</p><h4>Defensive Driving:</h4><p>Safe, cautious driving. Improve observation, anticipation, sound judgment of speed/distance. Don't drive when tired.</p>" },
+        { id: 13, title: "Skid Control and Recovery", desc: "Front/rear wheel skids, aquaplaning, recovery techniques.", content: "<h4>Causes of Skids:</h4><ul><li>Driving too fast for conditions</li><li>Sudden hard braking</li><li>Turning too fast or accelerating too quickly</li></ul><h4>Front Wheel Skid:</h4><p>Vehicle goes off intended course. Caused by excess speed entering corner or sudden braking.</p><h4>Rear Wheel Skid:</h4><p>Rear swings out. Caused by excessive speed with sudden braking.</p><h4>Aquaplaning:</h4><p>Tyres lose contact with road on wet surface. Reduce speed, correct tyre pressure and tread depth.</p><h4>Skid Recovery:</h4><ol><li>Take feet off accelerator and brake</li><li>Reapply brakes gently</li><li>Turn steering in direction you want to go</li><li>Counter-steer as needed</li></ol>" },
+        { id: 14, title: "Adverse Driving Conditions", desc: "Night driving, fog, rain, extreme conditions techniques.", content: "<h4>Night Driving:</h4><ul><li>Slow down, especially on unlit roads</li><li>Don't overdrive headlights</li><li>Use low beams within 150m of oncoming vehicle</li><li>Look to left of oncoming bright lights</li></ul><h4>Fog:</h4><ul><li>Slow down gradually</li><li>Use low beam headlights (high beams reflect off fog)</li><li>No overtaking, lane changing</li><li>If visibility drops rapidly, pull off road safely</li></ul><h4>Rain:</h4><ul><li>Slippery surface, reduced visibility</li><li>Increase following distance</li><li>Smooth steering, braking, accelerating</li><li>Avoid puddles (can hide potholes, flood engine)</li></ul><h4>Reduced Traction:</h4><p>Use push-pull or fixed-hand steering. With ABS: plant and steer - don't pump brakes. Without ABS: threshold braking.</p>" },
+        { id: 15, title: "Preventive Maintenance", desc: "Regular checks, common problems and solutions.", content: "<h4>Preventive Maintenance Includes:</h4><ul><li>Vehicle inspection</li><li>Lubrication</li><li>Adjustment</li><li>Cleaning</li><li>Testing parts</li><li>Repair and replacement</li></ul><h4>Common Issues & Solutions:</h4><ul><li><strong>Puncture:</strong> Change wheel</li><li><strong>Heavy steering/vibrations:</strong> Check tyre balance, power steering</li><li><strong>Vehicle pulls when braking:</strong> Brake adjustment needed</li><li><strong>Warning light shows:</strong> Check brake fluid level</li><li><strong>Lamp not lighting:</strong> Check bulb, fuse</li><li><strong>Engine won't start:</strong> Fuel, electrical, battery, spark plugs</li></ul>" },
+        { id: 16, title: "Conditions of Carriage", desc: "Passenger rights, driver obligations, PSV regulations.", content: "<p><strong>Conditions of carriage</strong> refer to customers' rights and restrictions, and driver's obligations.</p><h4>Light Vehicles as PSV must:</h4><ul><li>Provide statement of liability</li><li>State fares/pricing</li><li>Indicate exceptions with fares</li><li>Abide by code of conduct</li><li>Address restricted items</li><li>Handle lost property</li><li>Provide contact details of operator</li></ul>" },
+        { id: 17, title: "Hazardous Materials", desc: "Classes of dangerous goods, licensing requirements.", content: "<h4>Hazardous Material Characteristics:</h4><ul><li>Flammable - burns easily</li><li>Corrosive - rusts/decomposes</li><li>Reactive - can explode</li><li>Toxic - poisonous</li></ul><h4>9 Classes of Hazardous Materials:</h4><ol><li>Explosives</li><li>Gases</li><li>Flammable Liquids</li><li>Flammable Solids</li><li>Oxidizing Substances</li><li>Toxic & Infectious</li><li>Radioactive Material</li><li>Corrosives</li><li>Miscellaneous Dangerous Goods</li></ol><p>In Kenya, KBS, NEMA and NTSA coordinate licensing for hazardous goods transport.</p><p><strong>Do not handle hazardous material without appropriate licensing!</strong></p>" },
+        { id: 18, title: "Emergency Procedures", desc: "Crash scene management, first aid (Dr. ABC), recovery position.", content: "<h4>At Crash Scene:</h4><ol><li>Set reflector triangles 50m behind and ahead</li><li>Call emergency services (police, ambulance, fire)</li><li>Move uninjured to safety</li><li>DO NOT move injured unless immediate danger (fire/explosion)</li><li>Do not remove motorcyclist's helmet unless essential</li><li>Give First Aid</li><li>Stay until police arrive</li></ol><h4>First Aid - Dr. ABC:</h4><ul><li><strong>D</strong> = Danger - make safe</li><li><strong>R</strong> = Response - shake gently, talk</li><li><strong>A</strong> = Airway - clear throat, tilt head</li><li><strong>B</strong> = Breathing - check, give artificial respiration if needed</li><li><strong>C</strong> = Circulation - check pulse, apply CPR if trained</li></ul><h4>Recovery Position:</h4><p>Lay casualty on side, lower arm at right angle, upper arm under cheek, upper leg bent.</p>" },
+        { id: 19, title: "Work Planning", desc: "Trip planning, time management, legal duty hours.", content: "<h4>Trip Planning:</h4><ul><li>Get appropriate documentation</li><li>Know pick-up/delivery details</li><li>Check load securing requirements</li></ul><h4>Managing Trip:</h4><ul><li>Consider distance, traffic conditions, meal stops</li><li>Don't drive when tired</li><li>Avoid adverse weather</li><li>Know alternative routes</li></ul><h4>Legal Limits (Traffic Act 66A):</h4><p><strong>No person shall drive a PSV or commercial vehicle for more than 8 hours in any 24-hour period.</strong></p><p>Complete trip records, work tickets after journey.</p>" },
+        { id: 20, title: "Customer Care", desc: "Communication, courtesy, handling expectations, sexual harassment prevention.", content: "<h4>Communication Skills:</h4><ul><li>Patience, positive attitude, appropriate language</li><li>Be courteous - don't retaliate to provocation</li><li>Be visible, signal properly</li><li>Keep vehicle clean, number plates visible</li></ul><h4>Customer Expectations:</h4><ul><li>Pick/drop at designated points</li><li>Allow sufficient boarding/alighting time</li><li>Assist passengers with special needs</li><li>Provide helmets/reflective jackets for bodaboda passengers</li><li>Don't overload - know weight restrictions</li></ul><h4>Sexual Harassment & Discrimination:</h4><p>Harassment includes unwelcome sexual requests, language, or behaviour. Discrimination is treating customers differently based on appearance, race, gender, age. Report to authorities.</p>" },
+        { id: 21, title: "The Examination - 1000 Quiz Bank", desc: "Exam preparation, NTSA driving test, practice quiz.", content: "<h4>Exam Preparation:</h4><ul><li>Register via NTSA procedure</li><li>Prepare for both practical and theory exams</li><li>Arrive on time at examination centre</li></ul><h4>Sample Practice Questions:</h4><div id='quizSection'></div>" }
+    ];
+    
+    // Add traffic signs to unit 3
+    UNITS[2].content += "<h4>Traffic Signs:</h4><div class='sign-grid'><div class='sign-item'><div class='sign-img'>🔴 STOP</div><div class='sign-name'>Stop Sign - Octagon</div></div><div class='sign-item'><div class='sign-img'>🔻 GIVE WAY</div><div class='sign-name'>Give Way - Triangle down</div></div><div class='sign-item'><div class='sign-img'>⚠️</div><div class='sign-name'>Warning Sign - Triangle</div></div><div class='sign-item'><div class='sign-img'>ℹ️</div><div class='sign-name'>Information - Rectangle</div></div><div class='sign-item'><div class='sign-img'>⭕</div><div class='sign-name'>Regulatory - Circle</div></div></div>";
+    
+    let currentUser = null;
+    let completedUnits = new Set();
+    let currentUnitId = null;
+    
+    function showToast(msg, isErr = false) { /* ... */ const t = document.getElementById('toast'); t.textContent = msg; t.className = `toast ${isErr ? 'error' : ''}`; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 3000); }
+    function setLoading(load) { document.getElementById('loadingSpinner').classList.toggle('active', load); }
+    
+    async function checkAuth() {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) { window.location.href = '/login.html'; return false; }
+        currentUser = session.user;
+        return true;
+    }
+    
+    async function loadProgress() {
+        try {
+            const { data } = await supabase.from('user_progress').select('unit_id').eq('user_id', currentUser.id).eq('course_id', 1).eq('completed', true);
+            if (data) data.forEach(p => completedUnits.add(p.unit_id));
+        } catch(e) { const saved = localStorage.getItem(`learner_progress_${currentUser?.id}`); if(saved) JSON.parse(saved).forEach(id => completedUnits.add(id)); }
+        updateStats();
+    }
+    
+    async function saveProgress(unitId) {
+        completedUnits.add(unitId);
+        try { await supabase.from('user_progress').upsert({ user_id: currentUser.id, course_id: 1, unit_id: unitId, completed: true, updated_at: new Date() }); }
+        catch(e) { localStorage.setItem(`learner_progress_${currentUser.id}`, JSON.stringify(Array.from(completedUnits))); }
+        updateStats();
+        renderUnits();
+    }
+    
+    function updateStats() {
+        document.getElementById('totalUnits').textContent = UNITS.length;
+        document.getElementById('completedUnits').textContent = completedUnits.size;
+        const percent = Math.floor((completedUnits.size / UNITS.length) * 100);
+        document.getElementById('progressPercent').textContent = `${percent}%`;
+        document.getElementById('mainProgress').style.width = `${percent}%`;
+    }
+    
+    function renderUnits() {
+        const container = document.getElementById('unitsContainer');
+        container.innerHTML = '';
+        UNITS.forEach(unit => {
+            const isCompleted = completedUnits.has(unit.id);
+            const isLocked = unit.id > 1 && !completedUnits.has(unit.id - 1);
+            const card = document.createElement('div');
+            card.className = 'unit-card';
+            card.innerHTML = `
+                <div class="unit-header">
+                    <span class="unit-num">Unit ${unit.id}</span>
+                    <div class="unit-status">${isCompleted ? '<i class="fas fa-check-circle completed"></i>' : (isLocked ? '<i class="fas fa-lock locked"></i>' : '<i class="fas fa-play-circle" style="color:#00FF88"></i>')}</div>
+                </div>
+                <div class="unit-title">${escapeHtml(unit.title)}</div>
+                <div class="unit-desc">${escapeHtml(unit.desc)}</div>
+            `;
+            card.onclick = () => { if (!isLocked) openUnit(unit); };
+            container.appendChild(card);
+        });
+    }
+    
+    function escapeHtml(str) { return str.replace(/[&<>]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[m])); }
+    
+    function openUnit(unit) {
+        currentUnitId = unit.id;
+        document.getElementById('modalTitle').textContent = `Unit ${unit.id}: ${unit.title}`;
+        let bodyHtml = unit.content;
+        if (unit.id === 21) {
+            bodyHtml += `<div id="quizBank"><p><strong>Sample Questions:</strong></p>
+            <div class="quiz-option" data-q="1">1. What does a RED traffic light mean?<br>a) Go if clear  b) Stop  c) Prepare to go  d) Slow down</div>
+            <div class="quiz-option" data-q="2">2. What is the maximum driving hours for a PSV driver in 24 hours?<br>a) 12 hours  b) 10 hours  c) 8 hours  d) 6 hours</div>
+            <div class="quiz-option" data-q="3">3. What does the 4-second rule help with?<br>a) Overtaking  b) Following distance  c) Parking  d) Changing lanes</div>
+            <div class="quiz-option" data-q="4">4. Yellow continuous line at centre means?<br>a) Overtaking allowed  b) No overtaking  c) Parking allowed  d) U-turn allowed</div>
+            <p style="margin-top:1rem"><strong>Answers:</strong> 1-b, 2-c, 3-b, 4-b</p></div>`;
+        }
+        document.getElementById('modalBody').innerHTML = bodyHtml;
+        document.getElementById('unitModal').classList.add('active');
+        if (unit.id === 21) {
+            document.querySelectorAll('.quiz-option').forEach(opt => opt.addEventListener('click', function() { this.style.background = '#00FF88'; this.style.color = '#041B3D'; }));
+        }
+    }
+    
+    document.getElementById('completeUnitBtn').onclick = async () => {
+        if (currentUnitId && !completedUnits.has(currentUnitId)) {
+            await saveProgress(currentUnitId);
+            showToast(`Unit ${currentUnitId} completed! 🎉`);
+            document.getElementById('unitModal').classList.remove('active');
+        } else if (currentUnitId && completedUnits.has(currentUnitId)) {
+            showToast('Already completed this unit!');
+            document.getElementById('unitModal').classList.remove('active');
+        }
+    };
+    document.getElementById('closeModal').onclick = () => document.getElementById('unitModal').classList.remove('active');
+    document.getElementById('logoutBtn').onclick = async () => { await supabase.auth.signOut(); window.location.href = '/'; };
+    
+    async function init() { if (await checkAuth()) { await loadProgress(); renderUnits(); } }
+    init();
+</script>
+</body>
+</html>
