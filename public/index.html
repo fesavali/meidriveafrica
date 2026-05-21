@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MEI DRIVE AFRICA | NTSA Approved Driver Training</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
@@ -42,11 +42,7 @@
             align-items: center;
             gap: 1rem;
         }
-        .nav-links a {
-            color: #fff;
-            text-decoration: none;
-            transition: all 0.3s;
-        }
+        .nav-links a { color: #fff; text-decoration: none; }
         .nav-links a:hover { color: #00FF88; }
         .nav-btn {
             background: transparent;
@@ -142,16 +138,6 @@
             margin: 0 auto;
         }
         @keyframes spin { to { transform: rotate(360deg); } }
-        .debug-box {
-            background: #1a1a2e;
-            border: 1px solid #ff4444;
-            border-radius: 8px;
-            padding: 15px;
-            margin: 20px;
-            font-family: monospace;
-            font-size: 12px;
-            display: none;
-        }
         footer {
             background: #0A234F;
             text-align: center;
@@ -197,88 +183,39 @@
     <p>&copy; 2026 MEI DRIVE AFRICA | NTSA Approved Driver Training</p>
 </footer>
 
-<!-- Debug panel (hidden by default, press Ctrl+Shift+D to show) -->
-<div id="debugPanel" class="debug-box"></div>
-
 <script>
-    // Supabase Configuration
     const SUPABASE_URL = 'https://jeksrwrzzrczamxijvwl.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Impla3Nyd3J6enJjemFteGlqdndsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg2NzYyMjAsImV4cCI6MjA5NDI1MjIyMH0.1poYpJKNFEVe2NTBkXBTH2bIHGk2yT8aqCU-OlJc4vs';
     
     const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
     
-    // Login/Register buttons
     document.getElementById('loginBtn').onclick = () => window.location.href = '/login.html';
     document.getElementById('registerBtn').onclick = () => window.location.href = '/register.html';
-    
-    // Debug function
-    function addDebugMessage(message) {
-        console.log(message);
-        const debugPanel = document.getElementById('debugPanel');
-        debugPanel.innerHTML += `<div>${new Date().toLocaleTimeString()}: ${message}</div>`;
-        debugPanel.scrollTop = debugPanel.scrollHeight;
-    }
-    
-    // Show debug panel with Ctrl+Shift+D
-    document.addEventListener('keydown', (e) => {
-        if (e.ctrlKey && e.shiftKey && e.key === 'D') {
-            const panel = document.getElementById('debugPanel');
-            panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
-        }
-    });
     
     async function loadCourses() {
         const container = document.getElementById('coursesContainer');
         
         try {
-            addDebugMessage('🔍 Fetching courses from Supabase...');
-            addDebugMessage(`📡 URL: ${SUPABASE_URL}`);
-            
-            const { data, error, status } = await supabase
-                .from('courses')
-                .select('*')
-                .order('id');
-            
-            addDebugMessage(`📊 Response Status: ${status}`);
+            console.log('Fetching courses from Supabase...');
+            const { data, error } = await supabase.from('courses').select('*').order('id');
             
             if (error) {
-                addDebugMessage(`❌ Supabase Error: ${error.message}`);
-                addDebugMessage(`🔧 Error Code: ${error.code}`);
-                container.innerHTML = `
-                    <div style="text-align:center; padding:40px; background:#0A234F; border-radius:20px; grid-column:1/-1;">
-                        <i class="fas fa-exclamation-circle" style="font-size:3rem; color:#ff4444;"></i>
-                        <h3 style="color:#ff4444;">Error Loading Courses</h3>
-                        <p>${error.message}</p>
-                        <button onclick="location.reload()" style="margin-top:10px; padding:8px 16px; background:#00FF88; border:none; border-radius:8px; cursor:pointer;">Retry</button>
-                        <p style="margin-top:10px; font-size:12px;">Press Ctrl+Shift+D for debug info</p>
-                    </div>
-                `;
+                console.error('Supabase Error:', error);
+                container.innerHTML = `<div style="text-align:center; padding:40px;"><i class="fas fa-exclamation-circle" style="font-size:2rem;"></i><p>Error loading courses. Please refresh.</p></div>`;
                 return;
             }
-            
-            addDebugMessage(`✅ Success! Found ${data?.length || 0} courses`);
             
             if (!data || data.length === 0) {
-                addDebugMessage('⚠️ No courses found in database');
-                container.innerHTML = `
-                    <div style="text-align:center; padding:40px; background:#0A234F; border-radius:20px; grid-column:1/-1;">
-                        <i class="fas fa-book-open" style="font-size:3rem; color:#00FF88;"></i>
-                        <h3>No Courses Available</h3>
-                        <p>Check back soon for our latest courses!</p>
-                        <p style="margin-top:10px; font-size:12px;">Press Ctrl+Shift+D for debug info</p>
-                    </div>
-                `;
+                container.innerHTML = `<div style="text-align:center; padding:40px;"><i class="fas fa-book-open" style="font-size:2rem;"></i><p>No courses available yet. Check back soon!</p></div>`;
                 return;
             }
             
-            // Display courses
             container.innerHTML = '';
             const icons = ['🚗', '🚌', '⚡', '🛵', '📚', '📝', '🛡️', '🔄'];
             
             data.forEach((course, index) => {
                 const isFree = course.type === 'free' || course.price === 0;
                 const icon = course.icon || icons[index % icons.length];
-                
                 const card = document.createElement('div');
                 card.className = 'course-card';
                 card.innerHTML = `
@@ -290,20 +227,11 @@
                     <button class="btn-view" onclick="location.href='/login.html'">View Course →</button>
                 `;
                 container.appendChild(card);
-                addDebugMessage(`📚 Displayed course: ${course.name} - ${isFree ? 'FREE' : `KES ${course.price}`}`);
             });
             
         } catch (err) {
-            addDebugMessage(`❌ Fatal Error: ${err.message}`);
-            container.innerHTML = `
-                <div style="text-align:center; padding:40px; background:#0A234F; border-radius:20px; grid-column:1/-1;">
-                    <i class="fas fa-exclamation-circle" style="font-size:3rem; color:#ff4444;"></i>
-                    <h3>Connection Error</h3>
-                    <p>Unable to connect to the server. Please check your internet connection.</p>
-                    <button onclick="location.reload()" style="margin-top:10px; padding:8px 16px; background:#00FF88; border:none; border-radius:8px; cursor:pointer;">Retry</button>
-                    <p style="margin-top:10px; font-size:12px;">Press Ctrl+Shift+D for debug info</p>
-                </div>
-            `;
+            console.error('Error:', err);
+            container.innerHTML = `<div style="text-align:center; padding:40px;"><i class="fas fa-exclamation-circle" style="font-size:2rem;"></i><p>Connection error. Please refresh.</p></div>`;
         }
     }
     
@@ -312,23 +240,6 @@
         return str.replace(/[&<>]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[m]));
     }
     
-    // Test connection on load
-    async function testConnection() {
-        try {
-            addDebugMessage('🔌 Testing Supabase connection...');
-            const { data, error } = await supabase.from('courses').select('count', { count: 'exact', head: true });
-            if (error) {
-                addDebugMessage(`❌ Connection test failed: ${error.message}`);
-            } else {
-                addDebugMessage(`✅ Connection test successful!`);
-            }
-        } catch (err) {
-            addDebugMessage(`❌ Connection test error: ${err.message}`);
-        }
-    }
-    
-    // Load courses when page loads
-    testConnection();
     loadCourses();
 </script>
 </body>
