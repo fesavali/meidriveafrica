@@ -252,7 +252,7 @@
         <div class="nav-links">
             <a href="/dashboard.html"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
             <span class="user-name" id="userName">User</span>
-            <button class="logout-btn" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</button>
+            <button class="logout-btn" id="logoutButton"><i class="fas fa-sign-out-alt"></i> Logout</button>
         </div>
     </div>
 </nav>
@@ -336,7 +336,6 @@
     
     async function loadStats() {
         try {
-            // FIXED: Use user_id instead of profile_id
             const { data: enrollments } = await supabase
                 .from('enrollments')
                 .select('course_id')
@@ -347,7 +346,6 @@
                 enrolledCourseIds = new Set(enrollments.map(e => e.course_id));
             }
             
-            // FIXED: Use user_id instead of profile_id
             const { data: progress } = await supabase
                 .from('user_progress')
                 .select('overall_progress')
@@ -359,7 +357,6 @@
                 document.getElementById('avgProgress').textContent = `${avg}%`;
             }
             
-            // FIXED: Use user_id instead of profile_id
             const { data: completed } = await supabase
                 .from('user_progress')
                 .select('unit_id')
@@ -466,7 +463,6 @@
     
     window.enrollInCourse = async function(courseId) {
         try {
-            // FIXED: Use user_id instead of profile_id
             const { error } = await supabase
                 .from('enrollments')
                 .insert([{
@@ -544,9 +540,23 @@ Enter A, B, C, or D:`);
         }
     };
     
+    // FIXED: Working logout function
     window.logout = async function() {
-        await supabase.auth.signOut();
-        window.location.href = '/login.html';
+        try {
+            const { error } = await supabase.auth.signOut();
+            if (error) {
+                console.error('Logout error:', error);
+                showToast('Error logging out. Please try again.', 'error');
+            } else {
+                // Clear local storage
+                localStorage.clear();
+                // Redirect to home page
+                window.location.href = '/';
+            }
+        } catch (err) {
+            console.error('Logout error:', err);
+            window.location.href = '/';
+        }
     };
     
     function showToast(message, type = 'info') {
@@ -564,6 +574,12 @@ Enter A, B, C, or D:`);
         if (!str) return '';
         return str.replace(/[&<>]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[m]));
     }
+    
+    // FIXED: Attach logout event listener correctly
+    document.getElementById('logoutButton').addEventListener('click', function(e) {
+        e.preventDefault();
+        logout();
+    });
     
     async function init() {
         const isAuthenticated = await checkAuth();
