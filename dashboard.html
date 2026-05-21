@@ -66,7 +66,7 @@
         .logo span { color: var(--white); }
         .nav-links { display: flex; align-items: center; gap: 1.5rem; }
         .nav-links a { color: var(--white); text-decoration: none; transition: var(--transition); font-weight: 500; }
-        .nav-links a:hover { color: var(--neon-green); }
+        .nav-links a:hover, .nav-links a.active { color: var(--neon-green); }
         .logout-btn {
             background: rgba(255,68,68,0.2); border: 1px solid var(--error);
             color: var(--error); padding: 8px 20px; border-radius: 30px;
@@ -111,7 +111,7 @@
         
         .courses-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
             gap: 1.5rem;
         }
         
@@ -148,6 +148,10 @@
         .course-card p {
             color: var(--soft-gray); font-size: 0.85rem;
             line-height: 1.5; margin-bottom: 1rem;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
         }
         .course-price {
             font-weight: bold; margin-bottom: 1rem;
@@ -190,6 +194,11 @@
             border-radius: 20px; grid-column: 1/-1;
         }
         .empty-state i { font-size: 4rem; color: var(--warning); margin-bottom: 1rem; }
+        .empty-state button {
+            background: var(--neon-green); color: var(--dark-navy);
+            border: none; padding: 10px 30px; border-radius: 30px;
+            margin-top: 1rem; cursor: pointer; font-weight: bold;
+        }
         
         .footer {
             background: var(--dark-navy); text-align: center;
@@ -214,7 +223,7 @@
     <div class="nav-container">
         <div class="logo" onclick="location.href='/'">MEI DRIVE <span>AFRICA</span></div>
         <div class="nav-links">
-            <a href="/dashboard.html" style="color: var(--neon-green);">Dashboard</a>
+            <a href="/dashboard.html" class="active">Dashboard</a>
             <a href="#">My Courses</a>
             <a href="#">Support</a>
             <div id="userInfoNav" class="user-info">
@@ -240,7 +249,13 @@
     </div>
     
     <h2 class="section-title">Our <span>Courses</span></h2>
-    <div id="coursesContainer" class="courses-grid"></div>
+    <div id="coursesContainer" class="courses-grid">
+        <!-- Skeleton loaders will appear here -->
+        <div class="skeleton-card"><div class="skeleton-icon"></div><div class="skeleton-title"></div><div class="skeleton-text"></div><div class="skeleton-price"></div></div>
+        <div class="skeleton-card"><div class="skeleton-icon"></div><div class="skeleton-title"></div><div class="skeleton-text"></div><div class="skeleton-price"></div></div>
+        <div class="skeleton-card"><div class="skeleton-icon"></div><div class="skeleton-title"></div><div class="skeleton-text"></div><div class="skeleton-price"></div></div>
+        <div class="skeleton-card"><div class="skeleton-icon"></div><div class="skeleton-title"></div><div class="skeleton-text"></div><div class="skeleton-price"></div></div>
+    </div>
 </div>
 
 <footer class="footer">
@@ -249,26 +264,12 @@
 
 <script>
     // ============================================
-    // SUPABASE - SINGLE CLIENT
+    // SUPABASE CONFIGURATION
     // ============================================
     const SUPABASE_URL = 'https://jeksrwrzzrczamxijvwl.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Impla3Nyd3J6enJjemFteGlqdndsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg2NzYyMjAsImV4cCI6MjA5NDI1MjIyMH0.1poYpJKNFEVe2NTBkXBTH2bIHGk2yT8aqCU-OlJc4vs';
     
     const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-    
-    // ============================================
-    // ALL 8 COURSES (Matching your image)
-    // ============================================
-    const ALL_COURSES = [
-        { id: 1, name: "Learner Hub", description: "Complete NTSA-approved driver training for beginners. From basics to road readiness.", price: 0, type: "free", icon: "fa-car", color: "#00FF88", total_units: 21 },
-        { id: 2, name: "PSV Training", description: "Specialized training for bus, matatu, and taxi drivers. Professional Service Vehicle certification.", price: 7500, type: "premium", icon: "fa-bus", color: "#6C63FF", total_units: 8 },
-        { id: 3, name: "EV Vehicle Course", description: "Master electric vehicle driving techniques, charging infrastructure, and eco-driving.", price: 8000, type: "premium", icon: "fa-bolt", color: "#4ECDC4", total_units: 8 },
-        { id: 4, name: "Boda Boda", description: "Professional motorcycle taxi training. Safety, defensive riding, and customer service.", price: 5500, type: "premium", icon: "fa-motorcycle", color: "#FF6B6B", total_units: 8 },
-        { id: 5, name: "e-Safety Library", description: "Free road safety resources, educational materials, and awareness content for all road users.", price: 0, type: "free", icon: "fa-book", color: "#00FF88", total_units: 10 },
-        { id: 6, name: "Quiz Bank", description: "NTSA practice questions and mock exams. Prepare for your driving test with 1000+ questions.", price: 3000, type: "premium", icon: "fa-clipboard-list", color: "#FFB347", total_units: 10 },
-        { id: 7, name: "Defensive Driving", description: "Advanced accident prevention techniques, hazard perception, and emergency maneuvers.", price: 6000, type: "premium", icon: "fa-shield-alt", color: "#FFB347", total_units: 8 },
-        { id: 8, name: "Refresher Course", description: "Advanced professional driver refresher training for PSV, private, commercial, and fleet drivers.", price: 4500, type: "premium", icon: "fa-sync-alt", color: "#6C63FF", total_units: 6 }
-    ];
     
     // DOM Elements
     const toast = document.getElementById('toast');
@@ -276,7 +277,8 @@
     const coursesContainer = document.getElementById('coursesContainer');
     
     let currentUser = null;
-    let userEnrollments = new Map(); // course_id -> { enrolled, progress }
+    let allCourses = [];
+    let userEnrollments = new Map();
     
     function showToast(message, isError = false) {
         toast.textContent = message;
@@ -294,8 +296,10 @@
         return str.replace(/[&<>]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[m]));
     }
     
+    // ============================================
+    // AUTHENTICATION
+    // ============================================
     async function checkAuth() {
-        setLoading(true);
         try {
             const { data: { session } } = await supabase.auth.getSession();
             if (!session) {
@@ -312,11 +316,45 @@
             console.error('Auth error:', err);
             window.location.href = '/login.html';
             return false;
-        } finally {
-            setLoading(false);
         }
     }
     
+    // ============================================
+    // FETCH COURSES FROM SUPABASE
+    // ============================================
+    async function fetchCourses() {
+        try {
+            console.log('Fetching courses from Supabase...');
+            const { data, error } = await supabase
+                .from('courses')
+                .select('*')
+                .order('id', { ascending: true });
+            
+            if (error) {
+                console.error('Supabase error:', error);
+                showToast('Error loading courses: ' + error.message, true);
+                return false;
+            }
+            
+            if (data && data.length > 0) {
+                allCourses = data;
+                console.log(`✅ Loaded ${data.length} courses from database`);
+                return true;
+            } else {
+                console.warn('No courses found in database. Please run the SQL script to insert courses.');
+                showToast('No courses found. Please add courses to the database.', true);
+                return false;
+            }
+        } catch (err) {
+            console.error('Fetch error:', err);
+            showToast('Failed to connect to database', true);
+            return false;
+        }
+    }
+    
+    // ============================================
+    // LOAD USER ENROLLMENTS
+    // ============================================
     async function loadUserEnrollments() {
         if (!currentUser) return;
         
@@ -326,15 +364,7 @@
                 .select('course_id, progress')
                 .eq('user_id', currentUser.id);
             
-            if (error) {
-                if (error.code !== '42P01') {
-                    console.error('Enrollment fetch error:', error);
-                }
-                loadFromLocalStorage();
-                return;
-            }
-            
-            if (data && data.length > 0) {
+            if (!error && data) {
                 userEnrollments.clear();
                 data.forEach(e => {
                     userEnrollments.set(e.course_id, {
@@ -342,37 +372,15 @@
                         progress: e.progress || 0
                     });
                 });
-                saveToLocalStorage();
-            } else {
-                loadFromLocalStorage();
             }
         } catch (err) {
-            console.log('Enrollments table may not exist, using localStorage');
-            loadFromLocalStorage();
+            console.log('Enrollments table not ready yet');
         }
     }
     
-    function loadFromLocalStorage() {
-        const saved = localStorage.getItem(`enrollments_${currentUser?.id}`);
-        if (saved) {
-            try {
-                const enrollments = JSON.parse(saved);
-                userEnrollments.clear();
-                Object.keys(enrollments).forEach(courseId => {
-                    userEnrollments.set(parseInt(courseId), enrollments[courseId]);
-                });
-            } catch(e) {}
-        }
-    }
-    
-    function saveToLocalStorage() {
-        const enrollmentsObj = {};
-        userEnrollments.forEach((value, key) => {
-            enrollmentsObj[key] = value;
-        });
-        localStorage.setItem(`enrollments_${currentUser?.id}`, JSON.stringify(enrollmentsObj));
-    }
-    
+    // ============================================
+    // ENROLL IN COURSE
+    // ============================================
     async function enrollInCourse(courseId, courseTitle) {
         if (!currentUser) {
             showToast('Please login to enroll', true);
@@ -382,12 +390,10 @@
         setLoading(true);
         try {
             if (userEnrollments.has(courseId)) {
-                showToast(`You are already enrolled in ${courseTitle}`, false);
                 goToCourse(courseId);
                 return true;
             }
             
-            // Try to insert into Supabase
             const { error } = await supabase
                 .from('enrollments')
                 .insert([{
@@ -398,30 +404,23 @@
                     enrolled_at: new Date().toISOString()
                 }]);
             
-            if (error && error.code !== '42P01') {
-                console.warn('DB insert error:', error);
+            if (error) {
+                console.warn('Enrollment error:', error);
+                showToast('Enrollment failed. Please try again.', true);
+                return false;
             }
             
-            // Update local state
             userEnrollments.set(courseId, { enrolled: true, progress: 0 });
-            saveToLocalStorage();
-            
             showToast(`✅ Enrolled in ${courseTitle}!`, false);
             renderCourses();
             updateStats();
             
-            // Redirect to course view
             setTimeout(() => { goToCourse(courseId); }, 1000);
             return true;
         } catch (err) {
             console.error('Enrollment error:', err);
-            userEnrollments.set(courseId, { enrolled: true, progress: 0 });
-            saveToLocalStorage();
-            showToast(`✅ Enrolled in ${courseTitle}`, false);
-            renderCourses();
-            updateStats();
-            setTimeout(() => { goToCourse(courseId); }, 1000);
-            return true;
+            showToast('Enrollment failed', true);
+            return false;
         } finally {
             setLoading(false);
         }
@@ -431,36 +430,42 @@
         window.location.href = `/learn.html?id=${courseId}`;
     }
     
+    // ============================================
+    // RENDER COURSES
+    // ============================================
     function renderCourses() {
+        if (!coursesContainer) return;
+        
+        if (!allCourses.length) {
+            coursesContainer.innerHTML = `
+                <div class="empty-state">
+                    <i class="fas fa-database"></i>
+                    <h3>No Courses Found</h3>
+                    <p>Please run the SQL script to insert courses into your database.</p>
+                    <button onclick="location.reload()">Refresh</button>
+                </div>
+            `;
+            return;
+        }
+        
         coursesContainer.innerHTML = '';
         
-        ALL_COURSES.forEach(course => {
+        allCourses.forEach(course => {
             const enrollment = userEnrollments.get(course.id);
             const isEnrolled = !!enrollment;
             const progressPercent = isEnrolled ? (enrollment.progress || 0) : 0;
             const isFree = course.type === 'free' || course.price === 0;
             const price = course.price || 0;
             
-            // Map icon names properly
-            let iconClass = course.icon;
-            if (course.id === 1) iconClass = "fa-car";
-            if (course.id === 2) iconClass = "fa-bus";
-            if (course.id === 3) iconClass = "fa-bolt";
-            if (course.id === 4) iconClass = "fa-motorcycle";
-            if (course.id === 5) iconClass = "fa-book";
-            if (course.id === 6) iconClass = "fa-clipboard-list";
-            if (course.id === 7) iconClass = "fa-shield-alt";
-            if (course.id === 8) iconClass = "fa-sync-alt";
-            
             const card = document.createElement('div');
             card.className = 'course-card';
             
             card.innerHTML = `
                 ${isEnrolled ? '<div class="enrolled-badge"><i class="fas fa-check"></i> Enrolled</div>' : ''}
-                <div class="course-icon"><i class="fas ${iconClass}"></i></div>
+                <div class="course-icon"><i class="fas ${course.icon || 'fa-car'}"></i></div>
                 <div class="course-badge ${isFree ? 'free' : 'premium'}">${isFree ? 'FREE' : 'PREMIUM'}</div>
                 <h3>${escapeHtml(course.name)}</h3>
-                <p>${escapeHtml(course.description)}</p>
+                <p>${escapeHtml(course.description || 'Professional driver training course')}</p>
                 <div class="course-price ${isFree ? 'free' : 'premium'}">
                     ${isFree ? 'FREE' : `KES ${price.toLocaleString()}`}
                 </div>
@@ -490,7 +495,7 @@
     }
     
     function updateStats() {
-        document.getElementById('totalCourses').textContent = ALL_COURSES.length;
+        document.getElementById('totalCourses').textContent = allCourses.length;
         
         let enrolledCount = 0;
         let totalProgress = 0;
@@ -508,28 +513,26 @@
     
     async function handleLogout() {
         setLoading(true);
-        try {
-            await supabase.auth.signOut();
-            showToast('Logged out successfully', false);
-            setTimeout(() => { window.location.href = '/'; }, 1000);
-        } catch (err) {
-            window.location.href = '/';
-        } finally {
-            setLoading(false);
-        }
+        await supabase.auth.signOut();
+        window.location.href = '/';
     }
     
-    // Event listeners
+    // ============================================
+    // INITIALIZATION
+    // ============================================
     document.getElementById('logoutBtn')?.addEventListener('click', handleLogout);
     
     async function init() {
         const authenticated = await checkAuth();
         if (!authenticated) return;
-        await loadUserEnrollments();
-        renderCourses();
-        updateStats();
         
-        // Listen for auth changes
+        const coursesLoaded = await fetchCourses();
+        if (coursesLoaded) {
+            await loadUserEnrollments();
+            renderCourses();
+            updateStats();
+        }
+        
         supabase.auth.onAuthStateChange(async (event) => {
             if (event === 'SIGNED_OUT') {
                 window.location.href = '/';
