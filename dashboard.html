@@ -7,20 +7,25 @@
     let currentUser = null;
     let enrolledCourseIds = new Set();
     let allCourses = [];
-    let userProgress = {};
+    let userProgress = {}; // Structured by unit_id to match your database columns
     
     function setLoading(loading) {
         const spinner = document.getElementById('loadingSpinner');
         if (spinner) {
-            loading ? spinner.classList.add('active') : spinner.classList.remove('active');
+            if (loading) {
+                spinner.classList.add('active');
+            } else {
+                spinner.classList.remove('active');
+            }
         }
     }
     
     async function checkAuth() {
         setLoading(true);
         try {
-            const { data: { session } } = await supabase.auth.getSession();
-            if (!session) {
+            const { data: { session }, error: sessionErr } = await supabase.auth.getSession();
+            if (sessionErr || !session) {
+                console.log("No valid session found, redirecting to login.");
                 window.location.replace('/login.html');
                 return false;
             }
@@ -41,11 +46,9 @@
             
             return true;
         } catch (err) {
-            console.error('Auth error:', err);
+            console.error('Auth check crashed:', err);
             window.location.replace('/login.html');
             return false;
-        } finally {
-            setLoading(false);
         }
     }
     
@@ -61,12 +64,12 @@
             allCourses = courses || [];
             return allCourses;
         } catch (err) {
-            console.error('Error loading courses:', err);
+            console.error('Error loading core courses catalog:', err);
             const grid = document.getElementById('coursesGrid');
             if (grid) {
                 grid.innerHTML = `
                     <div style="text-align:center; padding:40px; color:#ff4d4f;">
-                        <i class="fas fa-exclamation-circle"></i> Error loading courses. 
+                        <i class="fas fa-exclamation-circle"></i> Error loading dashboard courses. 
                         <button onclick="location.reload()" style="margin-top:10px; padding:8px 16px; background:#00FF88; border:none; border-radius:8px; cursor:pointer;">Retry</button>
                     </div>`;
             }
@@ -76,11 +79,13 @@
     
     async function loadUserData() {
         try {
-            // 1. Get enrolled courses
-            const { data: enrollments } = await supabase
+            // 1. Fetch Student Course Enrollments
+            const { data: enrollments, error: enrollErr } = await supabase
                 .from('enrollments')
                 .select('course_id')
                 .eq('user_id', currentUser.id);
+            
+            if (enrollErr) throw enrollErr;
             
             if (enrollments) {
                 const countEl = document.getElementById('enrolledCount');
@@ -88,65 +93,74 @@
                 enrolledCourseIds = new Set(enrollments.map(e => e.course_id));
             }
             
-            // 2. Get user progress records
-            const { data: progress } = await supabase
+            // 2. Fetch User Progress (Cleaned up: references unit_id, score, and completed)
+            const { data: progress, error: progErr } = await supabase
                 .from('user_progress')
-                .select('course_id, unit_id, completed, score')
+                .select('unit_id, completed, score')
                 .eq('user_id', currentUser.id);
             
+            if (progErr) throw progErr;
+            
             userProgress = {}; 
+            let totalCompletedUnits = 0;
+            let totalScoresSum = 0;
+            let scoresCount = 0;
             
             if (progress) {
                 progress.forEach(p => {
-                    if (!userProgress[p.course_id]) {
-                        userProgress[p.course_id] = { completedUnits: new Set(), scores: [] };
+                    // Map raw unit data by its unit identifier key
+                    userProgress[p.unit_id] = { completed: p.completed, score: p.score || 0 };
+                    if (p.completed) totalCompletedUnits++;
+                    if (p.score) {
+                        totalScoresSum += p.score;
+                        scoresCount++;
                     }
-                    if (p.completed) userProgress[p.course_id].completedUnits.add(p.unit_id);
-                    if (p.score) userProgress[p.course_id].scores.push(p.score);
                 });
+            }
+            
+            // Render basic card metrics indicators
+            const completedUnitsEl = document.getElementById('completedUnits');
+            if (completedUnitsEl) completedUnitsEl.textContent = totalCompletedUnits;
+            
+            const avgQuizScore = scoresCount > 0 ? Math.round(totalScoresSum / scoresCount) : 0;
+            const quizScoreEl = document.getElementById('quizScore');
+            if (quizScoreEl) quizScoreEl.textContent = `${avgQuizScore}%`;
+            
+            // 3. Fetch Course Units to securely calculate structural progress metrics
+            let calculatedProgressSum = 0;
+            let calculatedCoursesCount = 0;
+            
+            if (enrolledCourseIds.size > 0) {
+                const { data: allUnits, error: unitsErr } = await supabase
+                    .from('course_units')
+                    .select('id, course_id');
                 
-                // Calculate total completed units metric
-                let totalCompleted = 0;
-                Object.values(userProgress).forEach(course => {
-                    totalCompleted += course.completedUnits.size;
-                });
-                const completedUnitsEl = document.getElementById('completedUnits');
-                if (completedUnitsEl) completedUnitsEl.textContent = totalCompleted;
+                if (unitsErr) throw unitsErr;
                 
-                // Calculate total average quiz scores
-                let allScores = [];
-                Object.values(userProgress).forEach(course => {
-                    allScores = allScores.concat(course.scores);
-                });
-                const avgScore = allScores.length > 0 ? Math.round(allScores.reduce((a,b) => a+b, 0) / allScores.length) : 0;
-                const quizScoreEl = document.getElementById('quizScore');
-                if (quizScoreEl) quizScoreEl.textContent = `${avgScore}%`;
-                
-                // Safe sequential progress loader mapping calculations
-                let totalProgress = 0;
-                let progressCount = 0;
-                for (const courseId of enrolledCourseIds) {
-                    const course = allCourses.find(c => c.id === courseId);
-                    if (course) {
-                        const { data: units } = await supabase
-                            .from('course_units')
-                            .select('id')
-                            .eq('course_id', courseId);
-                        
-                        if (units && units.length > 0) {
-                            const completed = userProgress[courseId]?.completedUnits.size || 0;
-                            const percent = Math.round((completed / units.length) * 100);
-                            totalProgress += percent;
-                            progressCount++;
+                if (allUnits) {
+                    for (const courseId of enrolledCourseIds) {
+                        const courseUnits = allUnits.filter(u => u.course_id === courseId);
+                        if (courseUnits.length > 0) {
+                            let completedInCourse = 0;
+                            courseUnits.forEach(u => {
+                                if (userProgress[u.id]?.completed) {
+                                    completedInCourse++;
+                                }
+                            });
+                            
+                            const coursePercent = Math.round((completedInCourse / courseUnits.length) * 100);
+                            calculatedProgressSum += coursePercent;
+                            calculatedCoursesCount++;
                         }
                     }
                 }
-                const avgProgress = progressCount > 0 ? Math.round(totalProgress / progressCount) : 0;
-                const avgProgressEl = document.getElementById('avgProgress');
-                if (avgProgressEl) avgProgressEl.textContent = `${avgProgress}%`;
             }
             
-            // 3. Prevent duplicate course renders based on matching titles
+            const finalAvgProgress = calculatedCoursesCount > 0 ? Math.round(calculatedProgressSum / calculatedCoursesCount) : 0;
+            const avgProgressEl = document.getElementById('avgProgress');
+            if (avgProgressEl) avgProgressEl.textContent = `${finalAvgProgress}%`;
+            
+            // 4. Split layout lists to clear out duplicate name elements
             const uniqueCourses = [];
             const seenNames = new Set();
             for (const course of allCourses) {
@@ -159,11 +173,16 @@
             const availableCourses = uniqueCourses.filter(c => !enrolledCourseIds.has(c.id));
             const enrolledCourses = uniqueCourses.filter(c => enrolledCourseIds.has(c.id));
             
+            // Pass clean configurations over to visual builders
             renderAvailableCourses(availableCourses);
             renderEnrolledCourses(enrolledCourses);
             
         } catch (err) {
-            console.error('Error handling aggregate dashboard datasets:', err);
+            console.error('Fatal crash inside user progress loading engine:', err);
+            showToast('Failed to sync data components smoothly. Please refresh.', 'error');
+        } finally {
+            // GUARANTEED SAFE CLOSURE: The spinner will ALWAYS turn off here!
+            setLoading(false);
         }
     }
     
@@ -172,7 +191,7 @@
         if (!container) return;
         
         if (!courses.length) {
-            container.innerHTML = '<div style="text-align:center; padding:40px;">🎉 You are enrolled in all available courses!</div>';
+            container.innerHTML = '<div style="text-align:center; padding:40px; color: #aaa;">🎉 You are enrolled in all available courses!</div>';
             return;
         }
         
@@ -196,49 +215,50 @@
         });
     }
     
-    function renderEnrolledCourses(courses) {
+    async function renderEnrolledCourses(courses) {
         const container = document.getElementById('enrolledGrid');
         if (!container) return;
         
         if (!courses.length) {
-            container.innerHTML = '<div style="text-align:center; padding:40px;">You haven\'t enrolled in any courses yet. Browse available courses above!</div>';
+            container.innerHTML = '<div style="text-align:center; padding:40px; color: #aaa;">You haven\'t enrolled in any courses yet. Browse available courses above!</div>';
             return;
         }
         
         container.innerHTML = '';
-        courses.forEach(course => {
-            const courseProgress = userProgress[course.id];
-            const completedCount = courseProgress?.completedUnits.size || 0;
+        
+        try {
+            // Pull units in one efficient bulk fetch to avoid cascading visual layout reflow drops
+            const { data: units } = await supabase.from('course_units').select('id, course_id');
             
-            const card = document.createElement('div');
-            card.className = 'course-card';
-            card.innerHTML = `
-                <span class="badge enrolled"><i class="fas fa-check-circle"></i> ENROLLED</span>
-                <h3><i class="fas fa-car"></i> ${escapeHtml(course.name)}</h3>
-                <p>${escapeHtml(course.description) || 'Continue your learning journey.'}</p>
-                <div class="progress-bar-container" style="background: rgba(255,255,255,0.1); border-radius: 10px; height: 8px; margin: 10px 0;">
-                    <div id="progress_${course.id}" style="background: #00FF88; width: 0%; height: 100%; border-radius: 10px; transition: width 0.3s;"></div>
-                </div>
-                <button class="btn-start" onclick="window.startCourse(${course.id})">
-                    <i class="fas fa-play-circle"></i> Continue Learning
-                </button>
-            `;
-            container.appendChild(card);
-            
-            // Asynchronously updates the status individual micro-bars
-            (async () => {
-                const { data: units } = await supabase
-                    .from('course_units')
-                    .select('id')
-                    .eq('course_id', course.id);
+            courses.forEach(course => {
+                const courseUnits = units ? units.filter(u => u.course_id === course.id) : [];
+                let completedCount = 0;
                 
-                const totalUnits = units?.length || 1;
+                courseUnits.forEach(u => {
+                    if (userProgress[u.id]?.completed) completedCount++;
+                });
+                
+                const totalUnits = courseUnits.length || 1;
                 const percent = Math.round((completedCount / totalUnits) * 100);
                 
-                const progressElement = document.getElementById(`progress_${course.id}`);
-                if (progressElement) progressElement.style.width = `${percent}%`;
-            })();
-        });
+                const card = document.createElement('div');
+                card.className = 'course-card';
+                card.innerHTML = `
+                    <span class="badge enrolled"><i class="fas fa-check-circle"></i> ENROLLED</span>
+                    <h3><i class="fas fa-car"></i> ${escapeHtml(course.name)}</h3>
+                    <p>${escapeHtml(course.description) || 'Continue your learning journey.'}</p>
+                    <div class="progress-bar-container" style="background: rgba(255,255,255,0.1); border-radius: 10px; height: 8px; margin: 10px 0;">
+                        <div style="background: #00FF88; width: ${percent}%; height: 100%; border-radius: 10px; transition: width 0.3s;"></div>
+                    </div>
+                    <button class="btn-start" onclick="window.startCourse(${course.id})">
+                        <i class="fas fa-play-circle"></i> Continue Learning
+                    </button>
+                `;
+                container.appendChild(card);
+            });
+        } catch (err) {
+            console.error("Failed to compile progress bars cleanly:", err);
+        }
     }
     
     window.enrollInCourse = async function(courseId) {
@@ -287,12 +307,10 @@
     async function handleLogout() {
         setLoading(true);
         try {
-            // Force sign out locally even if connection fails or session is expired
             await supabase.auth.signOut({ scope: 'local' });
         } catch (err) {
-            console.error('Supabase explicit signout failed:', err);
+            console.error('Supabase identity removal failure bypass executed:', err);
         } finally {
-            // Always run cleanup steps regardless of database connection status
             localStorage.clear();
             sessionStorage.clear();
             currentUser = null;
@@ -320,7 +338,7 @@
         }[m]));
     }
     
-    // EVENT DELEGATION: Catches click on logout button even if UI re-renders dynamically
+    // Global delegated handling capturing element actions safely
     document.addEventListener('click', function(e) {
         const logoutBtn = e.target.closest('#logoutButton');
         if (logoutBtn) {
@@ -329,13 +347,18 @@
         }
     });
     
-    // Proper structural loading lifecycle chain
+    // Balanced sequential life cycle loop matching your backend
     async function init() {
-        const isAuthenticated = await checkAuth();
-        if (!isAuthenticated) return;
-        
-        await loadCourses();    
-        await loadUserData();   
+        try {
+            const isAuthenticated = await checkAuth();
+            if (!isAuthenticated) return;
+            
+            await loadCourses();    
+            await loadUserData();   
+        } catch (error) {
+            console.error("Dashboard engine failed to start:", error);
+            setLoading(false); // Failsafe fallback closure
+        }
     }
     
     init();
