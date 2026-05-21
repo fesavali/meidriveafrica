@@ -438,7 +438,7 @@
                 <div class="price ${isFree ? 'free' : 'premium'}">
                     ${isFree ? 'FREE' : `KES ${course.price?.toLocaleString() || 0}`}
                 </div>
-                <button class="btn-enroll" onclick="enrollInCourse(${course.id})">
+                <button class="btn-enroll" onclick="window.enrollInCourse(${course.id})">
                     <i class="fas fa-plus-circle"></i> Enroll Now
                 </button>
             `;
@@ -463,10 +463,10 @@
                 <span class="badge enrolled"><i class="fas fa-check-circle"></i> ENROLLED</span>
                 <h3><i class="fas fa-car"></i> ${escapeHtml(course.name)}</h3>
                 <p>${escapeHtml(course.description) || 'Continue your learning journey.'}</p>
-                <button class="btn-start" onclick="startCourse(${course.id})">
+                <button class="btn-start" onclick="window.startCourse(${course.id})">
                     <i class="fas fa-play-circle"></i> Continue Learning
                 </button>
-                <button class="btn-start btn-quiz" onclick="startQuiz(${course.id})">
+                <button class="btn-start btn-quiz" onclick="window.startQuiz(${course.id})">
                     <i class="fas fa-question-circle"></i> Take Practice Quiz
                 </button>
             `;
@@ -583,7 +583,8 @@ Enter A, B, C, or D:`);
         }
     };
     
-    window.logout = async function() {
+    // FIXED: Proper logout function
+    async function handleLogout() {
         try {
             await supabase.auth.signOut();
             localStorage.clear();
@@ -592,7 +593,7 @@ Enter A, B, C, or D:`);
             console.error('Logout error:', err);
             window.location.href = '/';
         }
-    };
+    }
     
     function showToast(message, type = 'info') {
         const existingToast = document.querySelector('.toast');
@@ -610,9 +611,10 @@ Enter A, B, C, or D:`);
         return str.replace(/[&<>]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[m]));
     }
     
+    // FIXED: Event listener for logout button
     document.getElementById('logoutButton').addEventListener('click', function(e) {
         e.preventDefault();
-        logout();
+        handleLogout();
     });
     
     async function init() {
