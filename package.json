@@ -1,58 +1,10 @@
 {
-  "name": "meidriveafrica",
+  "name": "your-app",
   "version": "1.0.0",
-  "description": "MEI DRIVE AFRICA - NTSA Approved Driver Training Platform",
-  "author": "MEI DRIVE AFRICA",
-  "license": "ISC",
-  "type": "module",
   "scripts": {
-    "dev": "node dev.js",
-    "build": "node build.js",
-    "start": "node server.js",
-    "vercel-build": "node build.js",
-    "vercel-dev": "node dev.js",
-    "render-build": "npm install && node build.js",
-    "render-start": "node backend/server.js",
-    "clean": "rm -rf dist",
-    "prebuild": "npm run clean",
-    "preview": "npx serve dist",
-    "deploy:vercel": "vercel --prod",
-    "deploy:render": "git push origin main"
+    "start": "node server.js"
   },
   "dependencies": {
-    "@supabase/supabase-js": "^2.38.0",
-    "cors": "^2.8.5",
-    "dotenv": "^16.3.1",
-    "express": "^4.18.2",
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0",
-    "react-router-dom": "^6.20.0"
-  },
-  "devDependencies": {
-    "esbuild": "^0.19.0",
-    "clean-css": "^5.3.2",
-    "terser": "^5.24.0",
-    "vercel": "^32.0.0"
-  },
-  "engines": {
-    "node": "20.x",
-    "npm": "10.x"
-  },
-  "keywords": [
-    "driving-school",
-    "kenya",
-    "ntsa",
-    "driver-training",
-    "meidriveafrica",
-    "mpesa",
-    "supabase"
-  ],
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/mathewmoya6-star/meidriveafrica.git"
-  },
-  "bugs": {
-    "url": "https://github.com/mathewmoya6-star/meidriveafrica/issues"
-  },
-  "homepage": "https://www.meidriveafrica.com"
+    "express": "^4.18.2"
+  }
 }
