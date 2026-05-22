@@ -2,9 +2,20 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MEI Drive Africa - Driver Training Platform</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>MEI Drive Africa | Driver Training Platform</title>
+    
+    <!-- Styles -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <!-- Scripts - ORDER MATTERS -->
+    <!-- 1. Supabase JS library -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- 2. Supabase config (SINGLE source of truth) -->
+    <script src="supabase.js"></script>
+    <!-- 3. App logic (uses initSupabase from supabase.js) -->
+    <script src="js/app.js"></script>
+    
     <style>
         * {
             margin: 0;
@@ -13,20 +24,104 @@
         }
         
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: #0a0e27;
             color: #ffffff;
         }
         
-        .navbar {
-            background: rgba(10, 14, 39, 0.95);
-            backdrop-filter: blur(10px);
-            padding: 1rem 2rem;
-            position: fixed;
+        /* Auth Container */
+        .auth-container {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #0a0e27, #1a1f3a);
+            padding: 20px;
+        }
+        
+        .auth-box {
+            background: #1a1f3a;
+            padding: 40px;
+            border-radius: 20px;
             width: 100%;
-            top: 0;
-            z-index: 1000;
+            max-width: 400px;
+            border: 1px solid rgba(0, 255, 136, 0.2);
+        }
+        
+        .auth-box h2 {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #00ff88;
+        }
+        
+        .auth-box input {
+            width: 100%;
+            padding: 14px;
+            margin-bottom: 15px;
+            border-radius: 10px;
+            border: none;
+            background: #0a0e27;
+            color: white;
+            font-size: 16px;
+        }
+        
+        .auth-box input:focus {
+            outline: none;
+            border: 1px solid #00ff88;
+        }
+        
+        .auth-box button {
+            width: 100%;
+            padding: 14px;
+            border-radius: 10px;
+            border: none;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+        
+        .btn-primary {
+            background: #00ff88;
+            color: #0a0e27;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(0, 255, 136, 0.3);
+        }
+        
+        .btn-outline {
+            background: transparent;
+            border: 1px solid #00ff88;
+            color: #00ff88;
+            margin-top: 10px;
+        }
+        
+        .auth-switch {
+            text-align: center;
+            margin-top: 20px;
+            color: #a0a0c0;
+        }
+        
+        .auth-switch a {
+            color: #00ff88;
+            text-decoration: none;
+            cursor: pointer;
+        }
+        
+        /* Dashboard */
+        .dashboard {
+            display: none;
+        }
+        
+        .navbar {
+            background: #1a1f3a;
+            padding: 1rem 2rem;
             border-bottom: 1px solid rgba(0, 255, 136, 0.2);
+            position: sticky;
+            top: 0;
+            z-index: 100;
         }
         
         .nav-container {
@@ -48,81 +143,100 @@
             color: white;
         }
         
-        .btn {
-            padding: 10px 24px;
-            border-radius: 8px;
-            border: none;
-            cursor: pointer;
-            font-weight: 600;
-            transition: all 0.3s;
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
         }
         
-        .btn-primary {
+        .user-avatar {
+            width: 40px;
+            height: 40px;
             background: #00ff88;
-            color: #0a0e27;
-        }
-        
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 20px rgba(0, 255, 136, 0.3);
-        }
-        
-        .btn-outline {
-            background: transparent;
-            border: 1px solid #00ff88;
-            color: #00ff88;
-        }
-        
-        .btn-outline:hover {
-            background: #00ff88;
-            color: #0a0e27;
-        }
-        
-        .btn-danger {
-            background: rgba(255, 68, 68, 0.2);
-            border: 1px solid #ff4444;
-            color: #ff4444;
-        }
-        
-        .hero {
-            min-height: 100vh;
+            border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            text-align: center;
-            padding: 120px 20px 80px;
-            background: linear-gradient(135deg, #0a0e27, #1a1f3a);
+            color: #0a0e27;
+            font-weight: bold;
         }
         
-        .hero h1 {
-            font-size: 3rem;
-            margin-bottom: 20px;
+        .logout-btn {
+            background: rgba(255, 68, 68, 0.2);
+            border: 1px solid #ff4444;
+            color: #ff4444;
+            padding: 8px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
         }
         
-        .hero h1 span {
-            color: #00ff88;
-        }
-        
-        .hero p {
-            color: #a0a0c0;
-            margin-bottom: 30px;
-            font-size: 1.2rem;
+        .logout-btn:hover {
+            background: #ff4444;
+            color: white;
         }
         
         .container {
             max-width: 1200px;
             margin: 0 auto;
-            padding: 80px 20px;
+            padding: 30px 20px;
         }
         
-        .section-title {
-            text-align: center;
-            font-size: 2rem;
-            margin-bottom: 40px;
+        .welcome-section {
+            background: linear-gradient(135deg, #1a1f3a, #0a0e27);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+            border: 1px solid rgba(0, 255, 136, 0.2);
         }
         
-        .section-title span {
+        .welcome-section h1 {
             color: #00ff88;
+            margin-bottom: 10px;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .stat-card {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #00ff88;
+        }
+        
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding-bottom: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .tab {
+            background: none;
+            border: none;
+            color: #a0a0c0;
+            padding: 10px 20px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+        
+        .tab.active {
+            color: #00ff88;
+            border-bottom: 2px solid #00ff88;
         }
         
         .courses-grid {
@@ -145,12 +259,7 @@
             box-shadow: 0 10px 30px rgba(0, 255, 136, 0.1);
         }
         
-        .course-icon {
-            font-size: 3rem;
-            margin-bottom: 15px;
-        }
-        
-        .badge {
+        .course-badge {
             display: inline-block;
             padding: 4px 12px;
             border-radius: 20px;
@@ -174,29 +283,30 @@
             color: white;
         }
         
-        .course-card h3 {
-            margin-bottom: 10px;
+        .course-title {
             font-size: 1.2rem;
+            margin-bottom: 10px;
         }
         
-        .course-card p {
+        .course-description {
             color: #a0a0c0;
             font-size: 0.85rem;
             line-height: 1.5;
             margin-bottom: 15px;
         }
         
-        .course-price {
-            font-weight: bold;
-            margin: 10px 0;
+        .progress-bar {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            height: 8px;
+            margin: 15px 0;
+            overflow: hidden;
         }
         
-        .price-free {
-            color: #ff9800;
-        }
-        
-        .price-premium {
-            color: #00ff88;
+        .progress-fill {
+            background: #00ff88;
+            height: 100%;
+            transition: width 0.3s;
         }
         
         .btn-enroll, .btn-continue {
@@ -211,8 +321,13 @@
         }
         
         .btn-enroll {
-            background: linear-gradient(135deg, #00ff88, #00ccff);
+            background: #00ff88;
             color: #0a0e27;
+        }
+        
+        .btn-enroll:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 255, 136, 0.3);
         }
         
         .btn-continue {
@@ -221,154 +336,43 @@
             color: #00ff88;
         }
         
-        .dashboard {
-            display: none;
-        }
-        
-        .dashboard-sidebar {
-            position: fixed;
-            left: 0;
-            top: 0;
-            width: 260px;
-            height: 100vh;
-            background: #1a1f3a;
-            padding: 80px 20px 20px;
-            border-right: 1px solid rgba(0, 255, 136, 0.1);
-        }
-        
-        .dashboard-main {
-            margin-left: 260px;
-            padding: 80px 30px 30px;
-        }
-        
-        .profile-card {
-            background: rgba(0, 0, 0, 0.3);
-            border-radius: 16px;
-            padding: 20px;
-            text-align: center;
-            margin-bottom: 30px;
-        }
-        
-        .profile-avatar {
-            width: 70px;
-            height: 70px;
-            background: linear-gradient(135deg, #00ff88, #00ccff);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto 12px;
-            font-size: 2rem;
-        }
-        
-        .profile-name {
-            font-weight: bold;
-            margin-bottom: 5px;
-        }
-        
-        .profile-email {
-            font-size: 0.7rem;
-            color: #a0a0c0;
-        }
-        
-        .sidebar-menu {
-            list-style: none;
-        }
-        
-        .sidebar-menu li {
-            padding: 12px 15px;
-            margin: 5px 0;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-        
-        .sidebar-menu li:hover, .sidebar-menu li.active {
+        .btn-continue:hover {
             background: #00ff88;
             color: #0a0e27;
         }
         
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
-            margin: 30px 0;
-        }
-        
-        .stat-card {
-            background: #1a1f3a;
-            padding: 25px;
-            border-radius: 16px;
+        .empty-state {
             text-align: center;
-            border: 1px solid rgba(0, 255, 136, 0.1);
-        }
-        
-        .stat-card i {
-            font-size: 2rem;
-            color: #00ff88;
-            margin-bottom: 10px;
-            display: block;
-        }
-        
-        .stat-card h3 {
-            font-size: 2rem;
-            color: #00ff88;
-        }
-        
-        .progress-bar {
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 10px;
-            height: 8px;
-            margin: 15px 0;
-            overflow: hidden;
-        }
-        
-        .progress-fill {
-            background: linear-gradient(135deg, #00ff88, #00ccff);
-            height: 100%;
-            border-radius: 10px;
-            transition: width 0.3s;
-        }
-        
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.9);
-            z-index: 2000;
-            justify-content: center;
-            align-items: center;
-        }
-        
-        .modal.active {
-            display: flex;
-        }
-        
-        .modal-content {
+            padding: 60px;
             background: #1a1f3a;
-            padding: 40px;
             border-radius: 16px;
-            width: 90%;
-            max-width: 400px;
-            border: 1px solid #00ff88;
         }
         
-        .modal-content h2 {
-            text-align: center;
+        .empty-state i {
+            font-size: 4rem;
+            color: #a0a0c0;
             margin-bottom: 20px;
         }
         
-        .modal-content input {
-            width: 100%;
-            padding: 12px;
-            margin-bottom: 15px;
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #1a1f3a;
+            border-left: 4px solid #00ff88;
+            padding: 12px 20px;
             border-radius: 8px;
-            border: none;
-            background: #0a0e27;
-            color: white;
+            z-index: 1000;
+            animation: slideIn 0.3s ease;
+        }
+        
+        .toast.error {
+            border-left-color: #ff4444;
+        }
+        
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
         }
         
         .loading {
@@ -390,541 +394,83 @@
             to { transform: rotate(360deg); }
         }
         
-        .toast {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            background: #1a1f3a;
-            border-left: 4px solid #00ff88;
-            padding: 12px 20px;
-            border-radius: 8px;
-            z-index: 3000;
-            animation: slideIn 0.3s ease;
-        }
-        
-        @keyframes slideIn {
-            from { transform: translateX(100%); opacity: 0; }
-            to { transform: translateX(0); opacity: 1; }
-        }
-        
         @media (max-width: 768px) {
-            .dashboard-sidebar {
-                transform: translateX(-100%);
-                transition: transform 0.3s;
+            .courses-grid {
+                grid-template-columns: 1fr;
             }
-            .dashboard-sidebar.active {
-                transform: translateX(0);
+            .stats-grid {
+                grid-template-columns: 1fr;
             }
-            .dashboard-main {
-                margin-left: 0;
+            .tabs {
+                flex-wrap: wrap;
             }
         }
     </style>
 </head>
 <body>
 
-<!-- Auth Modal -->
-<div id="authModal" class="modal">
-    <div class="modal-content">
-        <h2 id="modalTitle">Login</h2>
-        <input type="email" id="authEmail" placeholder="Email">
+<!-- Auth Container -->
+<div id="authContainer" class="auth-container">
+    <div class="auth-box">
+        <h2 id="authTitle">Login to MEI Drive</h2>
+        <input type="email" id="authEmail" placeholder="Email Address">
         <input type="password" id="authPassword" placeholder="Password">
-        <button id="authBtn" class="btn btn-primary" style="width: 100%;">Login</button>
-        <p style="text-align: center; margin-top: 15px;">
-            <span id="authToggleText">Don't have an account?</span>
-            <a href="#" onclick="window.toggleAuthMode()" style="color: #00ff88;"> Register</a>
-        </p>
-        <button onclick="window.closeAuthModal()" class="btn btn-outline" style="width: 100%; margin-top: 10px;">Cancel</button>
+        <button id="authButton" class="btn-primary">Login</button>
+        <div class="auth-switch">
+            <span id="authSwitchText">Don't have an account?</span>
+            <a href="#" id="toggleAuthLink"> Create Account</a>
+        </div>
     </div>
 </div>
 
-<!-- Landing Page -->
-<div id="landingPage">
+<!-- Dashboard Container -->
+<div id="dashboardContainer" class="dashboard">
     <nav class="navbar">
         <div class="nav-container">
-            <div class="logo" onclick="window.showLanding()">MEI DRIVE <span>AFRICA</span></div>
-            <div>
-                <button class="btn btn-outline" onclick="window.showAuthModal('login')" style="margin-right: 10px;">Login</button>
-                <button class="btn btn-primary" onclick="window.showAuthModal('register')">Register</button>
+            <div class="logo" onclick="location.reload()">MEI DRIVE <span>AFRICA</span></div>
+            <div class="user-info">
+                <div class="user-avatar" id="userAvatar">👤</div>
+                <span id="userName">Loading...</span>
+                <button class="logout-btn" id="logoutBtn">Logout</button>
             </div>
         </div>
     </nav>
     
-    <section class="hero">
-        <div>
-            <h1>Practice Daily.<br><span>Revise Smarter. Pass with Confidence.</span></h1>
-            <p>NTSA-approved driver training courses. Learn from professionals.</p>
-            <button class="btn btn-primary" onclick="document.getElementById('coursesSection').scrollIntoView({behavior: 'smooth'})">Explore Courses →</button>
-        </div>
-    </section>
-    
-    <section class="container" id="coursesSection">
-        <h2 class="section-title">Our <span>Courses</span></h2>
-        <div id="coursesList" class="courses-grid">
-            <div class="loading"><div class="spinner"></div> Loading courses...</div>
-        </div>
-    </section>
-</div>
-
-<!-- Dashboard -->
-<div id="dashboard" class="dashboard">
-    <nav class="navbar">
-        <div class="nav-container">
-            <div class="logo" onclick="window.showLanding()">MEI DRIVE <span>AFRICA</span></div>
-            <button class="btn btn-danger" id="logoutBtn">Logout</button>
-        </div>
-    </nav>
-    
-    <div class="dashboard-sidebar" id="sidebar">
-        <div class="profile-card">
-            <div class="profile-avatar" id="avatar">👤</div>
-            <div class="profile-name" id="profileName">Loading...</div>
-            <div class="profile-email" id="profileEmail">user@example.com</div>
-        </div>
-        
-        <ul class="sidebar-menu">
-            <li class="active" onclick="window.showSection('overview', this)">📊 Overview</li>
-            <li onclick="window.showSection('mycourses', this)">📚 My Courses</li>
-            <li onclick="window.showSection('allcourses', this)">🛒 All Courses</li>
-            <li onclick="window.showSection('completed', this)">🏆 Completed</li>
-        </ul>
-    </div>
-    
-    <div class="dashboard-main">
-        <div id="overviewSection">
-            <h2>Welcome Back, <span id="welcomeName">Learner</span>! 🎉</h2>
-            
+    <div class="container">
+        <div class="welcome-section">
+            <h1>Welcome back, <span id="welcomeName">Learner</span>! 👋</h1>
+            <p>Continue your driving journey. Track progress and enroll in new courses.</p>
             <div class="stats-grid">
                 <div class="stat-card">
-                    <i>📚</i>
-                    <h3 id="statTotal">0</h3>
-                    <p>Available Courses</p>
+                    <div class="stat-number" id="totalCourses">0</div>
+                    <div>Available Courses</div>
                 </div>
                 <div class="stat-card">
-                    <i>✅</i>
-                    <h3 id="statEnrolled">0</h3>
-                    <p>Enrolled Courses</p>
+                    <div class="stat-number" id="enrolledCount">0</div>
+                    <div>Enrolled Courses</div>
                 </div>
                 <div class="stat-card">
-                    <i>🏆</i>
-                    <h3 id="statCompleted">0</h3>
-                    <p>Completed</p>
+                    <div class="stat-number" id="completedCount">0</div>
+                    <div>Completed</div>
                 </div>
                 <div class="stat-card">
-                    <i>📈</i>
-                    <h3 id="statProgress">0%</h3>
-                    <p>Overall Progress</p>
+                    <div class="stat-number" id="overallProgress">0%</div>
+                    <div>Overall Progress</div>
                 </div>
             </div>
-            
-            <h3>Your Enrolled Courses</h3>
-            <div id="previewCourses" class="courses-grid"></div>
         </div>
         
-        <div id="mycoursesSection" style="display: none;">
-            <h2>My Enrolled Courses</h2>
-            <div id="myCoursesList" class="courses-grid"></div>
+        <div class="tabs">
+            <button class="tab active" data-tab="all">📚 All Courses</button>
+            <button class="tab" data-tab="enrolled">✅ My Courses</button>
+            <button class="tab" data-tab="completed">🏆 Completed</button>
         </div>
         
-        <div id="allcoursesSection" style="display: none;">
-            <h2>All Available Courses</h2>
-            <p style="color: #a0a0c0; margin-bottom: 20px;">Browse and enroll in courses to advance your driving skills.</p>
-            <div id="allCoursesList" class="courses-grid"></div>
-        </div>
-        
-        <div id="completedSection" style="display: none;">
-            <h2>Completed Courses</h2>
-            <div id="completedList" class="courses-grid"></div>
+        <div id="coursesContainer" class="courses-grid">
+            <div class="loading"><div class="spinner"></div> Loading courses...</div>
         </div>
     </div>
 </div>
 
-<script>
-    // Supabase configuration - declared ONCE
-    const SUPABASE_URL = 'https://jeksrwrzzrczamxijvwl.supabase.co';
-    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Impla3Nyd3J6enJjemFteGlqdndsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg2NzYyMjAsImV4cCI6MjA5NDI1MjIyMH0.1poYpJKNFEVe2NTBkXBTH2bIHGk2yT8aqCU-OlJc4vs';
-    
-    // Global variables
-    let _supabase = null;
-    let currentUser = null;
-    let allCourses = [];
-    let userEnrollments = [];
-    let authMode = 'login';
-    
-    // Initialize Supabase
-    function initSupabase() {
-        if (!_supabase) {
-            _supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-        }
-        return _supabase;
-    }
-    
-    // Main initialization
-    async function init() {
-        const supabase = initSupabase();
-        
-        await loadCourses();
-        await checkSession();
-        
-        supabase.auth.onAuthStateChange(async (event, session) => {
-            if (event === 'SIGNED_IN') {
-                currentUser = session.user;
-                await loadEnrollments();
-                showDashboard();
-                showToast('Logged in successfully!', '#00ff88');
-            } else if (event === 'SIGNED_OUT') {
-                currentUser = null;
-                userEnrollments = [];
-                showLanding();
-                showToast('Logged out', '#ff9800');
-            }
-        });
-        
-        document.getElementById('logoutBtn').onclick = () => supabase.auth.signOut();
-        document.getElementById('authBtn').onclick = handleAuth;
-    }
-    
-    async function checkSession() {
-        const supabase = initSupabase();
-        const { data: { session } } = await supabase.auth.getSession();
-        if (session) {
-            currentUser = session.user;
-            await loadEnrollments();
-            showDashboard();
-        } else {
-            showLanding();
-        }
-    }
-    
-    async function loadCourses() {
-        const supabase = initSupabase();
-        const { data, error } = await supabase.from('courses').select('*').order('id');
-        if (!error && data) {
-            allCourses = data;
-            document.getElementById('statTotal').textContent = allCourses.length;
-            renderPublicCourses();
-            renderAllCourses();
-        }
-    }
-    
-    async function loadEnrollments() {
-        if (!currentUser) return;
-        const supabase = initSupabase();
-        const { data, error } = await supabase.from('enrollments').select('*').eq('user_id', currentUser.id);
-        if (!error && data) {
-            userEnrollments = data;
-            updateStats();
-            renderMyCourses();
-            renderCompleted();
-            renderPreview();
-            renderAllCourses();
-        }
-    }
-    
-    async function enroll(courseId) {
-        if (!currentUser) {
-            showAuthModal('login');
-            return;
-        }
-        
-        if (userEnrollments.some(e => e.course_id === courseId)) {
-            showToast('Already enrolled!', '#ff9800');
-            return;
-        }
-        
-        const supabase = initSupabase();
-        const { error } = await supabase.from('enrollments').insert([{
-            user_id: currentUser.id,
-            course_id: courseId,
-            progress: 0
-        }]);
-        
-        if (error) {
-            showToast('Error: ' + error.message, '#ff4444');
-        } else {
-            await loadEnrollments();
-            showToast('Enrolled successfully! 🎉', '#00ff88');
-            showSection('mycourses', document.querySelector('.sidebar-menu li:nth-child(2)'));
-        }
-    }
-    
-    async function updateProgress(courseId, newProgress) {
-        const enrollment = userEnrollments.find(e => e.course_id === courseId);
-        if (!enrollment) return;
-        
-        const progress = Math.min(100, newProgress);
-        const supabase = initSupabase();
-        const { error } = await supabase.from('enrollments')
-            .update({ progress, last_accessed: new Date() })
-            .eq('id', enrollment.id);
-        
-        if (!error) {
-            await loadEnrollments();
-            if (progress === 100) showToast('🎉 Course completed! Congratulations!', '#00ff88');
-        }
-    }
-    
-    function updateStats() {
-        const enrolled = userEnrollments.length;
-        const completed = userEnrollments.filter(e => e.progress === 100).length;
-        const totalProgress = userEnrollments.reduce((sum, e) => sum + (e.progress || 0), 0);
-        const avg = enrolled > 0 ? Math.round(totalProgress / enrolled) : 0;
-        
-        document.getElementById('statEnrolled').textContent = enrolled;
-        document.getElementById('statCompleted').textContent = completed;
-        document.getElementById('statProgress').textContent = avg + '%';
-        
-        if (currentUser) {
-            const name = currentUser.email.split('@')[0];
-            document.getElementById('profileName').textContent = name;
-            document.getElementById('profileEmail').textContent = currentUser.email;
-            document.getElementById('welcomeName').textContent = name;
-        }
-    }
-    
-    function renderPublicCourses() {
-        const container = document.getElementById('coursesList');
-        if (!allCourses.length) {
-            container.innerHTML = '<div class="course-card"><p>No courses available</p></div>';
-            return;
-        }
-        
-        container.innerHTML = allCourses.map(course => `
-            <div class="course-card">
-                <div class="course-icon">${course.icon || '📚'}</div>
-                <span class="badge ${course.price === 0 ? 'badge-free' : 'badge-premium'}">
-                    ${course.price === 0 ? 'FREE' : 'PREMIUM'}
-                </span>
-                <h3>${escapeHtml(course.name)}</h3>
-                <p>${escapeHtml((course.description || '').substring(0, 100))}...</p>
-                <div class="course-price ${course.price === 0 ? 'price-free' : 'price-premium'}">
-                    ${course.price === 0 ? 'FREE' : `KES ${course.price.toLocaleString()}`}
-                </div>
-                <button class="btn-enroll" onclick="window.enroll(${course.id})">Enroll Now →</button>
-            </div>
-        `).join('');
-    }
-    
-    function renderAllCourses() {
-        const container = document.getElementById('allCoursesList');
-        if (!allCourses.length) return;
-        
-        const enrolledIds = userEnrollments.map(e => e.course_id);
-        
-        container.innerHTML = allCourses.map(course => {
-            const isEnrolled = enrolledIds.includes(course.id);
-            const enrollment = userEnrollments.find(e => e.course_id === course.id);
-            const progress = enrollment?.progress || 0;
-            
-            if (isEnrolled) {
-                return `
-                    <div class="course-card">
-                        <div class="course-icon">${course.icon || '📚'}</div>
-                        <span class="badge badge-enrolled">✅ ENROLLED</span>
-                        <h3>${escapeHtml(course.name)}</h3>
-                        <p>${escapeHtml((course.description || '').substring(0, 100))}...</p>
-                        <div class="progress-bar"><div class="progress-fill" style="width: ${progress}%"></div></div>
-                        <p style="text-align: center; margin: 10px 0;">${progress}% Complete</p>
-                        <button class="btn-continue" onclick="window.updateProgress(${course.id}, ${progress + 10})">
-                            ${progress === 100 ? 'Review Course' : 'Continue Learning'} →
-                        </button>
-                    </div>
-                `;
-            } else {
-                return `
-                    <div class="course-card">
-                        <div class="course-icon">${course.icon || '📚'}</div>
-                        <span class="badge ${course.price === 0 ? 'badge-free' : 'badge-premium'}">
-                            ${course.price === 0 ? 'FREE' : 'PREMIUM'}
-                        </span>
-                        <h3>${escapeHtml(course.name)}</h3>
-                        <p>${escapeHtml((course.description || '').substring(0, 100))}...</p>
-                        <div class="course-price ${course.price === 0 ? 'price-free' : 'price-premium'}">
-                            ${course.price === 0 ? 'FREE' : `KES ${course.price.toLocaleString()}`}
-                        </div>
-                        <button class="btn-enroll" onclick="window.enroll(${course.id})">Enroll Now →</button>
-                    </div>
-                `;
-            }
-        }).join('');
-    }
-    
-    function renderMyCourses() {
-        const container = document.getElementById('myCoursesList');
-        const enrolledCourses = allCourses.filter(c => userEnrollments.some(e => e.course_id === c.id));
-        
-        if (enrolledCourses.length === 0) {
-            container.innerHTML = '<div class="course-card"><p>No enrolled courses yet. Browse "All Courses" to get started!</p></div>';
-            return;
-        }
-        
-        container.innerHTML = enrolledCourses.map(course => {
-            const enrollment = userEnrollments.find(e => e.course_id === course.id);
-            const progress = enrollment?.progress || 0;
-            return `
-                <div class="course-card">
-                    <div class="course-icon">${course.icon || '📚'}</div>
-                    <span class="badge badge-enrolled">✅ ENROLLED</span>
-                    <h3>${escapeHtml(course.name)}</h3>
-                    <div class="progress-bar"><div class="progress-fill" style="width: ${progress}%"></div></div>
-                    <p style="text-align: center; margin: 10px 0;">${progress}% Complete</p>
-                    <button class="btn-continue" onclick="window.updateProgress(${course.id}, ${progress + 10})">
-                        ${progress === 100 ? 'Review Course' : 'Continue Learning'} →
-                    </button>
-                </div>
-            `;
-        }).join('');
-    }
-    
-    function renderPreview() {
-        const container = document.getElementById('previewCourses');
-        const enrolledCourses = allCourses.filter(c => userEnrollments.some(e => e.course_id === c.id)).slice(0, 3);
-        
-        if (enrolledCourses.length === 0) {
-            container.innerHTML = '<div class="course-card"><p>No enrolled courses. <a href="#" onclick="window.showSection(\'allcourses\', this)" style="color: #00ff88;">Browse courses →</a></p></div>';
-            return;
-        }
-        
-        container.innerHTML = enrolledCourses.map(course => {
-            const enrollment = userEnrollments.find(e => e.course_id === course.id);
-            const progress = enrollment?.progress || 0;
-            return `
-                <div class="course-card">
-                    <div class="course-icon">${course.icon || '📚'}</div>
-                    <h3>${escapeHtml(course.name)}</h3>
-                    <div class="progress-bar"><div class="progress-fill" style="width: ${progress}%"></div></div>
-                    <button class="btn-continue" onclick="window.updateProgress(${course.id}, ${progress + 10})">Continue →</button>
-                </div>
-            `;
-        }).join('');
-    }
-    
-    function renderCompleted() {
-        const container = document.getElementById('completedList');
-        const completedCourses = allCourses.filter(c => {
-            const enrollment = userEnrollments.find(e => e.course_id === c.id);
-            return enrollment && enrollment.progress === 100;
-        });
-        
-        if (completedCourses.length === 0) {
-            container.innerHTML = '<div class="course-card"><p>No completed courses yet. Keep learning!</p></div>';
-            return;
-        }
-        
-        container.innerHTML = completedCourses.map(course => `
-            <div class="course-card">
-                <div class="course-icon">🏆</div>
-                <span class="badge badge-enrolled">✅ COMPLETED</span>
-                <h3>${escapeHtml(course.name)}</h3>
-                <p>${escapeHtml((course.description || '').substring(0, 100))}</p>
-                <p style="color: #00ff88; margin-top: 10px;">🎉 Course Completed!</p>
-            </div>
-        `).join('');
-    }
-    
-    async function handleAuth() {
-        const email = document.getElementById('authEmail').value;
-        const password = document.getElementById('authPassword').value;
-        
-        if (!email || !password) {
-            showToast('Please enter email and password', '#ff4444');
-            return;
-        }
-        
-        const supabase = initSupabase();
-        
-        try {
-            if (authMode === 'login') {
-                const { error } = await supabase.auth.signInWithPassword({ email, password });
-                if (error) throw error;
-                closeAuthModal();
-            } else {
-                const { error } = await supabase.auth.signUp({ email, password });
-                if (error) throw error;
-                showToast('Account created! Please check your email.', '#00ff88');
-                closeAuthModal();
-            }
-        } catch (error) {
-            showToast(error.message, '#ff4444');
-        }
-    }
-    
-    function showSection(section, element) {
-        document.getElementById('overviewSection').style.display = section === 'overview' ? 'block' : 'none';
-        document.getElementById('mycoursesSection').style.display = section === 'mycourses' ? 'block' : 'none';
-        document.getElementById('allcoursesSection').style.display = section === 'allcourses' ? 'block' : 'none';
-        document.getElementById('completedSection').style.display = section === 'completed' ? 'block' : 'none';
-        
-        document.querySelectorAll('.sidebar-menu li').forEach(li => li.classList.remove('active'));
-        if (element) element.classList.add('active');
-        
-        if (section === 'allcourses') renderAllCourses();
-        if (section === 'mycourses') renderMyCourses();
-        if (section === 'completed') renderCompleted();
-    }
-    
-    function showLanding() {
-        document.getElementById('landingPage').style.display = 'block';
-        document.getElementById('dashboard').style.display = 'none';
-        renderPublicCourses();
-    }
-    
-    function showDashboard() {
-        document.getElementById('landingPage').style.display = 'none';
-        document.getElementById('dashboard').style.display = 'block';
-        updateStats();
-        renderMyCourses();
-        renderAllCourses();
-        renderPreview();
-        renderCompleted();
-        showSection('overview', document.querySelector('.sidebar-menu li.active'));
-    }
-    
-    function showAuthModal(mode) {
-        authMode = mode;
-        document.getElementById('modalTitle').textContent = mode === 'login' ? 'Login' : 'Create Account';
-        document.getElementById('authBtn').textContent = mode === 'login' ? 'Login' : 'Register';
-        document.getElementById('authToggleText').innerHTML = mode === 'login' ? "Don't have an account?" : "Already have an account?";
-        document.getElementById('authModal').classList.add('active');
-    }
-    
-    function closeAuthModal() {
-        document.getElementById('authModal').classList.remove('active');
-        document.getElementById('authEmail').value = '';
-        document.getElementById('authPassword').value = '';
-    }
-    
-    function toggleAuthMode() {
-        authMode = authMode === 'login' ? 'register' : 'login';
-        showAuthModal(authMode);
-    }
-    
-    function showToast(message, color) {
-        const toast = document.createElement('div');
-        toast.className = 'toast';
-        toast.style.borderLeftColor = color;
-        toast.textContent = message;
-        document.body.appendChild(toast);
-        setTimeout(() => toast.remove(), 3000);
-    }
-    
-    function escapeHtml(str) {
-        if (!str) return '';
-        return str.replace(/[&<>]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[m]));
-    }
-    
-    // Attach to window object
-    window.enroll = enroll;
-    window.updateProgress = updateProgress;
-    window.showAuthModal = showAuthModal;
-    window.closeAuthModal = closeAuthModal;
-    window.toggleAuthMode = toggleAuthMode;
-    window.showLanding = showLanding;
-    window.showDashboard = showDashboard;
-    window.showSection = showSection;
-    
-    // Start the app
-    init();
-</script>
 </body>
 </html>
