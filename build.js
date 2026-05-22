@@ -1,32 +1,115 @@
-import fs from 'fs';
+// build.js
+import esbuild from 'esbuild';
+import { copy } from 'esbuild-plugin-copy';
+import { html } from 'esbuild-plugin-html';
+import fs from 'fs/promises';
 import path from 'path';
-import CleanCSS from 'clean-css';
-import { minify } from 'terser';
 
-const publicDir = 'public';
-const distDir = 'dist';
+// Generate nonce for CSP
+const nonce = Math.random().toString(36).substring(2, 15);
+const version = JSON.parse(await fs.readFile('./package.json', 'utf8')).version;
 
-// Clean dist
-if (fs.existsSync(distDir)) fs.rmSync(distDir, { recursive: true, force: true });
-fs.mkdirSync(distDir, { recursive: true });
+// Environment variables
+const env = {
+    SUPABASE_URL: process.env.SUPABASE_URL,
+    SUPABASE_ANON_KEY: process.env.SUPABASE_ANON_KEY,
+    VERSION: version,
+    NONCE: nonce,
+    BUILD_TIME: Date.now().toString()
+};
 
-// Copy and minify HTML
-const htmlFiles = fs.readdirSync(publicDir).filter(f => f.endsWith('.html'));
-htmlFiles.forEach(file => {
-    let content = fs.readFileSync(path.join(publicDir, file), 'utf8');
-    content = content.replace(/\/\*[\s\S]*?\*\/|\/\/.*/g, '');
-    content = content.replace(/\s+/g, ' ').replace(/>\s+</g, '><').trim();
-    fs.writeFileSync(path.join(distDir, file), content);
-    console.log(`✅ Minified: ${file}`);
-});
+// Build configuration
+const buildConfig = {
+    entryPoints: ['src/main.js'],
+    bundle: true,
+    minify: true,
+    sourcemap: false,
+    target: ['chrome100', 'firefox100', 'safari15'],
+    outdir: 'dist',
+    treeShaking: true,
+    legalComments: 'none',
+    format: 'esm',
+    platform: 'browser',
+    define: {
+        'process.env.NODE_ENV': '"production"',
+        'process.env.SUPABASE_URL': JSON.stringify(env.SUPABASE_URL),
+        'process.env.SUPABASE_ANON_KEY': JSON.stringify(env.SUPABASE_ANON_KEY),
+        '__VERSION__': JSON.stringify(env.VERSION),
+        '__NONCE__': JSON.stringify(env.NONCE)
+    },
+    plugins: [
+        copy({
+            assets: {
+                from: ['./public/**/*'],
+                to: ['./']
+            }
+        }),
+        html({
+            template: 'index.html',
+            inject: {
+                data: env,
+                tags: [
+                    {
+                        tag: 'script',
+                        attrs: {
+                            src: `https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/js/all.min.js`,
+                            defer: true,
+                            integrity: 'sha384-...'
+                        }
+                    }
+                ]
+            }
+        })
+    ],
+    loader: {
+        '.html': 'copy',
+        '.png': 'file',
+        '.jpg': 'file',
+        '.webp': 'file'
+    }
+};
 
-// Copy and minify CSS (extract from HTML or separate CSS files)
-console.log('✅ Build complete!');
+// Build
+try {
+    console.log('Building with esbuild...');
+    await esbuild.build(buildConfig);
+    console.log('✅ Build complete!');
+    
+    // Generate sitemap
+    await generateSitemap();
+    
+    // Generate robots.txt
+    await generateRobots();
+    
+} catch (error) {
+    console.error('❌ Build failed:', error);
+    process.exit(1);
+}
 
-// Generate service worker
-const swContent = `const CACHE_NAME = 'meidrive-v1';
-const urlsToCache = ['/', '/index.html', '/login.html', '/register.html', '/dashboard.html', '/course.html'];
-self.addEventListener('install', e => e.waitUntil(caches.open(CACHE_NAME).then(cache => cache.addAll(urlsToCache))));
-self.addEventListener('fetch', e => e.respondWith(caches.match(e.request).then(response => response || fetch(e.request))));`;
-fs.writeFileSync(path.join(distDir, 'sw.js'), swContent);
-console.log('✅ Service worker generated');
+async function generateSitemap() {
+    const urls = [
+        { loc: 'https://meidriveafrica.com/', priority: 1.0 },
+        { loc: 'https://meidriveafrica.com/courses', priority: 0.9 },
+        { loc: 'https://meidriveafrica.com/dashboard', priority: 0.8 }
+    ];
+    
+    const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+    ${urls.map(url => `    <url>
+        <loc>${url.loc}</loc>
+        <priority>${url.priority}</priority>
+    </url>`).join('\n')}
+</urlset>`;
+    
+    await fs.writeFile('./dist/sitemap.xml', sitemap);
+}
+
+async function generateRobots() {
+    const robots = `# https://www.robotstxt.org/robotstxt.html
+User-agent: *
+Allow: /
+Disallow: /api/
+Sitemap: https://meidriveafrica.com/sitemap.xml`;
+    
+    await fs.writeFile('./dist/robots.txt', robots);
+}
