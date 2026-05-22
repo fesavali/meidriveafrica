@@ -388,7 +388,7 @@
         .btn-continue { background: transparent; border: 2px solid var(--primary); color: var(--primary); }
         .btn-continue:hover { background: var(--primary); color: var(--dark); transform: translateY(-2px); }
         
-        /* Enhanced Modal */
+        /* Modal */
         .modal {
             display: none;
             position: fixed;
@@ -458,15 +458,8 @@
         .modal-footer a { color: var(--primary); cursor: pointer; text-decoration: none; }
         
         /* Profile Edit Modal */
-        .profile-field {
-            margin-bottom: 15px;
-        }
-        .profile-field label {
-            display: block;
-            margin-bottom: 5px;
-            font-size: 12px;
-            color: var(--gray);
-        }
+        .profile-field { margin-bottom: 15px; }
+        .profile-field label { display: block; margin-bottom: 5px; font-size: 12px; color: var(--gray); }
         
         /* Loading */
         .loading { text-align: center; padding: 60px; }
@@ -553,7 +546,7 @@
 </head>
 <body>
 
-<!-- Auth Modal (Login/Register) -->
+<!-- Auth Modal -->
 <div id="authModal" class="modal">
     <div class="modal-content">
         <h2><i class="fas fa-user-circle"></i> <span id="modalTitle">Login</span></h2>
@@ -586,6 +579,15 @@
         </div>
         <button onclick="saveProfile()" class="btn-modal-primary">Save Changes</button>
         <button onclick="closeEditProfileModal()" class="btn-modal-secondary" style="margin-top: 10px;">Cancel</button>
+    </div>
+</div>
+
+<!-- Course Detail Modal -->
+<div id="courseDetailModal" class="modal">
+    <div class="modal-content" style="max-width: 600px;">
+        <h2><i class="fas fa-book-open"></i> <span id="courseModalTitle">Course Details</span></h2>
+        <div id="courseModalContent"></div>
+        <button onclick="closeCourseModal()" class="btn-modal-secondary">Close</button>
     </div>
 </div>
 
@@ -792,24 +794,57 @@
             await loadEnrollments();
             showDashboard();
             showToast(`Welcome back, ${userProfile.full_name || currentUser.email.split('@')[0]}!`, 'success');
+        } else {
+            showLanding();
         }
         
         supabase.auth.onAuthStateChange(async (event, session) => {
-            if (session) {
+            if (event === 'SIGNED_IN' && session) {
                 currentUser = session.user;
                 await loadUserProfile();
                 await loadEnrollments();
                 showDashboard();
                 showToast('Logged in successfully!', 'success');
-            } else {
+            } else if (event === 'SIGNED_OUT') {
                 currentUser = null;
                 userEnrollments.clear();
+                selectedCourseId = null;
                 showLanding();
+                showToast('Logged out successfully', 'success');
             }
         });
         
         document.getElementById('mobileMenuBtn').onclick = () => {
             document.getElementById('dashboardSidebar').classList.toggle('active');
+        };
+        
+        document.getElementById('logoutBtn').onclick = async () => {
+            await supabase.auth.signOut();
+        };
+        
+        document.getElementById('authSubmitBtn').onclick = async () => {
+            const email = document.getElementById('authEmail').value;
+            const password = document.getElementById('authPassword').value;
+            
+            if (!email || !password) {
+                showToast('Please fill in all fields', 'error');
+                return;
+            }
+            
+            try {
+                if (authMode === 'login') {
+                    const { error } = await supabase.auth.signInWithPassword({ email, password });
+                    if (error) throw error;
+                    closeAuthModal();
+                } else {
+                    const { error } = await supabase.auth.signUp({ email, password });
+                    if (error) throw error;
+                    showToast('Account created! Please check your email to confirm.', 'success');
+                    closeAuthModal();
+                }
+            } catch (error) {
+                showToast(error.message, 'error');
+            }
         };
     }
     
@@ -834,7 +869,6 @@
                 };
             }
             
-            // Update UI
             document.getElementById('profileName').textContent = userProfile.full_name || currentUser.email.split('@')[0];
             document.getElementById('profileEmail').textContent = currentUser.email;
             document.getElementById('dashboardUserName').textContent = userProfile.full_name || currentUser.email.split('@')[0];
@@ -988,7 +1022,7 @@
         container.innerHTML = allCourses.map(course => {
             const isFree = course.type === 'free' || course.price === 0;
             return `
-                <div class="course-card" onclick="selectCourse(${course.id})">
+                <div class="course-card" onclick="showCourseDetail(${course.id})">
                     <div class="course-icon">${course.icon || '📚'}</div>
                     <span class="course-badge ${isFree ? 'badge-free' : 'badge-premium'}">${isFree ? 'FREE' : 'PREMIUM'}</span>
                     <h3>${escapeHtml(course.name)}</h3>
@@ -998,10 +1032,51 @@
                         <span><i class="fas fa-signal"></i> ${course.level || 'All Levels'}</span>
                     </div>
                     <div class="course-price ${isFree ? 'free' : 'premium'}">${isFree ? 'FREE' : `KES ${(course.price || 0).toLocaleString()}`}</div>
-                    <button class="btn-view" onclick="event.stopPropagation(); selectCourse(${course.id})">View Course →</button>
+                    <button class="btn-view" onclick="event.stopPropagation(); showCourseDetail(${course.id})">View Course →</button>
                 </div>
             `;
         }).join('');
+    }
+    
+    function showCourseDetail(courseId) {
+        const course = allCourses.find(c => c.id === courseId);
+        if (!course) return;
+        
+        const isFree = course.type === 'free' || course.price === 0;
+        const isEnrolled = currentUser && userEnrollments.has(course.id);
+        const progress = currentUser ? (userEnrollments.get(course.id) || 0) : 0;
+        
+        document.getElementById('courseModalTitle').textContent = course.name;
+        document.getElementById('courseModalContent').innerHTML = `
+            <div style="text-align: center; margin-bottom: 20px;">
+                <div style="font-size: 4rem;">${course.icon || '📚'}</div>
+                <span class="course-badge ${isFree ? 'badge-free' : 'badge-premium'}" style="margin-top: 10px;">${isFree ? 'FREE' : 'PREMIUM'}</span>
+            </div>
+            <p style="margin-bottom: 15px; line-height: 1.6;">${escapeHtml(course.description || '')}</p>
+            <div style="margin: 15px 0; padding: 15px; background: rgba(0,0,0,0.2); border-radius: 12px;">
+                <p><i class="fas fa-clock"></i> <strong>Duration:</strong> ${course.duration || 'Self-paced'}</p>
+                <p><i class="fas fa-signal"></i> <strong>Level:</strong> ${course.level || 'All Levels'}</p>
+                <p><i class="fas fa-layer-group"></i> <strong>Units:</strong> ${course.totalUnits || 'N/A'}</p>
+                <p><i class="fas fa-tag"></i> <strong>Price:</strong> ${isFree ? 'FREE' : `KES ${(course.price || 0).toLocaleString()}`}</p>
+            </div>
+            ${!currentUser ? 
+                `<button class="btn-enroll" onclick="showAuthModal('login'); closeCourseModal();">Login to Enroll</button>` :
+                (isEnrolled ? 
+                    `<div>
+                        <div class="progress-bar"><div class="progress-fill" style="width: ${progress}%"></div></div>
+                        <p style="text-align: center;">${progress}% Complete</p>
+                        <button class="btn-continue" onclick="updateProgress(${course.id}, ${progress + 10}); closeCourseModal();">Continue Learning →</button>
+                    </div>` :
+                    `<button class="btn-enroll" onclick="enrollInCourse(${course.id}); closeCourseModal();">Enroll Now →</button>`
+                )
+            }
+        `;
+        
+        document.getElementById('courseDetailModal').classList.add('active');
+    }
+    
+    function closeCourseModal() {
+        document.getElementById('courseDetailModal').classList.remove('active');
     }
     
     function selectCourse(courseId) {
@@ -1025,8 +1100,8 @@
         const course = allCourses.find(c => c.id === selectedCourseId);
         if (!course) return;
         
-        const isEnrolled = userEnrollments.has(course.id);
-        const progress = userEnrollments.get(course.id) || 0;
+        const isEnrolled = currentUser && userEnrollments.has(course.id);
+        const progress = currentUser ? (userEnrollments.get(course.id) || 0) : 0;
         const isFree = course.type === 'free' || course.price === 0;
         
         container.innerHTML = `
@@ -1042,14 +1117,17 @@
                     <span><i class="fas fa-signal"></i> ${course.level || 'All Levels'}</span>
                     <span><i class="fas fa-layer-group"></i> ${course.totalUnits || 'N/A'} units</span>
                 </div>
-                ${isEnrolled ? `
-                    <div class="progress-bar"><div class="progress-fill" style="width: ${progress}%"></div></div>
-                    <p style="text-align: center; margin: 10px 0;">${progress}% Complete</p>
-                    <button class="btn-continue" onclick="updateProgress(${course.id}, ${progress + 10})">${progress === 100 ? '📋 Review Course' : '▶️ Continue Learning'}</button>
-                ` : `
-                    <div class="course-price ${isFree ? 'free' : 'premium'}">${isFree ? 'FREE' : `KES ${(course.price || 0).toLocaleString()}`}</div>
-                    <button class="btn-enroll" onclick="enrollInCourse(${course.id})">🎓 Enroll Now</button>
-                `}
+                ${!currentUser ? 
+                    `<button class="btn-enroll" onclick="showAuthModal('login')">Login to Enroll</button>` :
+                    (isEnrolled ? `
+                        <div class="progress-bar"><div class="progress-fill" style="width: ${progress}%"></div></div>
+                        <p style="text-align: center; margin: 10px 0;">${progress}% Complete</p>
+                        <button class="btn-continue" onclick="updateProgress(${course.id}, ${progress + 10})">${progress === 100 ? '📋 Review Course' : '▶️ Continue Learning'}</button>
+                    ` : `
+                        <div class="course-price ${isFree ? 'free' : 'premium'}">${isFree ? 'FREE' : `KES ${(course.price || 0).toLocaleString()}`}</div>
+                        <button class="btn-enroll" onclick="enrollInCourse(${course.id})">🎓 Enroll Now</button>
+                    `)
+                }
             </div>
         `;
     }
@@ -1060,7 +1138,7 @@
         
         container.innerHTML = recommended.map(course => {
             const isFree = course.type === 'free' || course.price === 0;
-            const isEnrolled = userEnrollments.has(course.id);
+            const isEnrolled = currentUser && userEnrollments.has(course.id);
             
             return `
                 <div class="course-card">
@@ -1068,9 +1146,12 @@
                     <span class="course-badge ${isFree ? 'badge-free' : 'badge-premium'}">${isFree ? 'FREE' : 'PREMIUM'}</span>
                     <h3>${escapeHtml(course.name)}</h3>
                     <p>${escapeHtml((course.description || '').substring(0, 80))}...</p>
-                    ${isEnrolled ? 
-                        `<button class="btn-continue" onclick="updateProgress(${course.id}, ${(userEnrollments.get(course.id) || 0) + 10})">Continue Learning</button>` :
-                        `<button class="btn-enroll" onclick="enrollInCourse(${course.id})">Enroll Now →</button>`
+                    ${!currentUser ? 
+                        `<button class="btn-enroll" onclick="showAuthModal('login')">Login to Enroll</button>` :
+                        (isEnrolled ? 
+                            `<button class="btn-continue" onclick="updateProgress(${course.id}, ${(userEnrollments.get(course.id) || 0) + 10})">Continue Learning</button>` :
+                            `<button class="btn-enroll" onclick="enrollInCourse(${course.id})">Enroll Now →</button>`
+                        )
                     }
                 </div>
             `;
@@ -1079,6 +1160,11 @@
     
     function renderEnrolledCourses() {
         const container = document.getElementById('enrolledCoursesList');
+        if (!currentUser) {
+            container.innerHTML = '<div class="course-card"><p>Login to see your enrolled courses</p></div>';
+            return;
+        }
+        
         const enrolled = allCourses.filter(c => userEnrollments.has(c.id));
         
         if (enrolled.length === 0) {
@@ -1103,6 +1189,11 @@
     
     function renderAvailableCourses() {
         const container = document.getElementById('availableCoursesList');
+        if (!currentUser) {
+            container.innerHTML = '<div class="course-card"><p>Login to see available courses</p></div>';
+            return;
+        }
+        
         const available = allCourses.filter(c => !userEnrollments.has(c.id));
         
         if (available.length === 0) {
@@ -1127,6 +1218,11 @@
     
     function renderAchievements() {
         const container = document.getElementById('achievementsList');
+        if (!currentUser) {
+            container.innerHTML = '<div class="course-card"><p>Login to see your achievements</p></div>';
+            return;
+        }
+        
         const completed = Array.from(userEnrollments.entries()).filter(([id, progress]) => progress === 100);
         const totalCompleted = completed.length;
         const totalEnrolled = userEnrollments.size;
@@ -1151,6 +1247,8 @@
     }
     
     function updateDashboardStats() {
+        if (!currentUser) return;
+        
         const enrolledCount = userEnrollments.size;
         const completedCount = Array.from(userEnrollments.values()).filter(p => p === 100).length;
         const totalProgress = Array.from(userEnrollments.values()).reduce((sum, p) => sum + p, 0);
@@ -1169,6 +1267,7 @@
         document.getElementById('landingPage').style.display = 'block';
         document.getElementById('dashboardPage').style.display = 'none';
         document.getElementById('dashboardSidebar').classList.remove('active');
+        renderCourses();
     }
     
     function showDashboard() {
@@ -1181,6 +1280,7 @@
         renderAvailableCourses();
         renderAchievements();
         document.getElementById('dashboardSidebar').classList.remove('active');
+        showDashboardSection('overview');
     }
     
     function showDashboardSection(section) {
@@ -1198,10 +1298,14 @@
         }
         
         if (section === 'achievements') renderAchievements();
+        if (section === 'courses') {
+            renderEnrolledCourses();
+            renderAvailableCourses();
+        }
     }
     
     // ============================================
-    // AUTHENTICATION
+    // AUTHENTICATION UI
     // ============================================
     function showAuthModal(mode) {
         authMode = mode;
@@ -1230,38 +1334,6 @@
     function closeEditProfileModal() {
         document.getElementById('editProfileModal').classList.remove('active');
     }
-    
-    document.getElementById('authSubmitBtn').onclick = async () => {
-        const email = document.getElementById('authEmail').value;
-        const password = document.getElementById('authPassword').value;
-        
-        if (!email || !password) {
-            showToast('Please fill in all fields', 'error');
-            return;
-        }
-        
-        try {
-            if (authMode === 'login') {
-                const { error } = await supabase.auth.signInWithPassword({ email, password });
-                if (error) throw error;
-                closeAuthModal();
-                if (selectedCourseId) showDashboard();
-            } else {
-                const { error } = await supabase.auth.signUp({ email, password });
-                if (error) throw error;
-                showToast('Account created! Please check your email to confirm.', 'success');
-                closeAuthModal();
-            }
-        } catch (error) {
-            showToast(error.message, 'error');
-        }
-    };
-    
-    document.getElementById('logoutBtn').onclick = async () => {
-        await supabase.auth.signOut();
-        showToast('Logged out successfully', 'success');
-        showLanding();
-    };
     
     // ============================================
     // HELPERS
@@ -1292,6 +1364,8 @@
     window.openEditProfileModal = openEditProfileModal;
     window.closeEditProfileModal = closeEditProfileModal;
     window.saveProfile = saveProfile;
+    window.showCourseDetail = showCourseDetail;
+    window.closeCourseModal = closeCourseModal;
     
     init();
 </script>
