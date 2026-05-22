@@ -7,11 +7,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         
         :root {
             --neon-green: #00FF88;
@@ -21,7 +17,6 @@
             --soft-gray: #B7C4D6;
             --error: #ff4444;
             --warning: #ff9800;
-            --success: #00FF88;
             --transition: all 0.3s ease;
         }
         
@@ -29,61 +24,30 @@
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: var(--secondary-dark);
             color: var(--white);
-            overflow-x: hidden;
         }
         
         .loading-spinner {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.85);
-            z-index: 9999;
-            display: none;
-            justify-content: center;
-            align-items: center;
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.85); z-index: 9999; display: none;
+            justify-content: center; align-items: center;
         }
-        
-        .loading-spinner.active {
-            display: flex;
-        }
-        
+        .loading-spinner.active { display: flex; }
         .spinner {
-            width: 50px;
-            height: 50px;
-            border: 3px solid var(--dark-navy);
-            border-top-color: var(--neon-green);
-            border-radius: 50%;
+            width: 50px; height: 50px; border: 3px solid var(--dark-navy);
+            border-top-color: var(--neon-green); border-radius: 50%;
             animation: spin 1s linear infinite;
         }
-        
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
+        @keyframes spin { to { transform: rotate(360deg); } }
         
         .toast {
-            position: fixed;
-            bottom: 30px;
-            right: 30px;
-            z-index: 10000;
-            background: var(--dark-navy);
-            padding: 14px 24px;
-            border-radius: 12px;
-            transform: translateX(400px);
-            transition: transform 0.3s;
+            position: fixed; bottom: 30px; right: 30px; z-index: 10000;
+            background: var(--dark-navy); padding: 14px 24px; border-radius: 12px;
+            transform: translateX(400px); transition: transform 0.3s;
             border-left: 4px solid var(--neon-green);
             box-shadow: 0 10px 40px rgba(0,0,0,0.3);
-            z-index: 10001;
         }
-        
-        .toast.error {
-            border-left-color: var(--error);
-        }
-        
-        .toast.show {
-            transform: translateX(0);
-        }
+        .toast.error { border-left-color: var(--error); }
+        .toast.show { transform: translateX(0); }
         
         .navbar {
             background: var(--dark-navy);
@@ -93,7 +57,6 @@
             top: 0;
             z-index: 100;
         }
-        
         .nav-container {
             max-width: 1200px;
             margin: 0 auto;
@@ -101,24 +64,18 @@
             justify-content: space-between;
             align-items: center;
         }
-        
         .logo {
             font-size: 1.5rem;
             font-weight: 700;
             color: var(--neon-green);
             cursor: pointer;
         }
-        
-        .logo span {
-            color: var(--white);
-        }
-        
+        .logo span { color: var(--white); }
         .user-greeting {
             display: flex;
             align-items: center;
             gap: 1rem;
         }
-        
         .user-avatar {
             width: 40px;
             height: 40px;
@@ -130,7 +87,6 @@
             color: var(--dark-navy);
             font-weight: bold;
         }
-        
         .logout-btn {
             background: rgba(255,68,68,0.2);
             border: 1px solid var(--error);
@@ -138,13 +94,8 @@
             padding: 8px 20px;
             border-radius: 30px;
             cursor: pointer;
-            transition: var(--transition);
         }
-        
-        .logout-btn:hover {
-            background: var(--error);
-            color: var(--white);
-        }
+        .logout-btn:hover { background: var(--error); color: var(--white); }
         
         .container {
             max-width: 1200px;
@@ -159,7 +110,6 @@
             margin-bottom: 2rem;
             border: 1px solid rgba(0,255,136,0.2);
         }
-        
         .welcome-section h1 {
             color: var(--neon-green);
             margin-bottom: 0.5rem;
@@ -171,14 +121,12 @@
             gap: 1rem;
             margin-top: 1.5rem;
         }
-        
         .stat-card {
             background: rgba(0,0,0,0.3);
             border-radius: 12px;
             padding: 1rem;
             text-align: center;
         }
-        
         .stat-number {
             font-size: 2rem;
             font-weight: bold;
@@ -191,9 +139,7 @@
             margin-bottom: 2rem;
             border-bottom: 1px solid rgba(255,255,255,0.1);
             padding-bottom: 0.5rem;
-            flex-wrap: wrap;
         }
-        
         .tab {
             background: none;
             border: none;
@@ -202,21 +148,10 @@
             cursor: pointer;
             font-size: 1rem;
             transition: var(--transition);
-            position: relative;
         }
-        
         .tab.active {
             color: var(--neon-green);
-        }
-        
-        .tab.active::after {
-            content: '';
-            position: absolute;
-            bottom: -0.5rem;
-            left: 0;
-            right: 0;
-            height: 2px;
-            background: var(--neon-green);
+            border-bottom: 2px solid var(--neon-green);
         }
         
         .courses-grid {
@@ -231,20 +166,12 @@
             padding: 1.5rem;
             border: 1px solid rgba(0,255,136,0.15);
             transition: var(--transition);
-            position: relative;
         }
-        
         .course-card:hover {
             transform: translateY(-5px);
             border-color: var(--neon-green);
-            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
         }
-        
-        .course-icon {
-            font-size: 2.5rem;
-            margin-bottom: 0.75rem;
-        }
-        
+        .course-icon { font-size: 2.5rem; margin-bottom: 0.75rem; }
         .course-badge {
             display: inline-block;
             padding: 4px 12px;
@@ -253,56 +180,33 @@
             font-weight: bold;
             margin-bottom: 0.75rem;
         }
+        .badge-free { background: var(--warning); color: var(--dark-navy); }
+        .badge-premium { background: var(--neon-green); color: var(--dark-navy); }
+        .badge-enrolled { background: #00FF88; color: var(--dark-navy); }
         
-        .badge-free {
-            background: var(--warning);
-            color: var(--dark-navy);
-        }
-        
-        .badge-premium {
-            background: var(--neon-green);
-            color: var(--dark-navy);
-        }
-        
-        .badge-enrolled {
-            background: var(--success);
-            color: var(--dark-navy);
-        }
-        
-        .course-title {
-            font-size: 1.2rem;
-            margin-bottom: 0.5rem;
-            font-weight: 600;
-        }
-        
+        .course-title { font-size: 1.2rem; margin-bottom: 0.5rem; }
         .course-description {
             color: var(--soft-gray);
             font-size: 0.85rem;
             margin-bottom: 1rem;
-            line-height: 1.5;
+            line-height: 1.4;
         }
-        
-        .course-progress {
-            margin: 1rem 0;
-        }
-        
+        .course-progress { margin: 1rem 0; }
         .progress-bar-bg {
             background: rgba(255,255,255,0.1);
             border-radius: 10px;
             height: 8px;
             overflow: hidden;
         }
-        
         .progress-bar-fill {
             background: var(--neon-green);
             height: 100%;
             transition: width 0.3s;
         }
-        
         .progress-text {
             font-size: 0.75rem;
             color: var(--soft-gray);
-            margin-top: 0.5rem;
+            margin-top: 0.25rem;
             text-align: center;
         }
         
@@ -313,36 +217,19 @@
             border: none;
             cursor: pointer;
             font-weight: 600;
-            transition: var(--transition);
             margin-top: 0.5rem;
-            font-size: 0.9rem;
         }
-        
         .btn-enroll {
             background: var(--neon-green);
             color: var(--dark-navy);
         }
-        
-        .btn-enroll:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0,255,136,0.3);
-        }
-        
-        .btn-enroll:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-        
+        .btn-enroll:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0,255,136,0.3); }
         .btn-continue {
             background: transparent;
             border: 2px solid var(--neon-green);
             color: var(--neon-green);
         }
-        
-        .btn-continue:hover {
-            background: var(--neon-green);
-            color: var(--dark-navy);
-        }
+        .btn-continue:hover { background: var(--neon-green); color: var(--dark-navy); }
         
         .empty-state {
             text-align: center;
@@ -352,34 +239,16 @@
             grid-column: 1 / -1;
         }
         
-        .empty-state i {
-            font-size: 4rem;
-            color: var(--soft-gray);
-            margin-bottom: 1rem;
-        }
-        
         @media (max-width: 768px) {
-            .container {
-                padding: 1rem;
-            }
-            .courses-grid {
-                grid-template-columns: 1fr;
-            }
-            .stats-grid {
-                grid-template-columns: repeat(2, 1fr);
-            }
-            .tabs {
-                flex-direction: row;
-                justify-content: center;
-            }
+            .stats-grid { grid-template-columns: repeat(2, 1fr); }
+            .courses-grid { grid-template-columns: 1fr; }
+            .container { padding: 1rem; }
         }
     </style>
 </head>
 <body>
 
-<div id="loadingSpinner" class="loading-spinner">
-    <div class="spinner"></div>
-</div>
+<div id="loadingSpinner" class="loading-spinner"><div class="spinner"></div></div>
 <div id="toast" class="toast"></div>
 
 <nav class="navbar">
@@ -398,22 +267,10 @@
         <h1>Welcome back, <span id="welcomeName">Learner</span>! 🎉</h1>
         <p>Continue your driving journey. Track progress and enroll in new courses.</p>
         <div class="stats-grid">
-            <div class="stat-card">
-                <div class="stat-number" id="totalCoursesCount">0</div>
-                <div>Available Courses</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-number" id="enrolledCount">0</div>
-                <div>Enrolled Courses</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-number" id="completedCount">0</div>
-                <div>Completed</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-number" id="overallProgress">0%</div>
-                <div>Overall Progress</div>
-            </div>
+            <div class="stat-card"><div class="stat-number" id="totalCourses">0</div><div>Available Courses</div></div>
+            <div class="stat-card"><div class="stat-number" id="enrolledCount">0</div><div>Enrolled Courses</div></div>
+            <div class="stat-card"><div class="stat-number" id="completedCount">0</div><div>Completed</div></div>
+            <div class="stat-card"><div class="stat-number" id="overallProgress">0%</div><div>Overall Progress</div></div>
         </div>
     </div>
 
@@ -423,76 +280,36 @@
     </div>
 
     <div id="coursesContainer" class="courses-grid">
-        <div class="empty-state">
-            <i class="fas fa-spinner fa-pulse"></i>
-            <h3>Loading courses...</h3>
-        </div>
+        <div class="empty-state"><i class="fas fa-spinner fa-pulse"></i><h3>Loading courses...</h3></div>
     </div>
 </div>
 
 <script>
-    // ============================================
-    // SUPABASE CONFIGURATION
-    // ============================================
+    // Supabase config
     const SUPABASE_URL = 'https://jeksrwrzzrczamxijvwl.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Impla3Nyd3J6enJjemFteGlqdndsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg2NzYyMjAsImV4cCI6MjA5NDI1MjIyMH0.1poYpJKNFEVe2NTBkXBTH2bIHGk2yT8aqCU-OlJc4vs';
-    
     const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
     
-    // ============================================
-    // COURSE FILE MAPPING
-    // ============================================
-    const COURSE_FILE_MAPPING = {
-        "boda": "boda-course.html",
-        "defensive": "defensive-driving-course.html",
-        "e-safety": "e-safety-library.html",
-        "electric": "ev-course-dynamic.html",
-        "learner": "learner-hub.html",
-        "professional": "professional-driver-course.html",
-        "quiz": "quiz-bank.html",
-        "school": "school-transport-course.html"
-    };
-    
-    function getCourseFileName(courseName) {
-        const lowerName = courseName.toLowerCase();
-        for (const [key, filename] of Object.entries(COURSE_FILE_MAPPING)) {
-            if (lowerName.includes(key)) {
-                return filename;
-            }
-        }
-        return `course.html?id=${encodeURIComponent(courseName)}`;
-    }
-    
-    // ============================================
-    // FALLBACK COURSES (in case database fails)
-    // ============================================
-    const FALLBACK_COURSES = [
-        { id: 1, name: 'Learner Hub - Complete Driver Training', description: 'NTSA-approved curriculum from basics to road readiness. Covers traffic rules, vehicle controls, defensive driving, and complete exam preparation.', price: 0, type: 'free', icon: '📚', total_units: 21 },
-        { id: 2, name: 'Boda Boda Professional Course', description: 'Professional motorcycle taxi training including safety, customer service, road regulations, and defensive riding techniques.', price: 0, type: 'free', icon: '🏍️', total_units: 15 },
-        { id: 3, name: 'Defensive Driving Course', description: 'Master advanced driving techniques, hazard perception, emergency maneuvers, and accident avoidance strategies.', price: 1999, type: 'premium', icon: '🛡️', total_units: 12 },
-        { id: 4, name: 'Professional Driver Course', description: 'Comprehensive training for PSV, logistics, and commercial drivers including customer care and regulations.', price: 4999, type: 'premium', icon: '🚛', total_units: 20 },
-        { id: 5, name: 'Electric Vehicle Course', description: 'Master EV technology, charging systems, battery maintenance, and safety procedures for electric vehicles.', price: 2999, type: 'premium', icon: '⚡', total_units: 10 },
-        { id: 6, name: 'School Transport Safety', description: 'Specialized certification for school bus drivers including child safety protocols, emergency procedures, and regulations.', price: 1999, type: 'premium', icon: '🚸', total_units: 8 },
-        { id: 7, name: 'E-Safety Library', description: 'Digital safety for drivers - online records management, apps, cybersecurity awareness, and digital compliance.', price: 0, type: 'free', icon: '💻', total_units: 6 },
-        { id: 8, name: 'Quiz Bank - Exam Preparation', description: '1000+ NTSA practice questions to prepare for your driving theory test with detailed explanations.', price: 0, type: 'free', icon: '📝', total_units: 10 }
+    // COURSES DATA - Hardcoded to ensure display
+    const COURSES = [
+        { id: 1, name: 'Learner Hub - Complete Driver Training', description: 'NTSA-approved curriculum from basics to road readiness. Covers traffic rules, vehicle controls, defensive driving, and complete exam preparation.', price: 0, type: 'free', icon: '📚', file: 'learner-hub.html' },
+        { id: 2, name: 'Boda Boda Professional Course', description: 'Professional motorcycle taxi training including safety, customer service, road regulations, and defensive riding techniques.', price: 0, type: 'free', icon: '🏍️', file: 'boda-course.html' },
+        { id: 3, name: 'Defensive Driving Course', description: 'Master advanced driving techniques, hazard perception, emergency maneuvers, and accident avoidance strategies.', price: 1999, type: 'premium', icon: '🛡️', file: 'defensive-driving-course.html' },
+        { id: 4, name: 'Professional Driver Course', description: 'Comprehensive training for PSV, logistics, and commercial drivers including customer care and regulations.', price: 4999, type: 'premium', icon: '🚛', file: 'professional-driver-course.html' },
+        { id: 5, name: 'Electric Vehicle Course', description: 'Master EV technology, charging systems, battery maintenance, and safety procedures for electric vehicles.', price: 2999, type: 'premium', icon: '⚡', file: 'ev-course-dynamic.html' },
+        { id: 6, name: 'School Transport Safety', description: 'Specialized certification for school bus drivers including child safety protocols, emergency procedures, and regulations.', price: 1999, type: 'premium', icon: '🚸', file: 'school-transport-course.html' },
+        { id: 7, name: 'E-Safety Library', description: 'Digital safety for drivers - online records management, apps, cybersecurity awareness, and digital compliance.', price: 0, type: 'free', icon: '💻', file: 'e-safety-library.html' },
+        { id: 8, name: 'Quiz Bank - Exam Preparation', description: '1000+ NTSA practice questions to prepare for your driving theory test with detailed explanations.', price: 0, type: 'free', icon: '📝', file: 'quiz-bank.html' }
     ];
     
-    // ============================================
-    // STATE
-    // ============================================
     let currentUser = null;
-    let allCourses = [];
     let userEnrollments = new Map();
     let currentTab = 'all';
-    let enrollInProgress = new Set();
     
-    // ============================================
-    // HELPER FUNCTIONS
-    // ============================================
-    function showToast(message, isError = false) {
+    function showToast(msg, isErr = false) {
         const toast = document.getElementById('toast');
-        toast.textContent = message;
-        toast.className = `toast ${isError ? 'error' : ''}`;
+        toast.textContent = msg;
+        toast.className = `toast ${isErr ? 'error' : ''}`;
         toast.classList.add('show');
         setTimeout(() => toast.classList.remove('show'), 3000);
     }
@@ -501,145 +318,53 @@
         document.getElementById('loadingSpinner').classList.toggle('active', loading);
     }
     
-    function escapeHtml(str) {
-        if (!str) return '';
-        const div = document.createElement('div');
-        div.textContent = str;
-        return div.innerHTML;
-    }
-    
-    // ============================================
-    // AUTHENTICATION
-    // ============================================
+    // Auth check
     async function checkAuth() {
-        try {
-            const { data: { session } } = await supabase.auth.getSession();
-            if (!session) {
-                window.location.href = '/login.html';
-                return false;
-            }
-            currentUser = session.user;
-            
-            // Get user profile
-            let displayName = currentUser.email.split('@')[0];
-            try {
-                const { data: profile } = await supabase
-                    .from('profiles')
-                    .select('full_name')
-                    .eq('id', currentUser.id)
-                    .maybeSingle();
-                if (profile?.full_name) displayName = profile.full_name;
-            } catch (err) {
-                console.log('Profile fetch error:', err);
-            }
-            
-            document.getElementById('userName').textContent = displayName;
-            document.getElementById('welcomeName').textContent = displayName.split(' ')[0];
-            document.getElementById('userAvatar').textContent = displayName.charAt(0).toUpperCase();
-            
-            return true;
-        } catch (error) {
-            console.error('Auth error:', error);
-            showToast('Authentication error. Please login again.', true);
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) {
             window.location.href = '/login.html';
             return false;
         }
+        currentUser = session.user;
+        let name = currentUser.email.split('@')[0];
+        document.getElementById('userName').textContent = name;
+        document.getElementById('welcomeName').textContent = name;
+        document.getElementById('userAvatar').textContent = name.charAt(0).toUpperCase();
+        return true;
     }
     
-    // ============================================
-    // FETCH COURSES
-    // ============================================
-    async function fetchCourses() {
-        setLoading(true);
+    // Load enrollments
+    async function loadEnrollments() {
         try {
-            console.log('Fetching courses from Supabase...');
-            const { data, error } = await supabase
-                .from('courses')
-                .select('*')
-                .order('id', { ascending: true });
-            
-            if (error || !data || data.length === 0) {
-                console.log('Using fallback courses');
-                allCourses = FALLBACK_COURSES;
-                showToast('Using demo courses. Database connection issue.', true);
-            } else {
-                console.log(`✅ Loaded ${data.length} courses from database`);
-                allCourses = data;
-            }
-            
-            document.getElementById('totalCoursesCount').textContent = allCourses.length;
-            renderCourses();
-            return allCourses;
-        } catch (error) {
-            console.error('Error fetching courses:', error);
-            allCourses = FALLBACK_COURSES;
-            renderCourses();
-            return allCourses;
-        } finally {
-            setLoading(false);
-        }
-    }
-    
-    // ============================================
-    // FETCH USER ENROLLMENTS
-    // ============================================
-    async function fetchUserEnrollments() {
-        if (!currentUser) return;
-        
-        try {
-            const { data, error } = await supabase
+            const { data } = await supabase
                 .from('enrollments')
-                .select('course_id, status, progress')
+                .select('course_id, progress')
                 .eq('user_id', currentUser.id);
             
-            if (error) {
-                if (error.code !== '42P01') {
-                    console.error('Enrollments error:', error);
-                }
-                return;
-            }
-            
-            if (data && data.length > 0) {
-                data.forEach(enrollment => {
-                    userEnrollments.set(enrollment.course_id, {
-                        enrolled: true,
-                        status: enrollment.status,
-                        progress: enrollment.progress || 0
-                    });
+            if (data) {
+                data.forEach(e => {
+                    userEnrollments.set(e.course_id, { enrolled: true, progress: e.progress || 0 });
                 });
             }
-            
-            console.log(`User has ${userEnrollments.size} enrolled courses`);
             updateStats();
-            renderCourses();
-        } catch (error) {
-            console.error('Error fetching enrollments:', error);
+        } catch (err) {
+            console.log('No enrollments table yet');
         }
     }
     
-    // ============================================
-    // ENROLL IN COURSE
-    // ============================================
+    // Enroll in course
     async function enrollInCourse(courseId, courseName) {
         if (!currentUser) {
             showToast('Please login first', true);
-            window.location.href = '/login.html';
             return;
         }
         
         if (userEnrollments.has(courseId)) {
-            showToast('You are already enrolled in this course!');
-            return;
-        }
-        
-        if (enrollInProgress.has(courseId)) {
-            showToast('Enrollment in progress...');
+            showToast('Already enrolled!');
             return;
         }
         
         setLoading(true);
-        enrollInProgress.add(courseId);
-        
         try {
             const { error } = await supabase
                 .from('enrollments')
@@ -648,160 +373,89 @@
                     course_id: courseId,
                     status: 'active',
                     progress: 0,
-                    enrolled_at: new Date().toISOString()
+                    enrolled_at: new Date()
                 }]);
             
             if (error) throw error;
             
-            userEnrollments.set(courseId, {
-                enrolled: true,
-                status: 'active',
-                progress: 0
-            });
-            
+            userEnrollments.set(courseId, { enrolled: true, progress: 0 });
             updateStats();
             renderCourses();
-            showToast(`✅ Successfully enrolled in ${courseName}! 🎉`);
-            
-        } catch (error) {
-            console.error('Enrollment error:', error);
-            if (error.code === '23505') {
-                showToast('You are already enrolled!', true);
-                // Refresh enrollments
-                await fetchUserEnrollments();
-            } else {
-                showToast('Failed to enroll. Please try again.', true);
-            }
+            showToast(`✅ Enrolled in ${courseName}!`);
+        } catch (err) {
+            showToast('Enrollment failed', true);
         } finally {
-            enrollInProgress.delete(courseId);
             setLoading(false);
         }
     }
     
-    // ============================================
-    // ACCESS COURSE
-    // ============================================
-    function accessCourse(course) {
-        localStorage.setItem('currentCourse', JSON.stringify({
-            id: course.id,
-            name: course.name,
-            description: course.description,
-            type: course.type,
-            price: course.price,
-            icon: course.icon || '🚗'
-        }));
-        
-        const courseFile = getCourseFileName(course.name);
-        window.location.href = `/${courseFile}`;
+    // Open course
+    function openCourse(course) {
+        localStorage.setItem('currentCourse', JSON.stringify(course));
+        window.location.href = `/${course.file}`;
     }
     
-    // ============================================
-    // UPDATE STATISTICS
-    // ============================================
+    // Update stats
     function updateStats() {
-        const enrolledCount = userEnrollments.size;
-        const completedCount = Array.from(userEnrollments.values()).filter(e => e.progress === 100).length;
-        const totalProgress = Array.from(userEnrollments.values()).reduce((sum, e) => sum + (e.progress || 0), 0);
-        const avgProgress = enrolledCount > 0 ? Math.round(totalProgress / enrolledCount) : 0;
-        
-        document.getElementById('enrolledCount').textContent = enrolledCount;
-        document.getElementById('completedCount').textContent = completedCount;
+        document.getElementById('totalCourses').textContent = COURSES.length;
+        document.getElementById('enrolledCount').textContent = userEnrollments.size;
+        const completed = Array.from(userEnrollments.values()).filter(e => e.progress === 100).length;
+        document.getElementById('completedCount').textContent = completed;
+        const avgProgress = userEnrollments.size > 0 
+            ? Math.round(Array.from(userEnrollments.values()).reduce((s, e) => s + e.progress, 0) / userEnrollments.size)
+            : 0;
         document.getElementById('overallProgress').textContent = `${avgProgress}%`;
     }
     
-    // ============================================
-    // RENDER COURSES
-    // ============================================
+    // Render courses
     function renderCourses() {
         const container = document.getElementById('coursesContainer');
         
-        if (!allCourses || allCourses.length === 0) {
-            container.innerHTML = `
-                <div class="empty-state">
-                    <i class="fas fa-database"></i>
-                    <h3>No Courses Available</h3>
-                    <p>Please check back later for new courses.</p>
-                    <button onclick="fetchCourses()" style="margin-top:1rem; background:#00FF88; color:#041B3D; border:none; padding:10px 20px; border-radius:30px; cursor:pointer;">Retry</button>
-                </div>
-            `;
+        let filtered = currentTab === 'enrolled' 
+            ? COURSES.filter(c => userEnrollments.has(c.id))
+            : COURSES;
+        
+        if (filtered.length === 0) {
+            container.innerHTML = `<div class="empty-state"><i class="fas fa-book-open"></i><h3>No enrolled courses yet</h3><p>Browse "All Courses" to get started!</p></div>`;
             return;
         }
         
-        let filteredCourses = [];
-        if (currentTab === 'enrolled') {
-            filteredCourses = allCourses.filter(course => userEnrollments.has(course.id));
-            if (filteredCourses.length === 0) {
-                container.innerHTML = `
-                    <div class="empty-state">
-                        <i class="fas fa-book-open"></i>
-                        <h3>No enrolled courses yet</h3>
-                        <p>Browse "All Courses" and click "Enroll Now" to get started!</p>
-                    </div>
-                `;
-                return;
-            }
-        } else {
-            filteredCourses = allCourses;
-        }
-        
-        container.innerHTML = filteredCourses.map(course => {
+        container.innerHTML = filtered.map(course => {
             const isEnrolled = userEnrollments.has(course.id);
-            const enrollment = userEnrollments.get(course.id);
-            const progress = enrollment?.progress || 0;
+            const progress = userEnrollments.get(course.id)?.progress || 0;
             const isFree = course.type === 'free' || course.price === 0;
-            const icon = course.icon || '🚗';
-            const price = course.price || 0;
-            
-            let badge = '';
-            if (isEnrolled) {
-                badge = '<span class="course-badge badge-enrolled">✅ ENROLLED</span>';
-            } else if (isFree) {
-                badge = '<span class="course-badge badge-free">🎓 FREE</span>';
-            } else {
-                badge = '<span class="course-badge badge-premium">💰 PREMIUM</span>';
-            }
             
             return `
                 <div class="course-card">
-                    <div class="course-icon">${escapeHtml(icon)}</div>
-                    ${badge}
-                    <h3 class="course-title">${escapeHtml(course.name)}</h3>
-                    <p class="course-description">${escapeHtml((course.description || 'Professional driver training course').substring(0, 120))}${(course.description || '').length > 120 ? '...' : ''}</p>
-                    ${!isEnrolled ? `
-                        <div style="margin: 0.5rem 0; font-weight: bold; color: ${isFree ? 'var(--neon-green)' : 'var(--warning)'}; font-size: 1.1rem;">
-                            ${isFree ? 'FREE' : `KES ${price.toLocaleString()}`}
-                        </div>
-                    ` : `
+                    <div class="course-icon">${course.icon}</div>
+                    <div class="course-badge ${isEnrolled ? 'badge-enrolled' : (isFree ? 'badge-free' : 'badge-premium')}">
+                        ${isEnrolled ? '✅ ENROLLED' : (isFree ? 'FREE' : 'PREMIUM')}
+                    </div>
+                    <h3 class="course-title">${course.name}</h3>
+                    <p class="course-description">${course.description.substring(0, 120)}...</p>
+                    ${isEnrolled ? `
                         <div class="course-progress">
-                            <div class="progress-bar-bg">
-                                <div class="progress-bar-fill" style="width: ${progress}%"></div>
-                            </div>
+                            <div class="progress-bar-bg"><div class="progress-bar-fill" style="width: ${progress}%"></div></div>
                             <div class="progress-text">${progress}% Complete</div>
                         </div>
-                    `}
-                    ${isEnrolled ? 
-                        `<button class="btn-continue" onclick="accessCourse(${JSON.stringify(course).replace(/"/g, '&quot;')})">
+                        <button class="btn-continue" onclick="openCourse(${JSON.stringify(course).replace(/"/g, '&quot;')})">
                             ${progress === 100 ? '📋 Review Course' : '▶️ Continue Learning'}
-                        </button>` :
-                        `<button class="btn-enroll" onclick="enrollInCourse(${course.id}, '${course.name.replace(/'/g, "\\'")}')" ${enrollInProgress.has(course.id) ? 'disabled' : ''}>
-                            ${enrollInProgress.has(course.id) ? '⏳ Enrolling...' : (isFree ? '🎓 Enroll Now - FREE' : '💰 Enroll Now')}
-                        </button>`
-                    }
+                        </button>
+                    ` : `
+                        <div style="margin:0.5rem 0; font-weight:bold; color:${isFree ? '#00FF88' : '#ff9800'}">${isFree ? 'FREE' : `KES ${course.price.toLocaleString()}`}</div>
+                        <button class="btn-enroll" onclick="enrollInCourse(${course.id}, '${course.name}')">🎓 Enroll Now</button>
+                    `}
                 </div>
             `;
         }).join('');
     }
     
-    // ============================================
-    // INITIALIZATION
-    // ============================================
+    // Initialize
     async function init() {
         if (!await checkAuth()) return;
+        await loadEnrollments();
+        renderCourses();
         
-        await fetchCourses();
-        await fetchUserEnrollments();
-        
-        // Tab switching
         document.querySelectorAll('.tab').forEach(tab => {
             tab.addEventListener('click', () => {
                 document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
@@ -812,19 +466,14 @@
         });
     }
     
-    // Logout handler
     document.getElementById('logoutBtn').addEventListener('click', async () => {
-        setLoading(true);
         await supabase.auth.signOut();
         window.location.href = '/';
     });
     
-    // Make functions global for onclick handlers
+    window.openCourse = openCourse;
     window.enrollInCourse = enrollInCourse;
-    window.accessCourse = accessCourse;
-    window.fetchCourses = fetchCourses;
     
-    // Start the app
     init();
 </script>
 </body>
