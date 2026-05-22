@@ -69,57 +69,6 @@
         .toast.error { border-left-color: var(--error); }
         .toast.show { transform: translateX(0); }
         
-        .whatsapp-float {
-            position: fixed;
-            bottom: 30px;
-            left: 30px;
-            background: var(--whatsapp);
-            color: white;
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 2rem;
-            cursor: pointer;
-            z-index: 1000;
-            box-shadow: 0 4px 15px rgba(37, 211, 102, 0.4);
-            transition: var(--transition);
-            animation: pulse 2s infinite;
-            text-decoration: none;
-        }
-        .whatsapp-float:hover {
-            transform: scale(1.1);
-            box-shadow: 0 6px 20px rgba(37, 211, 102, 0.6);
-        }
-        @keyframes pulse {
-            0%, 100% { box-shadow: 0 4px 15px rgba(37, 211, 102, 0.4); }
-            50% { box-shadow: 0 4px 25px rgba(37, 211, 102, 0.8); }
-        }
-        
-        .whatsapp-tab {
-            position: fixed;
-            left: -120px;
-            top: 50%;
-            transform: translateY(-50%);
-            background: var(--whatsapp);
-            color: white;
-            padding: 12px 20px;
-            border-radius: 0 30px 30px 0;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            cursor: pointer;
-            z-index: 999;
-            transition: left 0.3s ease;
-            text-decoration: none;
-            font-weight: 600;
-            box-shadow: var(--shadow-md);
-        }
-        .whatsapp-tab:hover { left: 0; }
-        .whatsapp-tab i { font-size: 1.5rem; }
-        
         .navbar {
             position: fixed;
             top: 0;
@@ -616,8 +565,6 @@
             .mobile-menu-btn { display: block; }
             .stats-container { margin: 0 20px; flex-direction: column; gap: 1.5rem; }
             .hero-buttons { flex-direction: column; align-items: center; }
-            .whatsapp-tab { display: none; }
-            .whatsapp-float { bottom: 20px; left: 20px; width: 50px; height: 50px; font-size: 1.5rem; }
         }
         @media (max-width: 480px) {
             .courses-grid { grid-template-columns: 1fr; }
@@ -703,12 +650,6 @@
     </div>
 </div>
 
-<a href="https://wa.me/254703738707?text=Hello%21%20I%27m%20interested%20in%20your%20driving%20courses%20at%20MEI%20DRIVE%20AFRICA" 
-   class="whatsapp-float" target="_blank"><i class="fab fa-whatsapp"></i></a>
-
-<a href="https://wa.me/254703738707?text=Hello%21%20I%27m%20interested%20in%20your%20driving%20courses%20at%20MEI%20DRIVE%20AFRICA" 
-   class="whatsapp-tab" target="_blank"><i class="fab fa-whatsapp"></i><span>Chat on WhatsApp</span></a>
-
 <nav class="navbar">
     <div class="nav-container">
         <div class="logo" onclick="location.href='/'">MEI DRIVE <span>AFRICA</span></div>
@@ -789,8 +730,8 @@
             <h3>WhatsApp</h3>
             <p>Fastest response - Chat with us</p>
             <p><strong>0703 738 707</strong></p>
-            <a href="https://wa.me/254703738707?text=Hello%21%20I%27m%20interested%20in%20your%20driving%20courses" 
-               class="contact-btn whatsapp-btn" target="_blank"><i class="fab fa-whatsapp"></i> Chat Now</a>
+            <a href="https://wa.me/254703738707?text=Hello%21%20I%27m%20interested%20in%20your%20driving%20courses%20at%20MEI%20DRIVE%20AFRICA" 
+               class="contact-btn whatsapp-btn" target="_blank" rel="noopener noreferrer"><i class="fab fa-whatsapp"></i> Chat Now</a>
         </div>
         <div class="contact-card call">
             <i class="fas fa-phone-alt"></i>
