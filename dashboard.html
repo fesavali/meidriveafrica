@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>Learner Dashboard | MEI Drive Africa</title>
+    <title>Dynamic Dashboard | MEI Drive Africa</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -14,6 +15,26 @@
             color: #fff;
             overflow-x: hidden;
         }
+
+        /* Connection Status Bar */
+        .connection-status {
+            position: fixed;
+            top: 0;
+            right: 20px;
+            z-index: 1001;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            background: #0A234F;
+            border: 1px solid rgba(0,255,136,0.3);
+        }
+        .connection-status.online { background: #00C851; color: #fff; }
+        .connection-status.offline { background: #ff4d4f; color: #fff; }
+        .connection-status.local { background: #ff9800; color: #041B3D; }
 
         .sidebar {
             position: fixed;
@@ -167,6 +188,7 @@
             padding: 20px;
             border: 1px solid rgba(0, 255, 136, 0.15);
             transition: all 0.3s ease;
+            position: relative;
         }
 
         .course-card:hover {
@@ -190,6 +212,7 @@
         .badge-free { background: #ff9800; color: #041B3D; }
         .badge-premium { background: #00FF88; color: #041B3D; }
         .badge-enrolled { background: #00C851; color: #fff; }
+        .badge-synced { background: #2196F3; color: #fff; font-size: 0.6rem; position: absolute; top: 10px; right: 10px; }
 
         .course-title {
             font-size: 1.2rem;
@@ -224,7 +247,7 @@
             text-align: center;
         }
 
-        .btn-enroll, .btn-continue {
+        .btn-enroll, .btn-continue, .btn-sync {
             width: 100%;
             padding: 12px;
             border-radius: 30px;
@@ -245,16 +268,19 @@
             color: #00FF88;
         }
         .btn-continue:hover { background: #00FF88; color: #041B3D; }
-
-        .btn-primary {
-            background: #00FF88;
-            color: #041B3D;
-            border: none;
+        .btn-sync {
+            background: #2196F3;
+            color: white;
+            margin-top: 0;
+            width: auto;
             padding: 8px 16px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: bold;
+        }
+
+        .sync-bar {
+            display: flex;
+            justify-content: flex-end;
             margin-bottom: 15px;
+            gap: 10px;
         }
 
         .table-wrapper {
@@ -337,6 +363,10 @@
 </head>
 <body>
 
+<div id="connectionStatus" class="connection-status offline">
+    <i class="fas fa-database"></i> <span id="statusText">Checking...</span>
+</div>
+
 <button class="mobile-menu-btn" id="mobileMenuBtn"><i class="fas fa-bars"></i></button>
 <div class="overlay" id="overlay"></div>
 
@@ -349,9 +379,12 @@
 </div>
 
 <div class="main">
-    <!-- DASHBOARD SECTION -->
     <div id="dashboardSection">
         <h2><i class="fas fa-tachometer-alt"></i> Dashboard Overview</h2>
+        <div class="sync-bar">
+            <button class="btn-sync" onclick="syncToCloud()"><i class="fas fa-cloud-upload-alt"></i> Sync to Cloud</button>
+            <button class="btn-sync" onclick="refreshAllData()"><i class="fas fa-sync-alt"></i> Refresh</button>
+        </div>
         <div class="stats-grid">
             <div class="stat-card" onclick="showSection('courses')">
                 <i class="fas fa-book"></i>
@@ -374,28 +407,24 @@
                 <p>Overall Progress</p>
             </div>
         </div>
-
         <div class="card">
             <h3><i class="fas fa-star"></i> Recommended For You</h3>
             <div id="recommendedCourses" class="courses-grid"></div>
         </div>
     </div>
 
-    <!-- MY COURSES SECTION -->
     <div id="coursesSection" style="display:none">
         <div class="card">
             <h2><i class="fas fa-book"></i> My Courses</h2>
             <button class="btn-primary" onclick="loadEnrolledCourses()"><i class="fas fa-sync-alt"></i> Refresh</button>
             <div id="enrolledCoursesContainer" class="courses-grid"></div>
         </div>
-
         <div class="card">
             <h3><i class="fas fa-store"></i> Available Courses</h3>
             <div id="availableCoursesContainer" class="courses-grid"></div>
         </div>
     </div>
 
-    <!-- PROGRESS SECTION -->
     <div id="progressSection" style="display:none">
         <div class="card">
             <h2><i class="fas fa-chart-line"></i> My Learning Progress</h2>
@@ -405,156 +434,170 @@
 </div>
 
 <script>
-    // COMPLETE COURSES DATA - FULLY HARDCODED, NO DATABASE NEEDED
-    const COURSES = [
-        { 
-            id: 1, 
-            name: 'Learner Hub - Complete Driver Training', 
-            description: 'NTSA-approved curriculum from basics to road readiness. Covers traffic rules, vehicle controls, defensive driving, and complete exam preparation. Perfect for first-time drivers.', 
-            price: 0, 
-            type: 'free', 
-            icon: '📚', 
-            file: 'learner-hub.html', 
-            totalUnits: 21,
-            units: ['Introduction to Driving', 'Traffic Rules & Regulations', 'Vehicle Controls', 'Road Signs', 'Defensive Driving', 'Parking Techniques', 'Highway Driving', 'Night Driving', 'Emergency Procedures', 'Final Assessment']
-        },
-        { 
-            id: 2, 
-            name: 'Boda Boda Professional Course', 
-            description: 'Professional motorcycle taxi training including safety, customer service, road regulations, and defensive riding techniques. NTSA certified curriculum for commercial boda boda operators.', 
-            price: 0, 
-            type: 'free', 
-            icon: '🏍️', 
-            file: 'boda-course.html', 
-            totalUnits: 15,
-            units: ['Motorcycle Basics', 'Safety Gear', 'Traffic Rules for Boda', 'Passenger Safety', 'Customer Service', 'Route Planning', 'Emergency Handling', 'Maintenance Basics']
-        },
-        { 
-            id: 3, 
-            name: 'Defensive Driving Course', 
-            description: 'Master advanced driving techniques, hazard perception, emergency maneuvers, and accident avoidance strategies. Essential for all experienced drivers.', 
-            price: 1999, 
-            type: 'premium', 
-            icon: '🛡️', 
-            file: 'defensive-driving-course.html', 
-            totalUnits: 12,
-            units: ['Hazard Perception', 'Space Management', 'Emergency Braking', 'Skid Control', 'Night Driving', 'Weather Driving', 'Distraction Management', 'Final Test']
-        },
-        { 
-            id: 4, 
-            name: 'Professional Driver Course', 
-            description: 'Comprehensive training for PSV, logistics, and commercial drivers including customer care, vehicle inspection, and transport regulations.', 
-            price: 4999, 
-            type: 'premium', 
-            icon: '🚛', 
-            file: 'professional-driver-course.html', 
-            totalUnits: 20,
-            units: ['Commercial Regulations', 'Vehicle Inspection', 'Logistics Planning', 'Customer Care', 'Route Management', 'Safety Protocols']
-        },
-        { 
-            id: 5, 
-            name: 'Electric Vehicle Course', 
-            description: 'Master EV technology, charging systems, battery maintenance, and safety procedures for electric vehicles. Future-proof your driving career.', 
-            price: 2999, 
-            type: 'premium', 
-            icon: '⚡', 
-            file: 'ev-course-dynamic.html', 
-            totalUnits: 10,
-            units: ['EV Technology', 'Battery Systems', 'Charging Infrastructure', 'Range Management', 'Maintenance', 'Safety Procedures']
-        },
-        { 
-            id: 6, 
-            name: 'School Transport Safety', 
-            description: 'Specialized certification for school bus drivers including child safety protocols, emergency procedures, and student management.', 
-            price: 1999, 
-            type: 'premium', 
-            icon: '🚸', 
-            file: 'school-transport-course.html', 
-            totalUnits: 8,
-            units: ['Child Safety', 'Loading Procedures', 'Emergency Protocols', 'Route Planning', 'Parent Communication', 'First Aid']
-        },
-        { 
-            id: 7, 
-            name: 'E-Safety Library', 
-            description: 'Digital safety for drivers - online records management, apps, cybersecurity awareness, and digital compliance for modern driving.', 
-            price: 0, 
-            type: 'free', 
-            icon: '💻', 
-            file: 'e-safety-library.html', 
-            totalUnits: 6,
-            units: ['Digital Records', 'Mobile Apps', 'Cybersecurity', 'Online Compliance', 'Data Privacy']
-        },
-        { 
-            id: 8, 
-            name: 'Quiz Bank - Exam Preparation', 
-            description: '1000+ NTSA practice questions to prepare for your driving theory test with detailed explanations and mock exams.', 
-            price: 0, 
-            type: 'free', 
-            icon: '📝', 
-            file: 'quiz-bank.html', 
-            totalUnits: 10,
-            units: ['Traffic Rules Quiz', 'Road Signs Quiz', 'Emergency Procedures', 'Mock Test 1', 'Mock Test 2']
-        }
-    ];
-
-    // Local storage keys
-    const STORAGE_KEY = 'mei_enrollments';
-    const USER_KEY = 'mei_current_user';
-
+    // ============================================
+    // DYNAMIC STORAGE SYSTEM - WORKS WITH OR WITHOUT SUPABASE
+    // ============================================
+    
+    const SUPABASE_URL = 'https://jeksrwrzzrczamxijvwl.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Impla3Nyd3J6enJjemFteGlqdndsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg2NzYyMjAsImV4cCI6MjA5NDI1MjIyMH0.1poYpJKNFEVe2NTBkXBTH2bIHGk2yT8aqCU-OlJc4vs';
+    
+    let supabase = null;
+    let useCloud = false;
     let currentUser = null;
+    let allCourses = [];
     let userEnrollments = new Map();
-
-    // Load from localStorage
-    function loadUserData() {
-        const savedUser = localStorage.getItem(USER_KEY);
-        if (savedUser) {
-            currentUser = JSON.parse(savedUser);
-        } else {
-            // Demo user for testing - remove in production
-            currentUser = { id: 'demo-user', email: 'learner@meidrive.com', name: 'Demo Learner' };
-            localStorage.setItem(USER_KEY, JSON.stringify(currentUser));
+    let connectionStatus = 'checking'; // 'online', 'offline', 'local'
+    
+    // COURSES DATA (Fallback if no database)
+    const LOCAL_COURSES = [
+        { id: 1, name: 'Learner Hub - Complete Driver Training', description: 'NTSA-approved curriculum from basics to road readiness. Covers traffic rules, vehicle controls, defensive driving, and complete exam preparation.', price: 0, type: 'free', icon: '📚', file: 'learner-hub.html', totalUnits: 21 },
+        { id: 2, name: 'Boda Boda Professional Course', description: 'Professional motorcycle taxi training including safety, customer service, road regulations, and defensive riding techniques.', price: 0, type: 'free', icon: '🏍️', file: 'boda-course.html', totalUnits: 15 },
+        { id: 3, name: 'Defensive Driving Course', description: 'Master advanced driving techniques, hazard perception, emergency maneuvers, and accident avoidance strategies.', price: 1999, type: 'premium', icon: '🛡️', file: 'defensive-driving-course.html', totalUnits: 12 },
+        { id: 4, name: 'Professional Driver Course', description: 'Comprehensive training for PSV, logistics, and commercial drivers including customer care and regulations.', price: 4999, type: 'premium', icon: '🚛', file: 'professional-driver-course.html', totalUnits: 20 },
+        { id: 5, name: 'Electric Vehicle Course', description: 'Master EV technology, charging systems, battery maintenance, and safety procedures for electric vehicles.', price: 2999, type: 'premium', icon: '⚡', file: 'ev-course-dynamic.html', totalUnits: 10 },
+        { id: 6, name: 'School Transport Safety', description: 'Specialized certification for school bus drivers including child safety protocols, emergency procedures, and regulations.', price: 1999, type: 'premium', icon: '🚸', file: 'school-transport-course.html', totalUnits: 8 },
+        { id: 7, name: 'E-Safety Library', description: 'Digital safety for drivers - online records management, apps, cybersecurity awareness, and digital compliance.', price: 0, type: 'free', icon: '💻', file: 'e-safety-library.html', totalUnits: 6 },
+        { id: 8, name: 'Quiz Bank - Exam Preparation', description: '1000+ NTSA practice questions to prepare for your driving theory test with detailed explanations.', price: 0, type: 'free', icon: '📝', file: 'quiz-bank.html', totalUnits: 10 }
+    ];
+    
+    // ============================================
+    // CONNECTION DETECTION
+    // ============================================
+    
+    async function checkConnection() {
+        try {
+            supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+            const { data, error } = await supabase.from('courses').select('count', { count: 'exact', head: true }).timeout(5000);
+            
+            if (!error) {
+                useCloud = true;
+                connectionStatus = 'online';
+                document.getElementById('statusText').innerHTML = '<i class="fas fa-cloud"></i> Cloud Sync Active';
+                document.getElementById('connectionStatus').className = 'connection-status online';
+                showToast('Connected to cloud database', false);
+                return true;
+            }
+        } catch (err) {
+            console.log('Cloud connection failed, using local storage');
         }
-
-        const savedEnrollments = localStorage.getItem(`${STORAGE_KEY}_${currentUser.id}`);
-        if (savedEnrollments) {
-            const enrollments = JSON.parse(savedEnrollments);
-            userEnrollments.clear();
+        
+        useCloud = false;
+        connectionStatus = 'local';
+        document.getElementById('statusText').innerHTML = '<i class="fas fa-database"></i> Local Mode';
+        document.getElementById('connectionStatus').className = 'connection-status local';
+        showToast('Working offline - data saved locally', false);
+        return false;
+    }
+    
+    // ============================================
+    // DATA LOADING (AUTO-DETECTS SOURCE)
+    // ============================================
+    
+    async function loadCourses() {
+        if (useCloud) {
+            try {
+                const { data, error } = await supabase.from('courses').select('*');
+                if (!error && data && data.length > 0) {
+                    allCourses = data;
+                    return;
+                }
+            } catch (err) {}
+        }
+        allCourses = LOCAL_COURSES;
+    }
+    
+    async function loadEnrollments() {
+        userEnrollments.clear();
+        
+        if (useCloud && currentUser) {
+            try {
+                const { data, error } = await supabase
+                    .from('enrollments')
+                    .select('course_id, progress')
+                    .eq('user_id', currentUser.id);
+                
+                if (!error && data) {
+                    data.forEach(e => {
+                        userEnrollments.set(e.course_id, { enrolled: true, progress: e.progress || 0 });
+                    });
+                    return;
+                }
+            } catch (err) {}
+        }
+        
+        // Fallback to localStorage
+        const storageKey = `mei_enrollments_${currentUser?.id || 'demo'}`;
+        const saved = localStorage.getItem(storageKey);
+        if (saved) {
+            const enrollments = JSON.parse(saved);
             enrollments.forEach(e => {
                 userEnrollments.set(e.courseId, { enrolled: true, progress: e.progress || 0 });
             });
         }
     }
-
-    // Save enrollments to localStorage
-    function saveEnrollments() {
+    
+    async function saveEnrollments() {
         const enrollmentsArray = Array.from(userEnrollments.entries()).map(([courseId, data]) => ({
             courseId: courseId,
             progress: data.progress
         }));
-        localStorage.setItem(`${STORAGE_KEY}_${currentUser.id}`, JSON.stringify(enrollmentsArray));
+        
+        // Save to localStorage always
+        const storageKey = `mei_enrollments_${currentUser?.id || 'demo'}`;
+        localStorage.setItem(storageKey, JSON.stringify(enrollmentsArray));
+        
+        // Try cloud save if available
+        if (useCloud && currentUser) {
+            try {
+                for (const [courseId, data] of userEnrollments) {
+                    const { error } = await supabase
+                        .from('enrollments')
+                        .upsert({
+                            user_id: currentUser.id,
+                            course_id: courseId,
+                            progress: data.progress,
+                            status: 'active',
+                            updated_at: new Date()
+                        });
+                    if (error) console.log('Cloud sync error:', error);
+                }
+            } catch (err) {}
+        }
     }
-
-    function showToast(message, isError = false) {
-        const toast = document.createElement('div');
-        toast.className = `toast ${isError ? 'error' : ''}`;
-        toast.innerHTML = `<i class="fas ${isError ? 'fa-exclamation-circle' : 'fa-check-circle'}"></i> ${message}`;
-        document.body.appendChild(toast);
-        setTimeout(() => toast.remove(), 3000);
+    
+    // ============================================
+    // CORE FUNCTIONS
+    // ============================================
+    
+    async function syncToCloud() {
+        if (!useCloud) {
+            showToast('Cannot sync - cloud connection unavailable', true);
+            return;
+        }
+        
+        if (!currentUser) {
+            showToast('Please login to sync to cloud', true);
+            return;
+        }
+        
+        showToast('Syncing to cloud...', false);
+        await saveEnrollments();
+        showToast('✅ Successfully synced to cloud!', false);
     }
-
-    function enrollInCourse(courseId, courseName) {
+    
+    async function enrollInCourse(courseId, courseName) {
         if (userEnrollments.has(courseId)) {
-            showToast('You are already enrolled in this course!');
+            showToast('Already enrolled in this course!');
             return;
         }
         
         userEnrollments.set(courseId, { enrolled: true, progress: 0 });
-        saveEnrollments();
+        await saveEnrollments();
         updateStats();
         renderAllCourseSections();
         showToast(`✅ Successfully enrolled in ${courseName}!`);
     }
-
+    
     function updateProgress(courseId, progress) {
         if (userEnrollments.has(courseId)) {
             const enrollment = userEnrollments.get(courseId);
@@ -565,16 +608,15 @@
             renderAllCourseSections();
         }
     }
-
+    
     function openCourse(course) {
         localStorage.setItem('currentCourse', JSON.stringify(course));
-        // For demo, just show alert - replace with actual navigation
-        alert(`Opening course: ${course.name}\n\nCourse content would load here.\nFile: ${course.file}\nTotal units: ${course.totalUnits}\n\nIn production, this would navigate to the course page.`);
         showToast(`Opening ${course.name}...`);
+        alert(`📚 COURSE: ${course.name}\n\n📖 Total Units: ${course.totalUnits}\n💾 Storage: ${useCloud ? 'Cloud Synced' : 'Local Only'}\n\nIn production, this would open the full course page.`);
     }
-
+    
     function updateStats() {
-        const totalCourses = COURSES.length;
+        const totalCourses = allCourses.length;
         const enrolledCount = userEnrollments.size;
         const completedCount = Array.from(userEnrollments.values()).filter(e => e.progress === 100).length;
         const totalProgress = Array.from(userEnrollments.values()).reduce((sum, e) => sum + e.progress, 0);
@@ -585,10 +627,14 @@
         document.getElementById('completedCount').textContent = completedCount;
         document.getElementById('overallProgress').textContent = `${avgProgress}%`;
     }
-
+    
+    // ============================================
+    // RENDER FUNCTIONS
+    // ============================================
+    
     function renderRecommendedCourses() {
         const container = document.getElementById('recommendedCourses');
-        const recommended = COURSES.slice(0, 3);
+        const recommended = allCourses.slice(0, 3);
         
         container.innerHTML = recommended.map(course => {
             const isEnrolled = userEnrollments.has(course.id);
@@ -596,6 +642,7 @@
             
             return `
                 <div class="course-card">
+                    ${useCloud ? '<span class="badge-synced"><i class="fas fa-cloud"></i></span>' : ''}
                     <div class="course-icon">${course.icon}</div>
                     <span class="course-badge ${isFree ? 'badge-free' : 'badge-premium'}">${isFree ? 'FREE' : 'PREMIUM'}</span>
                     <h3 class="course-title">${escapeHtml(course.name)}</h3>
@@ -609,10 +656,10 @@
             `;
         }).join('');
     }
-
+    
     function renderEnrolledCourses() {
         const container = document.getElementById('enrolledCoursesContainer');
-        const enrolledCourses = COURSES.filter(c => userEnrollments.has(c.id));
+        const enrolledCourses = allCourses.filter(c => userEnrollments.has(c.id));
         
         if (enrolledCourses.length === 0) {
             container.innerHTML = `<div class="empty-state"><i class="fas fa-book-open"></i><h3>No enrolled courses yet</h3><p>Browse available courses below and enroll to get started!</p></div>`;
@@ -625,6 +672,7 @@
             
             return `
                 <div class="course-card">
+                    ${useCloud ? '<span class="badge-synced"><i class="fas fa-cloud"></i> Cloud</span>' : ''}
                     <div class="course-icon">${course.icon}</div>
                     <span class="course-badge badge-enrolled">✅ ENROLLED</span>
                     <h3 class="course-title">${escapeHtml(course.name)}</h3>
@@ -640,10 +688,10 @@
             `;
         }).join('');
     }
-
+    
     function renderAvailableCourses() {
         const container = document.getElementById('availableCoursesContainer');
-        const availableCourses = COURSES.filter(c => !userEnrollments.has(c.id));
+        const availableCourses = allCourses.filter(c => !userEnrollments.has(c.id));
         
         if (availableCourses.length === 0) {
             container.innerHTML = `<div class="empty-state"><i class="fas fa-check-circle"></i><h3>You're enrolled in all courses!</h3><p>Great job! Keep learning and complete your courses.</p></div>`;
@@ -655,6 +703,7 @@
             
             return `
                 <div class="course-card">
+                    ${useCloud ? '<span class="badge-synced"><i class="fas fa-cloud"></i></span>' : ''}
                     <div class="course-icon">${course.icon}</div>
                     <span class="course-badge ${isFree ? 'badge-free' : 'badge-premium'}">${isFree ? 'FREE' : 'PREMIUM'}</span>
                     <h3 class="course-title">${escapeHtml(course.name)}</h3>
@@ -665,10 +714,10 @@
             `;
         }).join('');
     }
-
+    
     function renderProgressTable() {
         const container = document.getElementById('progressTable');
-        const enrolledCourses = COURSES.filter(c => userEnrollments.has(c.id));
+        const enrolledCourses = allCourses.filter(c => userEnrollments.has(c.id));
         
         if (enrolledCourses.length === 0) {
             container.innerHTML = `<div class="empty-state"><i class="fas fa-chart-line"></i><h3>No progress data yet</h3><p>Enroll in a course to start tracking your progress!</p></div>`;
@@ -696,7 +745,7 @@
         html += `</tbody></table>`;
         container.innerHTML = html;
     }
-
+    
     function renderAllCourseSections() {
         renderEnrolledCourses();
         renderAvailableCourses();
@@ -704,17 +753,56 @@
         renderProgressTable();
         updateStats();
     }
-
-    function loadEnrolledCourses() {
+    
+    async function refreshAllData() {
+        showToast('Refreshing data...', false);
+        await loadCourses();
+        await loadEnrollments();
         renderAllCourseSections();
-        showToast('Courses refreshed!');
+        showToast('Data refreshed!', false);
     }
-
+    
+    // ============================================
+    // AUTH & INIT
+    // ============================================
+    
+    async function checkAuth() {
+        if (useCloud) {
+            try {
+                const { data: { session } } = await supabase.auth.getSession();
+                if (session) {
+                    currentUser = session.user;
+                    return true;
+                }
+            } catch (err) {}
+        }
+        
+        // Demo user for local mode
+        currentUser = { id: 'demo-user', email: 'learner@meidrive.com', name: 'Demo Learner' };
+        return true;
+    }
+    
+    async function handleLogout() {
+        if (useCloud) {
+            await supabase.auth.signOut();
+        }
+        localStorage.removeItem('mei_enrollments_demo-user');
+        window.location.reload();
+    }
+    
     function escapeHtml(str) {
         if (!str) return '';
         return String(str).replace(/[&<>]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[m]));
     }
-
+    
+    function showToast(message, isError = false) {
+        const toastEl = document.createElement('div');
+        toastEl.className = `toast ${isError ? 'error' : ''}`;
+        toastEl.innerHTML = `<i class="fas ${isError ? 'fa-exclamation-circle' : 'fa-check-circle'}"></i> ${message}`;
+        document.body.appendChild(toastEl);
+        setTimeout(() => toastEl.remove(), 3000);
+    }
+    
     function showSection(section) {
         document.getElementById('dashboardSection').style.display = section === 'dashboard' ? 'block' : 'none';
         document.getElementById('coursesSection').style.display = section === 'courses' ? 'block' : 'none';
@@ -724,49 +812,42 @@
         const activeLink = document.querySelector(`.sidebar a[data-section="${section}"]`);
         if (activeLink) activeLink.classList.add('active');
         
-        if (section === 'progress') {
-            renderProgressTable();
-        }
+        if (section === 'progress') renderProgressTable();
     }
-
-    function handleLogout() {
-        if (confirm('Are you sure you want to logout?')) {
-            // Clear demo user data
-            localStorage.removeItem(USER_KEY);
-            localStorage.removeItem(`${STORAGE_KEY}_demo-user`);
-            showToast('Logged out successfully!');
-            setTimeout(() => {
-                window.location.reload();
-            }, 1000);
-        }
-    }
-
+    
     function openMobileMenu() {
         document.getElementById('sidebar').classList.add('active');
         document.getElementById('overlay').classList.add('active');
     }
-
+    
     function closeMobileMenu() {
         document.getElementById('sidebar').classList.remove('active');
         document.getElementById('overlay').classList.remove('active');
     }
-
-    // Initialize
-    loadUserData();
-    updateStats();
-    renderRecommendedCourses();
     
-    // Event listeners
-    document.getElementById('mobileMenuBtn').addEventListener('click', openMobileMenu);
-    document.getElementById('overlay').addEventListener('click', closeMobileMenu);
+    async function init() {
+        await checkConnection();
+        await checkAuth();
+        await loadCourses();
+        await loadEnrollments();
+        renderRecommendedCourses();
+        updateStats();
+        
+        document.getElementById('mobileMenuBtn').addEventListener('click', openMobileMenu);
+        document.getElementById('overlay').addEventListener('click', closeMobileMenu);
+    }
     
-    // Make functions global
+    // Global functions
     window.showSection = showSection;
     window.handleLogout = handleLogout;
     window.enrollInCourse = enrollInCourse;
     window.openCourse = openCourse;
-    window.loadEnrolledCourses = loadEnrolledCourses;
+    window.loadEnrolledCourses = refreshAllData;
     window.updateProgress = updateProgress;
+    window.syncToCloud = syncToCloud;
+    window.refreshAllData = refreshAllData;
+    
+    init();
 </script>
 </body>
 </html>
