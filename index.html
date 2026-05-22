@@ -439,6 +439,103 @@
         }
         .btn-view:hover { background: var(--neon-green); color: var(--dark-navy); }
         
+        /* Lock overlay for non-logged in users */
+        .course-card.locked::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.7);
+            border-radius: 20px;
+            z-index: 1;
+        }
+        .course-card.locked .lock-icon {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 2.5rem;
+            color: var(--neon-green);
+            z-index: 2;
+            background: var(--dark-navy);
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        .course-card.locked:hover .lock-icon {
+            opacity: 1;
+        }
+        .course-card.locked .btn-view {
+            opacity: 0.5;
+            pointer-events: none;
+        }
+        
+        .login-prompt-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.95);
+            z-index: 3000;
+            display: none;
+            justify-content: center;
+            align-items: center;
+        }
+        .login-prompt-modal.active {
+            display: flex;
+        }
+        .login-prompt-content {
+            background: var(--dark-navy);
+            border-radius: 24px;
+            padding: 2rem;
+            max-width: 400px;
+            text-align: center;
+            border: 2px solid var(--neon-green);
+            animation: fadeInUp 0.3s ease;
+        }
+        .login-prompt-content i {
+            font-size: 4rem;
+            color: var(--neon-green);
+            margin-bottom: 1rem;
+        }
+        .login-prompt-content h3 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+        }
+        .login-prompt-content p {
+            color: var(--soft-gray);
+            margin-bottom: 1.5rem;
+        }
+        .login-prompt-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+        }
+        .login-prompt-buttons button {
+            padding: 10px 25px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-weight: bold;
+            border: none;
+        }
+        .btn-login-prompt {
+            background: var(--neon-green);
+            color: var(--dark-navy);
+        }
+        .btn-cancel-prompt {
+            background: transparent;
+            border: 1px solid var(--soft-gray);
+            color: var(--white);
+        }
+        
         .contact-section {
             background: var(--dark-navy);
             padding: 4rem 2rem;
@@ -593,6 +690,19 @@
 <div id="loadingSpinner" class="loading-spinner"><div class="spinner"></div></div>
 <div id="toast" class="toast"></div>
 
+<!-- Login Prompt Modal -->
+<div id="loginPromptModal" class="login-prompt-modal">
+    <div class="login-prompt-content">
+        <i class="fas fa-lock"></i>
+        <h3>Login Required</h3>
+        <p>Please login or create an account to access this course and track your progress.</p>
+        <div class="login-prompt-buttons">
+            <button class="btn-login-prompt" onclick="redirectToLogin()">Login / Register</button>
+            <button class="btn-cancel-prompt" onclick="closeLoginPrompt()">Cancel</button>
+        </div>
+    </div>
+</div>
+
 <a href="https://wa.me/254703738707?text=Hello%21%20I%27m%20interested%20in%20your%20driving%20courses%20at%20MEI%20DRIVE%20AFRICA" 
    class="whatsapp-float" target="_blank"><i class="fab fa-whatsapp"></i></a>
 
@@ -720,60 +830,42 @@
     console.log('✅ Supabase client initialized');
     
     // ============================================
-    // COURSE FILE MAPPING (8 specific course files)
+    // COURSE FILE MAPPING
     // ============================================
     const COURSE_FILE_MAPPING = {
-        // Boda Boda
         "boda": "boda-course.html",
         "boda boda": "boda-course.html",
         "motorcycle": "boda-course.html",
-        
-        // Defensive Driving
         "defensive": "defensive-driving-course.html",
         "defensive driving": "defensive-driving-course.html",
-        
-        // E-Safety Library
         "e-safety": "e-safety-library.html",
         "e safety": "e-safety-library.html",
-        "safety library": "e-safety-library.html",
-        
-        // Electric Vehicle
         "electric": "ev-course-dynamic.html",
         "ev": "ev-course-dynamic.html",
         "electric vehicle": "ev-course-dynamic.html",
-        
-        // Learner Hub
         "learner": "learner-hub.html",
         "learner hub": "learner-hub.html",
         "complete driver": "learner-hub.html",
-        
-        // Professional Driver
         "professional": "professional-driver-course.html",
         "professional driver": "professional-driver-course.html",
         "psv": "professional-driver-course.html",
-        
-        // Quiz Bank
         "quiz": "quiz-bank.html",
         "quiz bank": "quiz-bank.html",
         "exam": "quiz-bank.html",
-        
-        // School Transport
         "school": "school-transport-course.html",
         "school transport": "school-transport-course.html",
         "school bus": "school-transport-course.html"
     };
     
-    // Helper function to get course filename
+    let selectedCourseForRedirect = null;
+    
     function getCourseFileName(courseName) {
         const lowerName = courseName.toLowerCase();
         for (const [key, filename] of Object.entries(COURSE_FILE_MAPPING)) {
             if (lowerName.includes(key)) {
-                console.log(`✅ Mapping "${courseName}" → ${filename}`);
                 return filename;
             }
         }
-        // Default fallback for any new courses
-        console.log(`⚠️ No mapping found for "${courseName}", using default`);
         return `course.html?id=${encodeURIComponent(courseName)}`;
     }
     
@@ -790,6 +882,7 @@
     const mobileAuthLinks = document.getElementById('mobileAuthLinks');
     const mobileUserInfo = document.getElementById('mobileUserInfo');
     const mobileUserName = document.getElementById('mobileUserName');
+    const loginPromptModal = document.getElementById('loginPromptModal');
     
     let currentUser = null;
     
@@ -825,54 +918,39 @@
         `;
     }
     
-    // ============================================
-    // AUTHENTICATION
-    // ============================================
-    async function updateAuthUI() {
-        try {
-            const { data: { session } } = await supabaseClient.auth.getSession();
-            currentUser = session?.user || null;
-            
-            if (currentUser) {
-                let displayName = currentUser.email.split('@')[0];
-                try {
-                    const { data: profile } = await supabaseClient
-                        .from('profiles')
-                        .select('full_name')
-                        .eq('id', currentUser.id)
-                        .maybeSingle();
-                    if (profile?.full_name) displayName = profile.full_name;
-                } catch (err) {
-                    console.log('Profiles table not ready yet, using email name');
-                }
-                
-                if (authLinks) authLinks.style.display = 'none';
-                if (userInfo) userInfo.style.display = 'flex';
-                if (userNameSpan) userNameSpan.textContent = displayName;
-                if (mobileAuthLinks) mobileAuthLinks.style.display = 'none';
-                if (mobileUserInfo) mobileUserInfo.style.display = 'block';
-                if (mobileUserName) mobileUserName.textContent = displayName;
-            } else {
-                if (authLinks) authLinks.style.display = 'flex';
-                if (userInfo) userInfo.style.display = 'none';
-                if (mobileAuthLinks) mobileAuthLinks.style.display = 'block';
-                if (mobileUserInfo) mobileUserInfo.style.display = 'none';
-            }
-        } catch (err) {
-            console.error('Auth UI update error:', err);
+    function redirectToLogin() {
+        if (selectedCourseForRedirect) {
+            localStorage.setItem('redirectAfterLogin', getCourseFileName(selectedCourseForRedirect.name));
+            localStorage.setItem('intendedCourse', JSON.stringify(selectedCourseForRedirect));
         }
+        window.location.href = '/login.html';
+    }
+    
+    function closeLoginPrompt() {
+        loginPromptModal.classList.remove('active');
+        selectedCourseForRedirect = null;
+    }
+    
+    function showLoginPrompt(course) {
+        selectedCourseForRedirect = course;
+        loginPromptModal.classList.add('active');
     }
     
     // ============================================
-    // COURSE FUNCTIONS - MODIFIED FOR REDIRECTS
+    // COURSE ACCESS - REQUIRES LOGIN
     // ============================================
     async function handleCourseAccess(course) {
+        // Check if user is logged in
+        if (!currentUser) {
+            // Show login prompt modal
+            showLoginPrompt(course);
+            return;
+        }
+        
         setLoading(true);
         
-        // Get the correct HTML file for this course
         const courseFile = getCourseFileName(course.name);
         
-        // Store course info in localStorage for the course page to use
         localStorage.setItem('currentCourse', JSON.stringify({
             id: course.id,
             name: course.name,
@@ -883,59 +961,43 @@
         }));
         
         try {
-            // If user is logged in, create enrollment record
-            if (currentUser) {
-                try {
-                    // Check if already enrolled
-                    const { data: existingEnrollment } = await supabaseClient
-                        .from('enrollments')
-                        .select('id')
-                        .eq('user_id', currentUser.id)
-                        .eq('course_id', course.id)
-                        .maybeSingle();
-                    
-                    if (!existingEnrollment) {
-                        // Create enrollment record
-                        const { error: enrollError } = await supabaseClient
-                            .from('enrollments')
-                            .insert([{
-                                user_id: currentUser.id,
-                                course_id: course.id,
-                                status: 'active',
-                                enrolled_at: new Date().toISOString()
-                            }]);
-                        
-                        if (enrollError && enrollError.code !== '42P01') {
-                            console.error('Enrollment error:', enrollError);
-                        } else {
-                            console.log('✅ User enrolled in course:', course.name);
-                        }
-                    }
-                } catch (err) {
-                    console.log('Enrollment tracking optional:', err.message);
-                }
+            // Track enrollment for logged in user
+            try {
+                const { data: existingEnrollment } = await supabaseClient
+                    .from('enrollments')
+                    .select('id')
+                    .eq('user_id', currentUser.id)
+                    .eq('course_id', course.id)
+                    .maybeSingle();
                 
-                // Redirect to the specific course page
-                console.log(`📚 Redirecting to: ${courseFile}`);
-                window.location.href = `/${courseFile}`;
-            } else {
-                // Not logged in - store intended course and redirect to login
-                localStorage.setItem('redirectAfterLogin', courseFile);
-                localStorage.setItem('intendedCourse', JSON.stringify(course));
-                showToast('Please login to access this course', true);
-                setTimeout(() => {
-                    window.location.href = '/login.html';
-                }, 1000);
+                if (!existingEnrollment) {
+                    await supabaseClient
+                        .from('enrollments')
+                        .insert([{
+                            user_id: currentUser.id,
+                            course_id: course.id,
+                            status: 'active',
+                            enrolled_at: new Date().toISOString()
+                        }]);
+                    console.log('✅ User enrolled in course:', course.name);
+                }
+            } catch (err) {
+                console.log('Enrollment tracking optional:', err.message);
             }
+            
+            // Redirect to course page
+            window.location.href = `/${courseFile}`;
         } catch (err) {
-            console.error('Error in course access:', err);
-            // Still try to redirect even if enrollment fails
+            console.error('Error:', err);
             window.location.href = `/${courseFile}`;
         } finally {
             setLoading(false);
         }
     }
     
+    // ============================================
+    // DISPLAY COURSES (Viewable but locked)
+    // ============================================
     function displayCourses(courses) {
         coursesContainer.innerHTML = '';
         
@@ -953,27 +1015,33 @@
         
         courses.forEach(course => {
             const isFree = course.type === 'free' || course.price === 0;
-            const title = course.name;
-            const desc = course.description || 'Professional driver training course';
-            const price = course.price || 0;
-            const icon = course.icon || '🚗';
+            const isLoggedIn = !!currentUser;
             
             const card = document.createElement('div');
             card.className = 'course-card';
+            
+            // Add locked class if not logged in
+            if (!isLoggedIn) {
+                card.classList.add('locked');
+            }
+            
+            card.innerHTML = `
+                <div class="course-icon">${course.icon || '🚗'}</div>
+                ${!isFree ? '<div class="course-badge">PREMIUM</div>' : '<div class="course-badge" style="background:#ff9800;">FREE</div>'}
+                <h3>${escapeHtml(course.name)}</h3>
+                <p>${escapeHtml((course.description || '').substring(0, 80))}${(course.description || '').length > 80 ? '...' : ''}</p>
+                <div class="course-price ${isFree ? 'free' : 'premium'}">${isFree ? 'FREE' : `KES ${(course.price || 0).toLocaleString()}`}</div>
+                <button class="btn-view">
+                    ${isLoggedIn ? 'View Course →' : '<i class="fas fa-lock" style="margin-right: 5px;"></i> Login to Access'}
+                </button>
+                ${!isLoggedIn ? '<div class="lock-icon"><i class="fas fa-lock"></i></div>' : ''}
+            `;
             
             card.onclick = (e) => {
                 e.stopPropagation();
                 handleCourseAccess(course);
             };
             
-            card.innerHTML = `
-                <div class="course-icon">${icon}</div>
-                ${!isFree ? '<div class="course-badge">PREMIUM</div>' : '<div class="course-badge" style="background:#ff9800;">FREE</div>'}
-                <h3>${escapeHtml(title)}</h3>
-                <p>${escapeHtml(desc.substring(0, 80))}${desc.length > 80 ? '...' : ''}</p>
-                <div class="course-price ${isFree ? 'free' : 'premium'}">${isFree ? 'FREE' : `KES ${price.toLocaleString()}`}</div>
-                <button class="btn-view">View Course →</button>
-            `;
             coursesContainer.appendChild(card);
         });
     }
@@ -997,12 +1065,6 @@
                 totalCoursesSpan.textContent = data.length.toString();
                 displayCourses(data);
                 console.log(`✅ Loaded ${data.length} courses from database`);
-                
-                // Log the course mappings for debugging
-                console.log('📋 Course to File Mappings:');
-                data.forEach(course => {
-                    console.log(`   "${course.name}" → ${getCourseFileName(course.name)}`);
-                });
             } else {
                 console.log('No courses found in database');
                 totalCoursesSpan.textContent = '0';
@@ -1011,10 +1073,51 @@
             }
         } catch (error) {
             console.error('Error loading courses:', error);
-            showToast('Failed to connect to database. Please check your connection.', true);
+            showToast('Failed to connect to database.', true);
             displayCourses([]);
         } finally {
             setLoading(false);
+        }
+    }
+    
+    // ============================================
+    // AUTHENTICATION
+    // ============================================
+    async function updateAuthUI() {
+        try {
+            const { data: { session } } = await supabaseClient.auth.getSession();
+            currentUser = session?.user || null;
+            
+            if (currentUser) {
+                let displayName = currentUser.email.split('@')[0];
+                try {
+                    const { data: profile } = await supabaseClient
+                        .from('profiles')
+                        .select('full_name')
+                        .eq('id', currentUser.id)
+                        .maybeSingle();
+                    if (profile?.full_name) displayName = profile.full_name;
+                } catch (err) {
+                    console.log('Profiles table not ready');
+                }
+                
+                if (authLinks) authLinks.style.display = 'none';
+                if (userInfo) userInfo.style.display = 'flex';
+                if (userNameSpan) userNameSpan.textContent = displayName;
+                if (mobileAuthLinks) mobileAuthLinks.style.display = 'none';
+                if (mobileUserInfo) mobileUserInfo.style.display = 'block';
+                if (mobileUserName) mobileUserName.textContent = displayName;
+                
+                // Refresh courses to remove lock icons
+                await fetchCourses();
+            } else {
+                if (authLinks) authLinks.style.display = 'flex';
+                if (userInfo) userInfo.style.display = 'none';
+                if (mobileAuthLinks) mobileAuthLinks.style.display = 'block';
+                if (mobileUserInfo) mobileUserInfo.style.display = 'none';
+            }
+        } catch (err) {
+            console.error('Auth UI update error:', err);
         }
     }
     
@@ -1080,6 +1183,13 @@
         window.location.reload();
     });
     
+    // Close modal when clicking outside
+    loginPromptModal?.addEventListener('click', (e) => {
+        if (e.target === loginPromptModal) {
+            closeLoginPrompt();
+        }
+    });
+    
     async function init() {
         console.log('Initializing MEI DRIVE AFRICA...');
         initMobileMenu();
@@ -1087,6 +1197,10 @@
         await fetchCourses();
         supabaseClient.auth.onAuthStateChange(() => { updateAuthUI(); });
     }
+    
+    // Make functions global for modal buttons
+    window.redirectToLogin = redirectToLogin;
+    window.closeLoginPrompt = closeLoginPrompt;
     
     init();
 </script>
