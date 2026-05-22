@@ -18,7 +18,6 @@
             color: #ffffff;
         }
         
-        /* Navigation */
         .navbar {
             background: rgba(10, 14, 39, 0.95);
             backdrop-filter: blur(10px);
@@ -85,7 +84,6 @@
             color: #ff4444;
         }
         
-        /* Hero Section */
         .hero {
             min-height: 100vh;
             display: flex;
@@ -111,7 +109,6 @@
             font-size: 1.2rem;
         }
         
-        /* Container */
         .container {
             max-width: 1200px;
             margin: 0 auto;
@@ -128,7 +125,6 @@
             color: #00ff88;
         }
         
-        /* Course Grid */
         .courses-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
@@ -225,7 +221,6 @@
             color: #00ff88;
         }
         
-        /* Dashboard */
         .dashboard {
             display: none;
         }
@@ -293,7 +288,6 @@
             color: #0a0e27;
         }
         
-        /* Stats Grid */
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -313,6 +307,7 @@
             font-size: 2rem;
             color: #00ff88;
             margin-bottom: 10px;
+            display: block;
         }
         
         .stat-card h3 {
@@ -320,7 +315,6 @@
             color: #00ff88;
         }
         
-        /* Progress Bar */
         .progress-bar {
             background: rgba(255, 255, 255, 0.1);
             border-radius: 10px;
@@ -336,7 +330,6 @@
             transition: width 0.3s;
         }
         
-        /* Modal */
         .modal {
             display: none;
             position: fixed;
@@ -439,9 +432,9 @@
         <button id="authBtn" class="btn btn-primary" style="width: 100%;">Login</button>
         <p style="text-align: center; margin-top: 15px;">
             <span id="authToggleText">Don't have an account?</span>
-            <a href="#" onclick="toggleAuthMode()" style="color: #00ff88;"> Register</a>
+            <a href="#" onclick="window.toggleAuthMode()" style="color: #00ff88;"> Register</a>
         </p>
-        <button onclick="closeAuthModal()" class="btn btn-outline" style="width: 100%; margin-top: 10px;">Cancel</button>
+        <button onclick="window.closeAuthModal()" class="btn btn-outline" style="width: 100%; margin-top: 10px;">Cancel</button>
     </div>
 </div>
 
@@ -449,10 +442,10 @@
 <div id="landingPage">
     <nav class="navbar">
         <div class="nav-container">
-            <div class="logo" onclick="showLanding()">MEI DRIVE <span>AFRICA</span></div>
+            <div class="logo" onclick="window.showLanding()">MEI DRIVE <span>AFRICA</span></div>
             <div>
-                <button class="btn btn-outline" onclick="showAuthModal('login')" style="margin-right: 10px;">Login</button>
-                <button class="btn btn-primary" onclick="showAuthModal('register')">Register</button>
+                <button class="btn btn-outline" onclick="window.showAuthModal('login')" style="margin-right: 10px;">Login</button>
+                <button class="btn btn-primary" onclick="window.showAuthModal('register')">Register</button>
             </div>
         </div>
     </nav>
@@ -477,7 +470,7 @@
 <div id="dashboard" class="dashboard">
     <nav class="navbar">
         <div class="nav-container">
-            <div class="logo" onclick="showLanding()">MEI DRIVE <span>AFRICA</span></div>
+            <div class="logo" onclick="window.showLanding()">MEI DRIVE <span>AFRICA</span></div>
             <button class="btn btn-danger" id="logoutBtn">Logout</button>
         </div>
     </nav>
@@ -490,15 +483,14 @@
         </div>
         
         <ul class="sidebar-menu">
-            <li class="active" onclick="showSection('overview')">📊 Overview</li>
-            <li onclick="showSection('mycourses')">📚 My Courses</li>
-            <li onclick="showSection('allcourses')">🛒 All Courses</li>
-            <li onclick="showSection('completed')">🏆 Completed</li>
+            <li class="active" onclick="window.showSection('overview', this)">📊 Overview</li>
+            <li onclick="window.showSection('mycourses', this)">📚 My Courses</li>
+            <li onclick="window.showSection('allcourses', this)">🛒 All Courses</li>
+            <li onclick="window.showSection('completed', this)">🏆 Completed</li>
         </ul>
     </div>
     
     <div class="dashboard-main">
-        <!-- Overview Section -->
         <div id="overviewSection">
             <h2>Welcome Back, <span id="welcomeName">Learner</span>! 🎉</h2>
             
@@ -529,20 +521,17 @@
             <div id="previewCourses" class="courses-grid"></div>
         </div>
         
-        <!-- My Courses Section -->
         <div id="mycoursesSection" style="display: none;">
             <h2>My Enrolled Courses</h2>
             <div id="myCoursesList" class="courses-grid"></div>
         </div>
         
-        <!-- All Courses Section -->
         <div id="allcoursesSection" style="display: none;">
             <h2>All Available Courses</h2>
             <p style="color: #a0a0c0; margin-bottom: 20px;">Browse and enroll in courses to advance your driving skills.</p>
             <div id="allCoursesList" class="courses-grid"></div>
         </div>
         
-        <!-- Completed Section -->
         <div id="completedSection" style="display: none;">
             <h2>Completed Courses</h2>
             <div id="completedList" class="courses-grid"></div>
@@ -551,17 +540,28 @@
 </div>
 
 <script>
+    // Supabase configuration - declared ONCE
     const SUPABASE_URL = 'https://jeksrwrzzrczamxijvwl.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Impla3Nyd3J6enJjemFteGlqdndsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg2NzYyMjAsImV4cCI6MjA5NDI1MjIyMH0.1poYpJKNFEVe2NTBkXBTH2bIHGk2yT8aqCU-OlJc4vs';
     
-    let supabase;
+    // Global variables
+    let _supabase = null;
     let currentUser = null;
     let allCourses = [];
     let userEnrollments = [];
     let authMode = 'login';
     
+    // Initialize Supabase
+    function initSupabase() {
+        if (!_supabase) {
+            _supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        }
+        return _supabase;
+    }
+    
+    // Main initialization
     async function init() {
-        supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        const supabase = initSupabase();
         
         await loadCourses();
         await checkSession();
@@ -585,6 +585,7 @@
     }
     
     async function checkSession() {
+        const supabase = initSupabase();
         const { data: { session } } = await supabase.auth.getSession();
         if (session) {
             currentUser = session.user;
@@ -596,6 +597,7 @@
     }
     
     async function loadCourses() {
+        const supabase = initSupabase();
         const { data, error } = await supabase.from('courses').select('*').order('id');
         if (!error && data) {
             allCourses = data;
@@ -607,6 +609,7 @@
     
     async function loadEnrollments() {
         if (!currentUser) return;
+        const supabase = initSupabase();
         const { data, error } = await supabase.from('enrollments').select('*').eq('user_id', currentUser.id);
         if (!error && data) {
             userEnrollments = data;
@@ -629,6 +632,7 @@
             return;
         }
         
+        const supabase = initSupabase();
         const { error } = await supabase.from('enrollments').insert([{
             user_id: currentUser.id,
             course_id: courseId,
@@ -640,7 +644,7 @@
         } else {
             await loadEnrollments();
             showToast('Enrolled successfully! 🎉', '#00ff88');
-            showSection('mycourses');
+            showSection('mycourses', document.querySelector('.sidebar-menu li:nth-child(2)'));
         }
     }
     
@@ -649,6 +653,7 @@
         if (!enrollment) return;
         
         const progress = Math.min(100, newProgress);
+        const supabase = initSupabase();
         const { error } = await supabase.from('enrollments')
             .update({ progress, last_accessed: new Date() })
             .eq('id', enrollment.id);
@@ -669,11 +674,11 @@
         document.getElementById('statCompleted').textContent = completed;
         document.getElementById('statProgress').textContent = avg + '%';
         
-        // Update profile display
         if (currentUser) {
-            document.getElementById('profileName').textContent = currentUser.email.split('@')[0];
+            const name = currentUser.email.split('@')[0];
+            document.getElementById('profileName').textContent = name;
             document.getElementById('profileEmail').textContent = currentUser.email;
-            document.getElementById('welcomeName').textContent = currentUser.email.split('@')[0];
+            document.getElementById('welcomeName').textContent = name;
         }
     }
     
@@ -695,7 +700,7 @@
                 <div class="course-price ${course.price === 0 ? 'price-free' : 'price-premium'}">
                     ${course.price === 0 ? 'FREE' : `KES ${course.price.toLocaleString()}`}
                 </div>
-                <button class="btn-enroll" onclick="enroll(${course.id})">Enroll Now →</button>
+                <button class="btn-enroll" onclick="window.enroll(${course.id})">Enroll Now →</button>
             </div>
         `).join('');
     }
@@ -720,7 +725,7 @@
                         <p>${escapeHtml((course.description || '').substring(0, 100))}...</p>
                         <div class="progress-bar"><div class="progress-fill" style="width: ${progress}%"></div></div>
                         <p style="text-align: center; margin: 10px 0;">${progress}% Complete</p>
-                        <button class="btn-continue" onclick="updateProgress(${course.id}, ${progress + 10})">
+                        <button class="btn-continue" onclick="window.updateProgress(${course.id}, ${progress + 10})">
                             ${progress === 100 ? 'Review Course' : 'Continue Learning'} →
                         </button>
                     </div>
@@ -737,7 +742,7 @@
                         <div class="course-price ${course.price === 0 ? 'price-free' : 'price-premium'}">
                             ${course.price === 0 ? 'FREE' : `KES ${course.price.toLocaleString()}`}
                         </div>
-                        <button class="btn-enroll" onclick="enroll(${course.id})">Enroll Now →</button>
+                        <button class="btn-enroll" onclick="window.enroll(${course.id})">Enroll Now →</button>
                     </div>
                 `;
             }
@@ -763,7 +768,7 @@
                     <h3>${escapeHtml(course.name)}</h3>
                     <div class="progress-bar"><div class="progress-fill" style="width: ${progress}%"></div></div>
                     <p style="text-align: center; margin: 10px 0;">${progress}% Complete</p>
-                    <button class="btn-continue" onclick="updateProgress(${course.id}, ${progress + 10})">
+                    <button class="btn-continue" onclick="window.updateProgress(${course.id}, ${progress + 10})">
                         ${progress === 100 ? 'Review Course' : 'Continue Learning'} →
                     </button>
                 </div>
@@ -776,7 +781,7 @@
         const enrolledCourses = allCourses.filter(c => userEnrollments.some(e => e.course_id === c.id)).slice(0, 3);
         
         if (enrolledCourses.length === 0) {
-            container.innerHTML = '<div class="course-card"><p>No enrolled courses. <a href="#" onclick="showSection(\'allcourses\')" style="color: #00ff88;">Browse courses →</a></p></div>';
+            container.innerHTML = '<div class="course-card"><p>No enrolled courses. <a href="#" onclick="window.showSection(\'allcourses\', this)" style="color: #00ff88;">Browse courses →</a></p></div>';
             return;
         }
         
@@ -788,7 +793,7 @@
                     <div class="course-icon">${course.icon || '📚'}</div>
                     <h3>${escapeHtml(course.name)}</h3>
                     <div class="progress-bar"><div class="progress-fill" style="width: ${progress}%"></div></div>
-                    <button class="btn-continue" onclick="updateProgress(${course.id}, ${progress + 10})">Continue →</button>
+                    <button class="btn-continue" onclick="window.updateProgress(${course.id}, ${progress + 10})">Continue →</button>
                 </div>
             `;
         }).join('');
@@ -826,6 +831,8 @@
             return;
         }
         
+        const supabase = initSupabase();
+        
         try {
             if (authMode === 'login') {
                 const { error } = await supabase.auth.signInWithPassword({ email, password });
@@ -842,14 +849,14 @@
         }
     }
     
-    function showSection(section) {
+    function showSection(section, element) {
         document.getElementById('overviewSection').style.display = section === 'overview' ? 'block' : 'none';
         document.getElementById('mycoursesSection').style.display = section === 'mycourses' ? 'block' : 'none';
         document.getElementById('allcoursesSection').style.display = section === 'allcourses' ? 'block' : 'none';
         document.getElementById('completedSection').style.display = section === 'completed' ? 'block' : 'none';
         
         document.querySelectorAll('.sidebar-menu li').forEach(li => li.classList.remove('active'));
-        event.target.classList.add('active');
+        if (element) element.classList.add('active');
         
         if (section === 'allcourses') renderAllCourses();
         if (section === 'mycourses') renderMyCourses();
@@ -870,7 +877,7 @@
         renderAllCourses();
         renderPreview();
         renderCompleted();
-        showSection('overview');
+        showSection('overview', document.querySelector('.sidebar-menu li.active'));
     }
     
     function showAuthModal(mode) {
@@ -906,7 +913,7 @@
         return str.replace(/[&<>]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[m]));
     }
     
-    // Make functions global
+    // Attach to window object
     window.enroll = enroll;
     window.updateProgress = updateProgress;
     window.showAuthModal = showAuthModal;
@@ -916,6 +923,7 @@
     window.showDashboard = showDashboard;
     window.showSection = showSection;
     
+    // Start the app
     init();
 </script>
 </body>
