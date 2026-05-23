@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz Bank - MEI Drive Africa</title>
+    
+    <!-- Load Supabase library and singleton -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase.js"></script>
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #0a0e27;
+            color: #ffffff;
+        }
+        .navbar {
+            background: #1a1f3a;
+            padding: 1rem 2rem;
+            border-bottom: 1px solid rgba(0, 255, 136, 0.2);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #00ff88;
+            text-decoration: none;
+        }
+        .logo span { color: white; }
+        .back-btn {
+            background: transparent;
+            border: 1px solid #00ff88;
+            color: #00ff88;
+            padding: 8px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            text-decoration: none;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 30px 20px;
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        .stat-card {
+            background: #1a1f3a;
+            padding: 25px;
+            border-radius: 16px;
+            text-align: center;
+            border: 1px solid rgba(0, 255, 136, 0.1);
+        }
+        .stat-number { font-size: 2.5rem; font-weight: bold; color: #00ff88; }
+        .stat-label { color: #a0a0c0; margin-top: 5px; }
+        .quiz-table {
+            width: 100%;
+            background: #1a1f3a;
+            border-radius: 16px;
+            overflow: hidden;
+            border: 1px solid rgba(0, 255, 136, 0.1);
+        }
+        .quiz-table th, .quiz-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .quiz-table th {
+            background: #00ff88;
+            color: #0a0e27;
+        }
+        .btn-add {
+            background: #00ff88;
+            color: #0a0e27;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-bottom: 20px;
+            font-weight: bold;
+        }
+        .btn-delete {
+            background: #ff4444;
+            color: white;
+            padding: 5px 10px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .loading { text-align: center; padding: 40px; }
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid rgba(0,255,136,0.2);
+            border-top-color: #00ff88;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin: 0 auto;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        .modal.active { display: flex; }
+        .modal-content {
+            background: #1a1f3a;
+            padding: 30px;
+            border-radius: 16px;
+            width: 500px;
+            max-width: 90%;
+            border: 1px solid #00ff88;
+        }
+        .modal-content input, .modal-content select, .modal-content textarea {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            background: #0a0e27;
+            border: 1px solid #00ff88;
+            border-radius: 8px;
+            color: white;
+        }
+        .modal-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        .modal-buttons button {
+            flex: 1;
+            padding: 10px;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+        .footer {
+            text-align: center;
+            padding: 30px;
+            color: #a0a0c0;
+            font-size: 0.8rem;
+            border-top: 1px solid rgba(0,255,136,0.1);
+            margin-top: 40px;
+        }
+        @media (max-width: 768px) {
+            .stats-grid { grid-template-columns: 1fr; }
+            .quiz-table { font-size: 0.8rem; }
+            .quiz-table th, .quiz-table td { padding: 8px; }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="/admin-dashboard.html" class="logo">MEI DRIVE <span>AFRICA</span></a>
+            <a href="/admin-dashboard.html" class="back-btn">← Back to Dashboard</a>
+        </div>
+    </nav>
+    
+    <div class="container">
+        <h1>Quiz Bank</h1>
+        <p>Manage, create, and generate driving test questions</p>
+        
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-number" id="totalQuestions">0</div>
+                <div class="stat-label">Total Questions</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="totalCategories">0</div>
+                <div class="stat-label">Categories</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="avgDifficulty">0</div>
+                <div class="stat-label">Avg Difficulty</div>
+            </div>
+        </div>
+        
+        <button class="btn-add" onclick="openAddModal()">+ Add New Question</button>
+        
+        <div id="quizContent">
+            <div class="loading"><div class="spinner"></div> Loading quiz questions...</div>
+        </div>
+    </div>
+    
+    <!-- Add/Edit Modal -->
+    <div id="quizModal" class="modal">
+        <div class="modal-content">
+            <h3 id="modalTitle">Add New Question</h3>
+            <input type="hidden" id="questionId">
+            <select id="category">
+                <option value="">Select Category</option>
+                <option value="General">General Knowledge</option>
+                <option value="Traffic Rules">Traffic Rules</option>
+                <option value="Safety">Safety</option>
+                <option value="Vehicle">Vehicle Operation</option>
+            </select>
+            <textarea id="question" rows="3" placeholder="Enter question here..."></textarea>
+            <input type="text" id="optionA" placeholder="Option A">
+            <input type="text" id="optionB" placeholder="Option B">
+            <input type="text" id="optionC" placeholder="Option C">
+            <input type="text" id="optionD" placeholder="Option D">
+            <select id="correctAnswer">
+                <option value="">Select Correct Answer</option>
+                <option value="A">A</option>
+                <option value="B">B</option>
+                <option value="C">C</option>
+                <option value="D">D</option>
+            </select>
+            <select id="difficulty">
+                <option value="Easy">Easy</option>
+                <option value="Medium">Medium</option>
+                <option value="Hard">Hard</option>
+            </select>
+            <div class="modal-buttons">
+                <button onclick="saveQuestion()" style="background: #00ff88;">Save</button>
+                <button onclick="closeModal()" style="background: #ff4444;">Cancel</button>
+            </div>
+        </div>
+    </div>
+    
+    <div class="footer">
+        <p>© 2026 MEI DRIVE AFRICA | NTSA Approved Driver Training</p>
+    </div>
+
+    <script>
+        // ✅ CORRECT - Use existing Supabase instance (NO createClient!)
+        const supabase = window._supabase || window.getSupabase?.() || window.supabase;
+        
+        if (!supabase) {
+            console.error('❌ Supabase not loaded!');
+            document.getElementById('quizContent').innerHTML = '<div class="error-message" style="text-align:center; padding:40px;"><h3>Error loading database</h3><p>Please refresh the page.</p></div>';
+        } else {
+            console.log('✅ Quiz bank loaded, Supabase ready');
+        }
+        
+        let allQuestions = [];
+        
+        async function loadQuestions() {
+            if (!supabase) return;
+            
+            try {
+                const { data, error } = await supabase
+                    .from('quiz_questions')
+                    .select('*')
+                    .order('created_at', { ascending: false });
+                
+                if (error) throw error;
+                
+                allQuestions = data || [];
+                updateStats();
+                renderQuestions();
+            } catch (err) {
+                console.error('Error loading questions:', err);
+                document.getElementById('quizContent').innerHTML = `
+                    <div style="text-align:center; padding:40px;">
+                        <p>No quiz questions found. Click "Add New Question" to get started.</p>
+                    </div>
+                `;
+            }
+        }
+        
+        function updateStats() {
+            const total = allQuestions.length;
+            const categories = [...new Set(allQuestions.map(q => q.category).filter(Boolean))];
+            const avgDifficulty = allQuestions.length > 0 
+                ? Math.round(allQuestions.reduce((sum, q) => {
+                    const diff = { Easy: 1, Medium: 2, Hard: 3 };
+                    return sum + (diff[q.difficulty] || 1);
+                  }, 0) / allQuestions.length)
+                : 0;
+            
+            document.getElementById('totalQuestions').textContent = total;
+            document.getElementById('totalCategories').textContent = categories.length;
+            document.getElementById('avgDifficulty').textContent = avgDifficulty;
+        }
+        
+        function renderQuestions() {
+            const container = document.getElementById('quizContent');
+            
+            if (allQuestions.length === 0) {
+                container.innerHTML = `
+                    <div style="text-align:center; padding:40px;">
+                        <p>No quiz questions yet. Click "Add New Question" to create one.</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            container.innerHTML = `
+                <table class="quiz-table">
+                    <thead>
+                        <tr>
+                            <th>Question</th>
+                            <th>Category</th>
+                            <th>Difficulty</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${allQuestions.map(q => `
+                            <tr>
+                                <td>${escapeHtml(q.question?.substring(0, 80))}${q.question?.length > 80 ? '...' : ''}</td>
+                                <td>${escapeHtml(q.category || 'General')}</td>
+                                <td>${escapeHtml(q.difficulty || 'Medium')}</td>
+                                <td>
+                                    <button class="btn-delete" onclick="deleteQuestion(${q.id})">Delete</button>
+                                </td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
+        }
+        
+        window.openAddModal = () => {
+            document.getElementById('modalTitle').textContent = 'Add New Question';
+            document.getElementById('questionId').value = '';
+            document.getElementById('category').value = '';
+            document.getElementById('question').value = '';
+            document.getElementById('optionA').value = '';
+            document.getElementById('optionB').value = '';
+            document.getElementById('optionC').value = '';
+            document.getElementById('optionD').value = '';
+            document.getElementById('correctAnswer').value = '';
+            document.getElementById('difficulty').value = 'Medium';
+            document.getElementById('quizModal').classList.add('active');
+        };
+        
+        window.closeModal = () => {
+            document.getElementById('quizModal').classList.remove('active');
+        };
+        
+        window.saveQuestion = async () => {
+            const id = document.getElementById('questionId').value;
+            const data = {
+                category: document.getElementById('category').value,
+                question: document.getElementById('question').value,
+                option_a: document.getElementById('optionA').value,
+                option_b: document.getElementById('optionB').value,
+                option_c: document.getElementById('optionC').value,
+                option_d: document.getElementById('optionD').value,
+                correct_answer: document.getElementById('correctAnswer').value,
+                difficulty: document.getElementById('difficulty').value,
+                created_at: new Date().toISOString()
+            };
+            
+            if (!data.question || !data.option_a || !data.option_b || !data.correct_answer) {
+                alert('Please fill in required fields');
+                return;
+            }
+            
+            try {
+                if (id) {
+                    await supabase.from('quiz_questions').update(data).eq('id', id);
+                } else {
+                    await supabase.from('quiz_questions').insert([data]);
+                }
+                closeModal();
+                await loadQuestions();
+                alert(id ? 'Question updated!' : 'Question added!');
+            } catch (err) {
+                alert('Error saving: ' + err.message);
+            }
+        };
+        
+        window.deleteQuestion = async (id) => {
+            if (confirm('Delete this question permanently?')) {
+                try {
+                    await supabase.from('quiz_questions').delete().eq('id', id);
+                    await loadQuestions();
+                    alert('Question deleted');
+                } catch (err) {
+                    alert('Error deleting: ' + err.message);
+                }
+            }
+        };
+        
+        function escapeHtml(str) {
+            if (!str) return '';
+            return str.replace(/[&<>]/g, m => {
+                if (m === '&') return '&amp;';
+                if (m === '<') return '&lt;';
+                if (m === '>') return '&gt;';
+                return m;
+            });
+        }
+        
+        loadQuestions();
+    </script>
+</body>
+</html>
