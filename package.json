@@ -1,9 +1,17 @@
 {
-    "scripts": {
-        "dev": "vite",
-        "build": "vite build",
-        "build:esbuild": "node build.js",
-        "preview": "vite preview",
-        "analyze": "vite build --mode analyze"
-    }
+  "name": "mei-drive-africa",
+  "version": "1.0.0",
+  "description": "NTSA Approved Driver Training Platform",
+  "main": "index.html",
+  "scripts": {
+    "dev": "npx serve .",
+    "build": "echo 'No build step required'",
+    "start": "npx serve . -l 3000"
+  },
+  "keywords": ["driving", "training", "ntsa", "kenya", "supabase"],
+  "author": "MEI DRIVE AFRICA",
+  "license": "MIT",
+  "devDependencies": {
+    "serve": "^14.2.0"
+  }
 }
