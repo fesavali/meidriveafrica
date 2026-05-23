@@ -4,6 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>MEI DRIVE AFRICA | NTSA Driver Training</title>
+    <meta name="description" content="NTSA-approved driver training platform. Practice daily, revise smarter, pass with confidence.">
+    <meta name="keywords" content="NTSA, driving school, driver training, Kenya, driving license, learner hub">
+    <meta name="author" content="MEI DRIVE AFRICA">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%2300ff88'/%3E%3Ctext x='50' y='67' font-size='50' text-anchor='middle' fill='%230a192f' font-weight='bold'%3EM%3C/text%3E%3C/svg%3E">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.0/dist/umd/supabase.min.js"></script>
@@ -216,7 +220,6 @@
         .quiz-option:hover { background: #1a2a40; }
         .quiz-option.selected { background: var(--primary); color: #0a192f; font-weight: bold; }
         .unit-content { white-space: pre-wrap; line-height: 1.6; margin: 20px 0; }
-        .lock-icon { margin-left: 8px; font-size: 12px; color: #ffaa44; }
         @media (max-width: 768px) { .hero h1 { font-size: 2rem; } .grid { grid-template-columns: 1fr; } }
     </style>
 </head>
@@ -254,13 +257,10 @@
     let currentRoute = 'home';
     let routeParams = {};
     let coursesList = [];
-    
-    // Quiz state
     let currentQuizQuestions = [];
     let currentQuizIndex = 0;
     let userAnswers = [];
     
-    // ==================== HELPER FUNCTIONS ====================
     function showToast(msg, type = 'info') {
         const container = document.getElementById('toast-container');
         const toast = document.createElement('div');
@@ -272,181 +272,103 @@
     
     function escapeHtml(str) { if (!str) return ''; return str.replace(/[&<>]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[m])); }
     
-    // ==================== FETCH FROM SUPABASE ====================
     async function fetchCourses() {
         const { data, error } = await supabase.from('courses').select('*').order('id');
-        if (error) {
-            console.error("Error fetching courses:", error);
-            return [];
-        }
+        if (error) return [];
         return data;
     }
     
     async function fetchUnits() {
-        const { data, error } = await supabase.from('units').select('*').order('unit_number', { ascending: true });
-        if (error) {
-            console.error("Error fetching units:", error);
-            return [];
-        }
+        const { data, error } = await supabase.from('units').select('*').order('unit_number');
+        if (error) return [];
         return data;
     }
     
     async function fetchUnitById(unitId) {
         const { data, error } = await supabase.from('units').select('*').eq('id', unitId).single();
-        if (error) {
-            console.error("Error fetching unit:", error);
-            return null;
-        }
+        if (error) return null;
         return data;
     }
     
     async function fetchSigns() {
         const { data, error } = await supabase.from('traffic_signs').select('*').order('category');
-        if (error) {
-            console.error("Error fetching signs:", error);
-            return [];
-        }
+        if (error) return [];
         return data;
     }
     
     async function fetchQuizQuestions() {
         const { data, error } = await supabase.from('quiz_questions').select('*');
-        if (error) {
-            console.error("Error fetching quiz:", error);
-            return [];
-        }
+        if (error) return [];
         return data;
     }
     
     async function fetchSafetyLibrary() {
         const { data, error } = await supabase.from('safety_library').select('*').order('category');
-        if (error) {
-            console.error("Error fetching safety library:", error);
-            return [];
-        }
+        if (error) return [];
         return data;
     }
     
-    async function fetchModelTownRules() {
-        const { data, error } = await supabase.from('model_town_rules').select('*');
-        if (error) {
-            console.error("Error fetching model town rules:", error);
-            return [];
-        }
-        return data;
-    }
-    
-    // ==================== SUPABASE INITIALIZATION ====================
     async function initSupabase() {
         if (!window.supabase) {
-            showToast("Loading Supabase... Please wait or refresh.", "warning");
             await new Promise(resolve => setTimeout(resolve, 1000));
             if (!window.supabase) {
-                showToast("Failed to load Supabase library. Check your internet connection.", "error");
+                showToast("Failed to load Supabase. Please refresh.", "error");
                 return false;
             }
         }
         
         supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-        
-        // Fetch courses from Supabase
         coursesList = await fetchCourses();
-        
-        // Get current session (optional - user can browse without login)
         const { data: { session } } = await supabase.auth.getSession();
         if (session) await handleUserLogin(session.user);
         updateAuthUI();
         renderCurrentRoute();
-        
-        // Listen for auth changes
         supabase.auth.onAuthStateChange(async (event, session) => {
             if (event === 'SIGNED_IN' && session) await handleUserLogin(session.user);
             else if (event === 'SIGNED_OUT') handleUserLogout();
             updateAuthUI();
             renderCurrentRoute();
         });
-        
         return true;
     }
     
     async function handleUserLogin(user) {
         currentUser = user;
-        console.log("User logged in:", user.email);
-        
-        // Ensure profile exists
         try {
-            const { data: existing } = await supabase
-                .from('user_profiles')
-                .select('id')
-                .eq('id', user.id)
-                .maybeSingle();
-                
+            const { data: existing } = await supabase.from('user_profiles').select('id').eq('id', user.id).maybeSingle();
             if (!existing) {
-                await supabase
-                    .from('user_profiles')
-                    .insert({ id: user.id, email: user.email, full_name: user.user_metadata?.full_name || '', is_admin: false });
-                console.log("Profile created for", user.email);
+                await supabase.from('user_profiles').insert({ id: user.id, email: user.email, full_name: user.user_metadata?.full_name || '' });
             }
-        } catch(e) { console.warn("Profile handling error:", e); }
-        
-        // Check admin status
+        } catch(e) { console.warn(e); }
         try {
-            const { data, error } = await supabase.rpc('is_admin_user');
-            if (!error) isAdmin = !!data;
-        } catch(e) { console.warn("Admin check failed:", e); }
+            const { data } = await supabase.rpc('is_admin_user');
+            isAdmin = !!data;
+        } catch(e) {}
     }
     
-    function handleUserLogout() {
-        currentUser = null;
-        isAdmin = false;
-        console.log("User logged out");
-    }
+    function handleUserLogout() { currentUser = null; isAdmin = false; }
     
-    // ==================== AUTH FUNCTIONS ====================
     window.signIn = async function(email, password) {
-        if (!supabase) { showToast("System not ready. Please refresh.", "error"); return false; }
         const { error } = await supabase.auth.signInWithPassword({ email, password });
-        if (error) {
-            showToast(error.message, 'error');
-            return false;
-        }
+        if (error) { showToast(error.message, 'error'); return false; }
         showToast('Logged in successfully!', 'success');
         return true;
     };
     
     window.signUp = async function(email, password, fullName) {
-        if (!supabase) { showToast("System not ready. Please refresh.", "error"); return false; }
-        const { error } = await supabase.auth.signUp({ 
-            email, 
-            password, 
-            options: { data: { full_name: fullName } } 
-        });
-        if (error) {
-            showToast(error.message, 'error');
-            return false;
-        }
+        const { error } = await supabase.auth.signUp({ email, password, options: { data: { full_name: fullName } } });
+        if (error) { showToast(error.message, 'error'); return false; }
         showToast('Account created! Please check your email to verify.', 'success');
         return true;
     };
     
-    window.signOut = async function() {
-        await supabase.auth.signOut();
-        showToast('Logged out', 'info');
-        navigate('home');
-    };
-    
-    window.closeModal = function() {
-        const modal = document.getElementById('authModal');
-        if (modal) modal.remove();
-    };
+    window.signOut = async function() { await supabase.auth.signOut(); showToast('Logged out', 'info'); navigate('home'); };
+    window.closeModal = function() { document.getElementById('authModal')?.remove(); };
     
     window.handleLoginSubmit = async function() {
         const email = document.getElementById('loginEmail')?.value;
         const password = document.getElementById('loginPassword')?.value;
-        if (!email || !password) {
-            showToast("Please enter email and password", "warning");
-            return;
-        }
+        if (!email || !password) { showToast("Please enter email and password", "warning"); return; }
         const success = await window.signIn(email, password);
         if (success) window.closeModal();
     };
@@ -455,48 +377,20 @@
         const name = document.getElementById('signupName')?.value;
         const email = document.getElementById('signupEmail')?.value;
         const password = document.getElementById('signupPassword')?.value;
-        if (!name || !email || !password) {
-            showToast("Please fill all fields", "warning");
-            return;
-        }
+        if (!name || !email || !password) { showToast("Please fill all fields", "warning"); return; }
         const success = await window.signUp(email, password, name);
         if (success) window.closeModal();
     };
     
     function showLoginModal() {
-        const existing = document.getElementById('authModal');
-        if (existing) existing.remove();
-        
-        const modalHtml = `
-            <div class="modal active" id="authModal">
-                <div class="modal-content">
-                    <h2>Sign In</h2>
-                    <input type="email" id="loginEmail" placeholder="Email" autocomplete="email">
-                    <input type="password" id="loginPassword" placeholder="Password" autocomplete="current-password">
-                    <button class="btn" onclick="handleLoginSubmit()">Login</button>
-                    <button class="btn-outline btn" onclick="closeModal()">Cancel</button>
-                    <p style="margin-top: 12px; font-size: 12px;">Don't have an account? <a href="#" onclick="showSignupModal(); return false;">Sign up</a></p>
-                </div>
-            </div>`;
+        document.getElementById('authModal')?.remove();
+        const modalHtml = `<div class="modal active" id="authModal"><div class="modal-content"><h2>Sign In</h2><input type="email" id="loginEmail" placeholder="Email"><input type="password" id="loginPassword" placeholder="Password"><button class="btn" onclick="handleLoginSubmit()">Login</button><button class="btn-outline btn" onclick="closeModal()">Cancel</button><p style="margin-top:12px;font-size:12px;">Don't have an account? <a href="#" onclick="showSignupModal(); return false;">Sign up</a></p></div></div>`;
         document.body.insertAdjacentHTML('beforeend', modalHtml);
     }
     
     function showSignupModal() {
-        const existing = document.getElementById('authModal');
-        if (existing) existing.remove();
-        
-        const modalHtml = `
-            <div class="modal active" id="authModal">
-                <div class="modal-content">
-                    <h2>Sign Up</h2>
-                    <input type="text" id="signupName" placeholder="Full Name" autocomplete="name">
-                    <input type="email" id="signupEmail" placeholder="Email" autocomplete="email">
-                    <input type="password" id="signupPassword" placeholder="Password" autocomplete="new-password">
-                    <button class="btn" onclick="handleSignupSubmit()">Sign Up</button>
-                    <button class="btn-outline btn" onclick="closeModal()">Cancel</button>
-                    <p style="margin-top: 12px; font-size: 12px;">Already have an account? <a href="#" onclick="showLoginModal(); return false;">Login</a></p>
-                </div>
-            </div>`;
+        document.getElementById('authModal')?.remove();
+        const modalHtml = `<div class="modal active" id="authModal"><div class="modal-content"><h2>Sign Up</h2><input type="text" id="signupName" placeholder="Full Name"><input type="email" id="signupEmail" placeholder="Email"><input type="password" id="signupPassword" placeholder="Password"><button class="btn" onclick="handleSignupSubmit()">Sign Up</button><button class="btn-outline btn" onclick="closeModal()">Cancel</button><p style="margin-top:12px;font-size:12px;">Already have an account? <a href="#" onclick="showLoginModal(); return false;">Login</a></p></div></div>`;
         document.body.insertAdjacentHTML('beforeend', modalHtml);
     }
     
@@ -504,212 +398,83 @@
         const container = document.getElementById('authButtons');
         const dashboardBtn = document.getElementById('dashboardNavBtn');
         if (!container) return;
-        
         if (currentUser) {
-            container.innerHTML = `
-                <div class="user-badge"><i class="fas fa-user"></i> ${escapeHtml(currentUser.email?.split('@')[0])}</div>
-                <button onclick="signOut()">Logout</button>
-                ${isAdmin ? '<button class="btn-primary-nav" onclick="navigate(\'admin\')">Admin</button>' : ''}
-            `;
+            container.innerHTML = `<div class="user-badge"><i class="fas fa-user"></i> ${escapeHtml(currentUser.email?.split('@')[0])}</div><button onclick="signOut()">Logout</button>${isAdmin ? '<button class="btn-primary-nav" onclick="navigate(\'admin\')">Admin</button>' : ''}`;
             if (dashboardBtn) dashboardBtn.style.display = 'inline-block';
         } else {
-            container.innerHTML = `
-                <button onclick="showLoginModal()">Login</button>
-                <button class="btn-primary-nav" onclick="showSignupModal()">Sign Up</button>
-            `;
+            container.innerHTML = `<button onclick="showLoginModal()">Login</button><button class="btn-primary-nav" onclick="showSignupModal()">Sign Up</button>`;
             if (dashboardBtn) dashboardBtn.style.display = 'none';
         }
     }
     
-    // ==================== PAGE RENDERING (ALL PUBLICLY ACCESSIBLE) ====================
     async function renderHome() {
-        const html = `
-            <section class="hero">
-                <div class="hero-content">
-                    <h1>Practice Daily.<br><span>Revise Smarter. Pass with Confidence.</span></h1>
-                    <p>For Learners and Experienced Drivers — Refresh Your Skills with MEI DRIVE AFRICA. NTSA-approved courses.</p>
-                    <div>
-                        <button class="btn btn-primary" onclick="navigate('courses')"><i class="fas fa-road"></i> Explore Courses</button>
-                        <button class="btn btn-outline" onclick="showLoginModal()"><i class="fas fa-user-graduate"></i> Get Started</button>
-                    </div>
-                </div>
-            </section>
-            <div class="stats-bar">
-                <div class="stat-item"><h3>10K+</h3><p>Students</p></div>
-                <div class="stat-item"><h3>${coursesList.length}</h3><p>Courses</p></div>
-                <div class="stat-item"><h3>98%</h3><p>Pass Rate</p></div>
-            </div>
-            <div class="container section">
-                <h2 class="section-title">Our <span>Courses</span></h2>
-                <div class="grid" id="homeCoursesGrid"></div>
-            </div>
-        `;
+        const html = `<section class="hero"><div class="hero-content"><h1>Practice Daily.<br><span>Revise Smarter. Pass with Confidence.</span></h1><p>For Learners and Experienced Drivers — Refresh Your Skills with MEI DRIVE AFRICA. NTSA-approved courses.</p><div><button class="btn btn-primary" onclick="navigate('courses')"><i class="fas fa-road"></i> Explore Courses</button><button class="btn btn-outline" onclick="showLoginModal()"><i class="fas fa-user-graduate"></i> Get Started</button></div></div></section><div class="stats-bar"><div class="stat-item"><h3>10K+</h3><p>Students</p></div><div class="stat-item"><h3>${coursesList.length}</h3><p>Courses</p></div><div class="stat-item"><h3>98%</h3><p>Pass Rate</p></div></div><div class="container section"><h2 class="section-title">Our <span>Courses</span></h2><div class="grid" id="homeCoursesGrid"></div></div>`;
         document.getElementById('page-content').innerHTML = html;
-        document.getElementById('homeCoursesGrid').innerHTML = coursesList.map(c => `
-            <div class="card" onclick="navigateToCourse('${c.type}')">
-                <i class="fas ${c.icon || 'fa-book'}" style="font-size:2rem; color:var(--primary);"></i>
-                <h3>${escapeHtml(c.name)}</h3>
-                <p>${escapeHtml(c.description)}</p>
-                <div class="module-price">${c.price === 0 ? 'FREE' : `KES ${c.price.toLocaleString()}`}</div>
-            </div>
-        `).join('');
+        document.getElementById('homeCoursesGrid').innerHTML = coursesList.map(c => `<div class="card" onclick="navigateToCourse('${c.type}')"><i class="fas ${c.icon || 'fa-book'}" style="font-size:2rem; color:var(--primary);"></i><h3>${escapeHtml(c.name)}</h3><p>${escapeHtml(c.description)}</p><div class="module-price">${c.price === 0 ? 'FREE' : `KES ${c.price.toLocaleString()}`}</div></div>`).join('');
     }
     
     async function renderCourses() {
-        document.getElementById('page-content').innerHTML = `
-            <div class="container" style="padding-top:100px;">
-                <h1 class="section-title">Our <span>Courses</span></h1>
-                <div class="grid" id="coursesGrid"></div>
-            </div>
-        `;
-        document.getElementById('coursesGrid').innerHTML = coursesList.map(c => `
-            <div class="card" onclick="navigateToCourse('${c.type}')">
-                <i class="fas ${c.icon || 'fa-book'}" style="font-size:2rem; color:var(--primary);"></i>
-                <h3>${escapeHtml(c.name)}</h3>
-                <p>${escapeHtml(c.description)}</p>
-                <div class="module-price">${c.price === 0 ? 'FREE' : `KES ${c.price.toLocaleString()}`}</div>
-                ${c.price > 0 && !currentUser ? '<div class="badge"><i class="fas fa-lock"></i> Sign in to enroll</div>' : ''}
-            </div>
-        `).join('');
+        document.getElementById('page-content').innerHTML = `<div class="container" style="padding-top:100px;"><h1 class="section-title">Our <span>Courses</span></h1><div class="grid" id="coursesGrid"></div></div>`;
+        document.getElementById('coursesGrid').innerHTML = coursesList.map(c => `<div class="card" onclick="navigateToCourse('${c.type}')"><i class="fas ${c.icon || 'fa-book'}" style="font-size:2rem; color:var(--primary);"></i><h3>${escapeHtml(c.name)}</h3><p>${escapeHtml(c.description)}</p><div class="module-price">${c.price === 0 ? 'FREE' : `KES ${c.price.toLocaleString()}`}</div>${c.price > 0 && !currentUser ? '<div class="badge"><i class="fas fa-lock"></i> Sign in to enroll</div>' : ''}</div>`).join('');
     }
     
     async function renderCourseDetail() {
         const type = routeParams.courseType;
         const course = coursesList.find(c => c.type === type);
         if (!course) { navigate('courses'); return; }
-        
         let isEnrolled = false;
         if (currentUser) {
             try {
-                const { data } = await supabase
-                    .from('enrollments')
-                    .select('id')
-                    .eq('user_id', currentUser.id)
-                    .eq('course_id', course.id)
-                    .eq('payment_status', 'verified')
-                    .maybeSingle();
+                const { data } = await supabase.from('enrollments').select('id').eq('user_id', currentUser.id).eq('course_id', course.id).eq('payment_status', 'verified').maybeSingle();
                 isEnrolled = !!data;
-            } catch(e) { console.warn(e); }
+            } catch(e) {}
         }
-        
         let actionButton = '';
         if (course.type === 'learner') {
             actionButton = '<button class="btn btn-primary" onclick="navigate(\'learner-hub\')"><i class="fas fa-book-open"></i> Open Learner Hub</button>';
         } else if (isEnrolled) {
             actionButton = '<button class="btn btn-primary" onclick="showToast(\'Learning content coming soon\',\'info\')"><i class="fas fa-play"></i> Start Learning</button>';
         } else if (course.price === 0) {
-            if (currentUser) {
-                actionButton = `<button class="btn btn-primary" onclick="enrollNow(${course.id}, ${course.price})"><i class="fas fa-download"></i> Enroll for Free</button>`;
-            } else {
-                actionButton = `<button class="btn btn-primary" onclick="showLoginModal()"><i class="fas fa-sign-in-alt"></i> Sign in to Enroll Free</button>`;
-            }
+            actionButton = currentUser ? `<button class="btn btn-primary" onclick="enrollNow(${course.id}, ${course.price})"><i class="fas fa-download"></i> Enroll for Free</button>` : `<button class="btn btn-primary" onclick="showLoginModal()"><i class="fas fa-sign-in-alt"></i> Sign in to Enroll Free</button>`;
         } else {
-            if (currentUser) {
-                actionButton = `<button class="btn btn-primary" onclick="enrollNow(${course.id}, ${course.price})"><i class="fas fa-shopping-cart"></i> Enroll Now - KES ${course.price.toLocaleString()}</button>`;
-            } else {
-                actionButton = `<button class="btn btn-primary" onclick="showLoginModal()"><i class="fas fa-sign-in-alt"></i> Sign in to Enroll</button>`;
-            }
+            actionButton = currentUser ? `<button class="btn btn-primary" onclick="enrollNow(${course.id}, ${course.price})"><i class="fas fa-shopping-cart"></i> Enroll Now - KES ${course.price.toLocaleString()}</button>` : `<button class="btn btn-primary" onclick="showLoginModal()"><i class="fas fa-sign-in-alt"></i> Sign in to Enroll</button>`;
         }
-        
-        document.getElementById('page-content').innerHTML = `
-            <div class="container" style="padding-top:100px;">
-                <div class="card">
-                    <i class="fas ${course.icon || 'fa-book'}" style="font-size:3rem; color:var(--primary); margin-bottom:1rem;"></i>
-                    <h2>${escapeHtml(course.name)}</h2>
-                    <p>${escapeHtml(course.description)}</p>
-                    <div class="module-price">${course.price === 0 ? 'FREE' : `KES ${course.price.toLocaleString()}`}</div>
-                    ${actionButton}
-                    <button class="btn btn-outline" onclick="navigate('courses')"><i class="fas fa-arrow-left"></i> Back to Courses</button>
-                </div>
-            </div>
-        `;
+        document.getElementById('page-content').innerHTML = `<div class="container" style="padding-top:100px;"><div class="card"><i class="fas ${course.icon || 'fa-book'}" style="font-size:3rem; color:var(--primary); margin-bottom:1rem;"></i><h2>${escapeHtml(course.name)}</h2><p>${escapeHtml(course.description)}</p><div class="module-price">${course.price === 0 ? 'FREE' : `KES ${course.price.toLocaleString()}`}</div>${actionButton}<button class="btn btn-outline" onclick="navigate('courses')"><i class="fas fa-arrow-left"></i> Back to Courses</button></div></div>`;
     }
     
     async function renderLearnerHub() {
-        document.getElementById('page-content').innerHTML = `
-            <div class="container" style="padding-top:100px;">
-                <h1 class="section-title">Learner Hub <span>Units</span></h1>
-                <div id="unitsGrid" class="grid"><div class="loading-spinner"></div></div>
-            </div>
-        `;
-        
+        document.getElementById('page-content').innerHTML = `<div class="container" style="padding-top:100px;"><h1 class="section-title">Learner Hub <span>Units</span></h1><div id="unitsGrid" class="grid"><div class="loading-spinner"></div></div></div>`;
         const units = await fetchUnits();
-        if (!units.length) {
-            document.getElementById('unitsGrid').innerHTML = `<p>No units found.</p>`;
-            return;
-        }
-        
-        document.getElementById('unitsGrid').innerHTML = units.map(u => `
-            <div class="card" onclick="navigate('unit', { unitId: ${u.id}, unitNumber: ${u.unit_number}, title: '${escapeHtml(u.title)}' })">
-                <h3>Unit ${u.unit_number}: ${escapeHtml(u.title)}</h3>
-                <p>${escapeHtml(u.content?.substring(0, 120))}...</p>
-            </div>
-        `).join('');
+        if (!units.length) { document.getElementById('unitsGrid').innerHTML = `<p>No units found.</p>`; return; }
+        document.getElementById('unitsGrid').innerHTML = units.map(u => `<div class="card" onclick="navigate('unit', { unitId: ${u.id}, unitNumber: ${u.unit_number}, title: '${escapeHtml(u.title)}' })"><h3>Unit ${u.unit_number}: ${escapeHtml(u.title)}</h3><p>${escapeHtml(u.content?.substring(0, 120))}...</p></div>`).join('');
     }
     
     async function renderUnit() {
         const { unitId } = routeParams;
         if (!unitId) { navigate('learner-hub'); return; }
-        
         const unit = await fetchUnitById(unitId);
         if (!unit) { showToast('Unit not found', 'error'); navigate('learner-hub'); return; }
-        
-        document.getElementById('page-content').innerHTML = `
-            <div class="container" style="padding-top:100px;">
-                <div class="card">
-                    <h2>Unit ${unit.unit_number}: ${escapeHtml(unit.title)}</h2>
-                    <div class="unit-content">${escapeHtml(unit.content).replace(/\n/g, '<br>')}</div>
-                    <button class="btn btn-outline" onclick="navigate('learner-hub')"><i class="fas fa-arrow-left"></i> Back to Units</button>
-                </div>
-            </div>
-        `;
+        document.getElementById('page-content').innerHTML = `<div class="container" style="padding-top:100px;"><div class="card"><h2>Unit ${unit.unit_number}: ${escapeHtml(unit.title)}</h2><div class="unit-content">${escapeHtml(unit.content).replace(/\n/g, '<br>')}</div><button class="btn btn-outline" onclick="navigate('learner-hub')"><i class="fas fa-arrow-left"></i> Back to Units</button></div></div>`;
     }
     
     async function renderSigns() {
-        document.getElementById('page-content').innerHTML = `
-            <div class="container" style="padding-top:100px;">
-                <h1 class="section-title">Traffic <span>Signs</span></h1>
-                <div id="signsContainer"><div class="loading-spinner"></div></div>
-            </div>
-        `;
-        
+        document.getElementById('page-content').innerHTML = `<div class="container" style="padding-top:100px;"><h1 class="section-title">Traffic <span>Signs</span></h1><div id="signsContainer"><div class="loading-spinner"></div></div></div>`;
         const signs = await fetchSigns();
-        if (!signs.length) {
-            document.getElementById('signsContainer').innerHTML = `<p>No traffic signs loaded yet.</p>`;
-            return;
-        }
-        
-        const grouped = signs.reduce((acc, s) => { 
-            acc[s.category] = acc[s.category] || []; 
-            acc[s.category].push(s); 
-            return acc; 
-        }, {});
-        
+        if (!signs.length) { document.getElementById('signsContainer').innerHTML = `<p>No traffic signs loaded yet.</p>`; return; }
+        const grouped = signs.reduce((acc, s) => { acc[s.category] = acc[s.category] || []; acc[s.category].push(s); return acc; }, {});
         let html = '';
         for (const [cat, items] of Object.entries(grouped)) {
             html += `<h3 style="color: var(--primary); margin-top: 2rem; text-transform: capitalize;">${cat} Signs</h3><div class="grid">`;
-            items.forEach(s => { 
-                html += `<div class="card"><h4>${escapeHtml(s.name)}</h4><p>${escapeHtml(s.description)}</p></div>`; 
-            });
+            items.forEach(s => { html += `<div class="card"><h4>${escapeHtml(s.name)}</h4><p>${escapeHtml(s.description)}</p></div>`; });
             html += `</div>`;
         }
         document.getElementById('signsContainer').innerHTML = html;
     }
     
     async function renderQuizBank() {
-        document.getElementById('page-content').innerHTML = `
-            <div class="container" style="padding-top:100px;">
-                <h1 class="section-title">Practice <span>Quiz</span></h1>
-                <div id="quizArea"><div class="loading-spinner"></div></div>
-            </div>
-        `;
-        
+        document.getElementById('page-content').innerHTML = `<div class="container" style="padding-top:100px;"><h1 class="section-title">Practice <span>Quiz</span></h1><div id="quizArea"><div class="loading-spinner"></div></div></div>`;
         const questions = await fetchQuizQuestions();
-        if (!questions.length) {
-            document.getElementById('quizArea').innerHTML = `<p>No quiz questions yet.</p>`;
-            return;
-        }
-        
+        if (!questions.length) { document.getElementById('quizArea').innerHTML = `<p>No quiz questions yet.</p>`; return; }
         currentQuizQuestions = questions;
         currentQuizIndex = 0;
         userAnswers = new Array(questions.length).fill(null);
@@ -719,94 +484,28 @@
     function renderCurrentQuestion() {
         if (currentQuizIndex >= currentQuizQuestions.length) {
             let score = userAnswers.filter((ans, idx) => ans === currentQuizQuestions[idx].correct_answer).length;
-            document.getElementById('quizArea').innerHTML = `
-                <div class="card">
-                    <h2>Quiz Complete!</h2>
-                    <p>You scored ${score} out of ${currentQuizQuestions.length}</p>
-                    <button class="btn btn-primary" onclick="renderQuizBank()"><i class="fas fa-redo"></i> Restart Quiz</button>
-                </div>
-            `;
+            document.getElementById('quizArea').innerHTML = `<div class="card"><h2>Quiz Complete!</h2><p>You scored ${score} out of ${currentQuizQuestions.length}</p><button class="btn btn-primary" onclick="renderQuizBank()"><i class="fas fa-redo"></i> Restart Quiz</button></div>`;
             return;
         }
-        
         const q = currentQuizQuestions[currentQuizIndex];
-        const options = [
-            { letter: 'A', text: q.option_a },
-            { letter: 'B', text: q.option_b },
-            { letter: 'C', text: q.option_c },
-            { letter: 'D', text: q.option_d }
-        ].filter(opt => opt.text);
-        
+        const options = [{ letter: 'A', text: q.option_a }, { letter: 'B', text: q.option_b }, { letter: 'C', text: q.option_c }, { letter: 'D', text: q.option_d }].filter(opt => opt.text);
         const selected = userAnswers[currentQuizIndex];
-        document.getElementById('quizArea').innerHTML = `
-            <div class="card">
-                <h3>Question ${currentQuizIndex+1} of ${currentQuizQuestions.length}</h3>
-                <p style="margin: 20px 0; font-size: 1.2rem;">${escapeHtml(q.question)}</p>
-                ${options.map(opt => `<div class="quiz-option ${selected === opt.letter ? 'selected' : ''}" data-letter="${opt.letter}">${opt.letter}. ${escapeHtml(opt.text)}</div>`).join('')}
-                <div style="margin-top: 20px;">
-                    <button class="btn btn-outline" onclick="previousQuestion()" ${currentQuizIndex === 0 ? 'disabled' : ''}><i class="fas fa-chevron-left"></i> Previous</button>
-                    <button class="btn btn-primary" onclick="nextQuestion()">${currentQuizIndex === currentQuizQuestions.length-1 ? 'Finish' : 'Next'} <i class="fas fa-chevron-right"></i></button>
-                </div>
-            </div>
-        `;
-        
-        document.querySelectorAll('.quiz-option').forEach(opt => {
-            opt.addEventListener('click', () => {
-                const letter = opt.dataset.letter;
-                userAnswers[currentQuizIndex] = letter;
-                renderCurrentQuestion();
-            });
-        });
+        document.getElementById('quizArea').innerHTML = `<div class="card"><h3>Question ${currentQuizIndex+1} of ${currentQuizQuestions.length}</h3><p style="margin: 20px 0; font-size: 1.2rem;">${escapeHtml(q.question)}</p>${options.map(opt => `<div class="quiz-option ${selected === opt.letter ? 'selected' : ''}" data-letter="${opt.letter}">${opt.letter}. ${escapeHtml(opt.text)}</div>`).join('')}<div style="margin-top: 20px;"><button class="btn btn-outline" onclick="previousQuestion()" ${currentQuizIndex === 0 ? 'disabled' : ''}><i class="fas fa-chevron-left"></i> Previous</button><button class="btn btn-primary" onclick="nextQuestion()">${currentQuizIndex === currentQuizQuestions.length-1 ? 'Finish' : 'Next'} <i class="fas fa-chevron-right"></i></button></div></div>`;
+        document.querySelectorAll('.quiz-option').forEach(opt => { opt.addEventListener('click', () => { userAnswers[currentQuizIndex] = opt.dataset.letter; renderCurrentQuestion(); }); });
     }
     
-    function nextQuestion() {
-        if (userAnswers[currentQuizIndex] === null) { 
-            showToast('Please select an answer', 'warning'); 
-            return; 
-        }
-        currentQuizIndex++;
-        renderCurrentQuestion();
-    }
-    
-    function previousQuestion() { 
-        if (currentQuizIndex > 0) { 
-            currentQuizIndex--; 
-            renderCurrentQuestion(); 
-        } 
-    }
+    function nextQuestion() { if (userAnswers[currentQuizIndex] === null) { showToast('Please select an answer', 'warning'); return; } currentQuizIndex++; renderCurrentQuestion(); }
+    function previousQuestion() { if (currentQuizIndex > 0) { currentQuizIndex--; renderCurrentQuestion(); } }
     
     async function renderSafetyLibrary() {
-        document.getElementById('page-content').innerHTML = `
-            <div class="container" style="padding-top:100px;">
-                <h1 class="section-title">Safety <span>Library</span></h1>
-                <div id="safetyContainer"><div class="loading-spinner"></div></div>
-            </div>
-        `;
-        
+        document.getElementById('page-content').innerHTML = `<div class="container" style="padding-top:100px;"><h1 class="section-title">Safety <span>Library</span></h1><div id="safetyContainer"><div class="loading-spinner"></div></div></div>`;
         const items = await fetchSafetyLibrary();
-        if (!items.length) {
-            document.getElementById('safetyContainer').innerHTML = `<p>No safety content yet.</p>`;
-            return;
-        }
-        
-        const grouped = items.reduce((acc, item) => {
-            const cat = item.category || 'general';
-            acc[cat] = acc[cat] || [];
-            acc[cat].push(item);
-            return acc;
-        }, {});
-        
+        if (!items.length) { document.getElementById('safetyContainer').innerHTML = `<p>No safety content yet.</p>`; return; }
+        const grouped = items.reduce((acc, item) => { const cat = item.category || 'general'; acc[cat] = acc[cat] || []; acc[cat].push(item); return acc; }, {});
         let html = '';
         for (const [cat, articles] of Object.entries(grouped)) {
             html += `<h3 style="color: var(--primary); margin-top: 2rem; text-transform: capitalize;">${cat.replace('-', ' ')}</h3><div class="grid">`;
-            articles.forEach(article => {
-                html += `
-                    <div class="card" onclick="showSafetyArticle(${article.id}, '${escapeHtml(article.title)}')">
-                        <h4>${escapeHtml(article.title)}</h4>
-                        <p>${escapeHtml(article.content?.substring(0, 100))}...</p>
-                    </div>
-                `;
-            });
+            articles.forEach(article => { html += `<div class="card" onclick="showSafetyArticle(${article.id}, '${escapeHtml(article.title)}')"><h4>${escapeHtml(article.title)}</h4><p>${escapeHtml(article.content?.substring(0, 100))}...</p></div>`; });
             html += `</div>`;
         }
         document.getElementById('safetyContainer').innerHTML = html;
@@ -815,16 +514,7 @@
     window.showSafetyArticle = async function(id, title) {
         const { data, error } = await supabase.from('safety_library').select('*').eq('id', id).single();
         if (error) { showToast('Error loading article', 'error'); return; }
-        
-        document.getElementById('page-content').innerHTML = `
-            <div class="container" style="padding-top:100px;">
-                <div class="card">
-                    <h2>${escapeHtml(data.title)}</h2>
-                    <div class="unit-content">${escapeHtml(data.content).replace(/\n/g, '<br>')}</div>
-                    <button class="btn btn-outline" onclick="renderSafetyLibrary()"><i class="fas fa-arrow-left"></i> Back to Library</button>
-                </div>
-            </div>
-        `;
+        document.getElementById('page-content').innerHTML = `<div class="container" style="padding-top:100px;"><div class="card"><h2>${escapeHtml(data.title)}</h2><div class="unit-content">${escapeHtml(data.content).replace(/\n/g, '<br>')}</div><button class="btn btn-outline" onclick="renderSafetyLibrary()"><i class="fas fa-arrow-left"></i> Back to Library</button></div></div>`;
     };
     
     async function enrollNow(courseId, price) {
@@ -855,23 +545,17 @@
         else document.getElementById('page-content').innerHTML = '<div class="container" style="padding-top:100px;"><div class="card"><h2>Coming Soon</h2></div></div>';
     }
     
-    // Navigation
     function navigate(route, params = {}) { currentRoute = route; routeParams = params; renderCurrentRoute(); }
     function navigateToCourse(type) { navigate('course-detail', { courseType: type }); }
     function toggleMobileMenu() { document.getElementById('navLinks')?.classList.toggle('show'); }
     function showLegal(page) { alert(`${page} policy – coming soon`); }
     
-    // Expose global functions
-    window.app = {
-        navigate, navigateToCourse, showLegal, toggleMobileMenu,
-        showLoginModal, showSignupModal, closeModal, enrollNow
-    };
+    window.app = { navigate, navigateToCourse, showLegal, toggleMobileMenu, showLoginModal, showSignupModal, closeModal, enrollNow };
     window.nextQuestion = nextQuestion;
     window.previousQuestion = previousQuestion;
     window.renderQuizBank = renderQuizBank;
     window.renderSafetyLibrary = renderSafetyLibrary;
     
-    // Start
     initSupabase();
 </script>
 </body>
