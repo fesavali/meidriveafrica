@@ -16,37 +16,4 @@
         .back-btn { background: transparent; border: 1px solid #00ff88; color: #00ff88; padding: 8px 20px; border-radius: 8px; cursor: pointer; text-decoration: none; }
         .container { max-width: 900px; margin: 0 auto; padding: 30px 20px; }
         .lesson-header { margin-bottom: 30px; }
-        .lesson-title { font-size: 2rem; color: #00ff88; margin-bottom: 10px; }
-        .lesson-content { background: #1a1f3a; border-radius: 16px; padding: 30px; line-height: 1.6; }
-        .lesson-content p { margin-bottom: 15px; color: #d0d0e0; }
-        .complete-btn { background: #00ff88; color: #0a0e27; border: none; padding: 15px 30px; border-radius: 8px; font-size: 1rem; font-weight: bold; cursor: pointer; margin-top: 30px; width: 100%; transition: all 0.3s; }
-        .complete-btn.completed { background: #1a1f3a; border: 1px solid #00ff88; color: #00ff88; }
-        .loading { text-align: center; padding: 60px; }
-        .spinner { width: 50px; height: 50px; border: 3px solid rgba(0,255,136,0.2); border-top-color: #00ff88; border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 20px; }
-        @keyframes spin { to { transform: rotate(360deg); } }
-        .footer { text-align: center; padding: 30px; color: #a0a0c0; font-size: 0.8rem; border-top: 1px solid rgba(0,255,136,0.1); margin-top: 40px; }
-    </style>
-</head>
-<body>
-    <nav class="navbar"><div class="nav-container"><a href="index.html" class="logo">MEI DRIVE <span>AFRICA</span></a><a href="javascript:history.back()" class="back-btn">← Back</a></div></nav>
-    <div class="container" id="lessonContent"><div class="loading"><div class="spinner"></div> Loading lesson...</div></div>
-    <div class="footer"><p>© 2026 MEI DRIVE AFRICA | NTSA Approved Driver Training</p></div>
-
-    <script>
-        let lessonData = null, courseId = null, isCompleted = false, currentUser = null;
-        function getLessonId() { return parseInt(new URLSearchParams(window.location.search).get('id')) || 1; }
-        function getCourseId() { return parseInt(new URLSearchParams(window.location.search).get('course_id')) || 1; }
-        
-        async function loadLesson() { const { data, error } = await window.MEIDrive.supabase.from('lessons').select('*').eq('id', getLessonId()).single(); if (!error) lessonData = data; return lessonData; }
-        async function loadUser() { currentUser = await window.MEIDrive.getCurrentUser(); return currentUser; }
-        async function loadCompletion() { if (!currentUser) return; const progress = await window.MEIDrive.fetchLessonProgress(currentUser.id); isCompleted = progress.some(p => p.lesson_id === getLessonId() && p.completed); document.getElementById('completeBtn')?.classList.toggle('completed', isCompleted); }
-        async function toggleComplete() { if (!currentUser) { alert('Please login'); window.location.href = 'index.html'; return; } await window.MEIDrive.toggleLessonComplete(currentUser.id, getLessonId(), !isCompleted); isCompleted = !isCompleted; document.getElementById('completeBtn').classList.toggle('completed', isCompleted); const enrollments = await window.MEIDrive.fetchEnrollments(currentUser.id); const enrollment = enrollments.find(e => e.course_id === courseId); if (enrollment) { const lessons = await window.MEIDrive.fetchLessons(courseId); const completedProgress = await window.MEIDrive.fetchLessonProgress(currentUser.id); const completedCount = completedProgress.filter(p => p.completed).length; const newProgress = Math.round((completedCount / lessons.length) * 100); await window.MEIDrive.updateProgress(currentUser.id, courseId, newProgress); } }
-        function escapeHtml(str) { if (!str) return ''; return str.replace(/[&<>]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[m])); }
-        
-        function renderPage() { const container = document.getElementById('lessonContent'); if (!lessonData) { container.innerHTML = '<div class="loading">Lesson not found</div>'; return; } container.innerHTML = `<div class="lesson-header"><h1 class="lesson-title">${escapeHtml(lessonData.title)}</h1></div><div class="lesson-content">${escapeHtml(lessonData.content || 'No content available.')}</div><button id="completeBtn" class="complete-btn ${isCompleted ? 'completed' : ''}" onclick="toggleComplete()">${isCompleted ? '✓ Completed' : 'Mark as Complete'}</button>`; }
-        
-        async function init() { if (!window.MEIDrive) { setTimeout(init, 200); return; } courseId = getCourseId(); await loadUser(); await loadLesson(); await loadCompletion(); renderPage(); }
-        init();
-    </script>
-</body>
-</html>
+        .lesson-title { font
