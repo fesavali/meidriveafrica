@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Learner Hub - Driving Academy</title>
+    <title>MEI DRIVE AFRICA - Professional Driver Training</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         * {
@@ -14,713 +14,460 @@
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            color: #333;
+            background: #0a0a0a;
+            color: #fff;
         }
 
-        /* Header */
-        .header {
-            background: rgba(0, 0, 0, 0.85);
+        /* Navigation */
+        .navbar {
+            background: rgba(0, 0, 0, 0.95);
             backdrop-filter: blur(10px);
-            color: white;
-            padding: 20px 0;
-            position: sticky;
-            top: 0;
-            z-index: 1000;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
-        }
-
-        .header-content {
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 0 20px;
+            padding: 15px 5%;
             display: flex;
             justify-content: space-between;
             align-items: center;
             flex-wrap: wrap;
-            gap: 15px;
+            gap: 20px;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            border-bottom: 1px solid rgba(255, 193, 7, 0.3);
         }
 
-        .logo h1 {
+        .logo {
             font-size: 24px;
-            margin-bottom: 5px;
+            font-weight: bold;
         }
 
-        .logo p {
-            font-size: 12px;
-            opacity: 0.8;
+        .logo span {
+            color: #ffc107;
         }
 
-        .nav-tabs {
+        .nav-links {
             display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
+            gap: 25px;
+            align-items: center;
         }
 
-        .tab-btn {
-            background: transparent;
-            border: 2px solid rgba(255,255,255,0.3);
+        .nav-links a {
             color: white;
-            padding: 10px 20px;
-            border-radius: 30px;
-            cursor: pointer;
-            transition: all 0.3s ease;
+            text-decoration: none;
+            transition: color 0.3s;
+            font-weight: 500;
+        }
+
+        .nav-links a:hover {
+            color: #ffc107;
+        }
+
+        .auth-buttons {
+            display: flex;
+            gap: 12px;
+        }
+
+        .btn-login, .btn-register {
+            padding: 8px 24px;
+            border-radius: 25px;
+            text-decoration: none;
+            transition: all 0.3s;
             font-weight: 600;
         }
 
-        .tab-btn:hover, .tab-btn.active {
-            background: white;
-            color: #667eea;
-            border-color: white;
+        .btn-login {
+            background: transparent;
+            border: 1px solid #ffc107;
+            color: #ffc107;
         }
 
-        /* Main Container */
-        .container {
-            max-width: 1400px;
-            margin: 30px auto;
-            padding: 0 20px;
+        .btn-login:hover {
+            background: #ffc107;
+            color: #0a0a0a;
         }
 
-        /* Course Cards Grid */
+        .btn-register {
+            background: #ffc107;
+            color: #0a0a0a;
+        }
+
+        .btn-register:hover {
+            background: #e0a800;
+            transform: translateY(-2px);
+        }
+
+        /* Hero Section */
+        .hero {
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #0f3460 100%);
+            text-align: center;
+            padding: 100px 20px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" opacity="0.05"><path fill="%23ffc107" d="M50,0 L61.8,38.2 L100,38.2 L69.1,61.8 L80.9,100 L50,75.4 L19.1,100 L30.9,61.8 L0,38.2 L38.2,38.2 L50,0 Z"/></svg>') repeat;
+            opacity: 0.1;
+        }
+
+        .hero h1 {
+            font-size: 56px;
+            margin-bottom: 20px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .hero h1 span {
+            color: #ffc107;
+        }
+
+        .hero p {
+            font-size: 22px;
+            opacity: 0.9;
+            margin-bottom: 20px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .hero-subtitle {
+            font-size: 18px;
+            opacity: 0.8;
+            margin-bottom: 30px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .badge {
+            display: inline-block;
+            background: rgba(255, 193, 7, 0.2);
+            padding: 8px 24px;
+            border-radius: 30px;
+            font-size: 14px;
+            border: 1px solid rgba(255, 193, 7, 0.5);
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Courses Section */
+        .courses-section {
+            padding: 80px 5%;
+            background: #0f0f0f;
+        }
+
+        .section-title {
+            text-align: center;
+            font-size: 42px;
+            margin-bottom: 20px;
+        }
+
+        .section-title span {
+            color: #ffc107;
+        }
+
+        .section-subtitle {
+            text-align: center;
+            color: #aaa;
+            margin-bottom: 50px;
+            font-size: 18px;
+        }
+
         .courses-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-            gap: 25px;
-            margin-bottom: 40px;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 30px;
+            max-width: 1400px;
+            margin: 0 auto;
         }
 
         .course-card {
-            background: white;
+            background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%);
+            backdrop-filter: blur(10px);
             border-radius: 20px;
-            overflow: hidden;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            padding: 30px;
+            transition: all 0.3s;
             cursor: pointer;
+            border: 1px solid rgba(255,255,255,0.1);
         }
 
         .course-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 20px 50px rgba(0,0,0,0.15);
+            transform: translateY(-10px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+            border-color: rgba(255, 193, 7, 0.5);
         }
 
         .course-icon {
-            height: 120px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
             font-size: 48px;
+            margin-bottom: 20px;
         }
 
-        .course-icon.learner { background: linear-gradient(135deg, #667eea, #764ba2); }
-        .course-icon.quiz { background: linear-gradient(135deg, #f093fb, #f5576c); }
-        .course-icon.boda { background: linear-gradient(135deg, #4facfe, #00f2fe); }
-        .course-icon.ev { background: linear-gradient(135deg, #43e97b, #38f9d7); }
-
-        .course-info {
-            padding: 20px;
+        .course-card h3 {
+            font-size: 24px;
+            margin-bottom: 12px;
         }
 
-        .course-info h3 {
-            font-size: 22px;
-            margin-bottom: 10px;
-            color: #333;
-        }
-
-        .course-info p {
-            color: #666;
-            margin-bottom: 15px;
-            line-height: 1.5;
+        .course-card p {
+            opacity: 0.8;
+            line-height: 1.6;
+            margin-bottom: 20px;
         }
 
         .course-meta {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-top: 15px;
-            padding-top: 15px;
-            border-top: 1px solid #eee;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255,255,255,0.1);
         }
 
-        .units-count {
-            background: #f0f0f0;
-            padding: 5px 12px;
-            border-radius: 20px;
-            font-size: 12px;
-            color: #666;
+        .duration {
+            font-size: 14px;
+            opacity: 0.7;
+            display: flex;
+            align-items: center;
+            gap: 5px;
         }
 
         .start-btn {
-            background: #667eea;
-            color: white;
+            background: #ffc107;
+            color: #0a0a0a;
             border: none;
             padding: 8px 20px;
             border-radius: 25px;
             cursor: pointer;
-            font-weight: 600;
-            transition: background 0.3s;
+            font-weight: bold;
+            transition: all 0.3s;
         }
 
         .start-btn:hover {
-            background: #5a67d8;
+            transform: scale(1.05);
+            background: #e0a800;
         }
 
-        /* Content Panel */
-        .content-panel {
-            background: white;
-            border-radius: 20px;
-            padding: 30px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
-            display: none;
+        /* Features Section */
+        .features-section {
+            padding: 80px 5%;
+            background: linear-gradient(135deg, #0f3460 0%, #1a1a2e 100%);
         }
 
-        .content-panel.active {
-            display: block;
-            animation: fadeIn 0.5s ease;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        /* Units List */
-        .units-list {
+        .features-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-            gap: 15px;
-            margin-top: 20px;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 40px;
+            max-width: 1200px;
+            margin: 0 auto;
         }
 
-        .unit-item {
-            background: #f8f9fa;
-            border-radius: 12px;
-            padding: 15px;
-            cursor: pointer;
-            transition: all 0.3s;
-            border-left: 4px solid #667eea;
+        .feature {
+            text-align: center;
+            padding: 30px;
         }
 
-        .unit-item:hover {
-            background: #e9ecef;
-            transform: translateX(5px);
-        }
-
-        .unit-number {
-            font-size: 12px;
-            color: #667eea;
-            font-weight: 600;
-        }
-
-        .unit-title {
-            font-size: 16px;
-            font-weight: 600;
-            margin-top: 5px;
-            color: #333;
-        }
-
-        /* Unit Content */
-        .unit-content {
-            background: #f8f9fa;
-            border-radius: 16px;
-            padding: 25px;
-            margin-top: 20px;
-        }
-
-        .unit-content h2 {
-            color: #667eea;
+        .feature-icon {
+            font-size: 48px;
             margin-bottom: 20px;
         }
 
-        .unit-content p {
-            line-height: 1.8;
-            color: #555;
+        .feature h4 {
+            font-size: 20px;
+            margin-bottom: 10px;
         }
 
-        /* Quiz Bank Styles */
-        .quiz-category {
-            margin-bottom: 30px;
+        .feature p {
+            opacity: 0.8;
         }
 
-        .quiz-category h3 {
-            color: #667eea;
-            margin-bottom: 15px;
-            padding-bottom: 10px;
-            border-bottom: 2px solid #eee;
-        }
-
-        .quiz-questions {
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-        }
-
-        .quiz-item {
-            background: #f8f9fa;
-            border-radius: 12px;
-            padding: 20px;
-        }
-
-        .quiz-question {
-            font-weight: 600;
-            margin-bottom: 15px;
-            color: #333;
-        }
-
-        .quiz-options {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            margin-bottom: 15px;
-        }
-
-        .quiz-option {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding: 8px 12px;
-            background: white;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: background 0.3s;
-        }
-
-        .quiz-option:hover {
-            background: #e9ecef;
-        }
-
-        .quiz-option input {
-            cursor: pointer;
-        }
-
-        .show-answer-btn {
-            background: #667eea;
-            color: white;
-            border: none;
-            padding: 8px 16px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 12px;
-        }
-
-        .answer-feedback {
-            margin-top: 10px;
-            padding: 10px;
-            border-radius: 8px;
-            display: none;
-        }
-
-        .answer-feedback.correct {
-            background: #d4edda;
-            color: #155724;
-            display: block;
-        }
-
-        .answer-feedback.wrong {
-            background: #f8d7da;
-            color: #721c24;
-            display: block;
-        }
-
-        /* Back Button */
-        .back-btn {
-            background: #6c757d;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 25px;
-            cursor: pointer;
-            margin-bottom: 20px;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        /* Progress Bar */
-        .progress-container {
-            background: #e0e0e0;
-            border-radius: 10px;
-            height: 8px;
-            margin: 20px 0;
-        }
-
-        .progress-bar {
-            background: #667eea;
-            height: 100%;
-            border-radius: 10px;
-            width: 0%;
-            transition: width 0.3s;
+        /* Loading */
+        .loading {
+            text-align: center;
+            padding: 50px;
+            font-size: 18px;
+            color: #aaa;
         }
 
         /* Footer */
         .footer {
-            background: rgba(0,0,0,0.85);
-            color: white;
+            background: #050505;
             text-align: center;
-            padding: 20px;
-            margin-top: 40px;
+            padding: 40px;
+        }
+
+        .footer p {
+            opacity: 0.7;
+            font-size: 14px;
         }
 
         /* Responsive */
         @media (max-width: 768px) {
-            .header-content {
+            .navbar {
                 flex-direction: column;
                 text-align: center;
+            }
+            
+            .hero h1 {
+                font-size: 32px;
+            }
+            
+            .hero p {
+                font-size: 18px;
+            }
+            
+            .section-title {
+                font-size: 28px;
             }
             
             .courses-grid {
                 grid-template-columns: 1fr;
             }
-            
-            .units-list {
-                grid-template-columns: 1fr;
+        }
+
+        /* Scroll Animation */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
             }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .course-card {
+            animation: fadeInUp 0.6s ease-out;
         }
     </style>
 </head>
 <body>
-    <div class="header">
-        <div class="header-content">
-            <div class="logo">
-                <h1>🚗 LEARNER HUB</h1>
-                <p>Kenya Driving Academy - Professional Driver Training</p>
+    <nav class="navbar">
+        <div class="logo">MEI DRIVE <span>AFRICA</span></div>
+        <div class="nav-links">
+            <a href="#home">Home</a>
+            <a href="#courses">Courses</a>
+            <a href="quiz.html">Quiz Bank</a>
+            <a href="#contact">Contact</a>
+        </div>
+        <div class="auth-buttons">
+            <a href="#" class="btn-login">Login</a>
+            <a href="#" class="btn-register">Register</a>
+        </div>
+    </nav>
+
+    <section class="hero" id="home">
+        <h1>Practice Daily.<br><span>Revise Smarter.</span> Pass with Confidence.</h1>
+        <p>MEI DRIVE AFRICA</p>
+        <div class="hero-subtitle">For Learners and Experienced Drivers — Refresh Your Skills with MEI DRIVE AFRICA.</div>
+        <div class="badge">✓ NTSA Approved ✓ Professional Instructors ✓ Modern Curriculum</div>
+    </section>
+
+    <section class="courses-section" id="courses">
+        <h2 class="section-title">Our <span>Courses</span></h2>
+        <div class="section-subtitle">Choose the right course for your driving journey</div>
+        <div class="courses-grid" id="coursesGrid">
+            <div class="loading">Loading courses...</div>
+        </div>
+    </section>
+
+    <section class="features-section">
+        <h2 class="section-title">Why Choose <span>Us</span></h2>
+        <div class="features-grid">
+            <div class="feature">
+                <div class="feature-icon">📚</div>
+                <h4>NTSA Approved</h4>
+                <p>Officially certified curriculum meeting Kenyan standards</p>
             </div>
-            <div class="nav-tabs">
-                <button class="tab-btn active" onclick="showTab('courses')">📚 Courses</button>
-                <button class="tab-btn" onclick="showTab('quiz')">📝 Quiz Bank</button>
+            <div class="feature">
+                <div class="feature-icon">🎯</div>
+                <h4>1000+ Quiz Bank</h4>
+                <p>Practice with real exam-style questions</p>
+            </div>
+            <div class="feature">
+                <div class="feature-icon">👨‍🏫</div>
+                <h4>Expert Instructors</h4>
+                <p>Learn from certified professional drivers</p>
+            </div>
+            <div class="feature">
+                <div class="feature-icon">💻</div>
+                <h4>Learn Anywhere</h4>
+                <p>Access courses online, anytime, anywhere</p>
             </div>
         </div>
-    </div>
+    </section>
 
-    <div class="container">
-        <!-- Courses Grid View -->
-        <div id="coursesTab" class="content-panel active">
-            <div class="courses-grid">
-                <!-- Learner Course Card -->
-                <div class="course-card" onclick="loadCourse('learner')">
-                    <div class="course-icon learner">📖</div>
-                    <div class="course-info">
-                        <h3>Learner Driving Course</h3>
-                        <p>Complete driving theory with 21 comprehensive units covering all aspects of safe driving in Kenya.</p>
-                        <div class="course-meta">
-                            <span class="units-count">📚 21 Units</span>
-                            <button class="start-btn">Start Learning →</button>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Quiz Bank Card -->
-                <div class="course-card" onclick="loadCourse('quizBank')">
-                    <div class="course-icon quiz">📝</div>
-                    <div class="course-info">
-                        <h3>1000+ Quiz Bank</h3>
-                        <p>Test your knowledge with our comprehensive quiz bank. Practice NTSA exam questions.</p>
-                        <div class="course-meta">
-                            <span class="units-count">🎯 1000+ Questions</span>
-                            <button class="start-btn">Start Quiz →</button>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Boda Rider Course Card -->
-                <div class="course-card" onclick="loadCourse('boda')">
-                    <div class="course-icon boda">🏍️</div>
-                    <div class="course-info">
-                        <h3>Boda Rider Course</h3>
-                        <p>Professional motorcycle training for boda boda operators. Safety, regulations, and customer care.</p>
-                        <div class="course-meta">
-                            <span class="units-count">🏍️ Complete Training</span>
-                            <button class="start-btn">Start Learning →</button>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- EV Course Card -->
-                <div class="course-card" onclick="loadCourse('ev')">
-                    <div class="course-icon ev">⚡</div>
-                    <div class="course-info">
-                        <h3>Electric Vehicle Course</h3>
-                        <p>Master electric vehicle technology, charging systems, and eco-driving techniques.</p>
-                        <div class="course-meta">
-                            <span class="units-count">⚡ 12 Modules</span>
-                            <button class="start-btn">Start Learning →</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Dynamic Content Area -->
-        <div id="dynamicContent" style="display: none;"></div>
-    </div>
-
-    <div class="footer">
-        <p>&copy; 2026 Learner Hub - Empowering Safe Drivers in Kenya | NTSA Approved Curriculum</p>
-    </div>
+    <footer class="footer">
+        <p>&copy; 2026 MEI DRIVE AFRICA. All rights reserved. | NTSA Approved Training Provider</p>
+        <p style="margin-top: 10px;">Empowering Safe Drivers Across Kenya</p>
+    </footer>
 
     <script>
-        // Supabase Configuration
-        const supabaseUrl = 'https://jeksrwrzzrczamxijvwl.supabase.co';
-        const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Impla3Nyd3J6enJjemFteGlqdndsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg2NzYyMjAsImV4cCI6MjA5NDI1MjIyMH0.1poYpJKNFEVe2NTBkXBTH2bIHGk2yT8aqCU-OlJc4vs';
+        // Supabase Configuration - YOUR NEW CREDENTIALS
+        const supabaseUrl = 'https://qpqkmmkrzxlhcpccefjn.supabase.co';
+        const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFwcWttbWtyenhsaGNwY2NlZmpuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk1MjU0NzIsImV4cCI6MjA5NTEwMTQ3Mn0.Vw1hexN3NKoF_y9VFBFs_NUhJgFNNMwuyzDjImUcM6s';
+        
         const supabase = supabase.createClient(supabaseUrl, supabaseAnonKey);
 
-        // Course Data
-        const learnerUnits = [
-            "Introduction to Driving", "Fundamental Driving Rules", "Model Town", "Human Factors in Traffic",
-            "Vehicle Constructions and Controls", "Self-Inspection of Vehicle", "Observation", "Vehicle Control",
-            "Communication on the Road", "Speed Management", "Space Management", "Emergency Manoeuvres",
-            "Skid Control and Recovery", "Adverse Driving Conditions", "Preventive Maintenance", "Conditions of Carriage",
-            "Hazardous Materials", "Emergency Procedures", "Work Planning", "Customer Care", "The Examination"
-        ];
-
-        const bodaUnits = [
-            "Introduction to Boda Boda Operations", "Motorcycle Controls and Components", "Basic Riding Skills",
-            "Defensive Riding Techniques", "Traffic Rules and Regulations", "Passenger Safety and Customer Care",
-            "Load Management", "Night Riding", "Adverse Weather Riding", "Emergency Handling",
-            "Preventive Maintenance", "Business Management for Boda Operators"
-        ];
-
-        const evModules = [
-            "Introduction to Electric Vehicles", "EV Components and Systems", "EV Safety Procedures",
-            "EV Charging Systems", "Eco-Driving Techniques", "Road Safety and Traffic Rules",
-            "EV Inspection and Maintenance", "Kenyan EV Regulations", "EV Troubleshooting",
-            "Customer Service and Professionalism", "Environmental Conservation", "Advanced EV Technology"
-        ];
-
-        // Quiz Bank Data
-        const quizBank = {
-            "Traffic Signs": [
-                { q: "What does a red octagonal sign mean?", options: ["Stop", "Go", "Slow Down", "Yield"], correct: 0 },
-                { q: "What colour are warning signs typically?", options: ["Red", "Yellow/Amber", "Green", "Blue"], correct: 1 },
-                { q: "What does a triangular sign with red border indicate?", options: ["Information", "Warning", "Prohibition", "Direction"], correct: 1 }
-            ],
-            "Rules of the Road": [
-                { q: "In Kenya, vehicles should keep to which side of the road?", options: ["Left", "Right", "Centre", "Any side"], correct: 0 },
-                { q: "What is the legal blood alcohol limit for professional drivers?", options: ["0.00%", "0.05%", "0.08%", "0.1%"], correct: 0 },
-                { q: "What does a solid yellow line at the centre of the road mean?", options: ["No overtaking", "Overtaking allowed", "Parking allowed", "Slow down"], correct: 0 }
-            ],
-            "Vehicle Safety": [
-                { q: "What should you do if your brake fails?", options: ["Pump the brake pedal", "Jump out", "Accelerate", "Close eyes"], correct: 0 },
-                { q: "At what distance should reflector triangles be placed?", options: ["10m", "30m", "50m", "100m"], correct: 2 },
-                { q: "What does ABS stand for?", options: ["Anti-lock Braking System", "Automatic Brake System", "Advanced Brake Safety", "Air Brake System"], correct: 0 }
-            ],
-            "EV Specific": [
-                { q: "What powers a Battery Electric Vehicle?", options: ["Diesel", "Petrol", "Electricity", "Gas"], correct: 2 },
-                { q: "What colour are high-voltage cables in EVs?", options: ["Blue", "Green", "Orange", "Black"], correct: 2 },
-                { q: "What is regenerative braking?", options: ["Fuel injection", "Energy recovery during braking", "Tire balancing", "Air cooling"], correct: 1 }
-            ],
-            "Model Town": [
-                { q: "On a roundabout, you should move in which direction?", options: ["Clockwise", "Anti-clockwise", "Any direction", "Straight only"], correct: 0 },
-                { q: "What does a yellow kerb indicate?", options: ["Parking allowed", "No parking/stopping", "Loading zone", "Bus stop"], correct: 1 },
-                { q: "Which lane on a roundabout can make a 360° turn?", options: ["Lane 1", "Lane 2", "Lane 3", "Lane 4"], correct: 3 }
-            ]
+        // Course mapping for navigation
+        const coursePages = {
+            'Learner Driving Course': 'learner.html',
+            'Boda Rider Course': 'boda.html',
+            'Electric Vehicle Course': 'ev.html',
+            'Refresher Course': 'refresher.html'
         };
 
-        let currentCourse = null;
-        let currentUnitIndex = 0;
-
-        function showTab(tabName) {
-            const coursesTab = document.getElementById('coursesTab');
-            const dynamicContent = document.getElementById('dynamicContent');
+        // Load courses from Supabase
+        async function loadCourses() {
+            const coursesGrid = document.getElementById('coursesGrid');
             
-            if (tabName === 'courses') {
-                coursesTab.classList.add('active');
-                dynamicContent.style.display = 'none';
-                document.querySelector('.courses-grid').style.display = 'grid';
-            } else {
-                coursesTab.classList.remove('active');
-                dynamicContent.style.display = 'block';
-                document.querySelector('.courses-grid').style.display = 'none';
-                loadQuizBank();
-            }
-        }
-
-        function loadCourse(courseType) {
-            const coursesTab = document.getElementById('coursesTab');
-            const dynamicContent = document.getElementById('dynamicContent');
-            
-            coursesTab.classList.remove('active');
-            dynamicContent.style.display = 'block';
-            document.querySelector('.courses-grid').style.display = 'none';
-            
-            currentCourse = courseType;
-            currentUnitIndex = 0;
-            
-            let title = '', units = [];
-            switch(courseType) {
-                case 'learner':
-                    title = 'Learner Driving Course';
-                    units = learnerUnits;
-                    break;
-                case 'boda':
-                    title = 'Boda Rider Course';
-                    units = bodaUnits;
-                    break;
-                case 'ev':
-                    title = 'Electric Vehicle Course';
-                    units = evModules;
-                    break;
-                case 'quizBank':
-                    loadQuizBank();
-                    return;
-            }
-            
-            renderCourseContent(title, units);
-        }
-
-        function renderCourseContent(title, units) {
-            const html = `
-                <button class="back-btn" onclick="goBack()">← Back to Courses</button>
-                <h2 style="color:#667eea; margin-bottom:20px;">${title}</h2>
-                <div class="progress-container">
-                    <div class="progress-bar" style="width: ${((currentUnitIndex+1)/units.length)*100}%"></div>
-                </div>
-                <div class="units-list">
-                    ${units.map((unit, idx) => `
-                        <div class="unit-item" onclick="loadUnit(${idx}, '${title}', ${JSON.stringify(units).replace(/"/g, '&quot;')})">
-                            <div class="unit-number">UNIT ${idx + 1}</div>
-                            <div class="unit-title">${unit}</div>
-                        </div>
-                    `).join('')}
-                </div>
-                <div id="unitContentDisplay"></div>
-            `;
-            
-            document.getElementById('dynamicContent').innerHTML = html;
-        }
-
-        function loadUnit(index, courseTitle, unitsArray) {
-            currentUnitIndex = index;
-            const units = JSON.parse(unitsArray);
-            
-            const unitContent = `
-                <div class="unit-content">
-                    <button class="back-btn" onclick="loadCourse('${currentCourse}')" style="margin-bottom:15px;">← Back to Units</button>
-                    <h2>Unit ${index + 1}: ${units[index]}</h2>
-                    <div style="margin-top:20px;">
-                        ${getUnitContent(currentCourse, index)}
-                    </div>
-                    <div style="display:flex; justify-content:space-between; margin-top:30px;">
-                        ${index > 0 ? `<button class="start-btn" onclick="loadUnit(${index-1}, '${courseTitle}', '${JSON.stringify(units).replace(/'/g, "\\'")}')">← Previous</button>` : '<div></div>'}
-                        ${index < units.length - 1 ? `<button class="start-btn" onclick="loadUnit(${index+1}, '${courseTitle}', '${JSON.stringify(units).replace(/'/g, "\\'")}')">Next →</button>` : '<button class="start-btn" onclick="alert(\'Congratulations! You completed the course!\')">Complete Course ✓</button>'}
-                    </div>
-                </div>
-            `;
-            
-            document.getElementById('unitContentDisplay').innerHTML = unitContent;
-            document.querySelector('.progress-bar').style.width = `${((index+1)/units.length)*100}%`;
-        }
-
-        function getUnitContent(course, unitIndex) {
-            // Detailed content for each unit
-            const contents = {
-                learner: {
-                    0: "<p>Motor vehicles are an important part of our day-to-day living. The goal of driver training is to equip you with the right knowledge of how to handle your vehicle and how to act appropriately when using the road. Most traffic accidents are caused by human error, however this can be easily prevented when the driver is adequately prepared.</p>",
-                    1: "<p>The road is governed by rules and regulations derived from international, regional and Kenyan law. Key documents include the Traffic Act and the Highway Code. These set out the laws that govern the use of roads and expected conduct of road users, including penalties for non-compliance.</p>",
-                    2: "<p>The model town board is an example of a road network. Features include: one-way roads, two-way roads, roundabouts, parking zones, yellow kerbs, pedestrian crossings, stop signs, give way signs, and road markings. Understanding these is essential for the practical driving test.</p>"
-                },
-                ev: {
-                    0: "<p>An Electric Vehicle (EV) is a motor vehicle powered fully or partially by electricity. Unlike traditional vehicles that use petrol or diesel engines, EVs use electric motors and battery systems. Types include: Battery Electric Vehicles (BEV), Hybrid Electric Vehicles (HEV), and Plug-in Hybrid Electric Vehicles (PHEV).</p>",
-                    1: "<p>Key EV components include: Battery Pack (stores electrical energy), Electric Motor (converts energy to movement), Inverter (converts DC to AC), Charging Port, Regenerative Braking System, and Battery Management System (BMS).</p>",
-                    2: "<p>EV Safety: Always inspect before driving, ensure charging cables are safe, never touch damaged electrical parts, avoid water exposure during charging, use approved charging equipment. High-voltage systems require trained technicians only.</p>"
-                }
-            };
-            
-            // Default content if specific not found
-            if (contents[course] && contents[course][unitIndex]) {
-                return contents[course][unitIndex];
-            }
-            
-            return `<p>This unit covers important topics related to ${course === 'learner' ? learnerUnits[unitIndex] : (course === 'boda' ? bodaUnits[unitIndex] : evModules[unitIndex])}. Please study the material carefully and refer to the complete course manual for detailed information.</p>
-                    <div style="background:#e9ecef; padding:15px; border-radius:10px; margin-top:20px;">
-                        <strong>📌 Key Points:</strong>
-                        <ul style="margin-top:10px; margin-left:20px;">
-                            <li>Review the complete course material for full understanding</li>
-                            <li>Practice regularly to reinforce learning</li>
-                            <li>Take notes on important concepts</li>
-                            <li>Prepare for the assessment at the end of the unit</li>
-                        </ul>
-                    </div>`;
-        }
-
-        function loadQuizBank() {
-            let quizHtml = `
-                <button class="back-btn" onclick="goBack()">← Back to Courses</button>
-                <h2 style="color:#667eea; margin-bottom:20px;">📝 1000+ Quiz Bank</h2>
-                <p style="margin-bottom:30px;">Test your knowledge with practice questions. Click on an option to select your answer, then click "Check Answer" to see if you're correct!</p>
-            `;
-            
-            for (const [category, questions] of Object.entries(quizBank)) {
-                quizHtml += `
-                    <div class="quiz-category">
-                        <h3>📌 ${category}</h3>
-                        <div class="quiz-questions">
-                            ${questions.map((q, qIdx) => `
-                                <div class="quiz-item" id="quiz-${category.replace(/\s/g, '')}-${qIdx}">
-                                    <div class="quiz-question">${qIdx + 1}. ${q.q}</div>
-                                    <div class="quiz-options">
-                                        ${q.options.map((opt, optIdx) => `
-                                            <label class="quiz-option">
-                                                <input type="radio" name="q${category.replace(/\s/g, '')}${qIdx}" value="${optIdx}">
-                                                ${String.fromCharCode(65+optIdx)}. ${opt}
-                                            </label>
-                                        `).join('')}
-                                    </div>
-                                    <button class="show-answer-btn" onclick="checkQuizAnswer('${category.replace(/\s/g, '')}', ${qIdx}, ${q.correct})">Check Answer</button>
-                                    <div class="answer-feedback" id="feedback-${category.replace(/\s/g, '')}-${qIdx}"></div>
-                                </div>
-                            `).join('')}
-                        </div>
-                    </div>
-                `;
-            }
-            
-            document.getElementById('dynamicContent').innerHTML = quizHtml;
-        }
-
-        function checkQuizAnswer(category, qIndex, correctIndex) {
-            const selected = document.querySelector(`input[name="q${category}${qIndex}"]:checked`);
-            const feedbackDiv = document.getElementById(`feedback-${category}-${qIndex}`);
-            
-            if (!selected) {
-                feedbackDiv.textContent = "Please select an answer first!";
-                feedbackDiv.className = "answer-feedback wrong";
-                return;
-            }
-            
-            const selectedValue = parseInt(selected.value);
-            
-            if (selectedValue === correctIndex) {
-                feedbackDiv.textContent = "✅ Correct! Well done!";
-                feedbackDiv.className = "answer-feedback correct";
-            } else {
-                const correctLetter = String.fromCharCode(65 + correctIndex);
-                feedbackDiv.textContent = `❌ Incorrect. The correct answer is ${correctLetter}. Try again!`;
-                feedbackDiv.className = "answer-feedback wrong";
-            }
-        }
-
-        function goBack() {
-            const coursesTab = document.getElementById('coursesTab');
-            const dynamicContent = document.getElementById('dynamicContent');
-            
-            coursesTab.classList.add('active');
-            dynamicContent.style.display = 'none';
-            document.querySelector('.courses-grid').style.display = 'grid';
-            currentCourse = null;
-        }
-
-        // Check Supabase connection on load
-        async function checkConnection() {
             try {
-                const { data, error } = await supabase.from('academy_courses').select('count', { count: 'exact', head: true });
-                console.log('Supabase connected successfully!');
+                const { data: courses, error } = await supabase
+                    .from('courses')
+                    .select('*')
+                    .order('id');
+                
+                if (error) throw error;
+                
+                if (!courses || courses.length === 0) {
+                    coursesGrid.innerHTML = '<div class="loading">No courses available at the moment. Please check back later.</div>';
+                    return;
+                }
+                
+                coursesGrid.innerHTML = courses.map(course => `
+                    <div class="course-card" onclick="navigateToCourse('${course.title.replace(/'/g, "\\'")}')">
+                        <div class="course-icon">${course.icon || '📚'}</div>
+                        <h3>${course.title}</h3>
+                        <p>${course.description || 'Professional driver training course'}</p>
+                        <div class="course-meta">
+                            <span class="duration">⏱️ ${course.duration || 'Flexible'}</span>
+                            ${course.units_count > 0 ? `<span class="duration">📚 ${course.units_count} Units</span>` : ''}
+                            <button class="start-btn">Start Learning →</button>
+                        </div>
+                    </div>
+                `).join('');
+                
             } catch (error) {
-                console.log('Supabase connection check completed');
+                console.error('Error loading courses:', error);
+                coursesGrid.innerHTML = '<div class="loading">Error loading courses. Please refresh the page.</div>';
             }
         }
         
-        checkConnection();
+        function navigateToCourse(courseTitle) {
+            // Store course info in session storage
+            sessionStorage.setItem('selectedCourse', courseTitle);
+            
+            // Navigate to course detail page
+            if (coursePages[courseTitle]) {
+                window.location.href = coursePages[courseTitle];
+            } else {
+                window.location.href = 'course.html';
+            }
+        }
+        
+        // Load courses when page loads
+        loadCourses();
     </script>
 </body>
 </html>
