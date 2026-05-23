@@ -1,22 +1,8 @@
-// ============================================
-// SINGLE SUPABASE INSTANCE - DO NOT DUPLICATE
-// ============================================
-
+// supabase.js - SINGLE SOURCE OF TRUTH
 const SUPABASE_URL = 'https://jeksrwrzzrczamxijvwl.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Impla3Nyd3J6enJjemFteGlqdndsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg2NzYyMjAsImV4cCI6MjA5NDI1MjIyMH0.1poYpJKNFEVe2NTBkXBTH2bIHGk2yT8aqCU-OlJc4vs';
 
 // Create singleton instance
-if (!window._supabase) {
-    console.log('🚀 Initializing Supabase...');
-    window._supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-    console.log('✅ Supabase ready');
-}
+window._supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-// Export for use
-const supabase = window._supabase;
-
-// Make globally available
-window.supabase = supabase;
-window.getSupabase = () => supabase;
-
-console.log('📦 supabase.js loaded - Singleton pattern');
+console.log('✅ Supabase singleton initialized');
