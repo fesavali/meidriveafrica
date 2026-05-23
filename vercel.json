@@ -1,8 +1,9 @@
 {
-  "outputDirectory": ".",
+  "version": 2,
+  "name": "mei-drive-africa",
   "builds": [
     {
-      "src": "index.html",
+      "src": "*.html",
       "use": "@vercel/static"
     }
   ],
@@ -10,6 +11,10 @@
     {
       "src": "/",
       "dest": "/index.html"
+    },
+    {
+      "src": "/admin-portal.html",
+      "dest": "/admin-portal.html"
     },
     {
       "src": "/(.*)",
