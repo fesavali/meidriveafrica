@@ -1,1 +1,562 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MEI DRIVE AFRICA - Professional Driver Training</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #0a0a0a;
+            color: #fff;
+            overflow-x: hidden;
+        }
+
+        /* Navigation */
+        .navbar {
+            background: rgba(0, 0, 0, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 15px 5%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 20px;
+            position: fixed;
+            top: 0;
+            width: 100%;
+            z-index: 1000;
+            border-bottom: 1px solid rgba(0, 255, 136, 0.3);
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        .logo span {
+            color: #00ff88;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 30px;
+            align-items: center;
+        }
+
+        .nav-links a {
+            color: white;
+            text-decoration: none;
+            transition: color 0.3s;
+            font-weight: 500;
+        }
+
+        .nav-links a:hover {
+            color: #00ff88;
+        }
+
+        .auth-buttons {
+            display: flex;
+            gap: 15px;
+        }
+
+        .btn-login, .btn-register {
+            padding: 8px 24px;
+            border-radius: 25px;
+            text-decoration: none;
+            transition: all 0.3s;
+            font-weight: 600;
+        }
+
+        .btn-login {
+            background: transparent;
+            border: 1px solid #00ff88;
+            color: #00ff88;
+        }
+
+        .btn-login:hover {
+            background: #00ff88;
+            color: #0a0a0a;
+        }
+
+        .btn-register {
+            background: #00ff88;
+            color: #0a0a0a;
+        }
+
+        .btn-register:hover {
+            background: #00cc6a;
+            transform: translateY(-2px);
+        }
+
+        /* Hero Section */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            background: linear-gradient(135deg, #0a0a0a 0%, #0d1f1a 50%, #0a2e1f 100%);
+            position: relative;
+            padding: 100px 20px;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" opacity="0.03"><path fill="%2300ff88" d="M50,0 L61.8,38.2 L100,38.2 L69.1,61.8 L80.9,100 L50,75.4 L19.1,100 L30.9,61.8 L0,38.2 L38.2,38.2 L50,0 Z"/></svg>') repeat;
+            opacity: 0.1;
+        }
+
+        .hero-content {
+            max-width: 800px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 1;
+        }
+
+        .hero h1 {
+            font-size: 64px;
+            margin-bottom: 20px;
+            line-height: 1.2;
+        }
+
+        .hero h1 span {
+            color: #00ff88;
+        }
+
+        .hero p {
+            font-size: 20px;
+            opacity: 0.9;
+            margin-bottom: 25px;
+            line-height: 1.6;
+        }
+
+        .hero-subtitle {
+            font-size: 16px;
+            opacity: 0.8;
+            margin-bottom: 30px;
+        }
+
+        .hero-buttons {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            margin-bottom: 50px;
+        }
+
+        .btn-primary {
+            background: #00ff88;
+            color: #0a0a0a;
+            padding: 14px 35px;
+            border-radius: 40px;
+            text-decoration: none;
+            font-weight: bold;
+            transition: all 0.3s;
+            display: inline-block;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(0,255,136,0.3);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            border: 2px solid #00ff88;
+            color: #00ff88;
+            padding: 12px 35px;
+            border-radius: 40px;
+            text-decoration: none;
+            font-weight: bold;
+            transition: all 0.3s;
+            display: inline-block;
+        }
+
+        .btn-secondary:hover {
+            background: rgba(0,255,136,0.1);
+            transform: translateY(-3px);
+        }
+
+        .stats {
+            display: flex;
+            justify-content: center;
+            gap: 60px;
+            margin-top: 40px;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 36px;
+            font-weight: bold;
+            color: #00ff88;
+        }
+
+        .stat-label {
+            font-size: 14px;
+            opacity: 0.7;
+        }
+
+        /* Courses Section */
+        .courses-section {
+            padding: 80px 5%;
+            background: #0a0a0a;
+        }
+
+        .section-title {
+            text-align: center;
+            font-size: 42px;
+            margin-bottom: 20px;
+        }
+
+        .section-title span {
+            color: #00ff88;
+        }
+
+        .section-subtitle {
+            text-align: center;
+            color: #aaa;
+            margin-bottom: 50px;
+            font-size: 18px;
+        }
+
+        .courses-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 30px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .course-card {
+            background: linear-gradient(135deg, rgba(0,255,136,0.05) 0%, rgba(0,255,136,0.01) 100%);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            transition: all 0.3s;
+            cursor: pointer;
+            border: 1px solid rgba(0,255,136,0.2);
+        }
+
+        .course-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 40px rgba(0,255,136,0.1);
+            border-color: rgba(0,255,136,0.5);
+        }
+
+        .course-icon {
+            font-size: 48px;
+            margin-bottom: 20px;
+        }
+
+        .course-card h3 {
+            font-size: 24px;
+            margin-bottom: 12px;
+        }
+
+        .course-card p {
+            opacity: 0.8;
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+
+        .course-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(0,255,136,0.2);
+        }
+
+        .duration {
+            font-size: 14px;
+            opacity: 0.7;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .start-btn {
+            background: #00ff88;
+            color: #0a0a0a;
+            border: none;
+            padding: 8px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+
+        .start-btn:hover {
+            transform: scale(1.05);
+            background: #00cc6a;
+        }
+
+        /* Loading Spinner */
+        .loading {
+            text-align: center;
+            padding: 50px;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 3px solid rgba(0,255,136,0.3);
+            border-top-color: #00ff88;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Footer */
+        .footer {
+            background: #050505;
+            text-align: center;
+            padding: 40px;
+        }
+
+        .footer p {
+            opacity: 0.7;
+            font-size: 14px;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .navbar {
+                flex-direction: column;
+                text-align: center;
+                position: relative;
+            }
+            
+            .hero h1 {
+                font-size: 36px;
+            }
+            
+            .hero p {
+                font-size: 16px;
+            }
+            
+            .section-title {
+                font-size: 28px;
+            }
+            
+            .courses-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .hero-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .stats {
+                gap: 30px;
+                flex-wrap: wrap;
+            }
+            
+            .stat-number {
+                font-size: 24px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="logo">MEI DRIVE <span>AFRICA</span></div>
+        <div class="nav-links">
+            <a href="#home">Home</a>
+            <a href="#courses">Courses</a>
+            <a href="#quiz">Quiz Bank</a>
+            <a href="#contact">Contact</a>
+        </div>
+        <div class="auth-buttons">
+            <a href="#" class="btn-login">Login</a>
+            <a href="#" class="btn-register">Register</a>
+        </div>
+    </nav>
+
+    <section class="hero" id="home">
+        <div class="hero-content">
+            <h1>Practice Daily.<br><span>Revise Smarter.</span> Pass with Confidence.</h1>
+            <p>For Learners and Experienced Drivers — Refresh Your Skills with MEI DRIVE AFRICA. NTSA-approved courses.</p>
+            <div class="hero-buttons">
+                <a href="#courses" class="btn-primary">Explore Courses</a>
+                <a href="#" class="btn-secondary">Get Started</a>
+            </div>
+            <div class="stats" id="stats">
+                <div class="stat-item">
+                    <div class="stat-number" id="coursesCount">0</div>
+                    <div class="stat-label">Courses</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number" id="questionsCount">0</div>
+                    <div class="stat-label">Practice Questions</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number" id="studentsCount">10K+</div>
+                    <div class="stat-label">Active Students</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="courses-section" id="courses">
+        <h2 class="section-title">Our <span>Courses</span></h2>
+        <div class="section-subtitle">Choose the right course for your driving journey</div>
+        <div class="courses-grid" id="coursesGrid">
+            <div class="loading">
+                <div class="spinner"></div>
+                Loading courses...
+            </div>
+        </div>
+    </section>
+
+    <footer class="footer">
+        <p>&copy; 2026 MEI DRIVE AFRICA. All rights reserved. | NTSA Approved Training Provider</p>
+        <p style="margin-top: 10px; font-size: 12px;">Activate Windows - Go to Settings to activate Windows</p>
+    </footer>
+
+    <script>
+        // SINGLE SUPABASE INITIALIZATION - NO DUPLICATION
+        const SUPABASE_CONFIG = {
+            url: 'https://qpqkmmkrzxlhcpccefjn.supabase.co',
+            anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFwcWttbWtyenhsaGNwY2NlZmpuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk1MjU0NzIsImV4cCI6MjA5NTEwMTQ3Mn0.Vw1hexN3NKoF_y9VFBFs_NUhJgFNNMwuyzDjImUcM6s'
+        };
+        
+        const supabase = window.supabase.createClient(SUPABASE_CONFIG.url, SUPABASE_CONFIG.anonKey);
+        
+        // Course mapping for navigation
+        const COURSE_PAGES = {
+            'Learner Driving Course': 'learner.html',
+            'Boda Rider Course': 'boda.html',
+            'Electric Vehicle Course': 'ev.html',
+            'Refresher Course': 'refresher.html'
+        };
+
+        // Global state
+        let coursesData = [];
+        let questionsData = [];
+
+        // Load courses from Supabase
+        async function loadCourses() {
+            const coursesGrid = document.getElementById('coursesGrid');
+            
+            try {
+                const { data: courses, error } = await supabase
+                    .from('courses')
+                    .select('*')
+                    .order('id');
+                
+                if (error) throw error;
+                
+                coursesData = courses || [];
+                
+                // Update stats
+                document.getElementById('coursesCount').textContent = coursesData.length;
+                
+                if (!coursesData.length) {
+                    coursesGrid.innerHTML = '<div class="loading">No courses available at the moment.</div>';
+                    return;
+                }
+                
+                coursesGrid.innerHTML = coursesData.map(course => `
+                    <div class="course-card" onclick="navigateToCourse('${course.title.replace(/'/g, "\\'")}')">
+                        <div class="course-icon">${course.icon || '📚'}</div>
+                        <h3>${course.title}</h3>
+                        <p>${course.description || 'Professional driver training course'}</p>
+                        <div class="course-meta">
+                            <span class="duration">⏱️ ${course.duration || 'Flexible'}</span>
+                            ${course.units_count > 0 ? `<span class="duration">📚 ${course.units_count} Units</span>` : ''}
+                            <button class="start-btn">Start Learning →</button>
+                        </div>
+                    </div>
+                `).join('');
+                
+            } catch (error) {
+                console.error('Error loading courses:', error);
+                coursesGrid.innerHTML = '<div class="loading">Error loading courses. Please refresh the page.</div>';
+            }
+        }
+
+        // Load quiz questions count
+        async function loadQuestionsCount() {
+            try {
+                const { count, error } = await supabase
+                    .from('quiz_questions')
+                    .select('*', { count: 'exact', head: true });
+                
+                if (!error && count) {
+                    document.getElementById('questionsCount').textContent = count;
+                } else {
+                    document.getElementById('questionsCount').textContent = '500+';
+                }
+            } catch (error) {
+                console.error('Error loading questions count:', error);
+                document.getElementById('questionsCount').textContent = '500+';
+            }
+        }
+
+        // Navigation function
+        function navigateToCourse(courseTitle) {
+            sessionStorage.setItem('selectedCourse', courseTitle);
+            
+            if (COURSE_PAGES[courseTitle]) {
+                window.location.href = COURSE_PAGES[courseTitle];
+            } else {
+                // Create dynamic course page if needed
+                createDynamicCoursePage(courseTitle);
+            }
+        }
+
+        // Create dynamic course page on the fly
+        async function createDynamicCoursePage(courseTitle) {
+            const course = coursesData.find(c => c.title === courseTitle);
+            if (!course) return;
+            
+            const { data: units, error } = await supabase
+                .from('units')
+                .select('*')
+                .eq('course_id', course.id)
+                .order('unit_number');
+            
+            if (error) {
+                alert('Error loading course content');
+                return;
+            }
+            
+            // Store units in session storage and redirect
+            sessionStorage.setItem('currentUnits', JSON.stringify(units));
+            sessionStorage.setItem('currentCourse', JSON.stringify(course));
+            window.location.href = 'course.html';
+        }
+
+        // Initialize everything when page loads
+        async function init() {
+            await loadCourses();
+            await loadQuestionsCount();
+        }
+        
+        // Start the app
+        init();
+    </script>
+</body>
+</html>
