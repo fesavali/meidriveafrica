@@ -5,9 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>MEI DRIVE AFRICA | NTSA Driver Training</title>
     <meta name="description" content="NTSA-approved driver training platform. Practice daily, revise smarter, pass with confidence.">
-    <meta name="keywords" content="NTSA, driving school, driver training, Kenya, driving license, learner hub">
-    <meta name="author" content="MEI DRIVE AFRICA">
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%2300ff88'/%3E%3Ctext x='50' y='67' font-size='50' text-anchor='middle' fill='%230a192f' font-weight='bold'%3EM%3C/text%3E%3C/svg%3E">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.0/dist/umd/supabase.min.js"></script>
@@ -129,7 +126,7 @@
         .btn-primary { background: var(--gradient-green); color: #0a192f; }
         .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(0,255,136,0.3); }
         .btn-outline { border: 1px solid var(--primary); color: var(--primary); background: transparent; }
-        .btn-outline:hover { background: rgba(0,255,136,0.1); transform: translateY(-2px); }
+        .btn-outline:hover { background: rgba(0,255,136,0.1); }
         .stats-bar {
             background: #0d2137;
             border-bottom: 1px solid var(--border);
@@ -267,6 +264,19 @@
             margin-top: 2rem;
             flex-wrap: wrap;
         }
+        .refresh-btn {
+            background: rgba(0,255,136,0.1);
+            border: 1px solid var(--primary);
+            border-radius: 50%;
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .refresh-btn:hover { background: var(--primary); color: #0a192f; transform: rotate(180deg); }
         @media (max-width: 768px) { .hero h1 { font-size: 2rem; } .grid { grid-template-columns: 1fr; } }
     </style>
 </head>
@@ -285,6 +295,7 @@
                 <button onclick="app.navigate('safety')">🆘 Safety Library</button>
                 <button id="dashboardNavBtn" onclick="app.navigate('dashboard')" style="display:none;">📊 Dashboard</button>
                 <div id="authButtons"></div>
+                <div class="refresh-btn" onclick="refreshAllData()" title="Refresh Data"><i class="fas fa-sync-alt"></i></div>
             </div>
         </div>
     </nav>
@@ -304,13 +315,14 @@
     let currentRoute = 'home';
     let routeParams = {};
     let coursesList = [];
-    let allUnits = []; // Store all units for navigation
+    let allUnits = [];
     let currentQuizQuestions = [];
     let currentQuizIndex = 0;
     let userAnswers = [];
     let userEnrollments = [];
     let userProgress = [];
     
+    // ==================== HELPER FUNCTIONS ====================
     function showToast(msg, type = 'info') {
         const container = document.getElementById('toast-container');
         const toast = document.createElement('div');
@@ -322,123 +334,164 @@
     
     function escapeHtml(str) { if (!str) return ''; return str.replace(/[&<>]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[m])); }
     
+    // ==================== REFRESH DATA FUNCTION ====================
+    window.refreshAllData = async function() {
+        showToast('🔄 Refreshing data...', 'info');
+        try {
+            coursesList = await fetchCourses();
+            allUnits = await fetchUnits();
+            if (currentUser) {
+                userEnrollments = await fetchUserEnrollments();
+                userProgress = await fetchUserProgress();
+            }
+            renderCurrentRoute();
+            showToast('✅ Data refreshed successfully!', 'success');
+        } catch (e) {
+            showToast('❌ Error refreshing data', 'error');
+        }
+    };
+    
+    // ==================== SUPABASE FETCH FUNCTIONS ====================
     async function fetchCourses() {
-        const { data, error } = await supabase.from('courses').select('*').order('id');
-        if (error) return [];
-        return data;
+        try {
+            const { data, error } = await supabase.from('courses').select('*').order('id');
+            if (error) throw error;
+            return data || [];
+        } catch (e) {
+            console.error('Fetch courses error:', e);
+            return [];
+        }
     }
     
     async function fetchUnits() {
-        const { data, error } = await supabase.from('units').select('*').order('unit_number');
-        if (error) return [];
-        return data;
+        try {
+            const { data, error } = await supabase.from('units').select('*').order('unit_number', { ascending: true });
+            if (error) throw error;
+            return data || [];
+        } catch (e) {
+            console.error('Fetch units error:', e);
+            return [];
+        }
     }
     
     async function fetchUnitById(unitId) {
-        const { data, error } = await supabase.from('units').select('*').eq('id', unitId).single();
-        if (error) return null;
-        return data;
+        try {
+            const { data, error } = await supabase.from('units').select('*').eq('id', unitId).single();
+            if (error) throw error;
+            return data;
+        } catch (e) {
+            console.error('Fetch unit by id error:', e);
+            return null;
+        }
     }
     
     async function fetchNextUnit(currentUnitNumber) {
-        const { data, error } = await supabase
-            .from('units')
-            .select('*')
-            .eq('unit_number', currentUnitNumber + 1)
-            .single();
-        if (error) return null;
-        return data;
+        try {
+            const { data, error } = await supabase.from('units').select('*').eq('unit_number', currentUnitNumber + 1).single();
+            if (error) return null;
+            return data;
+        } catch (e) { return null; }
     }
     
     async function fetchPreviousUnit(currentUnitNumber) {
         if (currentUnitNumber <= 1) return null;
-        const { data, error } = await supabase
-            .from('units')
-            .select('*')
-            .eq('unit_number', currentUnitNumber - 1)
-            .single();
-        if (error) return null;
-        return data;
+        try {
+            const { data, error } = await supabase.from('units').select('*').eq('unit_number', currentUnitNumber - 1).single();
+            if (error) return null;
+            return data;
+        } catch (e) { return null; }
     }
     
     async function fetchSigns() {
-        const { data, error } = await supabase.from('traffic_signs').select('*').order('category');
-        if (error) return [];
-        return data;
+        try {
+            const { data, error } = await supabase.from('traffic_signs').select('*').order('category');
+            if (error) throw error;
+            return data || [];
+        } catch (e) { return []; }
     }
     
     async function fetchQuizQuestions() {
-        const { data, error } = await supabase.from('quiz_questions').select('*');
-        if (error) return [];
-        return data;
+        try {
+            const { data, error } = await supabase.from('quiz_questions').select('*');
+            if (error) throw error;
+            return data || [];
+        } catch (e) { return []; }
     }
     
     async function fetchSafetyLibrary() {
-        const { data, error } = await supabase.from('safety_library').select('*').order('category');
-        if (error) return [];
-        return data;
+        try {
+            const { data, error } = await supabase.from('safety_library').select('*').order('category');
+            if (error) throw error;
+            return data || [];
+        } catch (e) { return []; }
     }
     
     async function fetchUserEnrollments() {
         if (!currentUser) return [];
-        const { data, error } = await supabase
-            .from('enrollments')
-            .select('*, courses(*)')
-            .eq('user_id', currentUser.id)
-            .eq('payment_status', 'verified');
-        if (error) return [];
-        return data;
+        try {
+            const { data, error } = await supabase.from('enrollments').select('*, courses(*)').eq('user_id', currentUser.id).eq('payment_status', 'verified');
+            if (error) throw error;
+            return data || [];
+        } catch (e) { return []; }
     }
     
     async function fetchUserProgress() {
         if (!currentUser) return [];
-        const { data, error } = await supabase
-            .from('user_progress')
-            .select('*')
-            .eq('user_id', currentUser.id);
-        if (error) return [];
-        return data;
+        try {
+            const { data, error } = await supabase.from('user_progress').select('*').eq('user_id', currentUser.id);
+            if (error) throw error;
+            return data || [];
+        } catch (e) { return []; }
     }
     
     async function updateUnitProgress(unitId, completed, quizScore = null) {
         if (!currentUser) return;
-        const existing = userProgress.find(p => p.unit_id === unitId);
-        if (existing) {
-            await supabase
-                .from('user_progress')
-                .update({ completed, quiz_score: quizScore, completed_at: completed ? new Date() : null })
-                .eq('id', existing.id);
-        } else {
-            await supabase
-                .from('user_progress')
-                .insert({ user_id: currentUser.id, unit_id: unitId, completed, quiz_score: quizScore });
-        }
-        userProgress = await fetchUserProgress();
+        try {
+            const existing = userProgress.find(p => p.unit_id === unitId);
+            if (existing) {
+                await supabase.from('user_progress').update({ completed, quiz_score: quizScore, completed_at: completed ? new Date() : null }).eq('id', existing.id);
+            } else {
+                await supabase.from('user_progress').insert({ user_id: currentUser.id, unit_id: unitId, completed, quiz_score: quizScore });
+            }
+            userProgress = await fetchUserProgress();
+        } catch (e) { console.error('Update progress error:', e); }
     }
     
+    // ==================== SUPABASE INIT ====================
     async function initSupabase() {
         if (!window.supabase) {
             await new Promise(resolve => setTimeout(resolve, 1000));
             if (!window.supabase) {
-                showToast("Failed to load Supabase. Please refresh.", "error");
+                document.getElementById('page-content').innerHTML = '<div class="container" style="padding-top:120px;"><div class="card"><h2>⚠️ Connection Error</h2><p>Unable to load Supabase. Please refresh the page.</p></div></div>';
                 return false;
             }
         }
         
         supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        
+        // Fetch initial data
         coursesList = await fetchCourses();
         allUnits = await fetchUnits();
         
+        // Auth check
         const { data: { session } } = await supabase.auth.getSession();
         if (session) await handleUserLogin(session.user);
         updateAuthUI();
         renderCurrentRoute();
+        
+        // Auth listener
         supabase.auth.onAuthStateChange(async (event, session) => {
-            if (event === 'SIGNED_IN' && session) await handleUserLogin(session.user);
-            else if (event === 'SIGNED_OUT') handleUserLogout();
+            if (event === 'SIGNED_IN' && session) {
+                await handleUserLogin(session.user);
+                await refreshAllData();
+            } else if (event === 'SIGNED_OUT') {
+                handleUserLogout();
+                await refreshAllData();
+            }
             updateAuthUI();
             renderCurrentRoute();
         });
+        
         return true;
     }
     
@@ -455,7 +508,7 @@
         try {
             const { data } = await supabase.rpc('is_admin_user');
             isAdmin = !!data;
-        } catch(e) {}
+        } catch(e) { isAdmin = false; }
     }
     
     function handleUserLogout() { 
@@ -465,6 +518,7 @@
         userProgress = [];
     }
     
+    // ==================== AUTH FUNCTIONS ====================
     window.signIn = async function(email, password) {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) { showToast(error.message, 'error'); return false; }
@@ -501,13 +555,13 @@
     
     function showLoginModal() {
         document.getElementById('authModal')?.remove();
-        const modalHtml = `<div class="modal active" id="authModal"><div class="modal-content"><h2>Sign In</h2><input type="email" id="loginEmail" placeholder="Email"><input type="password" id="loginPassword" placeholder="Password"><button class="btn btn-primary" onclick="handleLoginSubmit()">Login</button><button class="btn-outline btn" onclick="closeModal()">Cancel</button><p style="margin-top:12px;font-size:12px;">Don't have an account? <a href="#" onclick="showSignupModal(); return false;">Sign up</a></p></div></div>`;
+        const modalHtml = `<div class="modal active" id="authModal"><div class="modal-content"><h2>Sign In</h2><input type="email" id="loginEmail" placeholder="Email"><input type="password" id="loginPassword" placeholder="Password"><button class="btn btn-primary" onclick="handleLoginSubmit()">Login</button><button class="btn btn-outline btn" onclick="closeModal()">Cancel</button><p style="margin-top:12px;font-size:12px;">Don't have an account? <a href="#" onclick="showSignupModal(); return false;">Sign up</a></p></div></div>`;
         document.body.insertAdjacentHTML('beforeend', modalHtml);
     }
     
     function showSignupModal() {
         document.getElementById('authModal')?.remove();
-        const modalHtml = `<div class="modal active" id="authModal"><div class="modal-content"><h2>Sign Up</h2><input type="text" id="signupName" placeholder="Full Name"><input type="email" id="signupEmail" placeholder="Email"><input type="password" id="signupPassword" placeholder="Password (min 6 characters)"><button class="btn btn-primary" onclick="handleSignupSubmit()">Sign Up</button><button class="btn-outline btn" onclick="closeModal()">Cancel</button><p style="margin-top:12px;font-size:12px;">Already have an account? <a href="#" onclick="showLoginModal(); return false;">Login</a></p></div></div>`;
+        const modalHtml = `<div class="modal active" id="authModal"><div class="modal-content"><h2>Sign Up</h2><input type="text" id="signupName" placeholder="Full Name"><input type="email" id="signupEmail" placeholder="Email"><input type="password" id="signupPassword" placeholder="Password (min 6 characters)"><button class="btn btn-primary" onclick="handleSignupSubmit()">Sign Up</button><button class="btn btn-outline btn" onclick="closeModal()">Cancel</button><p style="margin-top:12px;font-size:12px;">Already have an account? <a href="#" onclick="showLoginModal(); return false;">Login</a></p></div></div>`;
         document.body.insertAdjacentHTML('beforeend', modalHtml);
     }
     
@@ -516,7 +570,7 @@
         const dashboardBtn = document.getElementById('dashboardNavBtn');
         if (!container) return;
         if (currentUser) {
-            container.innerHTML = `<div class="user-badge"><i class="fas fa-user"></i> ${escapeHtml(currentUser.email?.split('@')[0])}</div><button onclick="signOut()">Logout</button>${isAdmin ? '<button class="btn-primary-nav" onclick="window.location.href=\'admin-portal.html\'">Admin</button>' : ''}`;
+            container.innerHTML = `<div class="user-badge"><i class="fas fa-user"></i> ${escapeHtml(currentUser.email?.split('@')[0])}</div><button onclick="signOut()">Logout</button>${isAdmin ? '<button class="btn-primary-nav" onclick="window.location.href=\'admin-dashboard.html\'">Admin</button>' : ''}`;
             if (dashboardBtn) dashboardBtn.style.display = 'inline-block';
         } else {
             container.innerHTML = `<button onclick="showLoginModal()">Login</button><button class="btn-primary-nav" onclick="showSignupModal()">Sign Up</button>`;
@@ -524,16 +578,14 @@
         }
     }
     
-    // ==================== UNIT NAVIGATION FUNCTIONS ====================
-    window.goToNextUnit = async function(currentUnitNumber) {
+    // ==================== UNIT NAVIGATION ====================
+    window.goToNextUnit = async function(currentUnitNumber, currentUnitId) {
+        if (currentUser && currentUnitId) {
+            await updateUnitProgress(currentUnitId, true);
+            showToast(`Unit ${currentUnitNumber} marked as complete!`, 'success');
+        }
         const nextUnit = await fetchNextUnit(currentUnitNumber);
         if (nextUnit) {
-            // Auto-mark current unit as complete when moving to next
-            const currentUnit = allUnits.find(u => u.unit_number === currentUnitNumber);
-            if (currentUnit && currentUser) {
-                await updateUnitProgress(currentUnit.id, true);
-                showToast(`Unit ${currentUnitNumber} marked as complete!`, 'success');
-            }
             navigate('unit', { unitId: nextUnit.id, unitNumber: nextUnit.unit_number, title: nextUnit.title });
         } else {
             showToast('🎉 Congratulations! You\'ve completed all units!', 'success');
@@ -550,7 +602,14 @@
         }
     };
     
-    // ==================== USER DASHBOARD ====================
+    window.markCurrentUnitComplete = async function(unitId, unitNumber) {
+        await updateUnitProgress(unitId, true);
+        showToast(`Unit ${unitNumber} marked as complete!`, 'success');
+        const unit = await fetchUnitById(unitId);
+        if (unit) navigate('unit', { unitId: unit.id, unitNumber: unit.unit_number, title: unit.title });
+    };
+    
+    // ==================== DASHBOARD ====================
     async function renderDashboard() {
         if (!currentUser) {
             showToast('Please login to view dashboard', 'warning');
@@ -583,65 +642,14 @@
             <div class="container" style="padding-top: 100px;">
                 <h1 class="section-title">My <span>Dashboard</span></h1>
                 <div class="dashboard-stats">
-                    <div class="dashboard-stat-card">
-                        <i class="fas fa-graduation-cap" style="font-size: 2rem; color: var(--primary);"></i>
-                        <div class="dashboard-stat-number">${totalEnrolled}</div>
-                        <div>Courses Enrolled</div>
-                    </div>
-                    <div class="dashboard-stat-card">
-                        <i class="fas fa-book-open" style="font-size: 2rem; color: var(--primary);"></i>
-                        <div class="dashboard-stat-number">${completedUnits}/${totalUnits}</div>
-                        <div>Units Completed</div>
-                    </div>
-                    <div class="dashboard-stat-card">
-                        <i class="fas fa-chart-line" style="font-size: 2rem; color: var(--primary);"></i>
-                        <div class="dashboard-stat-number">${Math.round(overallProgress)}%</div>
-                        <div>Overall Progress</div>
-                    </div>
-                    <div class="dashboard-stat-card">
-                        <i class="fas fa-trophy" style="font-size: 2rem; color: var(--primary);"></i>
-                        <div class="dashboard-stat-number">${userProgress.filter(p => p.quiz_score && p.quiz_score >= 70).length}</div>
-                        <div>Quiz Passed</div>
-                    </div>
+                    <div class="dashboard-stat-card"><i class="fas fa-graduation-cap" style="font-size: 2rem; color: var(--primary);"></i><div class="dashboard-stat-number">${totalEnrolled}</div><div>Courses Enrolled</div></div>
+                    <div class="dashboard-stat-card"><i class="fas fa-book-open" style="font-size: 2rem; color: var(--primary);"></i><div class="dashboard-stat-number">${completedUnits}/${totalUnits}</div><div>Units Completed</div></div>
+                    <div class="dashboard-stat-card"><i class="fas fa-chart-line" style="font-size: 2rem; color: var(--primary);"></i><div class="dashboard-stat-number">${Math.round(overallProgress)}%</div><div>Overall Progress</div></div>
+                    <div class="dashboard-stat-card"><i class="fas fa-trophy" style="font-size: 2rem; color: var(--primary);"></i><div class="dashboard-stat-number">${userProgress.filter(p => p.quiz_score && p.quiz_score >= 70).length}</div><div>Quiz Passed</div></div>
                 </div>
-                
-                <div class="card">
-                    <h2><i class="fas fa-chart-simple"></i> Learning Progress</h2>
-                    <div class="progress-bar">
-                        <div class="progress-fill" style="width: ${overallProgress}%"></div>
-                    </div>
-                    <p>You have completed ${completedUnits} out of ${totalUnits} units (${Math.round(overallProgress)}%)</p>
-                </div>
-                
-                <div class="card">
-                    <h2><i class="fas fa-book"></i> My Courses</h2>
-                    ${enrolledCourses.length === 0 ? 
-                        '<p>You haven\'t enrolled in any courses yet. <a href="#" onclick="navigate(\'courses\')">Browse Courses</a></p>' : 
-                        enrolledCourses.map(course => `
-                            <div class="course-progress-card">
-                                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
-                                    <div>
-                                        <i class="fas ${course.icon || 'fa-book'}" style="color: var(--primary); margin-right: 10px;"></i>
-                                        <strong>${escapeHtml(course.name)}</strong>
-                                    </div>
-                                    <button class="btn btn-primary" onclick="navigateToCourse('${course.type}')">Continue Learning</button>
-                                </div>
-                                <div class="progress-bar" style="margin-top: 10px;">
-                                    <div class="progress-fill" style="width: ${course.progress}%"></div>
-                                </div>
-                                <div style="display: flex; justify-content: space-between; margin-top: 8px; font-size: 0.85rem; color: var(--text-muted);">
-                                    <span>${course.completedUnits}/${course.totalUnits} units completed</span>
-                                    <span>${Math.round(course.progress)}%</span>
-                                </div>
-                            </div>
-                        `).join('')
-                    }
-                </div>
-                
-                <div class="card">
-                    <h2><i class="fas fa-clock"></i> Continue Learning</h2>
-                    <div class="grid" id="continueGrid"></div>
-                </div>
+                <div class="card"><h2><i class="fas fa-chart-simple"></i> Learning Progress</h2><div class="progress-bar"><div class="progress-fill" style="width: ${overallProgress}%"></div></div><p>You have completed ${completedUnits} out of ${totalUnits} units (${Math.round(overallProgress)}%)</p></div>
+                <div class="card"><h2><i class="fas fa-book"></i> My Courses</h2>${enrolledCourses.length === 0 ? '<p>You haven\'t enrolled in any courses yet. <a href="#" onclick="navigate(\'courses\')">Browse Courses</a></p>' : enrolledCourses.map(course => `<div class="course-progress-card"><div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;"><div><i class="fas ${course.icon || 'fa-book'}" style="color:var(--primary);margin-right:10px;"></i><strong>${escapeHtml(course.name)}</strong></div><button class="btn btn-primary" onclick="navigateToCourse('${course.type}')">Continue Learning</button></div><div class="progress-bar" style="margin-top:10px;"><div class="progress-fill" style="width:${course.progress}%"></div></div><div style="display:flex;justify-content:space-between;margin-top:8px;font-size:0.85rem;color:var(--text-muted);"><span>${course.completedUnits}/${course.totalUnits} units completed</span><span>${Math.round(course.progress)}%</span></div></div>`).join('')}</div>
+                <div class="card"><h2><i class="fas fa-clock"></i> Continue Learning</h2><div class="grid" id="continueGrid"></div></div>
             </div>
         `;
         
@@ -650,17 +658,8 @@
         const incompleteUnits = units.filter(u => !userProgress.find(p => p.unit_id === u.id && p.completed)).slice(0, 6);
         const continueGrid = document.getElementById('continueGrid');
         if (continueGrid) {
-            if (incompleteUnits.length === 0) {
-                continueGrid.innerHTML = '<p>🎉 Congratulations! You\'ve completed all units!</p>';
-            } else {
-                continueGrid.innerHTML = incompleteUnits.map(u => `
-                    <div class="card" onclick="navigate('unit', { unitId: ${u.id}, unitNumber: ${u.unit_number}, title: '${escapeHtml(u.title)}' })">
-                        <h3>Unit ${u.unit_number}: ${escapeHtml(u.title)}</h3>
-                        <p>${escapeHtml(u.content?.substring(0, 80))}...</p>
-                        <div class="badge">Not started</div>
-                    </div>
-                `).join('');
-            }
+            if (incompleteUnits.length === 0) continueGrid.innerHTML = '<p>🎉 Congratulations! You\'ve completed all units!</p>';
+            else continueGrid.innerHTML = incompleteUnits.map(u => `<div class="card" onclick="navigate('unit', { unitId: ${u.id}, unitNumber: ${u.unit_number}, title: '${escapeHtml(u.title)}' })"><h3>Unit ${u.unit_number}: ${escapeHtml(u.title)}</h3><p>${escapeHtml(u.content?.substring(0, 80))}...</p><div class="badge">Not started</div></div>`).join('');
         }
     }
     
@@ -706,28 +705,16 @@
         if (!units.length) { document.getElementById('unitsGrid').innerHTML = `<p>No units found.</p>`; return; }
         document.getElementById('unitsGrid').innerHTML = units.map(u => {
             const isCompleted = userProgress.find(p => p.unit_id === u.id && p.completed);
-            return `<div class="card" onclick="navigate('unit', { unitId: ${u.id}, unitNumber: ${u.unit_number}, title: '${escapeHtml(u.title)}' })">
-                <h3>Unit ${u.unit_number}: ${escapeHtml(u.title)} ${isCompleted ? '✅' : ''}</h3>
-                <p>${escapeHtml(u.content?.substring(0, 120))}...</p>
-                ${isCompleted ? '<div class="badge">Completed</div>' : '<div class="badge">Not started</div>'}
-            </div>`;
+            return `<div class="card" onclick="navigate('unit', { unitId: ${u.id}, unitNumber: ${u.unit_number}, title: '${escapeHtml(u.title)}' })"><h3>Unit ${u.unit_number}: ${escapeHtml(u.title)} ${isCompleted ? '✅' : ''}</h3><p>${escapeHtml(u.content?.substring(0, 120))}...</p>${isCompleted ? '<div class="badge">Completed</div>' : '<div class="badge">Not started</div>'}</div>`;
         }).join('');
     }
     
     async function renderUnit() {
-        const { unitId, unitNumber, title } = routeParams;
+        const { unitId } = routeParams;
         if (!unitId) { navigate('learner-hub'); return; }
-        
         let unit = await fetchUnitById(unitId);
-        if (!unit) { 
-            // Try to find in allUnits array
-            unit = allUnits.find(u => u.id === unitId);
-            if (!unit) {
-                showToast('Unit not found', 'error');
-                navigate('learner-hub');
-                return;
-            }
-        }
+        if (!unit) { unit = allUnits.find(u => u.id === unitId); }
+        if (!unit) { showToast('Unit not found', 'error'); navigate('learner-hub'); return; }
         
         const isCompleted = userProgress.find(p => p.unit_id === unit.id && p.completed);
         const currentUnitNumber = unit.unit_number;
@@ -741,33 +728,15 @@
                         <span class="badge">${currentUnitNumber} of ${totalUnits}</span>
                     </div>
                     <div class="unit-content">${escapeHtml(unit.content).replace(/\n/g, '<br>')}</div>
-                    
                     <div class="navigation-buttons">
-                        <button class="btn btn-outline" onclick="goToPreviousUnit(${currentUnitNumber})" ${currentUnitNumber <= 1 ? 'disabled' : ''}>
-                            <i class="fas fa-chevron-left"></i> Previous Unit
-                        </button>
-                        <div>
-                            ${!isCompleted && currentUser ? `<button class="btn btn-primary" onclick="markCurrentUnitComplete(${unit.id}, ${currentUnitNumber})"><i class="fas fa-check-circle"></i> Mark Complete</button>` : ''}
-                            <button class="btn btn-outline" onclick="navigate('learner-hub')"><i class="fas fa-list"></i> All Units</button>
-                        </div>
-                        <button class="btn btn-primary" onclick="goToNextUnit(${currentUnitNumber})">
-                            Next Unit <i class="fas fa-chevron-right"></i>
-                        </button>
+                        <button class="btn btn-outline" onclick="goToPreviousUnit(${currentUnitNumber})" ${currentUnitNumber <= 1 ? 'disabled' : ''}><i class="fas fa-chevron-left"></i> Previous Unit</button>
+                        <div>${!isCompleted && currentUser ? `<button class="btn btn-primary" onclick="markCurrentUnitComplete(${unit.id}, ${currentUnitNumber})"><i class="fas fa-check-circle"></i> Mark Complete</button>` : ''}<button class="btn btn-outline" onclick="navigate('learner-hub')"><i class="fas fa-list"></i> All Units</button></div>
+                        <button class="btn btn-primary" onclick="goToNextUnit(${currentUnitNumber}, ${unit.id})">Next Unit <i class="fas fa-chevron-right"></i></button>
                     </div>
                 </div>
             </div>
         `;
     }
-    
-    window.markCurrentUnitComplete = async function(unitId, unitNumber) {
-        await updateUnitProgress(unitId, true);
-        showToast(`Unit ${unitNumber} marked as complete!`, 'success');
-        // Refresh the current unit view to show completed status
-        const unit = await fetchUnitById(unitId);
-        if (unit) {
-            navigate('unit', { unitId: unit.id, unitNumber: unit.unit_number, title: unit.title });
-        }
-    };
     
     async function renderSigns() {
         document.getElementById('page-content').innerHTML = `<div class="container" style="padding-top:100px;"><h1 class="section-title">Traffic <span>Signs</span></h1><div id="signsContainer"><div class="loading-spinner"></div></div></div>`;
@@ -824,7 +793,7 @@
         document.getElementById('safetyContainer').innerHTML = html;
     }
     
-    window.showSafetyArticle = async function(id, title) {
+    window.showSafetyArticle = async function(id) {
         const { data, error } = await supabase.from('safety_library').select('*').eq('id', id).single();
         if (error) { showToast('Error loading article', 'error'); return; }
         document.getElementById('page-content').innerHTML = `<div class="container" style="padding-top:100px;"><div class="card"><h2>${escapeHtml(data.title)}</h2><div class="unit-content">${escapeHtml(data.content).replace(/\n/g, '<br>')}</div><button class="btn btn-outline" onclick="renderSafetyLibrary()"><i class="fas fa-arrow-left"></i> Back to Library</button></div></div>`;
