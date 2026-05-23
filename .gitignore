@@ -1,49 +1,44 @@
 # Dependencies
 node_modules/
-.pnp/
-.pnp.js
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
 
 # Environment variables
 .env
 .env.local
 .env.*.local
+*.env
 
 # Build outputs
 dist/
 build/
-out/
-.next/
-.nuxt/
+*.tar.gz
 
-# IDE files
+# IDE
 .vscode/
 .idea/
 *.swp
 *.swo
 *~
 
-# OS files
+# OS
 .DS_Store
 Thumbs.db
 
 # Logs
 logs/
 *.log
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
 
-# Local Netlify folder
-.netlify/
+# Supabase local
+.supabase/
 
-# Supabase local config
-supabase/.temp/
-supabase/.docker/
+# Vercel
+.vercel
 
-# Testing
-coverage/
-.nyc_output/
+# Render
+.render
 
-# Temporary files
-*.tmp
-*.temp
+# Local development
+localhost/
+*.local
