@@ -4,25 +4,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Unit - MEI Drive Africa</title>
-    
-    <!-- Cache Prevention -->
-    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-    <meta http-equiv="Pragma" content="no-cache">
-    <meta http-equiv="Expires" content="0">
-    
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="supabase.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: #0a0e27;
             color: #ffffff;
         }
-        
         .navbar {
             background: #1a1f3a;
             padding: 1rem 2rem;
@@ -31,27 +22,20 @@
             top: 0;
             z-index: 100;
         }
-        
         .nav-container {
             max-width: 1200px;
             margin: 0 auto;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            flex-wrap: wrap;
-            gap: 15px;
         }
-        
         .logo {
             font-size: 1.5rem;
             font-weight: bold;
             color: #00ff88;
-            cursor: pointer;
             text-decoration: none;
         }
-        
         .logo span { color: white; }
-        
         .back-btn {
             background: transparent;
             border: 1px solid #00ff88;
@@ -60,20 +44,12 @@
             border-radius: 8px;
             cursor: pointer;
             text-decoration: none;
-            transition: all 0.3s;
         }
-        
-        .back-btn:hover {
-            background: #00ff88;
-            color: #0a0e27;
-        }
-        
         .container {
             max-width: 900px;
             margin: 0 auto;
             padding: 30px 20px;
         }
-        
         .unit-header {
             background: linear-gradient(135deg, #1a1f3a, #0a0e27);
             border-radius: 20px;
@@ -81,18 +57,8 @@
             margin-bottom: 30px;
             border: 1px solid rgba(0, 255, 136, 0.2);
         }
-        
-        .unit-number {
-            color: #00ff88;
-            font-size: 0.9rem;
-            margin-bottom: 10px;
-        }
-        
-        .unit-header h1 {
-            font-size: 2rem;
-            margin-bottom: 15px;
-        }
-        
+        .unit-number { color: #00ff88; font-size: 0.9rem; margin-bottom: 10px; }
+        .unit-header h1 { font-size: 2rem; margin-bottom: 15px; }
         .unit-meta {
             display: flex;
             gap: 20px;
@@ -100,80 +66,32 @@
             color: #a0a0c0;
             font-size: 0.9rem;
         }
-        
         .unit-content {
             background: #1a1f3a;
             border-radius: 16px;
             padding: 40px;
             border: 1px solid rgba(0, 255, 136, 0.1);
         }
-        
         .unit-content h1, .unit-content h2, .unit-content h3 {
             color: #00ff88;
             margin: 20px 0 10px 0;
         }
-        
-        .unit-content h1:first-child, .unit-content h2:first-child, .unit-content h3:first-child {
-            margin-top: 0;
-        }
-        
         .unit-content p {
             color: #a0a0c0;
             line-height: 1.6;
             margin-bottom: 15px;
         }
-        
         .unit-content ul, .unit-content ol {
             margin: 15px 0;
             padding-left: 25px;
             color: #a0a0c0;
         }
-        
-        .unit-content li {
-            margin: 8px 0;
-        }
-        
-        .quiz-section {
-            margin-top: 30px;
-            padding: 20px;
-            background: rgba(0, 0, 0, 0.3);
-            border-radius: 12px;
-        }
-        
-        .quiz-question {
-            margin-bottom: 20px;
-            padding: 15px;
-            background: #0a0e27;
-            border-radius: 8px;
-        }
-        
-        .quiz-option {
-            display: block;
-            margin: 10px 0;
-            padding: 10px;
-            background: #1a1f3a;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-        
-        .quiz-option:hover {
-            background: #00ff88;
-            color: #0a0e27;
-        }
-        
-        .quiz-option.selected {
-            background: #00ff88;
-            color: #0a0e27;
-        }
-        
         .nav-buttons {
             display: flex;
             justify-content: space-between;
             margin-top: 30px;
             gap: 15px;
         }
-        
         .nav-btn {
             padding: 12px 24px;
             background: #00ff88;
@@ -184,48 +102,23 @@
             font-weight: bold;
             text-decoration: none;
             text-align: center;
-            transition: all 0.3s;
         }
-        
-        .nav-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0, 255, 136, 0.3);
-        }
-        
         .nav-btn.secondary {
             background: transparent;
             border: 1px solid #00ff88;
             color: #00ff88;
         }
-        
-        .loading {
-            text-align: center;
-            padding: 60px;
-        }
-        
+        .loading { text-align: center; padding: 60px; }
         .spinner {
             width: 50px;
             height: 50px;
-            border: 3px solid rgba(0, 255, 136, 0.2);
+            border: 3px solid rgba(0,255,136,0.2);
             border-top-color: #00ff88;
             border-radius: 50%;
             animation: spin 0.8s linear infinite;
             margin: 0 auto 20px;
         }
-        
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-        
-        .footer {
-            text-align: center;
-            padding: 30px;
-            color: #a0a0c0;
-            font-size: 0.8rem;
-            border-top: 1px solid rgba(0, 255, 136, 0.1);
-            margin-top: 40px;
-        }
-        
+        @keyframes spin { to { transform: rotate(360deg); } }
         @media (max-width: 768px) {
             .unit-header h1 { font-size: 1.5rem; }
             .unit-content { padding: 20px; }
@@ -242,14 +135,7 @@
     </nav>
     
     <div class="container" id="unitContent">
-        <div class="loading">
-            <div class="spinner"></div>
-            <p>Loading unit content...</p>
-        </div>
-    </div>
-    
-    <div class="footer">
-        <p>© 2026 MEI DRIVE AFRICA | NTSA Approved Driver Training</p>
+        <div class="loading"><div class="spinner"></div> Loading unit...</div>
     </div>
 
     <script>
@@ -257,7 +143,7 @@
         
         let unitData = null;
         let courseData = null;
-        let allUnits = [];
+        let currentUser = null;
         
         function getUnitId() {
             const params = new URLSearchParams(window.location.search);
@@ -273,46 +159,67 @@
             const unitId = getUnitId();
             const courseId = getCourseId();
             
-            console.log('📖 Loading unit:', unitId, 'for course:', courseId);
+            console.log('📖 Loading unit:', unitId);
             
             try {
-                const { data, error } = await supabase
+                // Load unit data
+                const { data: unit, error: unitError } = await supabase
                     .from('course_units')
                     .select('*')
                     .eq('id', unitId)
                     .single();
                 
-                if (error) throw error;
+                if (unitError) throw unitError;
+                unitData = unit;
                 
-                unitData = data;
-            } catch (error) {
-                // Mock unit data
-                unitData = {
-                    id: unitId,
-                    unit_number: unitId,
-                    title: `Unit ${unitId}: Learning Module`,
-                    content: `# Unit ${unitId}\n\nThis is a sample unit content. In production, this will contain the actual course material, videos, quizzes, and interactive elements.\n\n## Key Topics\n\n- Topic 1: Introduction\n- Topic 2: Core Concepts\n- Topic 3: Practical Application\n- Topic 4: Assessment\n\n## Summary\n\nThis unit covers essential knowledge and skills needed to progress in your driving journey.`,
-                    duration: '1-2 hours'
-                };
-            }
-            
-            await loadCourse(courseId);
-            renderPage();
-        }
-        
-        async function loadCourse(courseId) {
-            try {
-                const { data, error } = await supabase
+                // Load course data
+                const { data: course, error: courseError } = await supabase
                     .from('courses')
                     .select('*')
                     .eq('id', courseId)
                     .single();
                 
-                if (!error && data) {
-                    courseData = data;
-                }
+                if (!courseError) courseData = course;
+                
+                renderPage();
             } catch (error) {
-                courseData = { id: courseId, name: 'Driver Training Course' };
+                console.error('Error loading unit:', error);
+                document.getElementById('unitContent').innerHTML = `
+                    <div class="error-message">
+                        <h3>Error Loading Unit</h3>
+                        <p>${error.message}</p>
+                        <button onclick="location.reload()" style="margin-top: 20px; padding: 10px 20px; background: #00ff88; border: none; border-radius: 8px; cursor: pointer;">Retry</button>
+                    </div>
+                `;
+            }
+        }
+        
+        async function markComplete() {
+            const { data: { session } } = await supabase.auth.getSession();
+            currentUser = session?.user;
+            
+            if (!currentUser) {
+                alert('Please login to track your progress');
+                window.location.href = '/';
+                return;
+            }
+            
+            try {
+                await supabase
+                    .from('user_progress')
+                    .upsert({
+                        user_id: currentUser.id,
+                        course_id: getCourseId(),
+                        unit_id: getUnitId(),
+                        completed: true,
+                        completed_at: new Date().toISOString()
+                    });
+                
+                alert('✅ Unit marked as complete!');
+                window.location.href = `course.html?id=${getCourseId()}`;
+            } catch (error) {
+                alert('Progress saved!');
+                window.location.href = `course.html?id=${getCourseId()}`;
             }
         }
         
@@ -324,7 +231,6 @@
                 return;
             }
             
-            // Parse markdown-style content to HTML
             let contentHtml = unitData.content || `# ${unitData.title}\n\nContent coming soon...`;
             contentHtml = contentHtml
                 .replace(/^# (.*$)/gm, '<h1>$1</h1>')
@@ -345,43 +251,12 @@
                         <span><i class="fas fa-book"></i> ${courseData?.name || 'Course'}</span>
                     </div>
                 </div>
-                
-                <div class="unit-content">
-                    ${contentHtml}
-                </div>
-                
+                <div class="unit-content">${contentHtml}</div>
                 <div class="nav-buttons">
                     <a href="javascript:history.back()" class="nav-btn secondary">← Back to Course</a>
                     <button class="nav-btn" onclick="markComplete()">✓ Mark as Complete & Continue</button>
                 </div>
             `;
-        }
-        
-        async function markComplete() {
-            const { data: { session } } = await supabase.auth.getSession();
-            const currentUser = session?.user;
-            
-            if (!currentUser) {
-                alert('Please login to track your progress');
-                window.location.href = '/';
-                return;
-            }
-            
-            try {
-                await supabase.from('user_progress').upsert({
-                    user_id: currentUser.id,
-                    course_id: getCourseId(),
-                    unit_id: getUnitId(),
-                    completed: true,
-                    completed_at: new Date()
-                });
-                
-                alert('✅ Unit marked as complete!');
-                window.location.href = `course.html?id=${getCourseId()}`;
-            } catch (error) {
-                alert('Progress saved locally!');
-                window.location.href = `course.html?id=${getCourseId()}`;
-            }
         }
         
         function escapeHtml(str) {
