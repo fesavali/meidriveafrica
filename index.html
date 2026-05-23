@@ -19,17 +19,9 @@
             overflow-x: hidden;
         }
 
-        /* Custom Scrollbar */
-        ::-webkit-scrollbar {
-            width: 8px;
-        }
-        ::-webkit-scrollbar-track {
-            background: #0D2137;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #00FF88;
-            border-radius: 4px;
-        }
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #0D2137; }
+        ::-webkit-scrollbar-thumb { background: #00FF88; border-radius: 4px; }
 
         /* Navigation */
         .navbar {
@@ -54,9 +46,7 @@
             letter-spacing: -0.5px;
         }
 
-        .logo span {
-            color: #00FF88;
-        }
+        .logo span { color: #00FF88; }
 
         .nav-links {
             display: flex;
@@ -72,9 +62,7 @@
             font-size: 16px;
         }
 
-        .nav-links a:hover {
-            color: #00FF88;
-        }
+        .nav-links a:hover { color: #00FF88; }
 
         .auth-buttons {
             display: flex;
@@ -88,6 +76,8 @@
             transition: all 0.3s;
             font-weight: 600;
             font-size: 14px;
+            cursor: pointer;
+            border: none;
         }
 
         .btn-login {
@@ -110,6 +100,31 @@
             background: #00cc6a;
             transform: translateY(-2px);
             box-shadow: 0 5px 15px rgba(0, 255, 136, 0.3);
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .user-email {
+            color: #00FF88;
+            font-size: 14px;
+        }
+
+        .btn-logout {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            padding: 8px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .btn-logout:hover {
+            background: rgba(255, 255, 255, 0.2);
         }
 
         /* Hero Section */
@@ -150,9 +165,7 @@
             letter-spacing: -1px;
         }
 
-        .hero h1 span {
-            color: #00FF88;
-        }
+        .hero h1 span { color: #00FF88; }
 
         .hero p {
             font-size: 20px;
@@ -216,20 +229,101 @@
             gap: 80px;
         }
 
-        .stat-item {
-            text-align: center;
+        .stat-item { text-align: center; }
+        .stat-number { font-size: 42px; font-weight: 800; color: #00FF88; }
+        .stat-label { font-size: 14px; opacity: 0.7; letter-spacing: 0.5px; }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
         }
 
-        .stat-number {
-            font-size: 42px;
-            font-weight: 800;
+        .modal.active { display: flex; }
+
+        .modal-content {
+            background: #0D2137;
+            padding: 40px;
+            border-radius: 20px;
+            width: 90%;
+            max-width: 450px;
+            border: 1px solid rgba(0, 255, 136, 0.3);
+        }
+
+        .modal-content h2 {
+            margin-bottom: 20px;
+            text-align: center;
             color: #00FF88;
         }
 
-        .stat-label {
+        .modal-content input {
+            width: 100%;
+            padding: 14px;
+            margin-bottom: 15px;
+            background: rgba(10, 25, 47, 0.8);
+            border: 1px solid rgba(0, 255, 136, 0.3);
+            border-radius: 8px;
+            color: white;
+            font-size: 16px;
+        }
+
+        .modal-content input:focus {
+            outline: none;
+            border-color: #00FF88;
+        }
+
+        .modal-content button {
+            width: 100%;
+            padding: 14px;
+            background: #00FF88;
+            color: #0A192F;
+            border: none;
+            border-radius: 8px;
+            font-weight: 700;
+            font-size: 16px;
+            cursor: pointer;
+            margin-bottom: 15px;
+        }
+
+        .modal-content button:hover { background: #00cc6a; }
+
+        .modal-switch {
+            text-align: center;
+            color: rgba(255, 255, 255, 0.6);
+            cursor: pointer;
+        }
+
+        .modal-switch span { color: #00FF88; }
+
+        .close-modal {
+            position: absolute;
+            top: 20px;
+            right: 30px;
+            font-size: 30px;
+            cursor: pointer;
+            color: white;
+        }
+
+        .error-msg {
+            color: #ff4444;
+            text-align: center;
+            margin-bottom: 15px;
             font-size: 14px;
-            opacity: 0.7;
-            letter-spacing: 0.5px;
+        }
+
+        .success-msg {
+            color: #00FF88;
+            text-align: center;
+            margin-bottom: 15px;
+            font-size: 14px;
         }
 
         /* Courses Section */
@@ -245,9 +339,7 @@
             font-weight: 700;
         }
 
-        .section-title span {
-            color: #00FF88;
-        }
+        .section-title span { color: #00FF88; }
 
         .section-subtitle {
             text-align: center;
@@ -280,22 +372,9 @@
             border-color: rgba(0, 255, 136, 0.4);
         }
 
-        .course-icon {
-            font-size: 52px;
-            margin-bottom: 20px;
-        }
-
-        .course-card h3 {
-            font-size: 24px;
-            margin-bottom: 12px;
-            font-weight: 700;
-        }
-
-        .course-card p {
-            opacity: 0.7;
-            line-height: 1.6;
-            margin-bottom: 20px;
-        }
+        .course-icon { font-size: 52px; margin-bottom: 20px; }
+        .course-card h3 { font-size: 24px; margin-bottom: 12px; font-weight: 700; }
+        .course-card p { opacity: 0.7; line-height: 1.6; margin-bottom: 20px; }
 
         .course-meta {
             display: flex;
@@ -306,13 +385,7 @@
             border-top: 1px solid rgba(0, 255, 136, 0.15);
         }
 
-        .duration {
-            font-size: 14px;
-            opacity: 0.6;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
+        .duration { font-size: 14px; opacity: 0.6; display: flex; align-items: center; gap: 5px; }
 
         .start-btn {
             background: #00FF88;
@@ -326,10 +399,7 @@
             font-size: 14px;
         }
 
-        .start-btn:hover {
-            transform: scale(1.05);
-            background: #00cc6a;
-        }
+        .start-btn:hover { transform: scale(1.05); background: #00cc6a; }
 
         /* Features Section */
         .features-section {
@@ -359,28 +429,11 @@
             transform: translateY(-5px);
         }
 
-        .feature-icon {
-            font-size: 48px;
-            margin-bottom: 20px;
-        }
+        .feature-icon { font-size: 48px; margin-bottom: 20px; }
+        .feature h4 { font-size: 20px; margin-bottom: 12px; font-weight: 700; }
+        .feature p { opacity: 0.7; line-height: 1.5; }
 
-        .feature h4 {
-            font-size: 20px;
-            margin-bottom: 12px;
-            font-weight: 700;
-        }
-
-        .feature p {
-            opacity: 0.7;
-            line-height: 1.5;
-        }
-
-        /* Loading */
-        .loading {
-            text-align: center;
-            padding: 60px;
-        }
-
+        .loading { text-align: center; padding: 60px; }
         .spinner {
             width: 50px;
             height: 50px;
@@ -390,82 +443,33 @@
             animation: spin 1s linear infinite;
             margin: 0 auto 20px;
         }
+        @keyframes spin { to { transform: rotate(360deg); } }
 
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-
-        /* Footer */
         .footer {
             background: #051020;
             text-align: center;
             padding: 40px;
             border-top: 1px solid rgba(0, 255, 136, 0.1);
         }
+        .footer p { opacity: 0.6; font-size: 14px; }
 
-        .footer p {
-            opacity: 0.6;
-            font-size: 14px;
-        }
-
-        /* Responsive */
         @media (max-width: 768px) {
-            .navbar {
-                flex-direction: column;
-                text-align: center;
-                position: relative;
-            }
-            
-            .hero h1 {
-                font-size: 36px;
-            }
-            
-            .hero p {
-                font-size: 16px;
-            }
-            
-            .section-title {
-                font-size: 28px;
-            }
-            
-            .courses-grid {
-                grid-template-columns: 1fr;
-            }
-            
-            .hero-buttons {
-                flex-direction: column;
-                align-items: center;
-            }
-            
-            .stats {
-                gap: 40px;
-                flex-wrap: wrap;
-            }
-            
-            .stat-number {
-                font-size: 28px;
-            }
-
-            .nav-links {
-                gap: 20px;
-            }
+            .navbar { flex-direction: column; text-align: center; position: relative; }
+            .hero h1 { font-size: 36px; }
+            .hero p { font-size: 16px; }
+            .section-title { font-size: 28px; }
+            .courses-grid { grid-template-columns: 1fr; }
+            .hero-buttons { flex-direction: column; align-items: center; }
+            .stats { gap: 40px; flex-wrap: wrap; }
+            .stat-number { font-size: 28px; }
+            .nav-links { gap: 20px; }
         }
 
-        /* Animation */
         @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
         }
-
-        .course-card {
-            animation: fadeInUp 0.5s ease-out forwards;
-        }
+        .course-card { animation: fadeInUp 0.5s ease-out forwards; }
     </style>
 </head>
 <body>
@@ -477,11 +481,27 @@
             <a href="quiz.html">Quiz Bank</a>
             <a href="#contact">Contact</a>
         </div>
-        <div class="auth-buttons">
-            <a href="#" class="btn-login">Login</a>
-            <a href="#" class="btn-register">Register</a>
+        <div id="authContainer" class="auth-buttons">
+            <button class="btn-login" onclick="openModal('login')">Login</button>
+            <button class="btn-register" onclick="openModal('register')">Register</button>
         </div>
     </nav>
+
+    <!-- Auth Modal -->
+    <div id="authModal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal" onclick="closeModal()">&times;</span>
+            <h2 id="modalTitle">Login</h2>
+            <div id="modalError" class="error-msg"></div>
+            <div id="modalSuccess" class="success-msg"></div>
+            <input type="email" id="modalEmail" placeholder="Email address" autocomplete="email">
+            <input type="password" id="modalPassword" placeholder="Password" autocomplete="current-password">
+            <button id="modalSubmitBtn" onclick="handleAuth()">Login</button>
+            <div class="modal-switch" id="modalSwitch" onclick="switchAuthMode()">
+                Don't have an account? <span>Register</span>
+            </div>
+        </div>
+    </div>
 
     <section class="hero" id="home">
         <div class="hero-content">
@@ -512,36 +532,17 @@
         <h2 class="section-title">Our <span>Courses</span></h2>
         <div class="section-subtitle">Choose the right course for your driving journey</div>
         <div class="courses-grid" id="coursesGrid">
-            <div class="loading">
-                <div class="spinner"></div>
-                Loading courses...
-            </div>
+            <div class="loading"><div class="spinner"></div>Loading courses...</div>
         </div>
     </section>
 
     <section class="features-section">
         <h2 class="section-title">Why Choose <span>Us</span></h2>
         <div class="features-grid">
-            <div class="feature">
-                <div class="feature-icon">✅</div>
-                <h4>NTSA Approved</h4>
-                <p>Officially certified curriculum meeting Kenyan standards</p>
-            </div>
-            <div class="feature">
-                <div class="feature-icon">📚</div>
-                <h4>1000+ Quiz Bank</h4>
-                <p>Practice with real exam-style questions</p>
-            </div>
-            <div class="feature">
-                <div class="feature-icon">👨‍🏫</div>
-                <h4>Expert Instructors</h4>
-                <p>Learn from certified professional drivers</p>
-            </div>
-            <div class="feature">
-                <div class="feature-icon">💻</div>
-                <h4>Learn Anywhere</h4>
-                <p>Access courses online, anytime, anywhere</p>
-            </div>
+            <div class="feature"><div class="feature-icon">✅</div><h4>NTSA Approved</h4><p>Officially certified curriculum meeting Kenyan standards</p></div>
+            <div class="feature"><div class="feature-icon">📚</div><h4>1000+ Quiz Bank</h4><p>Practice with real exam-style questions</p></div>
+            <div class="feature"><div class="feature-icon">👨‍🏫</div><h4>Expert Instructors</h4><p>Learn from certified professional drivers</p></div>
+            <div class="feature"><div class="feature-icon">💻</div><h4>Learn Anywhere</h4><p>Access courses online, anytime, anywhere</p></div>
         </div>
     </section>
 
@@ -551,25 +552,158 @@
     </footer>
 
     <script>
-        // SINGLE SUPABASE CONFIGURATION - NO DUPLICATION
-        const SUPABASE = {
+        // ============================================
+        // SINGLE SUPABASE INITIALIZATION
+        // ============================================
+        const SUPABASE_CONFIG = {
             url: 'https://qpqkmmkrzxlhcpccefjn.supabase.co',
             anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFwcWttbWtyenhsaGNwY2NlZmpuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk1MjU0NzIsImV4cCI6MjA5NTEwMTQ3Mn0.Vw1hexN3NKoF_y9VFBFs_NUhJgFNNMwuyzDjImUcM6s'
         };
         
-        const supabase = window.supabase.createClient(SUPABASE.url, SUPABASE.anonKey);
+        const supabase = window.supabase.createClient(SUPABASE_CONFIG.url, SUPABASE_CONFIG.anonKey);
         
-        // Course navigation mapping
-        const COURSE_LINKS = {
-            'Learner Driving Course': 'learner.html',
-            'Boda Rider Course': 'boda.html',
-            'Electric Vehicle Course': 'ev.html',
-            'Refresher Course': 'refresher.html'
-        };
+        // ============================================
+        // AUTH STATE MANAGEMENT
+        // ============================================
+        let currentAuthMode = 'login';
+        let currentUser = null;
 
+        async function checkAuthState() {
+            const { data: { session } } = await supabase.auth.getSession();
+            if (session) {
+                currentUser = session.user;
+                updateAuthUI();
+            }
+        }
+
+        function updateAuthUI() {
+            const authContainer = document.getElementById('authContainer');
+            if (currentUser) {
+                authContainer.innerHTML = `
+                    <div class="user-info">
+                        <span class="user-email">${currentUser.email}</span>
+                        <button class="btn-logout" onclick="logout()">Logout</button>
+                    </div>
+                `;
+            } else {
+                authContainer.innerHTML = `
+                    <button class="btn-login" onclick="openModal('login')">Login</button>
+                    <button class="btn-register" onclick="openModal('register')">Register</button>
+                `;
+            }
+        }
+
+        function openModal(mode) {
+            currentAuthMode = mode;
+            const modal = document.getElementById('authModal');
+            const title = document.getElementById('modalTitle');
+            const submitBtn = document.getElementById('modalSubmitBtn');
+            const switchText = document.getElementById('modalSwitch');
+            const errorDiv = document.getElementById('modalError');
+            const successDiv = document.getElementById('modalSuccess');
+            
+            errorDiv.textContent = '';
+            successDiv.textContent = '';
+            document.getElementById('modalEmail').value = '';
+            document.getElementById('modalPassword').value = '';
+            
+            if (mode === 'login') {
+                title.textContent = 'Login';
+                submitBtn.textContent = 'Login';
+                switchText.innerHTML = `Don't have an account? <span>Register</span>`;
+            } else {
+                title.textContent = 'Register';
+                submitBtn.textContent = 'Register';
+                switchText.innerHTML = `Already have an account? <span>Login</span>`;
+            }
+            
+            modal.classList.add('active');
+        }
+
+        function closeModal() {
+            document.getElementById('authModal').classList.remove('active');
+        }
+
+        function switchAuthMode() {
+            if (currentAuthMode === 'login') {
+                openModal('register');
+            } else {
+                openModal('login');
+            }
+        }
+
+        async function handleAuth() {
+            const email = document.getElementById('modalEmail').value;
+            const password = document.getElementById('modalPassword').value;
+            const errorDiv = document.getElementById('modalError');
+            const successDiv = document.getElementById('modalSuccess');
+            
+            errorDiv.textContent = '';
+            successDiv.textContent = '';
+            
+            if (!email || !password) {
+                errorDiv.textContent = 'Please enter both email and password';
+                return;
+            }
+            
+            if (password.length < 6) {
+                errorDiv.textContent = 'Password must be at least 6 characters';
+                return;
+            }
+            
+            try {
+                if (currentAuthMode === 'login') {
+                    const { data, error } = await supabase.auth.signInWithPassword({
+                        email: email,
+                        password: password
+                    });
+                    
+                    if (error) throw error;
+                    
+                    successDiv.textContent = 'Login successful! Redirecting...';
+                    currentUser = data.user;
+                    updateAuthUI();
+                    setTimeout(() => {
+                        closeModal();
+                        window.location.reload();
+                    }, 1500);
+                } else {
+                    const { data, error } = await supabase.auth.signUp({
+                        email: email,
+                        password: password,
+                        options: {
+                            data: {
+                                joined_at: new Date().toISOString()
+                            }
+                        }
+                    });
+                    
+                    if (error) throw error;
+                    
+                    if (data.user) {
+                        successDiv.textContent = 'Registration successful! You can now login.';
+                        setTimeout(() => {
+                            openModal('login');
+                        }, 2000);
+                    }
+                }
+            } catch (error) {
+                errorDiv.textContent = error.message;
+            }
+        }
+
+        async function logout() {
+            await supabase.auth.signOut();
+            currentUser = null;
+            updateAuthUI();
+            window.location.reload();
+        }
+
+        // ============================================
+        // COURSE DATA LOADING
+        // ============================================
         let coursesData = [];
 
-        // Load courses from Supabase
         async function loadCourses() {
             const grid = document.getElementById('coursesGrid');
             
@@ -603,12 +737,11 @@
                 `).join('');
                 
             } catch (err) {
-                console.error('Error:', err);
+                console.error('Error loading courses:', err);
                 grid.innerHTML = '<div class="loading">Error loading courses. Please refresh the page.</div>';
             }
         }
 
-        // Load quiz count
         async function loadQuizCount() {
             try {
                 const { count, error } = await supabase
@@ -617,6 +750,8 @@
                 
                 if (!error && count) {
                     document.getElementById('questionsCount').innerText = count;
+                } else {
+                    document.getElementById('questionsCount').innerText = '500+';
                 }
             } catch (err) {
                 console.error('Error loading quiz count:', err);
@@ -624,18 +759,21 @@
             }
         }
 
-        // Navigate to course
         function navigateToCourse(title) {
             sessionStorage.setItem('selectedCourse', title);
-            
-            if (COURSE_LINKS[title]) {
-                window.location.href = COURSE_LINKS[title];
-            } else {
-                window.location.href = 'course.html';
+            window.location.href = 'course.html';
+        }
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const modal = document.getElementById('authModal');
+            if (event.target === modal) {
+                closeModal();
             }
         }
 
-        // Initialize
+        // Initialize everything
+        checkAuthState();
         loadCourses();
         loadQuizCount();
     </script>
