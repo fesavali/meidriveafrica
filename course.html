@@ -56,6 +56,66 @@
             color: #0A192F;
         }
 
+        .auth-buttons {
+            display: flex;
+            gap: 12px;
+        }
+
+        .btn-login, .btn-register {
+            padding: 8px 24px;
+            border-radius: 8px;
+            text-decoration: none;
+            transition: all 0.3s;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            border: none;
+        }
+
+        .btn-login {
+            background: transparent;
+            border: 1.5px solid #00FF88;
+            color: #00FF88;
+        }
+
+        .btn-login:hover {
+            background: rgba(0, 255, 136, 0.1);
+        }
+
+        .btn-register {
+            background: #00FF88;
+            color: #0A192F;
+        }
+
+        .btn-register:hover {
+            background: #00cc6a;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .user-email {
+            color: #00FF88;
+            font-size: 14px;
+        }
+
+        .btn-logout {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            padding: 8px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .btn-logout:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
         .container {
             max-width: 1000px;
             margin: 100px auto 60px;
@@ -186,33 +246,285 @@
             to { transform: rotate(360deg); }
         }
 
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal.active { display: flex; }
+
+        .modal-content {
+            background: #0D2137;
+            padding: 40px;
+            border-radius: 20px;
+            width: 90%;
+            max-width: 450px;
+            border: 1px solid rgba(0, 255, 136, 0.3);
+        }
+
+        .modal-content h2 {
+            margin-bottom: 20px;
+            text-align: center;
+            color: #00FF88;
+        }
+
+        .modal-content input {
+            width: 100%;
+            padding: 14px;
+            margin-bottom: 15px;
+            background: rgba(10, 25, 47, 0.8);
+            border: 1px solid rgba(0, 255, 136, 0.3);
+            border-radius: 8px;
+            color: white;
+            font-size: 16px;
+        }
+
+        .modal-content input:focus {
+            outline: none;
+            border-color: #00FF88;
+        }
+
+        .modal-content button {
+            width: 100%;
+            padding: 14px;
+            background: #00FF88;
+            color: #0A192F;
+            border: none;
+            border-radius: 8px;
+            font-weight: 700;
+            font-size: 16px;
+            cursor: pointer;
+            margin-bottom: 15px;
+        }
+
+        .modal-content button:hover { background: #00cc6a; }
+
+        .modal-switch {
+            text-align: center;
+            color: rgba(255, 255, 255, 0.6);
+            cursor: pointer;
+        }
+
+        .modal-switch span { color: #00FF88; }
+
+        .close-modal {
+            position: absolute;
+            top: 20px;
+            right: 30px;
+            font-size: 30px;
+            cursor: pointer;
+            color: white;
+        }
+
+        .error-msg {
+            color: #ff4444;
+            text-align: center;
+            margin-bottom: 15px;
+            font-size: 14px;
+        }
+
+        .success-msg {
+            color: #00FF88;
+            text-align: center;
+            margin-bottom: 15px;
+            font-size: 14px;
+        }
+
         @media (max-width: 768px) {
             .container { margin-top: 140px; }
             .course-title { font-size: 24px; }
             .unit-content { padding: 20px; }
             .nav-buttons { flex-direction: column; gap: 12px; }
             .nav-btn { width: 100%; }
+            .navbar { flex-direction: column; text-align: center; }
         }
     </style>
 </head>
 <body>
     <nav class="navbar">
         <div class="logo">MEI DRIVE <span>AFRICA</span></div>
+        <div id="authContainer" class="auth-buttons">
+            <button class="btn-login" onclick="openModal('login')">Login</button>
+            <button class="btn-register" onclick="openModal('register')">Register</button>
+        </div>
         <a href="index.html" class="back-btn">← Back to Courses</a>
     </nav>
+
+    <!-- Auth Modal -->
+    <div id="authModal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal" onclick="closeModal()">&times;</span>
+            <h2 id="modalTitle">Login</h2>
+            <div id="modalError" class="error-msg"></div>
+            <div id="modalSuccess" class="success-msg"></div>
+            <input type="email" id="modalEmail" placeholder="Email address">
+            <input type="password" id="modalPassword" placeholder="Password">
+            <button id="modalSubmitBtn" onclick="handleAuth()">Login</button>
+            <div class="modal-switch" id="modalSwitch" onclick="switchAuthMode()">
+                Don't have an account? <span>Register</span>
+            </div>
+        </div>
+    </div>
 
     <div class="container" id="container">
         <div class="loading"><div class="spinner"></div>Loading course...</div>
     </div>
 
     <script>
-        const SUPABASE = {
+        // ============================================
+        // SINGLE SUPABASE INITIALIZATION
+        // ============================================
+        const SUPABASE_CONFIG = {
             url: 'https://qpqkmmkrzxlhcpccefjn.supabase.co',
             anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFwcWttbWtyenhsaGNwY2NlZmpuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk1MjU0NzIsImV4cCI6MjA5NTEwMTQ3Mn0.Vw1hexN3NKoF_y9VFBFs_NUhJgFNNMwuyzDjImUcM6s'
         };
         
-        const supabase = window.supabase.createClient(SUPABASE.url, SUPABASE.anonKey);
+        const supabase = window.supabase.createClient(SUPABASE_CONFIG.url, SUPABASE_CONFIG.anonKey);
         
+        // ============================================
+        // AUTH STATE MANAGEMENT
+        // ============================================
+        let currentAuthMode = 'login';
+        let currentUser = null;
+
+        async function checkAuthState() {
+            const { data: { session } } = await supabase.auth.getSession();
+            if (session) {
+                currentUser = session.user;
+                updateAuthUI();
+            }
+        }
+
+        function updateAuthUI() {
+            const authContainer = document.getElementById('authContainer');
+            if (currentUser) {
+                authContainer.innerHTML = `
+                    <div class="user-info">
+                        <span class="user-email">${currentUser.email}</span>
+                        <button class="btn-logout" onclick="logout()">Logout</button>
+                    </div>
+                    <a href="index.html" class="back-btn" style="margin-left:10px;">← Back to Courses</a>
+                `;
+            } else {
+                authContainer.innerHTML = `
+                    <button class="btn-login" onclick="openModal('login')">Login</button>
+                    <button class="btn-register" onclick="openModal('register')">Register</button>
+                    <a href="index.html" class="back-btn" style="margin-left:10px;">← Back to Courses</a>
+                `;
+            }
+        }
+
+        function openModal(mode) {
+            currentAuthMode = mode;
+            const modal = document.getElementById('authModal');
+            const title = document.getElementById('modalTitle');
+            const submitBtn = document.getElementById('modalSubmitBtn');
+            const switchText = document.getElementById('modalSwitch');
+            const errorDiv = document.getElementById('modalError');
+            const successDiv = document.getElementById('modalSuccess');
+            
+            errorDiv.textContent = '';
+            successDiv.textContent = '';
+            document.getElementById('modalEmail').value = '';
+            document.getElementById('modalPassword').value = '';
+            
+            if (mode === 'login') {
+                title.textContent = 'Login';
+                submitBtn.textContent = 'Login';
+                switchText.innerHTML = `Don't have an account? <span>Register</span>`;
+            } else {
+                title.textContent = 'Register';
+                submitBtn.textContent = 'Register';
+                switchText.innerHTML = `Already have an account? <span>Login</span>`;
+            }
+            
+            modal.classList.add('active');
+        }
+
+        function closeModal() {
+            document.getElementById('authModal').classList.remove('active');
+        }
+
+        function switchAuthMode() {
+            if (currentAuthMode === 'login') {
+                openModal('register');
+            } else {
+                openModal('login');
+            }
+        }
+
+        async function handleAuth() {
+            const email = document.getElementById('modalEmail').value;
+            const password = document.getElementById('modalPassword').value;
+            const errorDiv = document.getElementById('modalError');
+            const successDiv = document.getElementById('modalSuccess');
+            
+            errorDiv.textContent = '';
+            successDiv.textContent = '';
+            
+            if (!email || !password) {
+                errorDiv.textContent = 'Please enter both email and password';
+                return;
+            }
+            
+            if (password.length < 6) {
+                errorDiv.textContent = 'Password must be at least 6 characters';
+                return;
+            }
+            
+            try {
+                if (currentAuthMode === 'login') {
+                    const { data, error } = await supabase.auth.signInWithPassword({
+                        email: email,
+                        password: password
+                    });
+                    
+                    if (error) throw error;
+                    
+                    successDiv.textContent = 'Login successful! Redirecting...';
+                    currentUser = data.user;
+                    updateAuthUI();
+                    setTimeout(() => {
+                        closeModal();
+                        window.location.reload();
+                    }, 1500);
+                } else {
+                    const { data, error } = await supabase.auth.signUp({
+                        email: email,
+                        password: password
+                    });
+                    
+                    if (error) throw error;
+                    
+                    successDiv.textContent = 'Registration successful! You can now login.';
+                    setTimeout(() => {
+                        openModal('login');
+                    }, 2000);
+                }
+            } catch (error) {
+                errorDiv.textContent = error.message;
+            }
+        }
+
+        async function logout() {
+            await supabase.auth.signOut();
+            currentUser = null;
+            updateAuthUI();
+            window.location.reload();
+        }
+
+        // ============================================
+        // COURSE DATA LOADING
+        // ============================================
         let currentCourse = null;
         let currentUnits = [];
         let currentIndex = 0;
@@ -256,6 +568,7 @@
                 renderCourse();
                 
             } catch (err) {
+                console.error('Error:', err);
                 document.getElementById('container').innerHTML = `
                     <div class="loading">Error loading course. <a href="index.html" style="color:#00FF88">Go back</a></div>
                 `;
@@ -317,7 +630,15 @@
                 alert('🎉 Congratulations! You have completed the course!');
             }
         }
+
+        window.onclick = function(event) {
+            const modal = document.getElementById('authModal');
+            if (event.target === modal) {
+                closeModal();
+            }
+        }
         
+        checkAuthState();
         loadCourse();
     </script>
 </body>
