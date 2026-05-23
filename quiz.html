@@ -50,6 +50,10 @@
             text-decoration: none;
             font-weight: 600;
         }
+        .back-btn:hover {
+            background: #00FF88;
+            color: #0A192F;
+        }
 
         .auth-buttons {
             display: flex;
@@ -59,7 +63,6 @@
         .btn-login, .btn-register {
             padding: 8px 24px;
             border-radius: 8px;
-            text-decoration: none;
             transition: all 0.3s;
             font-weight: 600;
             font-size: 14px;
@@ -72,19 +75,13 @@
             border: 1.5px solid #00FF88;
             color: #00FF88;
         }
-
-        .btn-login:hover {
-            background: rgba(0, 255, 136, 0.1);
-        }
+        .btn-login:hover { background: rgba(0, 255, 136, 0.1); }
 
         .btn-register {
             background: #00FF88;
             color: #0A192F;
         }
-
-        .btn-register:hover {
-            background: #00cc6a;
-        }
+        .btn-register:hover { background: #00cc6a; }
 
         .user-info {
             display: flex;
@@ -106,10 +103,7 @@
             cursor: pointer;
             font-size: 14px;
         }
-
-        .btn-logout:hover {
-            background: rgba(255, 255, 255, 0.2);
-        }
+        .btn-logout:hover { background: rgba(255, 255, 255, 0.2); }
 
         .container {
             max-width: 900px;
@@ -182,6 +176,7 @@
             font-size: 18px;
             font-weight: 600;
             margin-bottom: 20px;
+            line-height: 1.5;
         }
         .quiz-options {
             display: flex;
@@ -201,6 +196,9 @@
         }
         .quiz-option:hover {
             background: rgba(0, 255, 136, 0.1);
+        }
+        .quiz-option input {
+            cursor: pointer;
         }
         .check-btn {
             background: #00FF88;
@@ -243,11 +241,8 @@
             animation: spin 1s linear infinite;
             margin: 0 auto 20px;
         }
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
+        @keyframes spin { to { transform: rotate(360deg); } }
 
-        /* Modal Styles */
         .modal {
             display: none;
             position: fixed;
@@ -260,7 +255,6 @@
             justify-content: center;
             align-items: center;
         }
-
         .modal.active { display: flex; }
 
         .modal-content {
@@ -271,13 +265,11 @@
             max-width: 450px;
             border: 1px solid rgba(0, 255, 136, 0.3);
         }
-
         .modal-content h2 {
             margin-bottom: 20px;
             text-align: center;
             color: #00FF88;
         }
-
         .modal-content input {
             width: 100%;
             padding: 14px;
@@ -288,12 +280,10 @@
             color: white;
             font-size: 16px;
         }
-
         .modal-content input:focus {
             outline: none;
             border-color: #00FF88;
         }
-
         .modal-content button {
             width: 100%;
             padding: 14px;
@@ -306,7 +296,6 @@
             cursor: pointer;
             margin-bottom: 15px;
         }
-
         .modal-content button:hover { background: #00cc6a; }
 
         .modal-switch {
@@ -314,7 +303,6 @@
             color: rgba(255, 255, 255, 0.6);
             cursor: pointer;
         }
-
         .modal-switch span { color: #00FF88; }
 
         .close-modal {
@@ -326,19 +314,8 @@
             color: white;
         }
 
-        .error-msg {
-            color: #ff4444;
-            text-align: center;
-            margin-bottom: 15px;
-            font-size: 14px;
-        }
-
-        .success-msg {
-            color: #00FF88;
-            text-align: center;
-            margin-bottom: 15px;
-            font-size: 14px;
-        }
+        .error-msg { color: #ff4444; text-align: center; margin-bottom: 15px; font-size: 14px; }
+        .success-msg { color: #00FF88; text-align: center; margin-bottom: 15px; font-size: 14px; }
 
         @media (max-width: 768px) {
             .container { margin-top: 140px; }
@@ -352,26 +329,20 @@
 <body>
     <nav class="navbar">
         <div class="logo">MEI DRIVE <span>AFRICA</span></div>
-        <div id="authContainer" class="auth-buttons">
-            <button class="btn-login" onclick="openModal('login')">Login</button>
-            <button class="btn-register" onclick="openModal('register')">Register</button>
-        </div>
+        <div id="authContainer" class="auth-buttons"></div>
         <a href="index.html" class="back-btn">← Back</a>
     </nav>
 
-    <!-- Auth Modal -->
     <div id="authModal" class="modal">
         <div class="modal-content">
-            <span class="close-modal" onclick="closeModal()">&times;</span>
+            <span class="close-modal">&times;</span>
             <h2 id="modalTitle">Login</h2>
             <div id="modalError" class="error-msg"></div>
             <div id="modalSuccess" class="success-msg"></div>
             <input type="email" id="modalEmail" placeholder="Email address">
             <input type="password" id="modalPassword" placeholder="Password">
-            <button id="modalSubmitBtn" onclick="handleAuth()">Login</button>
-            <div class="modal-switch" id="modalSwitch" onclick="switchAuthMode()">
-                Don't have an account? <span>Register</span>
-            </div>
+            <button id="modalSubmitBtn">Login</button>
+            <div class="modal-switch" id="modalSwitch">Don't have an account? <span>Register</span></div>
         </div>
     </div>
 
@@ -387,46 +358,287 @@
 
     <script>
         // ============================================
-        // SINGLE SUPABASE INITIALIZATION
+        // TRUE SINGLE SOURCE OF TRUTH
         // ============================================
+        
+        // 1. CENTRAL STATE (Single Source of Truth)
+        const STATE = {
+            // Auth state
+            user: null,
+            authModalOpen: false,
+            authMode: 'login',
+            authError: null,
+            authSuccess: null,
+            
+            // Quiz state
+            allQuestions: [],
+            categories: ['All'],
+            currentCategory: 'All',
+            loading: true
+        };
+        
+        // 2. SINGLE SUPABASE CLIENT
         const SUPABASE_CONFIG = {
             url: 'https://qpqkmmkrzxlhcpccefjn.supabase.co',
             anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFwcWttbWtyenhsaGNwY2NlZmpuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk1MjU0NzIsImV4cCI6MjA5NTEwMTQ3Mn0.Vw1hexN3NKoF_y9VFBFs_NUhJgFNNMwuyzDjImUcM6s'
         };
-        
         const supabase = window.supabase.createClient(SUPABASE_CONFIG.url, SUPABASE_CONFIG.anonKey);
         
-        // ============================================
-        // AUTH STATE MANAGEMENT
-        // ============================================
-        let currentAuthMode = 'login';
-        let currentUser = null;
-
-        async function checkAuthState() {
-            const { data: { session } } = await supabase.auth.getSession();
-            if (session) {
-                currentUser = session.user;
-                updateAuthUI();
-            }
+        // 3. HELPER FUNCTIONS
+        function escapeHtml(str) {
+            if (!str) return '';
+            return str.replace(/[&<>]/g, function(m) {
+                if (m === '&') return '&amp;';
+                if (m === '<') return '&lt;';
+                if (m === '>') return '&gt;';
+                return m;
+            });
         }
-
-        function updateAuthUI() {
+        
+        // 4. PURE UI RENDER FUNCTION (reads ONLY from STATE)
+        function renderUI() {
+            // Render auth buttons
             const authContainer = document.getElementById('authContainer');
-            if (currentUser) {
+            if (STATE.user) {
                 authContainer.innerHTML = `
                     <div class="user-info">
-                        <span class="user-email">${currentUser.email}</span>
-                        <button class="btn-logout" onclick="logout()">Logout</button>
+                        <span class="user-email">${escapeHtml(STATE.user.email)}</span>
+                        <button class="btn-logout" onclick="actions.logout()">Logout</button>
                     </div>
-                    <a href="index.html" class="back-btn" style="margin-left:10px;">← Back</a>
                 `;
             } else {
                 authContainer.innerHTML = `
-                    <button class="btn-login" onclick="openModal('login')">Login</button>
-                    <button class="btn-register" onclick="openModal('register')">Register</button>
-                    <a href="index.html" class="back-btn" style="margin-left:10px;">← Back</a>
+                    <button class="btn-login" onclick="actions.openModal('login')">Login</button>
+                    <button class="btn-register" onclick="actions.openModal('register')">Register</button>
                 `;
             }
+            
+            // Render modal
+            const modal = document.getElementById('authModal');
+            if (STATE.authModalOpen) {
+                modal.classList.add('active');
+                document.getElementById('modalTitle').textContent = STATE.authMode === 'login' ? 'Login' : 'Register';
+                document.getElementById('modalSubmitBtn').textContent = STATE.authMode === 'login' ? 'Login' : 'Register';
+                document.getElementById('modalSwitch').innerHTML = STATE.authMode === 'login' 
+                    ? 'Don\'t have an account? <span>Register</span>'
+                    : 'Already have an account? <span>Login</span>';
+                document.getElementById('modalError').textContent = STATE.authError || '';
+                document.getElementById('modalSuccess').textContent = STATE.authSuccess || '';
+            } else {
+                modal.classList.remove('active');
+            }
+            
+            // Render quiz content
+            const container = document.getElementById('quizContainer');
+            if (STATE.loading) {
+                container.innerHTML = '<div class="loading"><div class="spinner"></div>Loading questions...</div>';
+                return;
+            }
+            
+            const filteredQuestions = STATE.currentCategory === 'All' 
+                ? STATE.allQuestions 
+                : STATE.allQuestions.filter(q => q.category === STATE.currentCategory);
+            
+            // Stats
+            const statsHtml = `
+                <div class="stats">
+                    <div class="stat-card"><div class="stat-number">${STATE.allQuestions.length}</div><div class="stat-label">Total Questions</div></div>
+                    <div class="stat-card"><div class="stat-number">${STATE.categories.length - 1}</div><div class="stat-label">Categories</div></div>
+                    <div class="stat-card"><div class="stat-number">${filteredQuestions.length}</div><div class="stat-label">Showing</div></div>
+                </div>
+            `;
+            
+            // Category filters
+            const filtersHtml = `
+                <div class="category-filter">
+                    ${STATE.categories.map(cat => `
+                        <button class="filter-btn ${cat === STATE.currentCategory ? 'active' : ''}" onclick="actions.setCategory('${cat.replace(/'/g, "\\'")}')">${escapeHtml(cat)}</button>
+                    `).join('')}
+                </div>
+            `;
+            
+            // Questions
+            const questionsHtml = filteredQuestions.map((q, idx) => `
+                <div class="quiz-item" id="quiz-${q.id}">
+                    <div class="quiz-question">${idx + 1}. ${escapeHtml(q.question)}</div>
+                    <div class="quiz-options">
+                        ${[
+                            { letter: 'A', value: 1, text: q.option_a },
+                            { letter: 'B', value: 2, text: q.option_b },
+                            { letter: 'C', value: 3, text: q.option_c },
+                            { letter: 'D', value: 4, text: q.option_d }
+                        ].map(opt => opt.text ? `
+                            <label class="quiz-option">
+                                <input type="radio" name="q${q.id}" value="${opt.value}"> ${opt.letter}. ${escapeHtml(opt.text)}
+                            </label>
+                        ` : '').join('')}
+                    </div>
+                    <button class="check-btn" onclick="actions.checkAnswer(${q.id}, ${q.correct_answer}, '${escapeHtml(q.explanation || '').replace(/'/g, "\\'")}')">Check Answer</button>
+                    <div class="feedback" id="feedback-${q.id}"></div>
+                </div>
+            `).join('');
+            
+            container.innerHTML = statsHtml + filtersHtml + questionsHtml;
         }
-
-        function openModal(mode) {
+        
+        // 5. ACTIONS (mutate STATE, then re-render)
+        const actions = {
+            // Auth actions
+            async login(email, password) {
+                STATE.authError = null;
+                STATE.authSuccess = null;
+                renderUI();
+                
+                const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+                if (error) {
+                    STATE.authError = error.message;
+                } else {
+                    STATE.user = data.user;
+                    STATE.authSuccess = 'Login successful!';
+                    STATE.authModalOpen = false;
+                    setTimeout(() => { STATE.authSuccess = null; renderUI(); }, 2000);
+                }
+                renderUI();
+            },
+            
+            async register(email, password) {
+                STATE.authError = null;
+                STATE.authSuccess = null;
+                renderUI();
+                
+                const { error } = await supabase.auth.signUp({ email, password });
+                if (error) {
+                    STATE.authError = error.message;
+                } else {
+                    STATE.authSuccess = 'Registration successful! You can now login.';
+                    setTimeout(() => {
+                        STATE.authMode = 'login';
+                        STATE.authSuccess = null;
+                        renderUI();
+                    }, 2000);
+                }
+                renderUI();
+            },
+            
+            async logout() {
+                await supabase.auth.signOut();
+                STATE.user = null;
+                renderUI();
+            },
+            
+            openModal(mode) {
+                STATE.authMode = mode;
+                STATE.authModalOpen = true;
+                STATE.authError = null;
+                STATE.authSuccess = null;
+                document.getElementById('modalEmail').value = '';
+                document.getElementById('modalPassword').value = '';
+                renderUI();
+            },
+            
+            closeModal() {
+                STATE.authModalOpen = false;
+                renderUI();
+            },
+            
+            async handleAuthSubmit() {
+                const email = document.getElementById('modalEmail').value;
+                const password = document.getElementById('modalPassword').value;
+                if (!email || !password) {
+                    STATE.authError = 'Please enter both email and password';
+                    renderUI();
+                    return;
+                }
+                if (password.length < 6) {
+                    STATE.authError = 'Password must be at least 6 characters';
+                    renderUI();
+                    return;
+                }
+                if (STATE.authMode === 'login') {
+                    await actions.login(email, password);
+                } else {
+                    await actions.register(email, password);
+                }
+            },
+            
+            // Quiz actions
+            setCategory(category) {
+                STATE.currentCategory = category;
+                renderUI();
+            },
+            
+            checkAnswer(questionId, correctAnswer, explanation) {
+                const selected = document.querySelector(`input[name="q${questionId}"]:checked`);
+                const feedback = document.getElementById(`feedback-${questionId}`);
+                
+                if (!selected) {
+                    feedback.innerHTML = "⚠️ Please select an answer";
+                    feedback.className = "feedback wrong";
+                    return;
+                }
+                
+                const selectedValue = parseInt(selected.value);
+                const letters = ['A', 'B', 'C', 'D'];
+                
+                if (selectedValue === correctAnswer) {
+                    feedback.innerHTML = `✅ Correct! ${explanation ? ' ' + explanation : 'Great job!'}`;
+                    feedback.className = "feedback correct";
+                } else {
+                    feedback.innerHTML = `❌ Incorrect. The correct answer is ${letters[correctAnswer - 1]}. ${explanation ? ' ' + explanation : 'Review and try again!'}`;
+                    feedback.className = "feedback wrong";
+                }
+            },
+            
+            async loadQuestions() {
+                STATE.loading = true;
+                renderUI();
+                
+                try {
+                    const { data, error } = await supabase
+                        .from('quiz_questions')
+                        .select('*');
+                    
+                    if (error) throw error;
+                    
+                    STATE.allQuestions = data || [];
+                    const uniqueCats = [...new Set(STATE.allQuestions.map(q => q.category))];
+                    STATE.categories = ['All', ...uniqueCats];
+                    
+                } catch (err) {
+                    console.error('Error loading questions:', err);
+                    STATE.allQuestions = [];
+                } finally {
+                    STATE.loading = false;
+                    renderUI();
+                }
+            },
+            
+            async syncAuthFromSupabase() {
+                const { data: { session } } = await supabase.auth.getSession();
+                STATE.user = session?.user || null;
+                renderUI();
+            }
+        };
+        
+        // 6. EVENT LISTENERS (connected to actions)
+        document.getElementById('modalSubmitBtn').onclick = () => actions.handleAuthSubmit();
+        document.getElementById('modalSwitch').onclick = () => {
+            STATE.authMode = STATE.authMode === 'login' ? 'register' : 'login';
+            renderUI();
+        };
+        document.querySelector('.close-modal').onclick = () => actions.closeModal();
+        window.onclick = (event) => { if (event.target === document.getElementById('authModal')) actions.closeModal(); };
+        
+        // Make actions available globally for onclick handlers
+        window.actions = actions;
+        
+        // 7. INITIALIZE
+        async function init() {
+            await actions.syncAuthFromSupabase();
+            await actions.loadQuestions();
+        }
+        
+        init();
+    </script>
+</body>
+</html>
