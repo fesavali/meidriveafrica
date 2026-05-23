@@ -6,22 +6,11 @@
     <title>Course - MEI DRIVE AFRICA</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Segoe UI', 'Inter', system-ui, sans-serif;
-            background: #0A192F;
-            color: #fff;
-        }
-
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', 'Inter', system-ui, sans-serif; background: #0A192F; color: #fff; }
         ::-webkit-scrollbar { width: 8px; }
         ::-webkit-scrollbar-track { background: #0D2137; }
         ::-webkit-scrollbar-thumb { background: #00FF88; border-radius: 4px; }
-
         .navbar {
             background: rgba(10, 25, 47, 0.95);
             backdrop-filter: blur(12px);
@@ -33,13 +22,8 @@
             gap: 20px;
             border-bottom: 1px solid rgba(0, 255, 136, 0.2);
         }
-
-        .logo {
-            font-size: 26px;
-            font-weight: 800;
-        }
+        .logo { font-size: 26px; font-weight: 800; }
         .logo span { color: #00FF88; }
-
         .back-btn {
             background: rgba(0, 255, 136, 0.1);
             color: #00FF88;
@@ -48,19 +32,10 @@
             border-radius: 8px;
             cursor: pointer;
             text-decoration: none;
-            transition: all 0.3s;
             font-weight: 600;
         }
-        .back-btn:hover {
-            background: #00FF88;
-            color: #0A192F;
-        }
-
-        .auth-buttons {
-            display: flex;
-            gap: 12px;
-        }
-
+        .back-btn:hover { background: #00FF88; color: #0A192F; }
+        .auth-buttons { display: flex; gap: 12px; }
         .btn-login, .btn-register {
             padding: 8px 24px;
             border-radius: 8px;
@@ -70,31 +45,12 @@
             cursor: pointer;
             border: none;
         }
-
-        .btn-login {
-            background: transparent;
-            border: 1.5px solid #00FF88;
-            color: #00FF88;
-        }
+        .btn-login { background: transparent; border: 1.5px solid #00FF88; color: #00FF88; }
         .btn-login:hover { background: rgba(0, 255, 136, 0.1); }
-
-        .btn-register {
-            background: #00FF88;
-            color: #0A192F;
-        }
+        .btn-register { background: #00FF88; color: #0A192F; }
         .btn-register:hover { background: #00cc6a; }
-
-        .user-info {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-
-        .user-email {
-            color: #00FF88;
-            font-size: 14px;
-        }
-
+        .user-info { display: flex; align-items: center; gap: 15px; }
+        .user-email { color: #00FF88; font-size: 14px; }
         .btn-logout {
             background: rgba(255, 255, 255, 0.1);
             border: 1px solid rgba(255, 255, 255, 0.3);
@@ -102,59 +58,17 @@
             padding: 8px 20px;
             border-radius: 8px;
             cursor: pointer;
-            font-size: 14px;
         }
         .btn-logout:hover { background: rgba(255, 255, 255, 0.2); }
-
-        .container {
-            max-width: 1000px;
-            margin: 100px auto 60px;
-            padding: 0 20px;
-        }
-
-        .course-header {
-            background: rgba(13, 33, 55, 0.8);
-            border-radius: 16px;
-            padding: 30px;
-            margin-bottom: 30px;
-            border: 1px solid rgba(0, 255, 136, 0.2);
-        }
-
-        .course-title {
-            font-size: 32px;
-            margin-bottom: 12px;
-        }
+        .container { max-width: 1000px; margin: 100px auto 60px; padding: 0 20px; }
+        .course-header { background: rgba(13, 33, 55, 0.8); border-radius: 16px; padding: 30px; margin-bottom: 30px; border: 1px solid rgba(0, 255, 136, 0.2); }
+        .course-title { font-size: 32px; margin-bottom: 12px; }
         .course-title span { color: #00FF88; }
-
-        .course-description {
-            opacity: 0.8;
-            line-height: 1.6;
-        }
-
-        .progress-container {
-            background: rgba(255,255,255,0.1);
-            border-radius: 10px;
-            height: 8px;
-            margin: 25px 0 10px;
-        }
-        .progress-bar {
-            background: #00FF88;
-            height: 100%;
-            border-radius: 10px;
-            width: 0%;
-            transition: width 0.3s;
-        }
-        .progress-text {
-            font-size: 13px;
-            opacity: 0.6;
-            text-align: right;
-        }
-
-        .units-list {
-            display: grid;
-            gap: 12px;
-        }
-
+        .course-description { opacity: 0.8; line-height: 1.6; }
+        .progress-container { background: rgba(255,255,255,0.1); border-radius: 10px; height: 8px; margin: 25px 0 10px; }
+        .progress-bar { background: #00FF88; height: 100%; border-radius: 10px; width: 0%; transition: width 0.3s; }
+        .progress-text { font-size: 13px; opacity: 0.6; text-align: right; }
+        .units-list { display: grid; gap: 12px; }
         .unit-item {
             background: rgba(13, 33, 55, 0.6);
             border-radius: 12px;
@@ -163,43 +77,13 @@
             transition: all 0.3s;
             border-left: 4px solid #00FF88;
         }
-        .unit-item:hover {
-            background: rgba(13, 33, 55, 0.9);
-            transform: translateX(5px);
-        }
-
-        .unit-number {
-            font-size: 12px;
-            color: #00FF88;
-            font-weight: 600;
-        }
-        .unit-title {
-            font-size: 18px;
-            margin-top: 5px;
-        }
-
-        .unit-content {
-            background: rgba(13, 33, 55, 0.8);
-            border-radius: 16px;
-            padding: 30px;
-            margin-top: 30px;
-            border: 1px solid rgba(0, 255, 136, 0.15);
-        }
-        .unit-content h2 {
-            color: #00FF88;
-            margin-bottom: 20px;
-        }
-        .unit-content p {
-            line-height: 1.8;
-            opacity: 0.85;
-        }
-
-        .nav-buttons {
-            display: flex;
-            justify-content: space-between;
-            margin-top: 30px;
-        }
-
+        .unit-item:hover { background: rgba(13, 33, 55, 0.9); transform: translateX(5px); }
+        .unit-number { font-size: 12px; color: #00FF88; font-weight: 600; }
+        .unit-title { font-size: 18px; margin-top: 5px; }
+        .unit-content { background: rgba(13, 33, 55, 0.8); border-radius: 16px; padding: 30px; margin-top: 30px; border: 1px solid rgba(0, 255, 136, 0.15); }
+        .unit-content h2 { color: #00FF88; margin-bottom: 20px; }
+        .unit-content p { line-height: 1.8; opacity: 0.85; }
+        .nav-buttons { display: flex; justify-content: space-between; margin-top: 30px; }
         .nav-btn {
             background: #00FF88;
             color: #0A192F;
@@ -208,32 +92,12 @@
             border-radius: 8px;
             cursor: pointer;
             font-weight: 700;
-            transition: all 0.3s;
         }
-        .nav-btn:hover:not(:disabled) {
-            transform: scale(1.02);
-            background: #00cc6a;
-        }
-        .nav-btn:disabled {
-            opacity: 0.4;
-            cursor: not-allowed;
-        }
-
-        .loading {
-            text-align: center;
-            padding: 60px;
-        }
-        .spinner {
-            width: 40px;
-            height: 40px;
-            border: 3px solid rgba(0,255,136,0.2);
-            border-top-color: #00FF88;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 20px;
-        }
+        .nav-btn:hover:not(:disabled) { transform: scale(1.02); background: #00cc6a; }
+        .nav-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+        .loading { text-align: center; padding: 60px; }
+        .spinner { width: 40px; height: 40px; border: 3px solid rgba(0,255,136,0.2); border-top-color: #00FF88; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 20px; }
         @keyframes spin { to { transform: rotate(360deg); } }
-
         .modal {
             display: none;
             position: fixed;
@@ -247,7 +111,6 @@
             align-items: center;
         }
         .modal.active { display: flex; }
-
         .modal-content {
             background: #0D2137;
             padding: 40px;
@@ -256,11 +119,7 @@
             max-width: 450px;
             border: 1px solid rgba(0, 255, 136, 0.3);
         }
-        .modal-content h2 {
-            margin-bottom: 20px;
-            text-align: center;
-            color: #00FF88;
-        }
+        .modal-content h2 { margin-bottom: 20px; text-align: center; color: #00FF88; }
         .modal-content input {
             width: 100%;
             padding: 14px;
@@ -271,10 +130,7 @@
             color: white;
             font-size: 16px;
         }
-        .modal-content input:focus {
-            outline: none;
-            border-color: #00FF88;
-        }
+        .modal-content input:focus { outline: none; border-color: #00FF88; }
         .modal-content button {
             width: 100%;
             padding: 14px;
@@ -283,31 +139,14 @@
             border: none;
             border-radius: 8px;
             font-weight: 700;
-            font-size: 16px;
             cursor: pointer;
             margin-bottom: 15px;
         }
-        .modal-content button:hover { background: #00cc6a; }
-
-        .modal-switch {
-            text-align: center;
-            color: rgba(255, 255, 255, 0.6);
-            cursor: pointer;
-        }
+        .modal-switch { text-align: center; color: rgba(255, 255, 255, 0.6); cursor: pointer; }
         .modal-switch span { color: #00FF88; }
-
-        .close-modal {
-            position: absolute;
-            top: 20px;
-            right: 30px;
-            font-size: 30px;
-            cursor: pointer;
-            color: white;
-        }
-
+        .close-modal { position: absolute; top: 20px; right: 30px; font-size: 30px; cursor: pointer; color: white; }
         .error-msg { color: #ff4444; text-align: center; margin-bottom: 15px; font-size: 14px; }
         .success-msg { color: #00FF88; text-align: center; margin-bottom: 15px; font-size: 14px; }
-
         @media (max-width: 768px) {
             .container { margin-top: 140px; }
             .course-title { font-size: 24px; }
@@ -338,304 +177,102 @@
         </div>
     </div>
 
-    <div class="container" id="container">
-        <div class="loading"><div class="spinner"></div>Loading course...</div>
-    </div>
+    <div class="container" id="container"><div class="loading"><div class="spinner"></div>Loading course...</div></div>
 
     <script>
-        // ============================================
-        // TRUE SINGLE SOURCE OF TRUTH
-        // ============================================
-        
-        // 1. CENTRAL STATE (Single Source of Truth)
-        const STATE = {
-            // Auth state
-            user: null,
-            authModalOpen: false,
-            authMode: 'login',
-            authError: null,
-            authSuccess: null,
+        (function() {
+            if (!window.__MEI_SUPABASE__) {
+                const SUPABASE_URL = 'https://qpqkmmkrzxlhcpccefjn.supabase.co';
+                const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFwcWttbWtyenhsaGNwY2NlZmpuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk1MjU0NzIsImV4cCI6MjA5NTEwMTQ3Mn0.Vw1hexN3NKoF_y9VFBFs_NUhJgFNNMwuyzDjImUcM6s';
+                window.__MEI_SUPABASE__ = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+            }
+            const supabase = window.__MEI_SUPABASE__;
             
-            // Course state
-            course: null,
-            units: [],
-            currentUnitIndex: 0,
-            loading: true
-        };
-        
-        // 2. SINGLE SUPABASE CLIENT
-        const SUPABASE_CONFIG = {
-            url: 'https://qpqkmmkrzxlhcpccefjn.supabase.co',
-            anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFwcWttbWtyenhsaGNwY2NlZmpuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk1MjU0NzIsImV4cCI6MjA5NTEwMTQ3Mn0.Vw1hexN3NKoF_y9VFBFs_NUhJgFNNMwuyzDjImUcM6s'
-        };
-        const supabase = window.supabase.createClient(SUPABASE_CONFIG.url, SUPABASE_CONFIG.anonKey);
-        
-        // 3. PURE UI RENDER FUNCTION (reads ONLY from STATE)
-        function renderUI() {
-            // Render auth buttons
-            const authContainer = document.getElementById('authContainer');
-            if (STATE.user) {
-                authContainer.innerHTML = `
-                    <div class="user-info">
-                        <span class="user-email">${escapeHtml(STATE.user.email)}</span>
-                        <button class="btn-logout" onclick="actions.logout()">Logout</button>
-                    </div>
-                `;
-            } else {
-                authContainer.innerHTML = `
-                    <button class="btn-login" onclick="actions.openModal('login')">Login</button>
-                    <button class="btn-register" onclick="actions.openModal('register')">Register</button>
+            const STATE = { user: null, authModalOpen: false, authMode: 'login', authError: null, authSuccess: null, course: null, units: [], currentUnitIndex: 0, loading: true };
+            
+            function escapeHtml(str) { if (!str) return ''; return str.replace(/[&<>]/g, m => m === '&' ? '&amp;' : m === '<' ? '&lt;' : m === '>' ? '&gt;' : m); }
+            
+            function renderUI() {
+                const authContainer = document.getElementById('authContainer');
+                if (STATE.user) authContainer.innerHTML = `<div class="user-info"><span class="user-email">${escapeHtml(STATE.user.email)}</span><button class="btn-logout" onclick="window.actions.logout()">Logout</button></div>`;
+                else authContainer.innerHTML = `<button class="btn-login" onclick="window.actions.openModal('login')">Login</button><button class="btn-register" onclick="window.actions.openModal('register')">Register</button>`;
+                
+                const modal = document.getElementById('authModal');
+                if (STATE.authModalOpen) {
+                    modal.classList.add('active');
+                    document.getElementById('modalTitle').textContent = STATE.authMode === 'login' ? 'Login' : 'Register';
+                    document.getElementById('modalSubmitBtn').textContent = STATE.authMode === 'login' ? 'Login' : 'Register';
+                    document.getElementById('modalSwitch').innerHTML = STATE.authMode === 'login' ? 'Don\'t have an account? <span>Register</span>' : 'Already have an account? <span>Login</span>';
+                    document.getElementById('modalError').textContent = STATE.authError || '';
+                    document.getElementById('modalSuccess').textContent = STATE.authSuccess || '';
+                } else modal.classList.remove('active');
+                
+                const container = document.getElementById('container');
+                if (STATE.loading) { container.innerHTML = '<div class="loading"><div class="spinner"></div>Loading course...</div>'; return; }
+                if (!STATE.course) { container.innerHTML = '<div class="loading">Course not found. <a href="index.html" style="color:#00FF88">Go back</a></div>'; return; }
+                
+                const progress = STATE.units.length > 0 ? ((STATE.currentUnitIndex + 1) / STATE.units.length) * 100 : 0;
+                container.innerHTML = `
+                    <div class="course-header"><h1 class="course-title"><span>${escapeHtml(STATE.course.title)}</span></h1><p class="course-description">${escapeHtml(STATE.course.description || '')}</p>
+                    <div class="progress-container"><div class="progress-bar" style="width: ${progress}%"></div></div><div class="progress-text">${Math.round(progress)}% Complete</div></div>
+                    <div class="units-list">${STATE.units.map(unit => `<div class="unit-item" onclick="window.actions.loadUnit(${unit.unit_number - 1})"><div class="unit-number">UNIT ${unit.unit_number}</div><div class="unit-title">${escapeHtml(unit.title)}</div></div>`).join('')}</div>
+                    <div id="unitContent">${STATE.currentUnitIndex >= 0 && STATE.units[STATE.currentUnitIndex] ? `<div class="unit-content"><h2>Unit ${STATE.units[STATE.currentUnitIndex].unit_number}: ${escapeHtml(STATE.units[STATE.currentUnitIndex].title)}</h2><p>${escapeHtml(STATE.units[STATE.currentUnitIndex].content || 'Content coming soon.')}</p><div class="nav-buttons"><button class="nav-btn" onclick="window.actions.prevUnit()" ${STATE.currentUnitIndex === 0 ? 'disabled' : ''}>← Previous</button><button class="nav-btn" onclick="window.actions.nextUnit()" ${STATE.currentUnitIndex === STATE.units.length - 1 ? 'disabled' : ''}>Next →</button></div></div>` : ''}</div>
                 `;
             }
             
-            // Render modal
-            const modal = document.getElementById('authModal');
-            if (STATE.authModalOpen) {
-                modal.classList.add('active');
-                document.getElementById('modalTitle').textContent = STATE.authMode === 'login' ? 'Login' : 'Register';
-                document.getElementById('modalSubmitBtn').textContent = STATE.authMode === 'login' ? 'Login' : 'Register';
-                document.getElementById('modalSwitch').innerHTML = STATE.authMode === 'login' 
-                    ? 'Don\'t have an account? <span>Register</span>'
-                    : 'Already have an account? <span>Login</span>';
-                document.getElementById('modalError').textContent = STATE.authError || '';
-                document.getElementById('modalSuccess').textContent = STATE.authSuccess || '';
-            } else {
-                modal.classList.remove('active');
-            }
-            
-            // Render course content
-            const container = document.getElementById('container');
-            if (STATE.loading) {
-                container.innerHTML = '<div class="loading"><div class="spinner"></div>Loading course...</div>';
-                return;
-            }
-            
-            if (!STATE.course) {
-                container.innerHTML = '<div class="loading">Course not found. <a href="index.html" style="color:#00FF88">Go back</a></div>';
-                return;
-            }
-            
-            const progress = STATE.units.length > 0 ? ((STATE.currentUnitIndex + 1) / STATE.units.length) * 100 : 0;
-            
-            container.innerHTML = `
-                <div class="course-header">
-                    <h1 class="course-title"><span>${escapeHtml(STATE.course.title)}</span></h1>
-                    <p class="course-description">${escapeHtml(STATE.course.description || '')}</p>
-                    <div class="progress-container"><div class="progress-bar" id="progressBar" style="width: ${progress}%"></div></div>
-                    <div class="progress-text" id="progressText">${Math.round(progress)}% Complete</div>
-                </div>
-                <div class="units-list" id="unitsList">
-                    ${STATE.units.map(unit => `
-                        <div class="unit-item" onclick="actions.loadUnit(${unit.unit_number - 1})">
-                            <div class="unit-number">UNIT ${unit.unit_number}</div>
-                            <div class="unit-title">${escapeHtml(unit.title)}</div>
-                        </div>
-                    `).join('')}
-                </div>
-                <div id="unitContent">
-                    ${STATE.currentUnitIndex >= 0 && STATE.units[STATE.currentUnitIndex] ? `
-                        <div class="unit-content">
-                            <h2>Unit ${STATE.units[STATE.currentUnitIndex].unit_number}: ${escapeHtml(STATE.units[STATE.currentUnitIndex].title)}</h2>
-                            <p>${escapeHtml(STATE.units[STATE.currentUnitIndex].content || 'Content coming soon. Please check back later.')}</p>
-                            <div class="nav-buttons">
-                                <button class="nav-btn" onclick="actions.prevUnit()" ${STATE.currentUnitIndex === 0 ? 'disabled' : ''}>← Previous</button>
-                                <button class="nav-btn" onclick="actions.nextUnit()" ${STATE.currentUnitIndex === STATE.units.length - 1 ? 'disabled' : ''}>Next →</button>
-                            </div>
-                        </div>
-                    ` : ''}
-                </div>
-            `;
-        }
-        
-        // Helper function to prevent XSS
-        function escapeHtml(str) {
-            if (!str) return '';
-            return str.replace(/[&<>]/g, function(m) {
-                if (m === '&') return '&amp;';
-                if (m === '<') return '&lt;';
-                if (m === '>') return '&gt;';
-                return m;
-            });
-        }
-        
-        // 4. ACTIONS (mutate STATE, then re-render)
-        const actions = {
-            // Auth actions
-            async login(email, password) {
-                STATE.authError = null;
-                STATE.authSuccess = null;
-                renderUI();
-                
-                const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-                if (error) {
-                    STATE.authError = error.message;
-                } else {
-                    STATE.user = data.user;
-                    STATE.authSuccess = 'Login successful!';
-                    STATE.authModalOpen = false;
-                    setTimeout(() => { STATE.authSuccess = null; renderUI(); }, 2000);
-                }
-                renderUI();
-            },
-            
-            async register(email, password) {
-                STATE.authError = null;
-                STATE.authSuccess = null;
-                renderUI();
-                
-                const { error } = await supabase.auth.signUp({ email, password });
-                if (error) {
-                    STATE.authError = error.message;
-                } else {
-                    STATE.authSuccess = 'Registration successful! You can now login.';
-                    setTimeout(() => {
-                        STATE.authMode = 'login';
-                        STATE.authSuccess = null;
-                        renderUI();
-                    }, 2000);
-                }
-                renderUI();
-            },
-            
-            async logout() {
-                await supabase.auth.signOut();
-                STATE.user = null;
-                renderUI();
-            },
-            
-            openModal(mode) {
-                STATE.authMode = mode;
-                STATE.authModalOpen = true;
-                STATE.authError = null;
-                STATE.authSuccess = null;
-                document.getElementById('modalEmail').value = '';
-                document.getElementById('modalPassword').value = '';
-                renderUI();
-            },
-            
-            closeModal() {
-                STATE.authModalOpen = false;
-                renderUI();
-            },
-            
-            async handleAuthSubmit() {
-                const email = document.getElementById('modalEmail').value;
-                const password = document.getElementById('modalPassword').value;
-                if (!email || !password) {
-                    STATE.authError = 'Please enter both email and password';
+            const actions = {
+                async login(email, password) {
+                    STATE.authError = null; STATE.authSuccess = null; renderUI();
+                    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+                    if (error) STATE.authError = error.message;
+                    else { STATE.user = data.user; STATE.authSuccess = 'Login successful!'; STATE.authModalOpen = false; setTimeout(() => { STATE.authSuccess = null; renderUI(); }, 2000); }
                     renderUI();
-                    return;
-                }
-                if (password.length < 6) {
-                    STATE.authError = 'Password must be at least 6 characters';
+                },
+                async register(email, password) {
+                    STATE.authError = null; STATE.authSuccess = null; renderUI();
+                    const { error } = await supabase.auth.signUp({ email, password });
+                    if (error) STATE.authError = error.message;
+                    else { STATE.authSuccess = 'Registration successful! You can now login.'; setTimeout(() => { STATE.authMode = 'login'; STATE.authSuccess = null; renderUI(); }, 2000); }
                     renderUI();
-                    return;
-                }
-                if (STATE.authMode === 'login') {
-                    await actions.login(email, password);
-                } else {
-                    await actions.register(email, password);
-                }
-            },
+                },
+                async logout() { await supabase.auth.signOut(); STATE.user = null; renderUI(); window.location.href = 'index.html'; },
+                openModal(mode) { STATE.authMode = mode; STATE.authModalOpen = true; STATE.authError = null; STATE.authSuccess = null; document.getElementById('modalEmail').value = ''; document.getElementById('modalPassword').value = ''; renderUI(); },
+                closeModal() { STATE.authModalOpen = false; renderUI(); },
+                async handleAuthSubmit() {
+                    const email = document.getElementById('modalEmail').value, password = document.getElementById('modalPassword').value;
+                    if (!email || !password) { STATE.authError = 'Please enter both email and password'; renderUI(); return; }
+                    if (password.length < 6) { STATE.authError = 'Password must be at least 6 characters'; renderUI(); return; }
+                    if (STATE.authMode === 'login') await actions.login(email, password);
+                    else await actions.register(email, password);
+                },
+                loadUnit(index) { if (index >= 0 && index < STATE.units.length) { STATE.currentUnitIndex = index; renderUI(); } },
+                prevUnit() { if (STATE.currentUnitIndex > 0) actions.loadUnit(STATE.currentUnitIndex - 1); },
+                nextUnit() { if (STATE.currentUnitIndex < STATE.units.length - 1) actions.loadUnit(STATE.currentUnitIndex + 1); else alert('🎉 Congratulations! You completed the course!'); },
+                async loadCourse() {
+                    STATE.loading = true; renderUI();
+                    const courseTitle = sessionStorage.getItem('selectedCourse');
+                    if (!courseTitle) { STATE.loading = false; renderUI(); return; }
+                    try {
+                        const { data: course } = await supabase.from('courses').select('*').eq('title', courseTitle).single();
+                        if (course) STATE.course = course;
+                        const { data: units } = await supabase.from('units').select('*').eq('course_id', STATE.course?.id).order('unit_number');
+                        STATE.units = units || [];
+                        STATE.currentUnitIndex = 0;
+                    } catch(e) { console.error(e); }
+                    finally { STATE.loading = false; renderUI(); }
+                },
+                async syncAuth() { const { data: { session } } = await supabase.auth.getSession(); STATE.user = session?.user || null; renderUI(); }
+            };
             
-            // Course actions
-            loadUnit(index) {
-                if (index >= 0 && index < STATE.units.length) {
-                    STATE.currentUnitIndex = index;
-                    renderUI();
-                    document.querySelector('.unit-content')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                }
-            },
+            window.actions = actions;
+            document.getElementById('modalSubmitBtn').onclick = () => actions.handleAuthSubmit();
+            document.getElementById('modalSwitch').onclick = () => { STATE.authMode = STATE.authMode === 'login' ? 'register' : 'login'; renderUI(); };
+            document.querySelector('.close-modal').onclick = () => actions.closeModal();
+            window.onclick = (event) => { if (event.target === document.getElementById('authModal')) actions.closeModal(); };
             
-            prevUnit() {
-                if (STATE.currentUnitIndex > 0) {
-                    actions.loadUnit(STATE.currentUnitIndex - 1);
-                }
-            },
-            
-            nextUnit() {
-                if (STATE.currentUnitIndex < STATE.units.length - 1) {
-                    actions.loadUnit(STATE.currentUnitIndex + 1);
-                } else {
-                    alert('🎉 Congratulations! You have completed the course!');
-                }
-            },
-            
-            async loadCourse() {
-                STATE.loading = true;
-                renderUI();
-                
-                // Get course title from URL param or session storage
-                const urlParams = new URLSearchParams(window.location.search);
-                let courseTitle = urlParams.get('course');
-                if (!courseTitle) {
-                    courseTitle = sessionStorage.getItem('selectedCourse');
-                }
-                
-                if (!courseTitle) {
-                    STATE.loading = false;
-                    renderUI();
-                    return;
-                }
-                
-                try {
-                    // Fetch course
-                    const { data: course, error: cErr } = await supabase
-                        .from('courses')
-                        .select('*')
-                        .eq('title', courseTitle)
-                        .single();
-                    
-                    if (cErr) throw cErr;
-                    STATE.course = course;
-                    
-                    // Fetch units
-                    const { data: units, error: uErr } = await supabase
-                        .from('units')
-                        .select('*')
-                        .eq('course_id', course.id)
-                        .order('unit_number');
-                    
-                    if (uErr) throw uErr;
-                    STATE.units = units || [];
-                    STATE.currentUnitIndex = 0;
-                    
-                } catch (err) {
-                    console.error('Error loading course:', err);
-                    STATE.course = null;
-                    STATE.units = [];
-                } finally {
-                    STATE.loading = false;
-                    renderUI();
-                }
-            },
-            
-            async syncAuthFromSupabase() {
-                const { data: { session } } = await supabase.auth.getSession();
-                STATE.user = session?.user || null;
-                renderUI();
-            }
-        };
-        
-        // 5. EVENT LISTENERS (connected to actions)
-        document.getElementById('modalSubmitBtn').onclick = () => actions.handleAuthSubmit();
-        document.getElementById('modalSwitch').onclick = () => {
-            STATE.authMode = STATE.authMode === 'login' ? 'register' : 'login';
-            renderUI();
-        };
-        document.querySelector('.close-modal').onclick = () => actions.closeModal();
-        window.onclick = (event) => { if (event.target === document.getElementById('authModal')) actions.closeModal(); };
-        
-        // Make actions available globally for onclick handlers
-        window.actions = actions;
-        
-        // 6. INITIALIZE
-        async function init() {
-            await actions.syncAuthFromSupabase();
-            await actions.loadCourse();
-        }
-        
-        init();
+            async function init() { await actions.syncAuth(); await actions.loadCourse(); }
+            init();
+        })();
     </script>
 </body>
 </html>
