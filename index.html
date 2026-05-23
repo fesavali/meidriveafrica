@@ -1,537 +1,823 @@
-<!DOCTYPE html>
+create sql for this <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Course - MEI Drive Africa</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MEI DRIVE AFRICA</title>
+
+    <!-- Supabase -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <!-- SINGLE SOURCE OF TRUTH - supabase.js contains ALL credentials and functions -->
-    <script src="supabase.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: #0a0e27;
-            color: #ffffff;
+        *{
+            margin:0;
+            padding:0;
+            box-sizing:border-box;
         }
-        .navbar {
-            background: #1a1f3a;
-            padding: 1rem 2rem;
-            border-bottom: 1px solid rgba(0, 255, 136, 0.2);
-            position: sticky;
-            top: 0;
-            z-index: 100;
+
+        body{
+            font-family:Segoe UI,sans-serif;
+            background:#0a0e27;
+            color:white;
         }
-        .nav-container {
-            max-width: 1200px;
-            margin: 0 auto;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 15px;
+
+        .navbar{
+            background:#1a1f3a;
+            padding:15px 25px;
+            display:flex;
+            justify-content:space-between;
+            align-items:center;
+            border-bottom:1px solid #00ff8830;
         }
-        .logo {
-            font-size: 1.5rem;
-            font-weight: bold;
-            color: #00ff88;
-            cursor: pointer;
-            text-decoration: none;
+
+        .logo{
+            font-size:1.5rem;
+            font-weight:bold;
+            color:#00ff88;
         }
-        .logo span { color: white; }
-        .back-btn {
-            background: transparent;
-            border: 1px solid #00ff88;
-            color: #00ff88;
-            padding: 8px 20px;
-            border-radius: 8px;
-            cursor: pointer;
-            text-decoration: none;
-            transition: all 0.3s;
+
+        .btn{
+            padding:10px 18px;
+            border:none;
+            border-radius:8px;
+            cursor:pointer;
+            font-weight:bold;
         }
-        .back-btn:hover {
-            background: rgba(0, 255, 136, 0.1);
+
+        .btn-primary{
+            background:#00ff88;
+            color:#0a0e27;
         }
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 30px 20px;
+
+        .btn-outline{
+            background:transparent;
+            color:#00ff88;
+            border:1px solid #00ff88;
         }
-        .course-header {
-            background: linear-gradient(135deg, #1a1f3a, #0a0e27);
-            border-radius: 20px;
-            padding: 40px;
-            text-align: center;
-            border: 1px solid rgba(0, 255, 136, 0.2);
-            margin-bottom: 30px;
+
+        .btn-danger{
+            background:#ff4444;
+            color:white;
         }
-        .course-header h1 { color: #00ff88; margin-bottom: 10px; }
-        .course-header p { color: #a0a0c0; }
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
-            margin-bottom: 40px;
+
+        .hero{
+            padding:80px 20px;
+            text-align:center;
         }
-        .stat-card {
-            background: #1a1f3a;
-            padding: 25px;
-            border-radius: 16px;
-            text-align: center;
-            border: 1px solid rgba(0, 255, 136, 0.1);
+
+        .hero h1{
+            font-size:3rem;
+            margin-bottom:20px;
         }
-        .stat-number { font-size: 2.5rem; font-weight: bold; color: #00ff88; }
-        .stat-label { color: #a0a0c0; margin-top: 5px; }
-        .progress-section {
-            background: #1a1f3a;
-            border-radius: 16px;
-            padding: 30px;
-            margin-bottom: 30px;
+
+        .hero span{
+            color:#00ff88;
         }
-        .progress-bar-container {
-            background: rgba(255,255,255,0.1);
-            border-radius: 10px;
-            height: 20px;
-            overflow: hidden;
-            margin: 15px 0;
+
+        .container{
+            max-width:1200px;
+            margin:auto;
+            padding:20px;
         }
-        .progress-fill {
-            background: linear-gradient(135deg, #00ff88, #00ccff);
-            height: 100%;
-            width: 0%;
-            transition: width 0.3s;
+
+        .courses-grid{
+            display:grid;
+            grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
+            gap:20px;
         }
-        .units-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-            gap: 20px;
-            margin-top: 20px;
+
+        .course-card{
+            background:#1a1f3a;
+            padding:20px;
+            border-radius:16px;
+            border:1px solid #00ff8820;
         }
-        .unit-card {
-            background: #1a1f3a;
-            border-radius: 12px;
-            padding: 20px;
-            border: 1px solid rgba(0, 255, 136, 0.1);
-            transition: all 0.3s;
-            cursor: pointer;
+
+        .course-card h3{
+            margin:10px 0;
         }
-        .unit-card:hover {
-            transform: translateY(-3px);
-            border-color: #00ff88;
+
+        .badge{
+            display:inline-block;
+            padding:5px 12px;
+            border-radius:20px;
+            font-size:0.7rem;
+            margin-bottom:10px;
+            font-weight:bold;
         }
-        .unit-number { color: #00ff88; font-size: 0.8rem; margin-bottom: 5px; }
-        .unit-title { font-size: 1.1rem; margin-bottom: 10px; }
-        .unit-status { font-size: 0.75rem; color: #a0a0c0; margin-top: 10px; }
-        .unit-status.completed { color: #00ff88; }
-        .enroll-btn {
-            background: #00ff88;
-            color: #0a0e27;
-            border: none;
-            padding: 12px 30px;
-            border-radius: 8px;
-            font-size: 1rem;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.3s;
-            margin-top: 20px;
+
+        .badge-free{
+            background:#ff9800;
+            color:black;
         }
-        .enroll-btn:hover {
-            background: #00cc6a;
-            transform: translateY(-2px);
+
+        .badge-premium{
+            background:#00ff88;
+            color:black;
         }
-        .loading { text-align: center; padding: 60px; }
-        .spinner {
-            width: 50px;
-            height: 50px;
-            border: 3px solid rgba(0,255,136,0.2);
-            border-top-color: #00ff88;
-            border-radius: 50%;
-            animation: spin 0.8s linear infinite;
-            margin: 0 auto 20px;
+
+        .dashboard{
+            display:none;
         }
-        @keyframes spin { to { transform: rotate(360deg); } }
-        .error-message {
-            background: rgba(255,68,68,0.2);
-            border: 1px solid #ff4444;
-            border-radius: 16px;
-            padding: 40px;
-            text-align: center;
+
+        .main-content{
+            padding:30px;
         }
-        .footer {
-            text-align: center;
-            padding: 30px;
-            color: #a0a0c0;
-            font-size: 0.8rem;
-            border-top: 1px solid rgba(0,255,136,0.1);
-            margin-top: 40px;
+
+        .stats-grid{
+            display:grid;
+            grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
+            gap:20px;
+            margin:25px 0;
         }
-        @media (max-width: 768px) {
-            .stats-grid { grid-template-columns: 1fr; }
-            .units-grid { grid-template-columns: 1fr; }
+
+        .stat-card{
+            background:#1a1f3a;
+            padding:20px;
+            border-radius:12px;
+            text-align:center;
+        }
+
+        .stat-number{
+            font-size:2rem;
+            color:#00ff88;
+            font-weight:bold;
+        }
+
+        .progress-bar{
+            height:8px;
+            background:#333;
+            border-radius:10px;
+            overflow:hidden;
+            margin:10px 0;
+        }
+
+        .progress-fill{
+            height:100%;
+            background:#00ff88;
+        }
+
+        .modal{
+            display:none;
+            position:fixed;
+            inset:0;
+            background:rgba(0,0,0,0.85);
+            justify-content:center;
+            align-items:center;
+            z-index:1000;
+        }
+
+        .modal.active{
+            display:flex;
+        }
+
+        .modal-content{
+            width:90%;
+            max-width:400px;
+            background:#1a1f3a;
+            padding:30px;
+            border-radius:16px;
+        }
+
+        .modal-content input{
+            width:100%;
+            padding:12px;
+            margin:10px 0;
+            border-radius:8px;
+            border:1px solid #00ff88;
+            background:#0a0e27;
+            color:white;
+        }
+
+        .footer{
+            text-align:center;
+            padding:30px;
+            color:#999;
+        }
+
+        @media(max-width:768px){
+            .hero h1{
+                font-size:2rem;
+            }
         }
     </style>
 </head>
 <body>
+
+<!-- AUTH MODAL -->
+<div id="authModal" class="modal">
+    <div class="modal-content">
+        <h2 id="modalTitle">Login</h2>
+
+        <input type="email" id="authEmail" placeholder="Email">
+        <input type="password" id="authPassword" placeholder="Password">
+
+        <button id="authBtn" class="btn btn-primary" style="width:100%;">
+            Login
+        </button>
+
+        <p style="margin-top:15px;">
+            <span id="switchText">Don't have an account?</span>
+            <a href="#" id="toggleAuth" style="color:#00ff88;">Register</a>
+        </p>
+
+        <button onclick="closeAuthModal()" class="btn btn-outline" style="width:100%;margin-top:10px;">
+            Cancel
+        </button>
+    </div>
+</div>
+
+<!-- LANDING -->
+<div id="landingPage">
+
     <nav class="navbar">
-        <div class="nav-container">
-            <a href="index.html" class="logo">MEI DRIVE <span>AFRICA</span></a>
-            <a href="index.html" class="back-btn">← All Courses</a>
+        <div class="logo">MEI DRIVE AFRICA</div>
+
+        <div>
+            <button class="btn btn-outline" onclick="showAuthModal('login')">
+                Login
+            </button>
+
+            <button class="btn btn-primary" onclick="showAuthModal('register')">
+                Register
+            </button>
         </div>
     </nav>
-    
-    <div class="container" id="courseContent">
-        <div class="loading"><div class="spinner"></div> Loading course...</div>
-    </div>
-    
-    <div class="footer">
-        <p>© 2026 MEI DRIVE AFRICA | NTSA Approved Driver Training</p>
+
+    <section class="hero">
+        <h1>
+            Drive Safe.<br>
+            <span>Learn With Confidence.</span>
+        </h1>
+
+        <p>NTSA Approved Driver Training</p>
+    </section>
+
+    <section class="container">
+        <h2 style="margin-bottom:25px;">Our Courses</h2>
+
+        <div id="coursesList" class="courses-grid">
+            Loading courses...
+        </div>
+    </section>
+
+    <footer class="footer">
+        © 2026 MEI DRIVE AFRICA
+    </footer>
+
+</div>
+
+<!-- DASHBOARD -->
+<div id="dashboard" class="dashboard">
+
+    <nav class="navbar">
+        <div class="logo">MEI DRIVE AFRICA</div>
+
+        <button id="logoutBtn" class="btn btn-danger">
+            Logout
+        </button>
+    </nav>
+
+    <div class="main-content">
+
+        <h2>
+            Welcome,
+            <span id="welcomeName">Student</span>
+        </h2>
+
+        <div class="stats-grid">
+
+            <div class="stat-card">
+                <div id="statTotal" class="stat-number">0</div>
+                <p>Total Courses</p>
+            </div>
+
+            <div class="stat-card">
+                <div id="statEnrolled" class="stat-number">0</div>
+                <p>Enrolled</p>
+            </div>
+
+            <div class="stat-card">
+                <div id="statCompleted" class="stat-number">0</div>
+                <p>Completed</p>
+            </div>
+
+        </div>
+
+        <h3 style="margin-bottom:20px;">My Courses</h3>
+
+        <div id="myCoursesList" class="courses-grid"></div>
+
     </div>
 
-    <script>
-        // ============================================
-        // USING supabase.js AS SINGLE SOURCE OF TRUTH
-        // All Supabase functions come from window.MEIDrive
-        // ============================================
-        
-        let currentUser = null;
-        let courseData = null;
-        let courseUnits = [];
-        let completedUnitIds = new Set();
-        let isEnrolled = false;
-        
-        function getCourseId() {
-            const params = new URLSearchParams(window.location.search);
-            return params.get('id') ? parseInt(params.get('id')) : 1;
-        }
-        
-        // Check if MEIDrive is loaded
-        if (!window.MEIDrive || !window.MEIDrive.supabase) {
-            console.error('❌ MEIDrive not loaded! Check if supabase.js is loaded first.');
-            document.getElementById('courseContent').innerHTML = `
-                <div class="error-message">
-                    <h3>⚠️ Database Connection Error</h3>
-                    <p>Please refresh the page or check your internet connection.</p>
-                    <button onclick="location.reload()" style="margin-top: 20px; padding: 10px 20px; background: #00ff88; border: none; border-radius: 8px; cursor: pointer;">Retry</button>
-                </div>
-            `;
-        }
-        
-        const supabaseClient = window.MEIDrive.supabase;
-        console.log('✅ Using MEIDrive singleton instance');
-        
-        async function loadCourse() {
-            const courseId = getCourseId();
-            console.log('📚 Loading course ID:', courseId);
-            
-            try {
-                // Use the fetchCourseById function from supabase.js
-                if (window.MEIDrive.fetchCourseById) {
-                    courseData = await window.MEIDrive.fetchCourseById(courseId);
-                } else {
-                    // Fallback direct query
-                    const { data, error } = await supabaseClient
-                        .from('courses')
-                        .select('*')
-                        .eq('id', courseId)
-                        .single();
-                    if (error) throw error;
-                    courseData = data;
+</div>
+
+<script>
+
+/* =========================
+   SUPABASE CONFIG
+========================= */
+
+const SUPABASE_URL = 'YOUR_SUPABASE_URL';
+const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY';
+
+const supabase = window.supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_ANON_KEY
+);
+
+/* =========================
+   GLOBALS
+========================= */
+
+let currentUser = null;
+let allCourses = [];
+let userEnrollments = new Map();
+let authMode = 'login';
+
+/* =========================
+   HELPERS
+========================= */
+
+function toast(msg){
+    alert(msg);
+}
+
+function escapeHtml(str){
+    if(!str) return '';
+
+    return str.replace(/[&<>]/g, m => ({
+        '&':'&amp;',
+        '<':'&lt;',
+        '>':'&gt;'
+    }[m]));
+}
+
+/* =========================
+   AUTH MODAL
+========================= */
+
+function showAuthModal(mode){
+
+    authMode = mode;
+
+    document.getElementById('authModal')
+        .classList.add('active');
+
+    document.getElementById('modalTitle')
+        .textContent = mode === 'login'
+        ? 'Login'
+        : 'Register';
+
+    document.getElementById('authBtn')
+        .textContent = mode === 'login'
+        ? 'Login'
+        : 'Register';
+
+}
+
+function closeAuthModal(){
+
+    document.getElementById('authModal')
+        .classList.remove('active');
+
+}
+
+/* =========================
+   LOAD COURSES
+========================= */
+
+async function loadCourses(){
+
+    console.log('Loading courses...');
+
+    const { data, error } = await supabase
+        .from('courses')
+        .select('*')
+        .order('id');
+
+    if(error){
+
+        console.error(error);
+
+        document.getElementById('coursesList')
+            .innerHTML = 'Failed to load courses';
+
+        return;
+    }
+
+    allCourses = data || [];
+
+    console.log('Courses:', allCourses);
+
+    document.getElementById('statTotal')
+        .textContent = allCourses.length;
+
+    renderPublicCourses();
+}
+
+/* =========================
+   LOAD ENROLLMENTS
+========================= */
+
+async function loadEnrollments(){
+
+    if(!currentUser) return;
+
+    const { data, error } = await supabase
+        .from('enrollments')
+        .select('*')
+        .eq('user_id', currentUser.id);
+
+    if(error){
+
+        console.error('Enrollment error:', error);
+
+        return;
+    }
+
+    console.log('Enrollments:', data);
+
+    userEnrollments.clear();
+
+    data.forEach(e => {
+
+        userEnrollments.set(
+            Number(e.course_id),
+            {
+                progress:Number(e.progress) || 0
+            }
+        );
+
+    });
+
+    renderMyCourses();
+
+    updateStats();
+}
+
+/* =========================
+   ENROLL COURSE
+========================= */
+
+async function enrollCourse(courseId){
+
+    if(!currentUser){
+
+        showAuthModal('login');
+
+        return;
+    }
+
+    const { error } = await supabase
+        .from('enrollments')
+        .insert([
+            {
+                user_id:currentUser.id,
+                course_id:Number(courseId),
+                progress:0,
+                status:'active'
+            }
+        ]);
+
+    if(error){
+
+        console.error(error);
+
+        toast(error.message);
+
+        return;
+    }
+
+    toast('Enrolled successfully');
+
+    await loadEnrollments();
+}
+
+/* =========================
+   UPDATE STATS
+========================= */
+
+function updateStats(){
+
+    const enrolled = userEnrollments.size;
+
+    const completed =
+        Array.from(userEnrollments.values())
+        .filter(e => e.progress === 100)
+        .length;
+
+    document.getElementById('statEnrolled')
+        .textContent = enrolled;
+
+    document.getElementById('statCompleted')
+        .textContent = completed;
+
+}
+
+/* =========================
+   PUBLIC COURSES
+========================= */
+
+function renderPublicCourses(){
+
+    const container =
+        document.getElementById('coursesList');
+
+    if(!allCourses.length){
+
+        container.innerHTML =
+            'No courses available';
+
+        return;
+    }
+
+    container.innerHTML =
+        allCourses.map(course => `
+
+        <div class="course-card">
+
+            <span class="badge ${
+                course.type === 'free'
+                ? 'badge-free'
+                : 'badge-premium'
+            }">
+
+                ${
+                    course.type === 'free'
+                    ? 'FREE'
+                    : 'PREMIUM'
                 }
-                
-                console.log('✅ Course loaded:', courseData?.name);
-                return courseData;
-            } catch (error) {
-                console.error('Error loading course:', error);
-                document.getElementById('courseContent').innerHTML = `
-                    <div class="error-message">
-                        <h3>Error Loading Course</h3>
-                        <p>${error.message}</p>
-                        <button onclick="location.reload()" style="margin-top: 20px; padding: 10px 20px; background: #00ff88; border: none; border-radius: 8px; cursor: pointer;">Retry</button>
-                    </div>
-                `;
-                return null;
-            }
+
+            </span>
+
+            <h3>${escapeHtml(course.name)}</h3>
+
+            <p>
+                ${escapeHtml(course.description || '')}
+            </p>
+
+            <button
+                class="btn btn-primary"
+                onclick="enrollCourse(${course.id})"
+            >
+                Enroll
+            </button>
+
+        </div>
+
+    `).join('');
+
+}
+
+/* =========================
+   MY COURSES
+========================= */
+
+function renderMyCourses(){
+
+    const container =
+        document.getElementById('myCoursesList');
+
+    const enrolledCourses =
+        allCourses.filter(course =>
+            userEnrollments.has(Number(course.id))
+        );
+
+    console.log(
+        'Rendering enrolled courses:',
+        enrolledCourses
+    );
+
+    if(!enrolledCourses.length){
+
+        container.innerHTML =
+            '<p>No enrolled courses</p>';
+
+        return;
+    }
+
+    container.innerHTML =
+        enrolledCourses.map(course => {
+
+        const progress =
+            userEnrollments.get(Number(course.id))
+            ?.progress || 0;
+
+        return `
+
+        <div class="course-card">
+
+            <h3>${escapeHtml(course.name)}</h3>
+
+            <div class="progress-bar">
+                <div
+                    class="progress-fill"
+                    style="width:${progress}%"
+                ></div>
+            </div>
+
+            <p>${progress}% Complete</p>
+
+        </div>
+
+        `;
+
+    }).join('');
+
+}
+
+/* =========================
+   SHOW DASHBOARD
+========================= */
+
+function showDashboard(){
+
+    document.getElementById('landingPage')
+        .style.display = 'none';
+
+    document.getElementById('dashboard')
+        .style.display = 'block';
+
+    if(currentUser){
+
+        const name =
+            currentUser.email.split('@')[0];
+
+        document.getElementById('welcomeName')
+            .textContent = name;
+
+    }
+
+}
+
+/* =========================
+   SHOW LANDING
+========================= */
+
+function showLanding(){
+
+    document.getElementById('landingPage')
+        .style.display = 'block';
+
+    document.getElementById('dashboard')
+        .style.display = 'none';
+
+}
+
+/* =========================
+   AUTH BUTTON
+========================= */
+
+document.getElementById('authBtn')
+.onclick = async () => {
+
+    const email =
+        document.getElementById('authEmail').value;
+
+    const password =
+        document.getElementById('authPassword').value;
+
+    if(!email || !password){
+
+        toast('Enter email and password');
+
+        return;
+    }
+
+    try{
+
+        if(authMode === 'login'){
+
+            const { error } =
+                await supabase.auth
+                .signInWithPassword({
+                    email,
+                    password
+                });
+
+            if(error) throw error;
+
+        }else{
+
+            const { error } =
+                await supabase.auth.signUp({
+                    email,
+                    password
+                });
+
+            if(error) throw error;
+
+            toast('Account created');
+
         }
-        
-        async function loadUnits(courseId) {
-            console.log('📖 Loading units for course:', courseId);
-            
-            try {
-                const { data, error } = await supabaseClient
-                    .from('lessons')
-                    .select('*')
-                    .eq('course_id', courseId)
-                    .order('order_number', { ascending: true });
-                
-                if (error) throw error;
-                
-                courseUnits = data || [];
-                console.log(`✅ Loaded ${courseUnits.length} units/lessons`);
-                return courseUnits;
-            } catch (error) {
-                console.error('Error loading units:', error);
-                courseUnits = [];
-                return [];
-            }
+
+        closeAuthModal();
+
+    }catch(err){
+
+        console.error(err);
+
+        toast(err.message);
+
+    }
+
+};
+
+/* =========================
+   TOGGLE AUTH MODE
+========================= */
+
+document.getElementById('toggleAuth')
+.onclick = (e) => {
+
+    e.preventDefault();
+
+    showAuthModal(
+        authMode === 'login'
+        ? 'register'
+        : 'login'
+    );
+
+};
+
+/* =========================
+   LOGOUT
+========================= */
+
+document.getElementById('logoutBtn')
+.onclick = async () => {
+
+    await supabase.auth.signOut();
+
+};
+
+/* =========================
+   AUTH STATE
+========================= */
+
+supabase.auth.onAuthStateChange(
+    async(event, session) => {
+
+    console.log(event);
+
+    if(event === 'SIGNED_IN'){
+
+        currentUser = session.user;
+
+        await loadEnrollments();
+
+        showDashboard();
+
+    }
+
+    if(event === 'SIGNED_OUT'){
+
+        currentUser = null;
+
+        userEnrollments.clear();
+
+        showLanding();
+
+    }
+
+});
+
+/* =========================
+   INIT
+========================= */
+
+async function init(){
+
+    try{
+
+        const {
+            data:{session}
+        } = await supabase.auth.getSession();
+
+        currentUser = session?.user || null;
+
+        await loadCourses();
+
+        if(currentUser){
+
+            await loadEnrollments();
+
+            showDashboard();
+
         }
-        
-        async function loadUser() {
-            // Use getCurrentUser from supabase.js
-            if (window.MEIDrive.getCurrentUser) {
-                currentUser = await window.MEIDrive.getCurrentUser();
-            } else {
-                const { data: { session } } = await supabaseClient.auth.getSession();
-                currentUser = session?.user || null;
-            }
-            console.log('User logged in:', currentUser?.email || 'No user');
-            return currentUser;
-        }
-        
-        async function loadEnrollments() {
-            if (!currentUser) return;
-            
-            // Use fetchEnrollments from supabase.js
-            if (window.MEIDrive.fetchEnrollments) {
-                const enrollments = await window.MEIDrive.fetchEnrollments(currentUser.id);
-                isEnrolled = enrollments.some(e => e.course_id === courseData?.id);
-            } else {
-                const { data, error } = await supabaseClient
-                    .from('enrollments')
-                    .select('course_id')
-                    .eq('user_id', currentUser.id);
-                
-                if (!error && data) {
-                    isEnrolled = data.some(e => e.course_id === courseData?.id);
-                }
-            }
-        }
-        
-        async function loadUserProgress(courseId) {
-            if (!currentUser || !isEnrolled) {
-                console.log('No user or not enrolled');
-                return;
-            }
-            
-            try {
-                const { data, error } = await supabaseClient
-                    .from('lesson_progress')
-                    .select('lesson_id, completed')
-                    .eq('user_id', currentUser.id)
-                    .eq('completed', true);
-                
-                if (error) throw error;
-                
-                completedUnitIds.clear();
-                if (data) {
-                    data.forEach(p => completedUnitIds.add(p.lesson_id));
-                }
-                console.log(`✅ Loaded ${completedUnitIds.size} completed units`);
-            } catch (error) {
-                console.error('Error loading progress:', error);
-                const saved = localStorage.getItem(`course_${courseId}_progress`);
-                if (saved) {
-                    const arr = JSON.parse(saved);
-                    completedUnitIds.clear();
-                    arr.forEach(id => completedUnitIds.add(id));
-                }
-            }
-        }
-        
-        async function enrollInCourse() {
-            if (!currentUser) {
-                alert('Please login to enroll in this course');
-                window.location.href = 'index.html';
-                return;
-            }
-            
-            if (isEnrolled) {
-                alert('You are already enrolled in this course!');
-                return;
-            }
-            
-            // Use enrollInCourse from supabase.js
-            if (window.MEIDrive.enrollInCourse) {
-                const result = await window.MEIDrive.enrollInCourse(currentUser.id, courseData.id);
-                if (result.success) {
-                    isEnrolled = true;
-                    alert('Successfully enrolled!');
-                    renderPage();
-                } else {
-                    alert('Error enrolling: ' + result.error);
-                }
-            } else {
-                // Fallback direct insert
-                const { error } = await supabaseClient
-                    .from('enrollments')
-                    .insert([{
-                        user_id: currentUser.id,
-                        course_id: courseData.id,
-                        progress: 0,
-                        status: 'active'
-                    }]);
-                
-                if (error) {
-                    alert('Error enrolling: ' + error.message);
-                } else {
-                    isEnrolled = true;
-                    alert('Successfully enrolled!');
-                    renderPage();
-                }
-            }
-        }
-        
-        async function toggleUnit(unitId, completed) {
-            if (!currentUser) {
-                alert('Please login to track your progress');
-                window.location.href = 'index.html';
-                return;
-            }
-            
-            try {
-                if (completed) {
-                    await supabaseClient
-                        .from('lesson_progress')
-                        .upsert({
-                            user_id: currentUser.id,
-                            lesson_id: unitId,
-                            completed: true,
-                            completed_at: new Date().toISOString()
-                        });
-                    completedUnitIds.add(unitId);
-                } else {
-                    await supabaseClient
-                        .from('lesson_progress')
-                        .delete()
-                        .eq('user_id', currentUser.id)
-                        .eq('lesson_id', unitId);
-                    completedUnitIds.delete(unitId);
-                }
-                
-                const progress = Math.round((completedUnitIds.size / courseUnits.length) * 100);
-                
-                // Update enrollment progress
-                await supabaseClient
-                    .from('enrollments')
-                    .update({ 
-                        progress: progress, 
-                        last_accessed: new Date().toISOString(),
-                        completed_at: progress === 100 ? new Date().toISOString() : null,
-                        status: progress === 100 ? 'completed' : 'active'
-                    })
-                    .eq('user_id', currentUser.id)
-                    .eq('course_id', courseData.id);
-                
-                renderPage();
-            } catch (error) {
-                console.error('Error updating progress:', error);
-                if (completed) {
-                    completedUnitIds.add(unitId);
-                } else {
-                    completedUnitIds.delete(unitId);
-                }
-                localStorage.setItem(`course_${courseData.id}_progress`, JSON.stringify(Array.from(completedUnitIds)));
-                renderPage();
-            }
-        }
-        
-        function viewUnit(unitId) {
-            window.location.href = `unit.html?id=${unitId}&course_id=${courseData.id}`;
-        }
-        
-        function calculateProgress() {
-            if (!courseUnits.length) return 0;
-            return Math.round((completedUnitIds.size / courseUnits.length) * 100);
-        }
-        
-        function renderPage() {
-            const container = document.getElementById('courseContent');
-            
-            if (!courseData) {
-                container.innerHTML = `<div class="error-message"><h3>Course not found</h3></div>`;
-                return;
-            }
-            
-            const progress = calculateProgress();
-            const completedCount = completedUnitIds.size;
-            
-            container.innerHTML = `
-                <div class="course-header">
-                    <h1>${escapeHtml(courseData.name)}</h1>
-                    <p>${escapeHtml(courseData.description || 'No description available')}</p>
-                    <div class="stats-grid">
-                        <div class="stat-card">
-                            <div class="stat-number">${courseUnits.length}</div>
-                            <div class="stat-label">Total Lessons</div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-number">${completedCount}</div>
-                            <div class="stat-label">Completed</div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-number">${progress}%</div>
-                            <div class="stat-label">Overall Progress</div>
-                        </div>
-                    </div>
-                    ${!isEnrolled ? `
-                        <button class="enroll-btn" onclick="enrollInCourse()">
-                            <i class="fas fa-graduation-cap"></i> Enroll in this Course
-                        </button>
-                    ` : ''}
-                </div>
-                
-                ${isEnrolled ? `
-                    <div class="progress-section">
-                        <h3><i class="fas fa-chart-line"></i> Your Progress</h3>
-                        <div class="progress-bar-container">
-                            <div class="progress-fill" style="width: ${progress}%"></div>
-                        </div>
-                        <p>${completedCount} of ${courseUnits.length} lessons completed (${progress}%)</p>
-                    </div>
-                    
-                    <h3><i class="fas fa-book-open"></i> Course Lessons</h3>
-                    <div class="units-grid">
-                        ${courseUnits.map(unit => `
-                            <div class="unit-card" onclick="viewUnit(${unit.id})">
-                                <div class="unit-number">Lesson ${unit.order_number || unit.id}</div>
-                                <div class="unit-title">${escapeHtml(unit.title)}</div>
-                                <div class="unit-status ${completedUnitIds.has(unit.id) ? 'completed' : ''}">
-                                    ${completedUnitIds.has(unit.id) ? '<i class="fas fa-check-circle"></i> Completed' : '<i class="fas fa-clock"></i> Not started'}
-                                </div>
-                            </div>
-                        `).join('')}
-                    </div>
-                ` : ''}
-            `;
-        }
-        
-        function escapeHtml(str) {
-            if (!str) return '';
-            return str.replace(/[&<>]/g, m => ({
-                '&': '&amp;',
-                '<': '&lt;',
-                '>': '&gt;'
-            }[m]));
-        }
-        
-        async function init() {
-            // Wait for MEIDrive to be ready
-            if (!window.MEIDrive || !window.MEIDrive.supabase) {
-                setTimeout(init, 500);
-                return;
-            }
-            
-            await loadUser();
-            await loadCourse();
-            if (courseData) {
-                await loadUnits(courseData.id);
-                await loadEnrollments();
-                await loadUserProgress(courseData.id);
-                renderPage();
-            }
-        }
-        
-        init();
-    </script>
+
+    }catch(err){
+
+        console.error(err);
+
+    }
+
+}
+
+init();
+
+</script>
+
 </body>
 </html>
