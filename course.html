@@ -64,7 +64,6 @@
         .btn-login, .btn-register {
             padding: 8px 24px;
             border-radius: 8px;
-            text-decoration: none;
             transition: all 0.3s;
             font-weight: 600;
             font-size: 14px;
@@ -77,19 +76,13 @@
             border: 1.5px solid #00FF88;
             color: #00FF88;
         }
-
-        .btn-login:hover {
-            background: rgba(0, 255, 136, 0.1);
-        }
+        .btn-login:hover { background: rgba(0, 255, 136, 0.1); }
 
         .btn-register {
             background: #00FF88;
             color: #0A192F;
         }
-
-        .btn-register:hover {
-            background: #00cc6a;
-        }
+        .btn-register:hover { background: #00cc6a; }
 
         .user-info {
             display: flex;
@@ -111,10 +104,7 @@
             cursor: pointer;
             font-size: 14px;
         }
-
-        .btn-logout:hover {
-            background: rgba(255, 255, 255, 0.2);
-        }
+        .btn-logout:hover { background: rgba(255, 255, 255, 0.2); }
 
         .container {
             max-width: 1000px;
@@ -242,11 +232,8 @@
             animation: spin 1s linear infinite;
             margin: 0 auto 20px;
         }
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
+        @keyframes spin { to { transform: rotate(360deg); } }
 
-        /* Modal Styles */
         .modal {
             display: none;
             position: fixed;
@@ -259,7 +246,6 @@
             justify-content: center;
             align-items: center;
         }
-
         .modal.active { display: flex; }
 
         .modal-content {
@@ -270,13 +256,11 @@
             max-width: 450px;
             border: 1px solid rgba(0, 255, 136, 0.3);
         }
-
         .modal-content h2 {
             margin-bottom: 20px;
             text-align: center;
             color: #00FF88;
         }
-
         .modal-content input {
             width: 100%;
             padding: 14px;
@@ -287,12 +271,10 @@
             color: white;
             font-size: 16px;
         }
-
         .modal-content input:focus {
             outline: none;
             border-color: #00FF88;
         }
-
         .modal-content button {
             width: 100%;
             padding: 14px;
@@ -305,7 +287,6 @@
             cursor: pointer;
             margin-bottom: 15px;
         }
-
         .modal-content button:hover { background: #00cc6a; }
 
         .modal-switch {
@@ -313,7 +294,6 @@
             color: rgba(255, 255, 255, 0.6);
             cursor: pointer;
         }
-
         .modal-switch span { color: #00FF88; }
 
         .close-modal {
@@ -325,19 +305,8 @@
             color: white;
         }
 
-        .error-msg {
-            color: #ff4444;
-            text-align: center;
-            margin-bottom: 15px;
-            font-size: 14px;
-        }
-
-        .success-msg {
-            color: #00FF88;
-            text-align: center;
-            margin-bottom: 15px;
-            font-size: 14px;
-        }
+        .error-msg { color: #ff4444; text-align: center; margin-bottom: 15px; font-size: 14px; }
+        .success-msg { color: #00FF88; text-align: center; margin-bottom: 15px; font-size: 14px; }
 
         @media (max-width: 768px) {
             .container { margin-top: 140px; }
@@ -352,26 +321,20 @@
 <body>
     <nav class="navbar">
         <div class="logo">MEI DRIVE <span>AFRICA</span></div>
-        <div id="authContainer" class="auth-buttons">
-            <button class="btn-login" onclick="openModal('login')">Login</button>
-            <button class="btn-register" onclick="openModal('register')">Register</button>
-        </div>
+        <div id="authContainer" class="auth-buttons"></div>
         <a href="index.html" class="back-btn">← Back to Courses</a>
     </nav>
 
-    <!-- Auth Modal -->
     <div id="authModal" class="modal">
         <div class="modal-content">
-            <span class="close-modal" onclick="closeModal()">&times;</span>
+            <span class="close-modal">&times;</span>
             <h2 id="modalTitle">Login</h2>
             <div id="modalError" class="error-msg"></div>
             <div id="modalSuccess" class="success-msg"></div>
             <input type="email" id="modalEmail" placeholder="Email address">
             <input type="password" id="modalPassword" placeholder="Password">
-            <button id="modalSubmitBtn" onclick="handleAuth()">Login</button>
-            <div class="modal-switch" id="modalSwitch" onclick="switchAuthMode()">
-                Don't have an account? <span>Register</span>
-            </div>
+            <button id="modalSubmitBtn">Login</button>
+            <div class="modal-switch" id="modalSwitch">Don't have an account? <span>Register</span></div>
         </div>
     </div>
 
@@ -381,265 +344,298 @@
 
     <script>
         // ============================================
-        // SINGLE SUPABASE INITIALIZATION
+        // TRUE SINGLE SOURCE OF TRUTH
         // ============================================
+        
+        // 1. CENTRAL STATE (Single Source of Truth)
+        const STATE = {
+            // Auth state
+            user: null,
+            authModalOpen: false,
+            authMode: 'login',
+            authError: null,
+            authSuccess: null,
+            
+            // Course state
+            course: null,
+            units: [],
+            currentUnitIndex: 0,
+            loading: true
+        };
+        
+        // 2. SINGLE SUPABASE CLIENT
         const SUPABASE_CONFIG = {
             url: 'https://qpqkmmkrzxlhcpccefjn.supabase.co',
             anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFwcWttbWtyenhsaGNwY2NlZmpuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk1MjU0NzIsImV4cCI6MjA5NTEwMTQ3Mn0.Vw1hexN3NKoF_y9VFBFs_NUhJgFNNMwuyzDjImUcM6s'
         };
-        
         const supabase = window.supabase.createClient(SUPABASE_CONFIG.url, SUPABASE_CONFIG.anonKey);
         
-        // ============================================
-        // AUTH STATE MANAGEMENT
-        // ============================================
-        let currentAuthMode = 'login';
-        let currentUser = null;
-
-        async function checkAuthState() {
-            const { data: { session } } = await supabase.auth.getSession();
-            if (session) {
-                currentUser = session.user;
-                updateAuthUI();
-            }
-        }
-
-        function updateAuthUI() {
+        // 3. PURE UI RENDER FUNCTION (reads ONLY from STATE)
+        function renderUI() {
+            // Render auth buttons
             const authContainer = document.getElementById('authContainer');
-            if (currentUser) {
+            if (STATE.user) {
                 authContainer.innerHTML = `
                     <div class="user-info">
-                        <span class="user-email">${currentUser.email}</span>
-                        <button class="btn-logout" onclick="logout()">Logout</button>
+                        <span class="user-email">${escapeHtml(STATE.user.email)}</span>
+                        <button class="btn-logout" onclick="actions.logout()">Logout</button>
                     </div>
-                    <a href="index.html" class="back-btn" style="margin-left:10px;">← Back to Courses</a>
                 `;
             } else {
                 authContainer.innerHTML = `
-                    <button class="btn-login" onclick="openModal('login')">Login</button>
-                    <button class="btn-register" onclick="openModal('register')">Register</button>
-                    <a href="index.html" class="back-btn" style="margin-left:10px;">← Back to Courses</a>
+                    <button class="btn-login" onclick="actions.openModal('login')">Login</button>
+                    <button class="btn-register" onclick="actions.openModal('register')">Register</button>
                 `;
             }
-        }
-
-        function openModal(mode) {
-            currentAuthMode = mode;
+            
+            // Render modal
             const modal = document.getElementById('authModal');
-            const title = document.getElementById('modalTitle');
-            const submitBtn = document.getElementById('modalSubmitBtn');
-            const switchText = document.getElementById('modalSwitch');
-            const errorDiv = document.getElementById('modalError');
-            const successDiv = document.getElementById('modalSuccess');
-            
-            errorDiv.textContent = '';
-            successDiv.textContent = '';
-            document.getElementById('modalEmail').value = '';
-            document.getElementById('modalPassword').value = '';
-            
-            if (mode === 'login') {
-                title.textContent = 'Login';
-                submitBtn.textContent = 'Login';
-                switchText.innerHTML = `Don't have an account? <span>Register</span>`;
+            if (STATE.authModalOpen) {
+                modal.classList.add('active');
+                document.getElementById('modalTitle').textContent = STATE.authMode === 'login' ? 'Login' : 'Register';
+                document.getElementById('modalSubmitBtn').textContent = STATE.authMode === 'login' ? 'Login' : 'Register';
+                document.getElementById('modalSwitch').innerHTML = STATE.authMode === 'login' 
+                    ? 'Don\'t have an account? <span>Register</span>'
+                    : 'Already have an account? <span>Login</span>';
+                document.getElementById('modalError').textContent = STATE.authError || '';
+                document.getElementById('modalSuccess').textContent = STATE.authSuccess || '';
             } else {
-                title.textContent = 'Register';
-                submitBtn.textContent = 'Register';
-                switchText.innerHTML = `Already have an account? <span>Login</span>`;
+                modal.classList.remove('active');
             }
             
-            modal.classList.add('active');
-        }
-
-        function closeModal() {
-            document.getElementById('authModal').classList.remove('active');
-        }
-
-        function switchAuthMode() {
-            if (currentAuthMode === 'login') {
-                openModal('register');
-            } else {
-                openModal('login');
-            }
-        }
-
-        async function handleAuth() {
-            const email = document.getElementById('modalEmail').value;
-            const password = document.getElementById('modalPassword').value;
-            const errorDiv = document.getElementById('modalError');
-            const successDiv = document.getElementById('modalSuccess');
-            
-            errorDiv.textContent = '';
-            successDiv.textContent = '';
-            
-            if (!email || !password) {
-                errorDiv.textContent = 'Please enter both email and password';
-                return;
-            }
-            
-            if (password.length < 6) {
-                errorDiv.textContent = 'Password must be at least 6 characters';
-                return;
-            }
-            
-            try {
-                if (currentAuthMode === 'login') {
-                    const { data, error } = await supabase.auth.signInWithPassword({
-                        email: email,
-                        password: password
-                    });
-                    
-                    if (error) throw error;
-                    
-                    successDiv.textContent = 'Login successful! Redirecting...';
-                    currentUser = data.user;
-                    updateAuthUI();
-                    setTimeout(() => {
-                        closeModal();
-                        window.location.reload();
-                    }, 1500);
-                } else {
-                    const { data, error } = await supabase.auth.signUp({
-                        email: email,
-                        password: password
-                    });
-                    
-                    if (error) throw error;
-                    
-                    successDiv.textContent = 'Registration successful! You can now login.';
-                    setTimeout(() => {
-                        openModal('login');
-                    }, 2000);
-                }
-            } catch (error) {
-                errorDiv.textContent = error.message;
-            }
-        }
-
-        async function logout() {
-            await supabase.auth.signOut();
-            currentUser = null;
-            updateAuthUI();
-            window.location.reload();
-        }
-
-        // ============================================
-        // COURSE DATA LOADING
-        // ============================================
-        let currentCourse = null;
-        let currentUnits = [];
-        let currentIndex = 0;
-
-        async function loadCourse() {
-            const storedCourse = sessionStorage.getItem('currentCourse');
-            const storedUnits = sessionStorage.getItem('currentUnits');
-            
-            if (storedCourse && storedUnits) {
-                currentCourse = JSON.parse(storedCourse);
-                currentUnits = JSON.parse(storedUnits);
-                renderCourse();
-                return;
-            }
-            
-            const courseTitle = sessionStorage.getItem('selectedCourse');
-            if (!courseTitle) {
-                window.location.href = 'index.html';
-                return;
-            }
-            
-            try {
-                const { data: course, error: cErr } = await supabase
-                    .from('courses')
-                    .select('*')
-                    .eq('title', courseTitle)
-                    .single();
-                
-                if (cErr) throw cErr;
-                currentCourse = course;
-                
-                const { data: units, error: uErr } = await supabase
-                    .from('units')
-                    .select('*')
-                    .eq('course_id', course.id)
-                    .order('unit_number');
-                
-                if (uErr) throw uErr;
-                currentUnits = units || [];
-                
-                renderCourse();
-                
-            } catch (err) {
-                console.error('Error:', err);
-                document.getElementById('container').innerHTML = `
-                    <div class="loading">Error loading course. <a href="index.html" style="color:#00FF88">Go back</a></div>
-                `;
-            }
-        }
-        
-        function renderCourse() {
+            // Render course content
             const container = document.getElementById('container');
+            if (STATE.loading) {
+                container.innerHTML = '<div class="loading"><div class="spinner"></div>Loading course...</div>';
+                return;
+            }
+            
+            if (!STATE.course) {
+                container.innerHTML = '<div class="loading">Course not found. <a href="index.html" style="color:#00FF88">Go back</a></div>';
+                return;
+            }
+            
+            const progress = STATE.units.length > 0 ? ((STATE.currentUnitIndex + 1) / STATE.units.length) * 100 : 0;
+            
             container.innerHTML = `
                 <div class="course-header">
-                    <h1 class="course-title"><span>${currentCourse.title}</span></h1>
-                    <p class="course-description">${currentCourse.description}</p>
-                    <div class="progress-container"><div class="progress-bar" id="progressBar"></div></div>
-                    <div class="progress-text" id="progressText">0% Complete</div>
+                    <h1 class="course-title"><span>${escapeHtml(STATE.course.title)}</span></h1>
+                    <p class="course-description">${escapeHtml(STATE.course.description || '')}</p>
+                    <div class="progress-container"><div class="progress-bar" id="progressBar" style="width: ${progress}%"></div></div>
+                    <div class="progress-text" id="progressText">${Math.round(progress)}% Complete</div>
                 </div>
                 <div class="units-list" id="unitsList">
-                    ${currentUnits.map(unit => `
-                        <div class="unit-item" onclick="loadUnit(${unit.unit_number - 1})">
+                    ${STATE.units.map(unit => `
+                        <div class="unit-item" onclick="actions.loadUnit(${unit.unit_number - 1})">
                             <div class="unit-number">UNIT ${unit.unit_number}</div>
-                            <div class="unit-title">${unit.title}</div>
+                            <div class="unit-title">${escapeHtml(unit.title)}</div>
                         </div>
                     `).join('')}
                 </div>
-                <div id="unitContent"></div>
-            `;
-        }
-        
-        function loadUnit(index) {
-            currentIndex = index;
-            const unit = currentUnits[index];
-            if (!unit) return;
-            
-            const contentDiv = document.getElementById('unitContent');
-            contentDiv.innerHTML = `
-                <div class="unit-content">
-                    <h2>Unit ${unit.unit_number}: ${unit.title}</h2>
-                    <p>${unit.content || 'Content coming soon. Please check back later.'}</p>
-                    <div class="nav-buttons">
-                        <button class="nav-btn" onclick="prevUnit()" ${index === 0 ? 'disabled' : ''}>← Previous</button>
-                        <button class="nav-btn" onclick="nextUnit()" ${index === currentUnits.length - 1 ? 'disabled' : ''}>Next →</button>
-                    </div>
+                <div id="unitContent">
+                    ${STATE.currentUnitIndex >= 0 && STATE.units[STATE.currentUnitIndex] ? `
+                        <div class="unit-content">
+                            <h2>Unit ${STATE.units[STATE.currentUnitIndex].unit_number}: ${escapeHtml(STATE.units[STATE.currentUnitIndex].title)}</h2>
+                            <p>${escapeHtml(STATE.units[STATE.currentUnitIndex].content || 'Content coming soon. Please check back later.')}</p>
+                            <div class="nav-buttons">
+                                <button class="nav-btn" onclick="actions.prevUnit()" ${STATE.currentUnitIndex === 0 ? 'disabled' : ''}>← Previous</button>
+                                <button class="nav-btn" onclick="actions.nextUnit()" ${STATE.currentUnitIndex === STATE.units.length - 1 ? 'disabled' : ''}>Next →</button>
+                            </div>
+                        </div>
+                    ` : ''}
                 </div>
             `;
-            
-            const progress = ((index + 1) / currentUnits.length) * 100;
-            const bar = document.getElementById('progressBar');
-            const text = document.getElementById('progressText');
-            if (bar) bar.style.width = `${progress}%`;
-            if (text) text.innerText = `${Math.round(progress)}% Complete`;
-            
-            contentDiv.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
         
-        function prevUnit() { if (currentIndex > 0) loadUnit(currentIndex - 1); }
-        function nextUnit() {
-            if (currentIndex < currentUnits.length - 1) {
-                loadUnit(currentIndex + 1);
-            } else {
-                alert('🎉 Congratulations! You have completed the course!');
-            }
-        }
-
-        window.onclick = function(event) {
-            const modal = document.getElementById('authModal');
-            if (event.target === modal) {
-                closeModal();
-            }
+        // Helper function to prevent XSS
+        function escapeHtml(str) {
+            if (!str) return '';
+            return str.replace(/[&<>]/g, function(m) {
+                if (m === '&') return '&amp;';
+                if (m === '<') return '&lt;';
+                if (m === '>') return '&gt;';
+                return m;
+            });
         }
         
-        checkAuthState();
-        loadCourse();
+        // 4. ACTIONS (mutate STATE, then re-render)
+        const actions = {
+            // Auth actions
+            async login(email, password) {
+                STATE.authError = null;
+                STATE.authSuccess = null;
+                renderUI();
+                
+                const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+                if (error) {
+                    STATE.authError = error.message;
+                } else {
+                    STATE.user = data.user;
+                    STATE.authSuccess = 'Login successful!';
+                    STATE.authModalOpen = false;
+                    setTimeout(() => { STATE.authSuccess = null; renderUI(); }, 2000);
+                }
+                renderUI();
+            },
+            
+            async register(email, password) {
+                STATE.authError = null;
+                STATE.authSuccess = null;
+                renderUI();
+                
+                const { error } = await supabase.auth.signUp({ email, password });
+                if (error) {
+                    STATE.authError = error.message;
+                } else {
+                    STATE.authSuccess = 'Registration successful! You can now login.';
+                    setTimeout(() => {
+                        STATE.authMode = 'login';
+                        STATE.authSuccess = null;
+                        renderUI();
+                    }, 2000);
+                }
+                renderUI();
+            },
+            
+            async logout() {
+                await supabase.auth.signOut();
+                STATE.user = null;
+                renderUI();
+            },
+            
+            openModal(mode) {
+                STATE.authMode = mode;
+                STATE.authModalOpen = true;
+                STATE.authError = null;
+                STATE.authSuccess = null;
+                document.getElementById('modalEmail').value = '';
+                document.getElementById('modalPassword').value = '';
+                renderUI();
+            },
+            
+            closeModal() {
+                STATE.authModalOpen = false;
+                renderUI();
+            },
+            
+            async handleAuthSubmit() {
+                const email = document.getElementById('modalEmail').value;
+                const password = document.getElementById('modalPassword').value;
+                if (!email || !password) {
+                    STATE.authError = 'Please enter both email and password';
+                    renderUI();
+                    return;
+                }
+                if (password.length < 6) {
+                    STATE.authError = 'Password must be at least 6 characters';
+                    renderUI();
+                    return;
+                }
+                if (STATE.authMode === 'login') {
+                    await actions.login(email, password);
+                } else {
+                    await actions.register(email, password);
+                }
+            },
+            
+            // Course actions
+            loadUnit(index) {
+                if (index >= 0 && index < STATE.units.length) {
+                    STATE.currentUnitIndex = index;
+                    renderUI();
+                    document.querySelector('.unit-content')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            },
+            
+            prevUnit() {
+                if (STATE.currentUnitIndex > 0) {
+                    actions.loadUnit(STATE.currentUnitIndex - 1);
+                }
+            },
+            
+            nextUnit() {
+                if (STATE.currentUnitIndex < STATE.units.length - 1) {
+                    actions.loadUnit(STATE.currentUnitIndex + 1);
+                } else {
+                    alert('🎉 Congratulations! You have completed the course!');
+                }
+            },
+            
+            async loadCourse() {
+                STATE.loading = true;
+                renderUI();
+                
+                // Get course title from URL param or session storage
+                const urlParams = new URLSearchParams(window.location.search);
+                let courseTitle = urlParams.get('course');
+                if (!courseTitle) {
+                    courseTitle = sessionStorage.getItem('selectedCourse');
+                }
+                
+                if (!courseTitle) {
+                    STATE.loading = false;
+                    renderUI();
+                    return;
+                }
+                
+                try {
+                    // Fetch course
+                    const { data: course, error: cErr } = await supabase
+                        .from('courses')
+                        .select('*')
+                        .eq('title', courseTitle)
+                        .single();
+                    
+                    if (cErr) throw cErr;
+                    STATE.course = course;
+                    
+                    // Fetch units
+                    const { data: units, error: uErr } = await supabase
+                        .from('units')
+                        .select('*')
+                        .eq('course_id', course.id)
+                        .order('unit_number');
+                    
+                    if (uErr) throw uErr;
+                    STATE.units = units || [];
+                    STATE.currentUnitIndex = 0;
+                    
+                } catch (err) {
+                    console.error('Error loading course:', err);
+                    STATE.course = null;
+                    STATE.units = [];
+                } finally {
+                    STATE.loading = false;
+                    renderUI();
+                }
+            },
+            
+            async syncAuthFromSupabase() {
+                const { data: { session } } = await supabase.auth.getSession();
+                STATE.user = session?.user || null;
+                renderUI();
+            }
+        };
+        
+        // 5. EVENT LISTENERS (connected to actions)
+        document.getElementById('modalSubmitBtn').onclick = () => actions.handleAuthSubmit();
+        document.getElementById('modalSwitch').onclick = () => {
+            STATE.authMode = STATE.authMode === 'login' ? 'register' : 'login';
+            renderUI();
+        };
+        document.querySelector('.close-modal').onclick = () => actions.closeModal();
+        window.onclick = (event) => { if (event.target === document.getElementById('authModal')) actions.closeModal(); };
+        
+        // Make actions available globally for onclick handlers
+        window.actions = actions;
+        
+        // 6. INITIALIZE
+        async function init() {
+            await actions.syncAuthFromSupabase();
+            await actions.loadCourse();
+        }
+        
+        init();
     </script>
 </body>
 </html>
