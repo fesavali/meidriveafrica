@@ -5,13 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>MEI DRIVE AFRICA | NTSA Driver Training</title>
     <meta name="description" content="NTSA-approved driver training platform. Practice daily, revise smarter, pass with confidence.">
-    <meta name="keywords" content="NTSA, driving school, driver training, Kenya, driving license, learner hub">
-    <meta name="author" content="MEI DRIVE AFRICA">
-    
-    <!-- ==================== FAVICON - FIXED ==================== -->
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%2300ff88'/%3E%3Ctext x='50' y='72' font-size='55' text-anchor='middle' fill='%230a192f' font-weight='900'%3E🚗%3C/text%3E%3C/svg%3E">
-    <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%2300ff88'/%3E%3Ctext x='50' y='72' font-size='55' text-anchor='middle' fill='%230a192f' font-weight='900'%3E🚗%3C/text%3E%3C/svg%3E">
-    
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.0/dist/umd/supabase.min.js"></script>
@@ -26,264 +19,66 @@
             --border: rgba(0, 255, 136, 0.25);
             --text-muted: #a0b3d9;
         }
-        .navbar {
-            position: fixed;
-            top: 0;
-            width: 100%;
-            background: rgba(10, 25, 47, 0.96);
-            backdrop-filter: blur(12px);
-            border-bottom: 1px solid var(--border);
-            z-index: 1000;
-            padding: 0.8rem 2rem;
-        }
-        .nav-container {
-            max-width: 1400px;
-            margin: 0 auto;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 1rem;
-        }
-        .logo {
-            font-size: 1.3rem;
-            font-weight: 800;
-            background: var(--gradient-green);
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
+        .navbar { position: fixed; top: 0; width: 100%; background: rgba(10, 25, 47, 0.96); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border); z-index: 1000; padding: 0.8rem 2rem; }
+        .nav-container { max-width: 1400px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; }
+        .logo { font-size: 1.3rem; font-weight: 800; background: var(--gradient-green); -webkit-background-clip: text; background-clip: text; color: transparent; cursor: pointer; display: flex; align-items: center; gap: 8px; }
         .logo i { color: var(--primary); font-size: 1.5rem; }
-        .nav-links {
-            display: flex;
-            gap: 0.5rem;
-            align-items: center;
-            flex-wrap: wrap;
-        }
-        .nav-links button, .nav-links a {
-            background: transparent;
-            border: none;
-            color: #a0b3d9;
-            padding: 8px 14px;
-            border-radius: 50px;
-            cursor: pointer;
-            font-size: 13px;
-            font-weight: 500;
-            transition: 0.2s;
-        }
-        .nav-links button:hover, .nav-links a:hover {
-            background: rgba(0, 255, 136, 0.1);
-            color: var(--primary);
-        }
-        .btn-primary-nav {
-            background: var(--gradient-green);
-            color: #0a192f !important;
-            font-weight: 700;
-        }
-        .user-badge {
-            background: rgba(0, 255, 136, 0.15);
-            border-radius: 40px;
-            padding: 6px 16px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 13px;
-        }
-        .mobile-menu {
-            display: none;
-            font-size: 1.5rem;
-            cursor: pointer;
-            color: var(--primary);
-        }
-        @media (max-width: 768px) {
-            .navbar { padding: 0.8rem 1rem; }
-            .nav-links { display: none; width: 100%; flex-direction: column; padding: 1rem 0; }
-            .nav-links.show { display: flex; }
-            .mobile-menu { display: block; }
-        }
-        .hero {
-            min-height: 85vh;
-            background: linear-gradient(135deg, rgba(10,25,47,0.95), rgba(13,33,55,0.85)), url('https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?auto=format&fit=crop&w=2070&q=80');
-            background-size: cover;
-            background-position: center;
-            display: flex;
-            align-items: center;
-            padding: 100px 2rem 4rem;
-        }
+        .nav-links { display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap; }
+        .nav-links button, .nav-links a { background: transparent; border: none; color: #a0b3d9; padding: 8px 14px; border-radius: 50px; cursor: pointer; font-size: 13px; font-weight: 500; transition: 0.2s; }
+        .nav-links button:hover, .nav-links a:hover { background: rgba(0, 255, 136, 0.1); color: var(--primary); }
+        .btn-primary-nav { background: var(--gradient-green); color: #0a192f !important; font-weight: 700; }
+        .user-badge { background: rgba(0, 255, 136, 0.15); border-radius: 40px; padding: 6px 16px; display: flex; align-items: center; gap: 8px; font-size: 13px; }
+        .mobile-menu { display: none; font-size: 1.5rem; cursor: pointer; color: var(--primary); }
+        @media (max-width: 768px) { .navbar { padding: 0.8rem 1rem; } .nav-links { display: none; width: 100%; flex-direction: column; padding: 1rem 0; } .nav-links.show { display: flex; } .mobile-menu { display: block; } }
+        .hero { min-height: 85vh; background: linear-gradient(135deg, rgba(10,25,47,0.95), rgba(13,33,55,0.85)), url('https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?auto=format&fit=crop&w=2070&q=80'); background-size: cover; background-position: center; display: flex; align-items: center; padding: 100px 2rem 4rem; }
         .hero-content { max-width: 1400px; margin: 0 auto; }
         .hero h1 { font-size: 3.2rem; font-weight: 800; line-height: 1.2; margin-bottom: 1.5rem; }
         .hero h1 span { color: var(--primary); }
         .hero p { font-size: 1.1rem; color: var(--text-muted); max-width: 600px; margin-bottom: 2rem; }
-        .btn {
-            padding: 12px 28px;
-            border-radius: 50px;
-            font-weight: 700;
-            cursor: pointer;
-            border: none;
-            font-size: 1rem;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            transition: 0.2s;
-        }
+        .btn { padding: 12px 28px; border-radius: 50px; font-weight: 700; cursor: pointer; border: none; font-size: 1rem; display: inline-flex; align-items: center; gap: 8px; transition: 0.2s; }
         .btn-primary { background: var(--gradient-green); color: #0a192f; }
         .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(0,255,136,0.3); }
         .btn-outline { border: 1px solid var(--primary); color: var(--primary); background: transparent; }
         .btn-outline:hover { background: rgba(0,255,136,0.1); }
-        .stats-bar {
-            background: #0d2137;
-            border-bottom: 1px solid var(--border);
-            padding: 2rem;
-            display: flex;
-            justify-content: space-around;
-            flex-wrap: wrap;
-            gap: 2rem;
-            text-align: center;
-        }
+        .stats-bar { background: #0d2137; border-bottom: 1px solid var(--border); padding: 2rem; display: flex; justify-content: space-around; flex-wrap: wrap; gap: 2rem; text-align: center; }
         .stat-item h3 { font-size: 2rem; color: var(--primary); }
         .container { max-width: 1400px; margin: 0 auto; padding: 0 20px; }
         .section { padding: 4rem 0; }
         .section-title { text-align: center; font-size: 2.2rem; margin-bottom: 2.5rem; }
         .section-title span { color: var(--primary); }
-        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.8rem; }
-        .card {
-            background: #0d2137;
-            border: 1px solid var(--border);
-            border-radius: 20px;
-            padding: 1.5rem;
-            transition: 0.3s;
-            cursor: pointer;
-        }
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1.8rem; }
+        .card { background: #0d2137; border: 1px solid var(--border); border-radius: 20px; padding: 1.5rem; transition: 0.3s; cursor: pointer; }
         .card:hover { border-color: var(--primary); transform: translateY(-4px); box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
-        .module-price { font-size: 1.5rem; font-weight: 800; color: var(--primary); margin: 0.8rem 0; }
         .badge { display: inline-block; background: rgba(0,255,136,0.2); padding: 4px 12px; border-radius: 50px; font-size: 12px; margin-bottom: 12px; }
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.96);
-            backdrop-filter: blur(12px);
-            z-index: 2000;
-            justify-content: center;
-            align-items: center;
-        }
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.96); backdrop-filter: blur(12px); z-index: 2000; justify-content: center; align-items: center; }
         .modal.active { display: flex; }
-        .modal-content {
-            background: #0d2137;
-            border: 1px solid var(--primary);
-            border-radius: 24px;
-            width: 90%;
-            max-width: 500px;
-            padding: 2rem;
-        }
-        .modal-content input {
-            background: #0f1a2c;
-            border: 1px solid var(--border);
-            padding: 12px;
-            border-radius: 12px;
-            color: white;
-            width: 100%;
-            margin: 8px 0;
-        }
-        .toast-container {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            z-index: 2100;
-        }
-        .toast {
-            background: #0d2137;
-            border-left: 4px solid var(--primary);
-            padding: 12px 20px;
-            border-radius: 12px;
-            margin-top: 8px;
-            display: flex;
-            gap: 12px;
-            animation: slideIn 0.3s ease;
-        }
+        .modal-content { background: #0d2137; border: 1px solid var(--primary); border-radius: 24px; width: 90%; max-width: 500px; padding: 2rem; }
+        .modal-content input { background: #0f1a2c; border: 1px solid var(--border); padding: 12px; border-radius: 12px; color: white; width: 100%; margin: 8px 0; }
+        .toast-container { position: fixed; bottom: 20px; right: 20px; z-index: 2100; }
+        .toast { background: #0d2137; border-left: 4px solid var(--primary); padding: 12px 20px; border-radius: 12px; margin-top: 8px; display: flex; gap: 12px; animation: slideIn 0.3s ease; }
         @keyframes slideIn { from { opacity: 0; transform: translateX(30px); } to { opacity: 1; transform: translateX(0); } }
-        .toast-close { cursor: pointer; background: none; border: none; color: var(--text-muted); }
-        .loading-spinner {
-            width: 40px;
-            height: 40px;
-            border: 3px solid #1e2a3a;
-            border-top-color: var(--primary);
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin: 40px auto;
-        }
+        .loading-spinner { width: 40px; height: 40px; border: 3px solid #1e2a3a; border-top-color: var(--primary); border-radius: 50%; animation: spin 1s linear infinite; margin: 40px auto; }
         @keyframes spin { to { transform: rotate(360deg); } }
         footer { text-align: center; padding: 2rem; border-top: 1px solid var(--border); color: var(--text-muted); font-size: 0.85rem; }
-        footer a { color: var(--primary); text-decoration: none; }
         .quiz-option { background: #0f1a2c; padding: 10px; margin: 8px 0; border-radius: 12px; cursor: pointer; transition: 0.2s; }
         .quiz-option:hover { background: #1a2a40; }
         .quiz-option.selected { background: var(--primary); color: #0a192f; font-weight: bold; }
         .unit-content { white-space: pre-wrap; line-height: 1.6; margin: 20px 0; }
-        .dashboard-stats {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 1rem;
-            margin-bottom: 2rem;
-        }
-        .dashboard-stat-card {
-            background: #0d2137;
-            border: 1px solid var(--border);
-            border-radius: 16px;
-            padding: 1.2rem;
-            text-align: center;
-        }
-        .dashboard-stat-number {
-            font-size: 2rem;
-            font-weight: 800;
-            color: var(--primary);
-        }
-        .progress-bar {
-            background: #1e2a3a;
-            border-radius: 10px;
-            height: 8px;
-            overflow: hidden;
-            margin: 10px 0;
-        }
-        .progress-fill {
-            background: var(--gradient-green);
-            height: 100%;
-            border-radius: 10px;
-            transition: width 0.3s ease;
-        }
-        .course-progress-card {
-            background: #0d2137;
-            border: 1px solid var(--border);
-            border-radius: 16px;
-            padding: 1rem;
-            margin-bottom: 1rem;
-        }
-        .navigation-buttons {
-            display: flex;
-            justify-content: space-between;
-            gap: 1rem;
-            margin-top: 2rem;
-            flex-wrap: wrap;
-        }
-        .refresh-btn {
-            background: rgba(0,255,136,0.1);
-            border: 1px solid var(--primary);
-            border-radius: 50%;
-            width: 36px;
-            height: 36px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: 0.2s;
-        }
+        .dashboard-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
+        .dashboard-stat-card { background: #0d2137; border: 1px solid var(--border); border-radius: 16px; padding: 1.2rem; text-align: center; }
+        .dashboard-stat-number { font-size: 2rem; font-weight: 800; color: var(--primary); }
+        .progress-bar { background: #1e2a3a; border-radius: 10px; height: 8px; overflow: hidden; margin: 10px 0; }
+        .progress-fill { background: var(--gradient-green); height: 100%; border-radius: 10px; transition: width 0.3s ease; }
+        .course-progress-card { background: #0d2137; border: 1px solid var(--border); border-radius: 16px; padding: 1rem; margin-bottom: 1rem; }
+        .navigation-buttons { display: flex; justify-content: space-between; gap: 1rem; margin-top: 2rem; flex-wrap: wrap; }
+        .refresh-btn { background: rgba(0,255,136,0.1); border: 1px solid var(--primary); border-radius: 50%; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.2s; }
         .refresh-btn:hover { background: var(--primary); color: #0a192f; transform: rotate(180deg); }
+        .signs-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 1.5rem; margin-top: 1.5rem; }
+        .sign-card { background: #0d2137; border: 1px solid var(--border); border-radius: 16px; padding: 1.2rem; text-align: center; transition: 0.2s; }
+        .sign-card:hover { border-color: var(--primary); transform: translateY(-3px); }
+        .sign-emoji { font-size: 3rem; margin-bottom: 0.8rem; }
+        .sign-name { font-weight: 700; font-size: 1rem; margin: 0.5rem 0 0.2rem; }
+        .sign-desc { font-size: 0.75rem; color: var(--text-muted); }
         @media (max-width: 768px) { .hero h1 { font-size: 2rem; } .grid { grid-template-columns: 1fr; } }
     </style>
 </head>
@@ -302,7 +97,7 @@
                 <button onclick="app.navigate('safety')">🆘 Safety Library</button>
                 <button id="dashboardNavBtn" onclick="app.navigate('dashboard')" style="display:none;">📊 Dashboard</button>
                 <div id="authButtons"></div>
-                <div class="refresh-btn" onclick="refreshAllData()" title="Refresh Data"><i class="fas fa-sync-alt"></i></div>
+                <div class="refresh-btn" onclick="window.refreshAllData()" title="Refresh Data"><i class="fas fa-sync-alt"></i></div>
             </div>
         </div>
     </nav>
@@ -312,20 +107,22 @@
 <div id="toast-container" class="toast-container"></div>
 
 <script>
-    // ==================== SUPABASE CONFIGURATION ====================
+    // ==================== SUPABASE CONFIGURATION (SINGLE SOURCE OF TRUTH) ====================
     const SUPABASE_URL = 'https://qpqkmmkrzxlhcpccefjn.supabase.co';
-    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFwcWttbWtyenhsaGNwY2NlZmpuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk1MjU0NzIsImV4cCI6MjA5NTEwMTQ3Mn0.Vw1hexN3NKoF_y9VFBFs_NUhJgFNNMwuyzDjImUcM6s';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBwcWttbWtyenhsaGNwY2NlZmpuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk1MjU0NzIsImV4cCI6MjA5NTEwMTQ3Mn0.Vw1hexN3NKoF_y9VFBFs_NUhJgFNNMwuyzDjImUcM6s';
     
     let supabase = null;
     let currentUser = null;
     let isAdmin = false;
     let currentRoute = 'home';
     let routeParams = {};
+    
+    // Database state (single source of truth)
     let coursesList = [];
-    let allUnits = [];
-    let currentQuizQuestions = [];
-    let currentQuizIndex = 0;
-    let userAnswers = [];
+    let allUnits = [];        // 8 units from DB
+    let allTrafficSigns = [];
+    let allQuizQuestions = [];
+    let allSafetyArticles = [];
     let userEnrollments = [];
     let userProgress = [];
     
@@ -339,154 +136,111 @@
         setTimeout(() => toast.remove(), 5000);
     }
     
-    function escapeHtml(str) { if (!str) return ''; return str.replace(/[&<>]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[m])); }
+    function escapeHtml(str) { if (!str) return ''; return String(str).replace(/[&<>]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[m])); }
     
-    // ==================== REFRESH DATA FUNCTION ====================
+    // ==================== REFRESH DATA - PULL FROM SUPABASE ====================
     window.refreshAllData = async function() {
-        showToast('🔄 Refreshing data...', 'info');
+        showToast('🔄 Syncing with database...', 'info');
         try {
-            coursesList = await fetchCourses();
-            allUnits = await fetchUnits();
+            await Promise.all([
+                fetchCourses(),
+                fetchUnits(),
+                fetchTrafficSigns(),
+                fetchQuizQuestions(),
+                fetchSafetyLibrary()
+            ]);
             if (currentUser) {
-                userEnrollments = await fetchUserEnrollments();
-                userProgress = await fetchUserProgress();
+                await Promise.all([
+                    fetchUserEnrollments(),
+                    fetchUserProgress()
+                ]);
             }
             renderCurrentRoute();
-            showToast('✅ Data refreshed successfully!', 'success');
+            showToast('✅ Data synced from Supabase!', 'success');
         } catch (e) {
-            showToast('❌ Error refreshing data', 'error');
+            console.error(e);
+            showToast('❌ Error syncing data', 'error');
         }
     };
     
     // ==================== SUPABASE FETCH FUNCTIONS ====================
     async function fetchCourses() {
-        try {
-            const { data, error } = await supabase.from('courses').select('*').order('id');
-            if (error) throw error;
-            return data || [];
-        } catch (e) {
-            console.error('Fetch courses error:', e);
-            return [];
-        }
+        const { data, error } = await supabase.from('courses').select('*').order('id');
+        if (!error && data) coursesList = data;
+        return coursesList;
     }
     
     async function fetchUnits() {
-        try {
-            const { data, error } = await supabase.from('units').select('*').order('unit_number', { ascending: true });
-            if (error) throw error;
-            return data || [];
-        } catch (e) {
-            console.error('Fetch units error:', e);
-            return [];
-        }
+        const { data, error } = await supabase.from('units').select('*').order('unit_number', { ascending: true });
+        if (!error && data) allUnits = data;
+        return allUnits;
     }
     
-    async function fetchUnitById(unitId) {
-        try {
-            const { data, error } = await supabase.from('units').select('*').eq('id', unitId).single();
-            if (error) throw error;
-            return data;
-        } catch (e) {
-            console.error('Fetch unit by id error:', e);
-            return null;
-        }
-    }
-    
-    async function fetchNextUnit(currentUnitNumber) {
-        try {
-            const { data, error } = await supabase.from('units').select('*').eq('unit_number', currentUnitNumber + 1).single();
-            if (error) return null;
-            return data;
-        } catch (e) { return null; }
-    }
-    
-    async function fetchPreviousUnit(currentUnitNumber) {
-        if (currentUnitNumber <= 1) return null;
-        try {
-            const { data, error } = await supabase.from('units').select('*').eq('unit_number', currentUnitNumber - 1).single();
-            if (error) return null;
-            return data;
-        } catch (e) { return null; }
-    }
-    
-    async function fetchSigns() {
-        try {
-            const { data, error } = await supabase.from('traffic_signs').select('*').order('category');
-            if (error) throw error;
-            return data || [];
-        } catch (e) { return []; }
+    async function fetchTrafficSigns() {
+        const { data, error } = await supabase.from('traffic_signs').select('*').order('category');
+        if (!error && data) allTrafficSigns = data;
+        return allTrafficSigns;
     }
     
     async function fetchQuizQuestions() {
-        try {
-            const { data, error } = await supabase.from('quiz_questions').select('*');
-            if (error) throw error;
-            return data || [];
-        } catch (e) { return []; }
+        const { data, error } = await supabase.from('quiz_questions').select('*');
+        if (!error && data) allQuizQuestions = data;
+        return allQuizQuestions;
     }
     
     async function fetchSafetyLibrary() {
-        try {
-            const { data, error } = await supabase.from('safety_library').select('*').order('category');
-            if (error) throw error;
-            return data || [];
-        } catch (e) { return []; }
+        const { data, error } = await supabase.from('safety_library').select('*').order('category');
+        if (!error && data) allSafetyArticles = data;
+        return allSafetyArticles;
     }
     
     async function fetchUserEnrollments() {
         if (!currentUser) return [];
-        try {
-            const { data, error } = await supabase.from('enrollments').select('*, courses(*)').eq('user_id', currentUser.id).eq('payment_status', 'verified');
-            if (error) throw error;
-            return data || [];
-        } catch (e) { return []; }
+        const { data, error } = await supabase.from('enrollments').select('*, courses(*)').eq('user_id', currentUser.id).eq('payment_status', 'verified');
+        if (!error && data) userEnrollments = data;
+        return userEnrollments;
     }
     
     async function fetchUserProgress() {
         if (!currentUser) return [];
-        try {
-            const { data, error } = await supabase.from('user_progress').select('*').eq('user_id', currentUser.id);
-            if (error) throw error;
-            return data || [];
-        } catch (e) { return []; }
+        const { data, error } = await supabase.from('user_progress').select('*').eq('user_id', currentUser.id);
+        if (!error && data) userProgress = data;
+        return userProgress;
+    }
+    
+    async function fetchUnitById(unitId) {
+        let unit = allUnits.find(u => u.id === unitId);
+        if (!unit) {
+            const { data } = await supabase.from('units').select('*').eq('id', unitId).single();
+            if (data) unit = data;
+        }
+        return unit;
     }
     
     async function updateUnitProgress(unitId, completed, quizScore = null) {
         if (!currentUser) return;
-        try {
-            const existing = userProgress.find(p => p.unit_id === unitId);
-            if (existing) {
-                await supabase.from('user_progress').update({ completed, quiz_score: quizScore, completed_at: completed ? new Date() : null }).eq('id', existing.id);
-            } else {
-                await supabase.from('user_progress').insert({ user_id: currentUser.id, unit_id: unitId, completed, quiz_score: quizScore });
-            }
-            userProgress = await fetchUserProgress();
-        } catch (e) { console.error('Update progress error:', e); }
+        const existing = userProgress.find(p => p.unit_id === unitId);
+        if (existing) {
+            await supabase.from('user_progress').update({ completed, quiz_score: quizScore, completed_at: completed ? new Date() : null }).eq('id', existing.id);
+        } else {
+            await supabase.from('user_progress').insert({ user_id: currentUser.id, unit_id: unitId, completed, quiz_score: quizScore });
+        }
+        userProgress = await fetchUserProgress();
+        showToast(completed ? '✅ Unit marked complete!' : 'Progress saved', 'success');
     }
     
-    // ==================== SUPABASE INIT ====================
+    // ==================== AUTH ====================
     async function initSupabase() {
-        if (!window.supabase) {
-            await new Promise(resolve => setTimeout(resolve, 1000));
-            if (!window.supabase) {
-                document.getElementById('page-content').innerHTML = '<div class="container" style="padding-top:120px;"><div class="card"><h2>⚠️ Connection Error</h2><p>Unable to load Supabase. Please refresh the page.</p></div></div>';
-                return false;
-            }
-        }
-        
         supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         
-        // Fetch initial data
-        coursesList = await fetchCourses();
-        allUnits = await fetchUnits();
+        // Fetch all core data
+        await Promise.all([fetchCourses(), fetchUnits(), fetchTrafficSigns(), fetchQuizQuestions(), fetchSafetyLibrary()]);
         
-        // Auth check
         const { data: { session } } = await supabase.auth.getSession();
         if (session) await handleUserLogin(session.user);
         updateAuthUI();
         renderCurrentRoute();
         
-        // Auth listener
         supabase.auth.onAuthStateChange(async (event, session) => {
             if (event === 'SIGNED_IN' && session) {
                 await handleUserLogin(session.user);
@@ -498,34 +252,25 @@
             updateAuthUI();
             renderCurrentRoute();
         });
-        
-        return true;
     }
     
     async function handleUserLogin(user) {
         currentUser = user;
-        userEnrollments = await fetchUserEnrollments();
-        userProgress = await fetchUserProgress();
+        await Promise.all([fetchUserEnrollments(), fetchUserProgress()]);
         try {
             const { data: existing } = await supabase.from('user_profiles').select('id').eq('id', user.id).maybeSingle();
             if (!existing) {
                 await supabase.from('user_profiles').insert({ id: user.id, email: user.email, full_name: user.user_metadata?.full_name || '' });
             }
-        } catch(e) { console.warn(e); }
+        } catch(e) {}
         try {
             const { data } = await supabase.rpc('is_admin_user');
             isAdmin = !!data;
         } catch(e) { isAdmin = false; }
     }
     
-    function handleUserLogout() { 
-        currentUser = null; 
-        isAdmin = false; 
-        userEnrollments = [];
-        userProgress = [];
-    }
+    function handleUserLogout() { currentUser = null; isAdmin = false; userEnrollments = []; userProgress = []; }
     
-    // ==================== AUTH FUNCTIONS ====================
     window.signIn = async function(email, password) {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) { showToast(error.message, 'error'); return false; }
@@ -536,11 +281,11 @@
     window.signUp = async function(email, password, fullName) {
         const { error } = await supabase.auth.signUp({ email, password, options: { data: { full_name: fullName } } });
         if (error) { showToast(error.message, 'error'); return false; }
-        showToast('Account created! Please check your email to verify.', 'success');
+        showToast('Account created! Please verify your email.', 'success');
         return true;
     };
     
-    window.signOut = async function() { await supabase.auth.signOut(); showToast('Logged out', 'info'); navigate('home'); };
+    window.signOut = async function() { await supabase.auth.signOut(); showToast('Logged out', 'info'); app.navigate('home'); };
     window.closeModal = function() { document.getElementById('authModal')?.remove(); };
     
     window.handleLoginSubmit = async function() {
@@ -562,13 +307,13 @@
     
     function showLoginModal() {
         document.getElementById('authModal')?.remove();
-        const modalHtml = `<div class="modal active" id="authModal"><div class="modal-content"><h2>Sign In</h2><input type="email" id="loginEmail" placeholder="Email"><input type="password" id="loginPassword" placeholder="Password"><button class="btn btn-primary" onclick="handleLoginSubmit()">Login</button><button class="btn btn-outline btn" onclick="closeModal()">Cancel</button><p style="margin-top:12px;font-size:12px;">Don't have an account? <a href="#" onclick="showSignupModal(); return false;">Sign up</a></p></div></div>`;
+        const modalHtml = `<div class="modal active" id="authModal"><div class="modal-content"><h2>Sign In</h2><input type="email" id="loginEmail" placeholder="Email"><input type="password" id="loginPassword" placeholder="Password"><button class="btn btn-primary" onclick="handleLoginSubmit()">Login</button><button class="btn btn-outline" onclick="closeModal()">Cancel</button><p style="margin-top:12px;font-size:12px;">Don't have an account? <a href="#" onclick="showSignupModal(); return false;">Sign up</a></p></div></div>`;
         document.body.insertAdjacentHTML('beforeend', modalHtml);
     }
     
     function showSignupModal() {
         document.getElementById('authModal')?.remove();
-        const modalHtml = `<div class="modal active" id="authModal"><div class="modal-content"><h2>Sign Up</h2><input type="text" id="signupName" placeholder="Full Name"><input type="email" id="signupEmail" placeholder="Email"><input type="password" id="signupPassword" placeholder="Password (min 6 characters)"><button class="btn btn-primary" onclick="handleSignupSubmit()">Sign Up</button><button class="btn btn-outline btn" onclick="closeModal()">Cancel</button><p style="margin-top:12px;font-size:12px;">Already have an account? <a href="#" onclick="showLoginModal(); return false;">Login</a></p></div></div>`;
+        const modalHtml = `<div class="modal active" id="authModal"><div class="modal-content"><h2>Sign Up</h2><input type="text" id="signupName" placeholder="Full Name"><input type="email" id="signupEmail" placeholder="Email"><input type="password" id="signupPassword" placeholder="Password (min 6 characters)"><button class="btn btn-primary" onclick="handleSignupSubmit()">Sign Up</button><button class="btn btn-outline" onclick="closeModal()">Cancel</button><p style="margin-top:12px;font-size:12px;">Already have an account? <a href="#" onclick="showLoginModal(); return false;">Login</a></p></div></div>`;
         document.body.insertAdjacentHTML('beforeend', modalHtml);
     }
     
@@ -577,7 +322,7 @@
         const dashboardBtn = document.getElementById('dashboardNavBtn');
         if (!container) return;
         if (currentUser) {
-            container.innerHTML = `<div class="user-badge"><i class="fas fa-user"></i> ${escapeHtml(currentUser.email?.split('@')[0])}</div><button onclick="signOut()">Logout</button>${isAdmin ? '<button class="btn-primary-nav" onclick="window.location.href=\'admin-dashboard.html\'">Admin</button>' : ''}`;
+            container.innerHTML = `<div class="user-badge"><i class="fas fa-user"></i> ${escapeHtml(currentUser.email?.split('@')[0])}</div><button onclick="signOut()">Logout</button>${isAdmin ? '<button class="btn-primary-nav" onclick="alert(\'Admin panel - manage courses, units, signs\')">Admin</button>' : ''}`;
             if (dashboardBtn) dashboardBtn.style.display = 'inline-block';
         } else {
             container.innerHTML = `<button onclick="showLoginModal()">Login</button><button class="btn-primary-nav" onclick="showSignupModal()">Sign Up</button>`;
@@ -587,23 +332,20 @@
     
     // ==================== UNIT NAVIGATION ====================
     window.goToNextUnit = async function(currentUnitNumber, currentUnitId) {
-        if (currentUser && currentUnitId) {
-            await updateUnitProgress(currentUnitId, true);
-            showToast(`Unit ${currentUnitNumber} marked as complete!`, 'success');
-        }
-        const nextUnit = await fetchNextUnit(currentUnitNumber);
+        if (currentUser && currentUnitId) await updateUnitProgress(currentUnitId, true);
+        const nextUnit = allUnits.find(u => u.unit_number === currentUnitNumber + 1);
         if (nextUnit) {
-            navigate('unit', { unitId: nextUnit.id, unitNumber: nextUnit.unit_number, title: nextUnit.title });
+            app.navigate('unit', { unitId: nextUnit.id, unitNumber: nextUnit.unit_number, title: nextUnit.title });
         } else {
             showToast('🎉 Congratulations! You\'ve completed all units!', 'success');
-            navigate('dashboard');
+            app.navigate('dashboard');
         }
     };
     
     window.goToPreviousUnit = async function(currentUnitNumber) {
-        const prevUnit = await fetchPreviousUnit(currentUnitNumber);
+        const prevUnit = allUnits.find(u => u.unit_number === currentUnitNumber - 1);
         if (prevUnit) {
-            navigate('unit', { unitId: prevUnit.id, unitNumber: prevUnit.unit_number, title: prevUnit.title });
+            app.navigate('unit', { unitId: prevUnit.id, unitNumber: prevUnit.unit_number, title: prevUnit.title });
         } else {
             showToast('This is the first unit', 'info');
         }
@@ -613,89 +355,29 @@
         await updateUnitProgress(unitId, true);
         showToast(`Unit ${unitNumber} marked as complete!`, 'success');
         const unit = await fetchUnitById(unitId);
-        if (unit) navigate('unit', { unitId: unit.id, unitNumber: unit.unit_number, title: unit.title });
+        if (unit) app.navigate('unit', { unitId: unit.id, unitNumber: unit.unit_number, title: unit.title });
     };
     
-    // ==================== DASHBOARD ====================
-    async function renderDashboard() {
-        if (!currentUser) {
-            showToast('Please login to view dashboard', 'warning');
-            navigate('home');
-            return;
-        }
-        
-        userEnrollments = await fetchUserEnrollments();
-        userProgress = await fetchUserProgress();
-        const units = allUnits;
-        
-        const totalEnrolled = userEnrollments.length;
-        const totalUnits = units.length;
-        const completedUnits = userProgress.filter(p => p.completed).length;
-        const overallProgress = totalUnits > 0 ? (completedUnits / totalUnits) * 100 : 0;
-        
-        const enrolledCourses = [];
-        for (const enrollment of userEnrollments) {
-            const courseUnits = units;
-            const courseProgress = userProgress.filter(p => p.completed).length;
-            enrolledCourses.push({
-                ...enrollment.courses,
-                progress: courseUnits.length > 0 ? (courseProgress / courseUnits.length) * 100 : 0,
-                completedUnits: courseProgress,
-                totalUnits: courseUnits.length
-            });
-        }
-        
-        const dashboardHtml = `
-            <div class="container" style="padding-top: 100px;">
-                <h1 class="section-title">My <span>Dashboard</span></h1>
-                <div class="dashboard-stats">
-                    <div class="dashboard-stat-card"><i class="fas fa-graduation-cap" style="font-size: 2rem; color: var(--primary);"></i><div class="dashboard-stat-number">${totalEnrolled}</div><div>Courses Enrolled</div></div>
-                    <div class="dashboard-stat-card"><i class="fas fa-book-open" style="font-size: 2rem; color: var(--primary);"></i><div class="dashboard-stat-number">${completedUnits}/${totalUnits}</div><div>Units Completed</div></div>
-                    <div class="dashboard-stat-card"><i class="fas fa-chart-line" style="font-size: 2rem; color: var(--primary);"></i><div class="dashboard-stat-number">${Math.round(overallProgress)}%</div><div>Overall Progress</div></div>
-                    <div class="dashboard-stat-card"><i class="fas fa-trophy" style="font-size: 2rem; color: var(--primary);"></i><div class="dashboard-stat-number">${userProgress.filter(p => p.quiz_score && p.quiz_score >= 70).length}</div><div>Quiz Passed</div></div>
-                </div>
-                <div class="card"><h2><i class="fas fa-chart-simple"></i> Learning Progress</h2><div class="progress-bar"><div class="progress-fill" style="width: ${overallProgress}%"></div></div><p>You have completed ${completedUnits} out of ${totalUnits} units (${Math.round(overallProgress)}%)</p></div>
-                <div class="card"><h2><i class="fas fa-book"></i> My Courses</h2>${enrolledCourses.length === 0 ? '<p>You haven\'t enrolled in any courses yet. <a href="#" onclick="navigate(\'courses\')">Browse Courses</a></p>' : enrolledCourses.map(course => `<div class="course-progress-card"><div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;"><div><i class="fas ${course.icon || 'fa-book'}" style="color:var(--primary);margin-right:10px;"></i><strong>${escapeHtml(course.name)}</strong></div><button class="btn btn-primary" onclick="navigateToCourse('${course.type}')">Continue Learning</button></div><div class="progress-bar" style="margin-top:10px;"><div class="progress-fill" style="width:${course.progress}%"></div></div><div style="display:flex;justify-content:space-between;margin-top:8px;font-size:0.85rem;color:var(--text-muted);"><span>${course.completedUnits}/${course.totalUnits} units completed</span><span>${Math.round(course.progress)}%</span></div></div>`).join('')}</div>
-                <div class="card"><h2><i class="fas fa-clock"></i> Continue Learning</h2><div class="grid" id="continueGrid"></div></div>
-            </div>
-        `;
-        
-        document.getElementById('page-content').innerHTML = dashboardHtml;
-        
-        const incompleteUnits = units.filter(u => !userProgress.find(p => p.unit_id === u.id && p.completed)).slice(0, 6);
-        const continueGrid = document.getElementById('continueGrid');
-        if (continueGrid) {
-            if (incompleteUnits.length === 0) continueGrid.innerHTML = '<p>🎉 Congratulations! You\'ve completed all units!</p>';
-            else continueGrid.innerHTML = incompleteUnits.map(u => `<div class="card" onclick="navigate('unit', { unitId: ${u.id}, unitNumber: ${u.unit_number}, title: '${escapeHtml(u.title)}' })"><h3>Unit ${u.unit_number}: ${escapeHtml(u.title)}</h3><p>${escapeHtml(u.content?.substring(0, 80))}...</p><div class="badge">Not started</div></div>`).join('');
-        }
-    }
-    
-    // ==================== RENDER FUNCTIONS ====================
+    // ==================== RENDER FUNCTIONS (All data from Supabase) ====================
     async function renderHome() {
-        const html = `<section class="hero"><div class="hero-content"><h1>Practice Daily.<br><span>Revise Smarter. Pass with Confidence.</span></h1><p>For Learners and Experienced Drivers — Refresh Your Skills with MEI DRIVE AFRICA. NTSA-approved courses.</p><div><button class="btn btn-primary" onclick="navigate('courses')"><i class="fas fa-road"></i> Explore Courses</button><button class="btn btn-outline" onclick="showLoginModal()"><i class="fas fa-user-graduate"></i> Get Started</button></div></div></section><div class="stats-bar"><div class="stat-item"><h3>10K+</h3><p>Students</p></div><div class="stat-item"><h3>${coursesList.length}</h3><p>Courses</p></div><div class="stat-item"><h3>98%</h3><p>Pass Rate</p></div></div><div class="container section"><h2 class="section-title">Our <span>Courses</span></h2><div class="grid" id="homeCoursesGrid"></div></div>`;
+        const html = `<section class="hero"><div class="hero-content"><h1>Practice Daily.<br><span>Revise Smarter. Pass with Confidence.</span></h1><p>For Learners and Experienced Drivers — Refresh Your Skills with MEI DRIVE AFRICA. NTSA-approved courses.</p><div><button class="btn btn-primary" onclick="app.navigate('courses')"><i class="fas fa-road"></i> Explore Courses</button><button class="btn btn-outline" onclick="showLoginModal()"><i class="fas fa-user-graduate"></i> Get Started</button></div></div></section><div class="stats-bar"><div class="stat-item"><h3>10K+</h3><p>Students</p></div><div class="stat-item"><h3>${coursesList.length}</h3><p>Courses</p></div><div class="stat-item"><h3>98%</h3><p>Pass Rate</p></div></div><div class="container section"><h2 class="section-title">Our <span>Courses</span></h2><div class="grid" id="homeCoursesGrid"></div></div>`;
         document.getElementById('page-content').innerHTML = html;
-        document.getElementById('homeCoursesGrid').innerHTML = coursesList.map(c => `<div class="card" onclick="navigateToCourse('${c.type}')"><i class="fas ${c.icon || 'fa-book'}" style="font-size:2rem; color:var(--primary);"></i><h3>${escapeHtml(c.name)}</h3><p>${escapeHtml(c.description)}</p><div class="module-price">${c.price === 0 ? 'FREE' : `KES ${c.price.toLocaleString()}`}</div></div>`).join('');
+        document.getElementById('homeCoursesGrid').innerHTML = coursesList.map(c => `<div class="card" onclick="app.navigate('course-detail', { courseType: '${c.type}' })"><i class="fas ${c.icon || 'fa-book'}" style="font-size:2rem; color:var(--primary);"></i><h3>${escapeHtml(c.name)}</h3><p>${escapeHtml(c.description)}</p><div class="badge">${c.price === 0 ? 'FREE' : `KES ${c.price.toLocaleString()}`}</div></div>`).join('');
     }
     
     async function renderCourses() {
         document.getElementById('page-content').innerHTML = `<div class="container" style="padding-top:100px;"><h1 class="section-title">Our <span>Courses</span></h1><div class="grid" id="coursesGrid"></div></div>`;
-        document.getElementById('coursesGrid').innerHTML = coursesList.map(c => `<div class="card" onclick="navigateToCourse('${c.type}')"><i class="fas ${c.icon || 'fa-book'}" style="font-size:2rem; color:var(--primary);"></i><h3>${escapeHtml(c.name)}</h3><p>${escapeHtml(c.description)}</p><div class="module-price">${c.price === 0 ? 'FREE' : `KES ${c.price.toLocaleString()}`}</div>${c.price > 0 && !currentUser ? '<div class="badge"><i class="fas fa-lock"></i> Sign in to enroll</div>' : ''}</div>`).join('');
+        document.getElementById('coursesGrid').innerHTML = coursesList.map(c => `<div class="card" onclick="app.navigate('course-detail', { courseType: '${c.type}' })"><i class="fas ${c.icon || 'fa-book'}" style="font-size:2rem; color:var(--primary);"></i><h3>${escapeHtml(c.name)}</h3><p>${escapeHtml(c.description)}</p><div class="badge">${c.price === 0 ? 'FREE' : `KES ${c.price.toLocaleString()}`}</div>${c.price > 0 && !currentUser ? '<div class="badge"><i class="fas fa-lock"></i> Sign in to enroll</div>' : ''}</div>`).join('');
     }
     
     async function renderCourseDetail() {
         const type = routeParams.courseType;
         const course = coursesList.find(c => c.type === type);
-        if (!course) { navigate('courses'); return; }
-        let isEnrolled = false;
-        if (currentUser) {
-            try {
-                const { data } = await supabase.from('enrollments').select('id').eq('user_id', currentUser.id).eq('course_id', course.id).eq('payment_status', 'verified').maybeSingle();
-                isEnrolled = !!data;
-            } catch(e) {}
-        }
+        if (!course) { app.navigate('courses'); return; }
+        let isEnrolled = userEnrollments.some(e => e.course_id === course.id);
         let actionButton = '';
-        if (course.type === 'learner') {
-            actionButton = '<button class="btn btn-primary" onclick="navigate(\'learner-hub\')"><i class="fas fa-book-open"></i> Open Learner Hub</button>';
+        if (type === 'learner') {
+            actionButton = '<button class="btn btn-primary" onclick="app.navigate(\'learner-hub\')"><i class="fas fa-book-open"></i> Open Learner Hub</button>';
         } else if (isEnrolled) {
             actionButton = '<button class="btn btn-primary" onclick="showToast(\'Learning content coming soon\',\'info\')"><i class="fas fa-play"></i> Start Learning</button>';
         } else if (course.price === 0) {
@@ -703,69 +385,53 @@
         } else {
             actionButton = currentUser ? `<button class="btn btn-primary" onclick="enrollNow(${course.id}, ${course.price})"><i class="fas fa-shopping-cart"></i> Enroll Now - KES ${course.price.toLocaleString()}</button>` : `<button class="btn btn-primary" onclick="showLoginModal()"><i class="fas fa-sign-in-alt"></i> Sign in to Enroll</button>`;
         }
-        document.getElementById('page-content').innerHTML = `<div class="container" style="padding-top:100px;"><div class="card"><i class="fas ${course.icon || 'fa-book'}" style="font-size:3rem; color:var(--primary); margin-bottom:1rem;"></i><h2>${escapeHtml(course.name)}</h2><p>${escapeHtml(course.description)}</p><div class="module-price">${course.price === 0 ? 'FREE' : `KES ${course.price.toLocaleString()}`}</div>${actionButton}<button class="btn btn-outline" onclick="navigate('courses')"><i class="fas fa-arrow-left"></i> Back to Courses</button></div></div>`;
+        document.getElementById('page-content').innerHTML = `<div class="container" style="padding-top:100px;"><div class="card"><i class="fas ${course.icon || 'fa-book'}" style="font-size:3rem; color:var(--primary); margin-bottom:1rem;"></i><h2>${escapeHtml(course.name)}</h2><p>${escapeHtml(course.description)}</p><div class="badge">${course.price === 0 ? 'FREE' : `KES ${course.price.toLocaleString()}`}</div>${actionButton}<button class="btn btn-outline" onclick="app.navigate('courses')"><i class="fas fa-arrow-left"></i> Back to Courses</button></div></div>`;
     }
     
     async function renderLearnerHub() {
-        document.getElementById('page-content').innerHTML = `<div class="container" style="padding-top:100px;"><h1 class="section-title">Learner Hub <span>Units</span></h1><div id="unitsGrid" class="grid"><div class="loading-spinner"></div></div></div>`;
-        const units = allUnits;
-        if (!units.length) { document.getElementById('unitsGrid').innerHTML = `<p>No units found.</p>`; return; }
-        document.getElementById('unitsGrid').innerHTML = units.map(u => {
+        document.getElementById('page-content').innerHTML = `<div class="container" style="padding-top:100px;"><h1 class="section-title">Learner Hub <span>Units (8 Total)</span></h1><div id="unitsGrid" class="grid"><div class="loading-spinner"></div></div></div>`;
+        if (!allUnits.length) { document.getElementById('unitsGrid').innerHTML = `<p>No units found in database.</p>`; return; }
+        document.getElementById('unitsGrid').innerHTML = allUnits.map(u => {
             const isCompleted = userProgress.find(p => p.unit_id === u.id && p.completed);
-            return `<div class="card" onclick="navigate('unit', { unitId: ${u.id}, unitNumber: ${u.unit_number}, title: '${escapeHtml(u.title)}' })"><h3>Unit ${u.unit_number}: ${escapeHtml(u.title)} ${isCompleted ? '✅' : ''}</h3><p>${escapeHtml(u.content?.substring(0, 120))}...</p>${isCompleted ? '<div class="badge">Completed</div>' : '<div class="badge">Not started</div>'}</div>`;
+            return `<div class="card" onclick="app.navigate('unit', { unitId: ${u.id}, unitNumber: ${u.unit_number}, title: '${escapeHtml(u.title)}' })"><h3>Unit ${u.unit_number}: ${escapeHtml(u.title)} ${isCompleted ? '✅' : ''}</h3><p>${escapeHtml(u.content?.substring(0, 120))}...</p>${isCompleted ? '<div class="badge">Completed</div>' : '<div class="badge">Not started</div>'}</div>`;
         }).join('');
     }
     
     async function renderUnit() {
         const { unitId } = routeParams;
-        if (!unitId) { navigate('learner-hub'); return; }
-        let unit = await fetchUnitById(unitId);
-        if (!unit) { unit = allUnits.find(u => u.id === unitId); }
-        if (!unit) { showToast('Unit not found', 'error'); navigate('learner-hub'); return; }
-        
+        if (!unitId) { app.navigate('learner-hub'); return; }
+        let unit = allUnits.find(u => u.id === unitId);
+        if (!unit) { showToast('Unit not found', 'error'); app.navigate('learner-hub'); return; }
         const isCompleted = userProgress.find(p => p.unit_id === unit.id && p.completed);
         const currentUnitNumber = unit.unit_number;
-        const totalUnits = allUnits.length;
-        
         document.getElementById('page-content').innerHTML = `
-            <div class="container" style="padding-top:100px;">
-                <div class="card">
-                    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; margin-bottom: 1rem;">
-                        <h2>Unit ${unit.unit_number}: ${escapeHtml(unit.title)}</h2>
-                        <span class="badge">${currentUnitNumber} of ${totalUnits}</span>
-                    </div>
-                    <div class="unit-content">${escapeHtml(unit.content).replace(/\n/g, '<br>')}</div>
-                    <div class="navigation-buttons">
-                        <button class="btn btn-outline" onclick="goToPreviousUnit(${currentUnitNumber})" ${currentUnitNumber <= 1 ? 'disabled' : ''}><i class="fas fa-chevron-left"></i> Previous Unit</button>
-                        <div>${!isCompleted && currentUser ? `<button class="btn btn-primary" onclick="markCurrentUnitComplete(${unit.id}, ${currentUnitNumber})"><i class="fas fa-check-circle"></i> Mark Complete</button>` : ''}<button class="btn btn-outline" onclick="navigate('learner-hub')"><i class="fas fa-list"></i> All Units</button></div>
-                        <button class="btn btn-primary" onclick="goToNextUnit(${currentUnitNumber}, ${unit.id})">Next Unit <i class="fas fa-chevron-right"></i></button>
-                    </div>
-                </div>
-            </div>
+            <div class="container" style="padding-top:100px;"><div class="card"><div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; margin-bottom: 1rem;"><h2>Unit ${unit.unit_number}: ${escapeHtml(unit.title)}</h2><span class="badge">Unit ${currentUnitNumber} of ${allUnits.length}</span></div><div class="unit-content">${escapeHtml(unit.content).replace(/\n/g, '<br>')}</div><div class="navigation-buttons"><button class="btn btn-outline" onclick="goToPreviousUnit(${currentUnitNumber})" ${currentUnitNumber <= 1 ? 'disabled' : ''}><i class="fas fa-chevron-left"></i> Previous Unit</button><div>${!isCompleted && currentUser ? `<button class="btn btn-primary" onclick="markCurrentUnitComplete(${unit.id}, ${currentUnitNumber})"><i class="fas fa-check-circle"></i> Mark Complete</button>` : ''}<button class="btn btn-outline" onclick="app.navigate('learner-hub')"><i class="fas fa-list"></i> All Units</button></div><button class="btn btn-primary" onclick="goToNextUnit(${currentUnitNumber}, ${unit.id})">Next Unit <i class="fas fa-chevron-right"></i></button></div></div></div>
         `;
     }
     
     async function renderSigns() {
-        document.getElementById('page-content').innerHTML = `<div class="container" style="padding-top:100px;"><h1 class="section-title">Traffic <span>Signs</span></h1><div id="signsContainer"><div class="loading-spinner"></div></div></div>`;
-        const signs = await fetchSigns();
-        if (!signs.length) { document.getElementById('signsContainer').innerHTML = `<p>No traffic signs loaded yet.</p>`; return; }
-        const grouped = signs.reduce((acc, s) => { acc[s.category] = acc[s.category] || []; acc[s.category].push(s); return acc; }, {});
+        document.getElementById('page-content').innerHTML = `<div class="container" style="padding-top:100px;"><h1 class="section-title">Traffic <span>Signs (NTSA Official)</span></h1><div id="signsContainer"><div class="loading-spinner"></div></div></div>`;
+        if (!allTrafficSigns.length) { document.getElementById('signsContainer').innerHTML = `<p>No traffic signs loaded from database.</p>`; return; }
+        const grouped = allTrafficSigns.reduce((acc, s) => { acc[s.category] = acc[s.category] || []; acc[s.category].push(s); return acc; }, {});
         let html = '';
         for (const [cat, items] of Object.entries(grouped)) {
-            html += `<h3 style="color: var(--primary); margin-top: 2rem; text-transform: capitalize;">${cat} Signs</h3><div class="grid">`;
-            items.forEach(s => { html += `<div class="card"><h4>${escapeHtml(s.name)}</h4><p>${escapeHtml(s.description)}</p></div>`; });
+            html += `<h3 style="color: var(--primary); margin-top: 2rem; text-transform: capitalize;">${cat} Signs</h3><div class="signs-grid">`;
+            items.forEach(s => { html += `<div class="sign-card"><div class="sign-emoji">${s.icon || '🚦'}</div><div class="sign-name">${escapeHtml(s.name)}</div><div class="sign-desc">${escapeHtml(s.description || '')}</div></div>`; });
             html += `</div>`;
         }
         document.getElementById('signsContainer').innerHTML = html;
     }
     
+    // Quiz State
+    let currentQuizQuestions = [];
+    let currentQuizIndex = 0;
+    let userAnswers = [];
+    
     async function renderQuizBank() {
-        document.getElementById('page-content').innerHTML = `<div class="container" style="padding-top:100px;"><h1 class="section-title">Practice <span>Quiz</span></h1><div id="quizArea"><div class="loading-spinner"></div></div></div>`;
-        const questions = await fetchQuizQuestions();
-        if (!questions.length) { document.getElementById('quizArea').innerHTML = `<p>No quiz questions yet.</p>`; return; }
-        currentQuizQuestions = questions;
+        currentQuizQuestions = [...allQuizQuestions];
         currentQuizIndex = 0;
-        userAnswers = new Array(questions.length).fill(null);
+        userAnswers = new Array(currentQuizQuestions.length).fill(null);
+        document.getElementById('page-content').innerHTML = `<div class="container" style="padding-top:100px;"><h1 class="section-title">Practice <span>Quiz</span></h1><div id="quizArea"></div></div>`;
         renderCurrentQuestion();
     }
     
@@ -788,9 +454,8 @@
     
     async function renderSafetyLibrary() {
         document.getElementById('page-content').innerHTML = `<div class="container" style="padding-top:100px;"><h1 class="section-title">Safety <span>Library</span></h1><div id="safetyContainer"><div class="loading-spinner"></div></div></div>`;
-        const items = await fetchSafetyLibrary();
-        if (!items.length) { document.getElementById('safetyContainer').innerHTML = `<p>No safety content yet.</p>`; return; }
-        const grouped = items.reduce((acc, item) => { const cat = item.category || 'general'; acc[cat] = acc[cat] || []; acc[cat].push(item); return acc; }, {});
+        if (!allSafetyArticles.length) { document.getElementById('safetyContainer').innerHTML = `<p>No safety content yet.</p>`; return; }
+        const grouped = allSafetyArticles.reduce((acc, item) => { const cat = item.category || 'general'; acc[cat] = acc[cat] || []; acc[cat].push(item); return acc; }, {});
         let html = '';
         for (const [cat, articles] of Object.entries(grouped)) {
             html += `<h3 style="color: var(--primary); margin-top: 2rem; text-transform: capitalize;">${cat.replace('-', ' ')}</h3><div class="grid">`;
@@ -801,10 +466,26 @@
     }
     
     window.showSafetyArticle = async function(id) {
-        const { data, error } = await supabase.from('safety_library').select('*').eq('id', id).single();
-        if (error) { showToast('Error loading article', 'error'); return; }
-        document.getElementById('page-content').innerHTML = `<div class="container" style="padding-top:100px;"><div class="card"><h2>${escapeHtml(data.title)}</h2><div class="unit-content">${escapeHtml(data.content).replace(/\n/g, '<br>')}</div><button class="btn btn-outline" onclick="renderSafetyLibrary()"><i class="fas fa-arrow-left"></i> Back to Library</button></div></div>`;
+        const article = allSafetyArticles.find(a => a.id === id);
+        if (!article) { showToast('Article not found', 'error'); return; }
+        document.getElementById('page-content').innerHTML = `<div class="container" style="padding-top:100px;"><div class="card"><h2>${escapeHtml(article.title)}</h2><div class="unit-content">${escapeHtml(article.content).replace(/\n/g, '<br>')}</div><button class="btn btn-outline" onclick="renderSafetyLibrary()"><i class="fas fa-arrow-left"></i> Back to Library</button></div></div>`;
     };
+    
+    async function renderDashboard() {
+        if (!currentUser) { showToast('Please login to view dashboard', 'warning'); app.navigate('home'); return; }
+        await Promise.all([fetchUserEnrollments(), fetchUserProgress()]);
+        const totalUnits = allUnits.length;
+        const completedUnits = userProgress.filter(p => p.completed).length;
+        const overallProgress = totalUnits > 0 ? (completedUnits / totalUnits) * 100 : 0;
+        const dashboardHtml = `<div class="container" style="padding-top:100px;"><h1 class="section-title">My <span>Dashboard</span></h1><div class="dashboard-stats"><div class="dashboard-stat-card"><i class="fas fa-graduation-cap" style="font-size: 2rem; color: var(--primary);"></i><div class="dashboard-stat-number">${userEnrollments.length}</div><div>Courses Enrolled</div></div><div class="dashboard-stat-card"><i class="fas fa-book-open" style="font-size: 2rem; color: var(--primary);"></i><div class="dashboard-stat-number">${completedUnits}/${totalUnits}</div><div>Units Completed</div></div><div class="dashboard-stat-card"><i class="fas fa-chart-line" style="font-size: 2rem; color: var(--primary);"></i><div class="dashboard-stat-number">${Math.round(overallProgress)}%</div><div>Overall Progress</div></div></div><div class="card"><h2><i class="fas fa-chart-simple"></i> Learning Progress</h2><div class="progress-bar"><div class="progress-fill" style="width: ${overallProgress}%"></div></div><p>You have completed ${completedUnits} out of ${totalUnits} units (${Math.round(overallProgress)}%)</p></div><div class="card"><h2><i class="fas fa-clock"></i> Continue Learning</h2><div class="grid" id="continueGrid"></div></div></div>`;
+        document.getElementById('page-content').innerHTML = dashboardHtml;
+        const incompleteUnits = allUnits.filter(u => !userProgress.find(p => p.unit_id === u.id && p.completed)).slice(0, 6);
+        const continueGrid = document.getElementById('continueGrid');
+        if (continueGrid) {
+            if (incompleteUnits.length === 0) continueGrid.innerHTML = '<p>🎉 Congratulations! You\'ve completed all units!</p>';
+            else continueGrid.innerHTML = incompleteUnits.map(u => `<div class="card" onclick="app.navigate('unit', { unitId: ${u.id}, unitNumber: ${u.unit_number}, title: '${escapeHtml(u.title)}' })"><h3>Unit ${u.unit_number}: ${escapeHtml(u.title)}</h3><p>${escapeHtml(u.content?.substring(0, 80))}...</p><div class="badge">Not started</div></div>`).join('');
+        }
+    }
     
     async function enrollNow(courseId, price) {
         if (!currentUser) { showToast('Please login first', 'warning'); showLoginModal(); return; }
@@ -837,16 +518,13 @@
         else document.getElementById('page-content').innerHTML = '<div class="container" style="padding-top:100px;"><div class="card"><h2>Coming Soon</h2></div></div>';
     }
     
-    function navigate(route, params = {}) { currentRoute = route; routeParams = params; renderCurrentRoute(); }
-    function navigateToCourse(type) { navigate('course-detail', { courseType: type }); }
-    function toggleMobileMenu() { document.getElementById('navLinks')?.classList.toggle('show'); }
-    function showLegal(page) { alert(`${page} policy – coming soon`); }
-    
-    window.app = { navigate, navigateToCourse, showLegal, toggleMobileMenu, showLoginModal, showSignupModal, closeModal, enrollNow };
+    // Expose globals
+    window.app = { navigate: (route, params = {}) => { currentRoute = route; routeParams = params; renderCurrentRoute(); }, navigateToCourse: (type) => window.app.navigate('course-detail', { courseType: type }), toggleMobileMenu: () => document.getElementById('navLinks')?.classList.toggle('show'), showLegal: (page) => alert(`${page} policy – coming soon`), showLoginModal, showSignupModal, closeModal, enrollNow };
     window.nextQuestion = nextQuestion;
     window.previousQuestion = previousQuestion;
     window.renderQuizBank = renderQuizBank;
     window.renderSafetyLibrary = renderSafetyLibrary;
+    window.enrollNow = enrollNow;
     
     initSupabase();
 </script>
