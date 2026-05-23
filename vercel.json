@@ -1,21 +1,19 @@
 {
-  "rewrites": [
-    { "source": "/admin-dashboard", "destination": "/admin-dashboard.html" },
-    { "source": "/reset-password", "destination": "/reset-password.html" },
-    { "source": "/update-password", "destination": "/update-password.html" },
-    { "source": "/course", "destination": "/course.html" },
-    { "source": "/unit", "destination": "/unit.html" },
-    { "source": "/quiz-bank", "destination": "/quiz-bank.html" },
-    { "source": "/(.*)", "destination": "/index.html" }
-  ],
-  "headers": [
+  "outputDirectory": ".",
+  "builds": [
     {
-      "source": "/(.*)",
-      "headers": [
-        { "key": "X-Content-Type-Options", "value": "nosniff" },
-        { "key": "X-Frame-Options", "value": "DENY" },
-        { "key": "X-XSS-Protection", "value": "1; mode=block" }
-      ]
+      "src": "index.html",
+      "use": "@vercel/static"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/",
+      "dest": "/index.html"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/$1"
     }
   ]
 }
