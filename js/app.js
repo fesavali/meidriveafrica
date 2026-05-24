@@ -12,6 +12,7 @@ let allCourses = [];
 let userEnrollments = new Map();
 let currentTab = 'all';
 let authMode = 'login';
+let currentProcessingCourse = null; // Track which course is being paid for
 
 // Helper functions
 function showToast(message, isError = false) {
@@ -27,7 +28,173 @@ function escapeHtml(str) {
     return str.replace(/[&<>]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[m]));
 }
 
-// Authentication functions
+// M-Pesa STK Push Function
+async function initiateMpesaPayment(courseId, courseName, amount, phoneNumber) {
+    try {
+        console.log(`💰 Initiating M-Pesa payment for ${courseName}: KES ${amount}`);
+        
+        // Show loading toast
+        showToast('Sending payment request to your phone...');
+        
+        const response = await fetch('https://www.meidriveafrica.com/api/mpesa/stkpush', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                phoneNumber: phoneNumber,
+                amount: amount,
+                accountReference: `COURSE_${courseId}`,
+                transactionDesc: courseName
+            })
+        });
+
+        // Check if response is JSON
+        const contentType = response.headers.get('content-type');
+        if (!contentType || !contentType.includes('application/json')) {
+            const text = await response.text();
+            console.error('Non-JSON response:', text.substring(0, 200));
+            throw new Error('Server error. Please try manual Paybill: 4095377');
+        }
+
+        const data = await response.json();
+        
+        if (data.success) {
+            showToast('Payment request sent! Check your M-Pesa phone for prompt.');
+            
+            // Poll for payment confirmation (simplified - in production use webhook)
+            await pollPaymentStatus(courseId, courseName);
+        } else {
+            throw new Error(data.error || data.details || 'Payment failed');
+        }
+        
+    } catch (error) {
+        console.error('M-Pesa Error:', error);
+        showToast(error.message || 'Payment failed. Use Paybill 4095377 manually.', true);
+        
+        // Offer manual payment option
+        if (confirm(`${error.message}\n\nWould you like to proceed with manual M-Pesa Paybill payment?`)) {
+            showManualPaymentInstructions(courseName, amount);
+        }
+    }
+}
+
+// Poll for payment status (simplified - in production you'd use webhooks)
+async function pollPaymentStatus(courseId, courseName) {
+    showToast('Waiting for payment confirmation...');
+    
+    // Wait 30 seconds then check enrollment
+    setTimeout(async () => {
+        await loadEnrollments(); // Refresh enrollments
+        if (userEnrollments.has(courseId)) {
+            showToast(`✅ Payment successful! You're now enrolled in ${courseName}! 🎉`);
+        } else {
+            showToast('Payment not confirmed yet. If you paid, please contact support.', true);
+        }
+    }, 30000);
+}
+
+// Manual payment instructions
+function showManualPaymentInstructions(courseName, amount) {
+    const instructionHtml = `
+        <div style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 20px; border-radius: 10px; z-index: 1000; max-width: 90%; width: 300px; box-shadow: 0 4px 20px rgba(0,0,0,0.3);">
+            <h3>📱 Manual M-Pesa Payment</h3>
+            <p><strong>Course:</strong> ${escapeHtml(courseName)}</p>
+            <p><strong>Amount:</strong> KES ${amount.toLocaleString()}</p>
+            <hr>
+            <p><strong>Paybill Number:</strong> <span style="font-size: 1.2em;">4095377</span></p>
+            <p><strong>Account Number:</strong> <span style="font-size: 1.2em;">${currentUser?.email || 'COURSE_' + courseId}</span></p>
+            <p style="font-size: 0.9em; color: #666;">After payment, click "I've Paid" to confirm.</p>
+            <button id="manualConfirmBtn" style="background: #00ff88; color: #000; padding: 10px; margin: 5px; border: none; border-radius: 5px; cursor: pointer;">✅ I've Paid</button>
+            <button id="manualCloseBtn" style="background: #ccc; padding: 10px; margin: 5px; border: none; border-radius: 5px; cursor: pointer;">❌ Close</button>
+        </div>
+        <div id="manualOverlay" style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 999;"></div>
+    `;
+    
+    document.body.insertAdjacentHTML('beforeend', instructionHtml);
+    
+    document.getElementById('manualConfirmBtn').onclick = async () => {
+        showToast('Checking payment... Please share M-Pesa message with support');
+        // You can add a form here to collect M-Pesa confirmation code
+        document.getElementById('manualOverlay')?.remove();
+        document.querySelector('div[style*="fixed"][style*="transform"]')?.remove();
+    };
+    
+    document.getElementById('manualCloseBtn').onclick = () => {
+        document.getElementById('manualOverlay')?.remove();
+        document.querySelector('div[style*="fixed"][style*="transform"]')?.remove();
+    };
+}
+
+// Enhanced enroll function with payment for premium courses
+async function enrollInCourse(courseId) {
+    if (!currentUser) {
+        showToast('Please login first', true);
+        return;
+    }
+    
+    if (userEnrollments.has(courseId)) {
+        showToast('Already enrolled in this course!');
+        return;
+    }
+    
+    const course = allCourses.find(c => c.id === courseId);
+    const isFree = course.type === 'free' || course.price === 0;
+    
+    if (isFree) {
+        // Free enrollment - direct insert
+        const { error } = await supabase
+            .from('enrollments')
+            .insert([{
+                user_id: currentUser.id,
+                course_id: courseId,
+                progress: 0,
+                status: 'active',
+                enrolled_at: new Date().toISOString()
+            }]);
+        
+        if (error) {
+            showToast('Failed to enroll: ' + error.message, true);
+        } else {
+            await loadEnrollments();
+            showToast(`🎉 Successfully enrolled in ${course.name}!`);
+        }
+    } else {
+        // Premium course - ask for M-Pesa payment
+        currentProcessingCourse = course;
+        
+        // Get phone number from user
+        const phoneNumber = prompt(
+            `💰 ${course.name} - KES ${course.price.toLocaleString()}\n\nEnter M-Pesa phone number (e.g., 0703738707):`,
+            currentUser?.phone || '07'
+        );
+        
+        if (!phoneNumber) {
+            showToast('Payment cancelled', true);
+            return;
+        }
+        
+        // Validate phone number format
+        const cleanPhone = phoneNumber.replace(/\D/g, '');
+        if (cleanPhone.length < 10 || cleanPhone.length > 12) {
+            showToast('Invalid phone number. Please enter a valid Safaricom number.', true);
+            return;
+        }
+        
+        // Initiate M-Pesa STK Push
+        await initiateMpesaPayment(courseId, course.name, course.price, cleanPhone);
+        
+        // Store user's phone for future use
+        if (!currentUser.phone) {
+            await supabase
+                .from('profiles')
+                .update({ phone: cleanPhone })
+                .eq('id', currentUser.id);
+        }
+    }
+}
+
+// The rest remains the same...
 async function checkAuth() {
     console.log('🔐 Checking authentication...');
     const { data: { session } } = await supabase.auth.getSession();
@@ -52,7 +219,7 @@ async function loadUserData() {
     
     const { data: profile } = await supabase
         .from('profiles')
-        .select('full_name')
+        .select('full_name, phone')
         .eq('id', currentUser.id)
         .single();
     
@@ -60,6 +227,11 @@ async function loadUserData() {
     document.getElementById('userName').textContent = displayName;
     document.getElementById('welcomeName').textContent = displayName.split(' ')[0];
     document.getElementById('userAvatar').textContent = displayName.charAt(0).toUpperCase();
+    
+    // Store phone in user object if exists
+    if (profile?.phone) {
+        currentUser.phone = profile.phone;
+    }
 }
 
 async function handleAuth() {
@@ -86,7 +258,6 @@ async function handleAuth() {
     }
 }
 
-// Course functions
 async function loadCourses() {
     console.log('📚 Loading courses...');
     
@@ -137,38 +308,6 @@ async function loadEnrollments() {
     renderCourses();
 }
 
-async function enrollInCourse(courseId) {
-    if (!currentUser) {
-        showToast('Please login first', true);
-        return;
-    }
-    
-    if (userEnrollments.has(courseId)) {
-        showToast('Already enrolled in this course!');
-        return;
-    }
-    
-    const course = allCourses.find(c => c.id === courseId);
-    console.log(`🎓 Enrolling in: ${course?.name}`);
-    
-    const { error } = await supabase
-        .from('enrollments')
-        .insert([{
-            user_id: currentUser.id,
-            course_id: courseId,
-            progress: 0,
-            status: 'active',
-            enrolled_at: new Date().toISOString()
-        }]);
-    
-    if (error) {
-        showToast('Failed to enroll: ' + error.message, true);
-    } else {
-        await loadEnrollments();
-        showToast('Successfully enrolled! 🎉');
-    }
-}
-
 async function updateProgress(courseId, newProgress) {
     const enrollment = Array.from(userEnrollments.entries()).find(([id]) => id === courseId);
     if (!enrollment) return;
@@ -194,7 +333,6 @@ async function updateProgress(courseId, newProgress) {
     }
 }
 
-// UI functions
 function updateStats() {
     const enrolled = Array.from(userEnrollments.values()).filter(e => e.enrolled).length;
     const completed = Array.from(userEnrollments.values()).filter(e => e.progress === 100).length;
@@ -263,7 +401,7 @@ function renderCourses() {
         } else if (isFree) {
             badge = '<span class="course-badge badge-free">FREE</span>';
         } else {
-            badge = '<span class="course-badge badge-premium">PREMIUM</span>';
+            badge = '<span class="course-badge badge-premium">💰 PREMIUM</span>';
         }
         
         return `
@@ -282,10 +420,10 @@ function renderCourses() {
                     </button>
                 ` : `
                     <div style="margin: 10px 0; font-weight: bold; color: ${isFree ? '#00ff88' : '#ff9800'}">
-                        ${isFree ? 'FREE' : `KES ${(course.price || 0).toLocaleString()}`}
+                        ${isFree ? '🎁 FREE' : `💰 KES ${(course.price || 0).toLocaleString()}`}
                     </div>
                     <button class="btn-enroll" onclick="window.enrollInCourse(${course.id})">
-                        🎓 Enroll Now
+                        ${isFree ? '🎓 Enroll Now' : '💳 Pay & Enroll'}
                     </button>
                 `}
             </div>
@@ -293,7 +431,6 @@ function renderCourses() {
     }).join('');
 }
 
-// Navigation functions
 function showDashboard() {
     document.getElementById('authContainer').style.display = 'none';
     document.getElementById('dashboardContainer').style.display = 'block';
@@ -342,12 +479,13 @@ document.querySelectorAll('.tab').forEach(tab => {
     });
 });
 
-// Make functions available globally for onclick handlers
+// Make functions available globally
 window.enrollInCourse = enrollInCourse;
 window.updateProgress = updateProgress;
+window.initiateMpesaPayment = initiateMpesaPayment;
 
 // Initialize app
-console.log('🚀 Starting application...');
+console.log('🚀 Starting application with M-Pesa integration...');
 checkAuth();
 
 // Listen for auth changes
