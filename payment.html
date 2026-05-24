@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pay for Course - MEI Drive Africa</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0A192F 0%, #0D2137 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        .payment-container {
+            background: rgba(13, 33, 55, 0.95);
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 500px;
+            width: 100%;
+            border: 1px solid rgba(0, 255, 136, 0.3);
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        h1 {
+            color: #00FF88;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+        .subtitle {
+            color: #8892b0;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+        .course-info {
+            background: rgba(0, 255, 136, 0.1);
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 25px;
+            border-left: 3px solid #00FF88;
+        }
+        .course-name {
+            color: #00FF88;
+            font-weight: bold;
+            font-size: 18px;
+        }
+        .course-price {
+            color: white;
+            font-size: 24px;
+            font-weight: bold;
+            margin-top: 5px;
+        }
+        .input-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            color: #ccd6f6;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+        input {
+            width: 100%;
+            padding: 12px 15px;
+            background: rgba(10, 25, 47, 0.8);
+            border: 1px solid rgba(0, 255, 136, 0.3);
+            border-radius: 8px;
+            color: white;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+        input:focus {
+            outline: none;
+            border-color: #00FF88;
+            box-shadow: 0 0 10px rgba(0, 255, 136, 0.2);
+        }
+        button {
+            width: 100%;
+            padding: 14px;
+            background: #00FF88;
+            color: #0A192F;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 10px;
+        }
+        button:hover {
+            background: #00cc6a;
+            transform: translateY(-2px);
+        }
+        button:disabled {
+            background: #8892b0;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .status {
+            margin-top: 20px;
+            padding: 12px;
+            border-radius: 8px;
+            text-align: center;
+            display: none;
+        }
+        .status.success {
+            background: rgba(0, 255, 136, 0.2);
+            color: #00FF88;
+            border: 1px solid #00FF88;
+        }
+        .status.error {
+            background: rgba(255, 68, 68, 0.2);
+            color: #ff4444;
+            border: 1px solid #ff4444;
+        }
+        .status.info {
+            background: rgba(100, 100, 255, 0.2);
+            color: #8888ff;
+            border: 1px solid #8888ff;
+        }
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid #0A192F;
+            border-top-color: #00FF88;
+            border-radius: 50%;
+            animation: spin 0.6s linear infinite;
+            margin-right: 8px;
+            vertical-align: middle;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="payment-container">
+        <h1>💰 Complete Payment</h1>
+        <div class="subtitle">Pay securely with M-Pesa</div>
+        
+        <div class="course-info" id="courseInfo">
+            <div class="course-name" id="courseName">Boda Boda Course</div>
+            <div class="course-price" id="coursePrice">KES 2,999</div>
+        </div>
+        
+        <div class="input-group">
+            <label>📱 M-Pesa Phone Number</label>
+            <input type="tel" id="phoneNumber" placeholder="0712345678" value="0703738707">
+        </div>
+        
+        <button id="payBtn">💳 Pay Now</button>
+        
+        <div id="status" class="status"></div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        // Supabase Configuration
+        const SUPABASE_URL = 'https://qpqkmmkrzxlhcpccefjn.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFwcWttbWtyenhsaGNwY2NlZmpuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk1MjU0NzIsImV4cCI6MjA5NTEwMTQ3Mn0.Vw1hexN3NKoF_y9VFBFs_NUhJgFNNMwuyzDjImUcM6s';
+        
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        
+        // Course details (from URL or session)
+        const urlParams = new URLSearchParams(window.location.search);
+        const courseName = urlParams.get('course') || 'Boda Boda Course';
+        const courseAmount = parseInt(urlParams.get('amount')) || 2999;
+        
+        // Display course info
+        document.getElementById('courseName').textContent = courseName;
+        document.getElementById('coursePrice').textContent = `KES ${courseAmount.toLocaleString()}`;
+        
+        // Get current user
+        let currentUser = null;
+        
+        async function getCurrentUser() {
+            const { data: { user } } = await supabase.auth.getUser();
+            currentUser = user;
+            return user;
+        }
+        
+        // Show status message
+        function showStatus(message, type) {
+            const statusDiv = document.getElementById('status');
+            statusDiv.textContent = message;
+            statusDiv.className = `status ${type}`;
+            statusDiv.style.display = 'block';
+            
+            setTimeout(() => {
+                statusDiv.style.display = 'none';
+            }, 5000);
+        }
+        
+        // Pay for course function
+        async function payForCourse(phoneNumber, amount, courseName) {
+            const user = await getCurrentUser();
+            
+            if (!user) {
+                showStatus('Please login first to make a payment', 'error');
+                return false;
+            }
+            
+            // Send STK Push request to your backend
+            const response = await fetch('http://localhost:3000/api/mpesa/stkpush', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    phoneNumber: phoneNumber,
+                    amount: amount,
+                    accountReference: courseName,
+                    userId: user.id
+                })
+            });
+            
+            const result = await response.json();
+            
+            if (result.success) {
+                showStatus('✅ STK Push sent! Check your phone for the M-Pesa prompt.', 'success');
+                
+                // Store payment record in Supabase (pending)
+                const { data, error } = await supabase
+                    .from('payments')
+                    .insert({
+                        user_id: user.id,
+                        phone_number: phoneNumber,
+                        amount: amount,
+                        course_name: courseName,
+                        checkout_request_id: result.checkoutRequestID,
+                        status: 'pending',
+                        created_at: new Date().toISOString()
+                    });
+                
+                if (error) {
+                    console.error('Error saving payment record:', error);
+                } else {
+                    console.log('Payment record saved:', data);
+                }
+                
+                return true;
+            } else {
+                showStatus(`❌ Payment failed: ${result.error}`, 'error');
+                return false;
+            }
+        }
+        
+        // Handle payment button click
+        document.getElementById('payBtn').addEventListener('click', async () => {
+            const phoneNumber = document.getElementById('phoneNumber').value;
+            const amount = courseAmount;
+            
+            // Validate phone number
+            if (!phoneNumber || phoneNumber.length < 9) {
+                showStatus('Please enter a valid phone number', 'error');
+                return;
+            }
+            
+            // Disable button during processing
+            const btn = document.getElementById('payBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<span class="loading"></span> Processing...';
+            
+            try {
+                await payForCourse(phoneNumber, amount, courseName);
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '💳 Pay Now';
+            }
+        });
+        
+        // Check authentication on load
+        getCurrentUser().then(user => {
+            if (!user) {
+                showStatus('⚠️ Please login to continue with payment', 'info');
+            }
+        });
+    </script>
+</body>
+</html>
