@@ -1,22 +1,22 @@
 require('dotenv').config();
 
 module.exports = {
-    // Sandbox Credentials - Automat EA
-    consumerKey: '9b0oJej33MSHlgiSmNAxRlrCfceBAQOze',
-    consumerSecret: 'hXZJU1IPDrbCjRZJ',
+    // PRODUCTION CREDENTIALS - MEI DRIVE AFRICA
+    consumerKey: 'LI2gcJZEheN8qCfXHEXV4gdYXvOBHVnv',
+    consumerSecret: 'aGGo8AuPJVpsZLcs',
     
     // Paybill
     shortCode: '4095377',
     
-    // Default Sandbox Passkey
-    passkey: 'bfb279f9aa9bdbcf158e97dd71a467cd2e0c893059b10f78e6b72ada1ed2c919',
+    // PRODUCTION Passkey
+    passkey: '7eb17a031bdfd5b4251863a1ddb72c5b9cd14f3385aa6a258c1442a0116e8277',
     
-    // Callback URLs (use ngrok for local testing)
-    callbackUrl: process.env.CALLBACK_URL || 'https://your-domain.com/api/callback',
-    timeoutUrl: process.env.TIMEOUT_URL || 'https://your-domain.com/api/timeout',
+    // Callback URLs (use ngrok for local testing, or Supabase Edge Function for production)
+    callbackUrl: process.env.CALLBACK_URL || 'https://your-project-ref.supabase.co/functions/v1/mpesa-callback',
+    timeoutUrl: process.env.TIMEOUT_URL || 'https://your-project-ref.supabase.co/functions/v1/mpesa-timeout',
     
-    // Environment
-    environment: process.env.NODE_ENV || 'sandbox',
+    // Environment: 'production' for live, 'sandbox' for testing
+    environment: process.env.NODE_ENV || 'production',
     
     // API URLs
     apiUrls: {
