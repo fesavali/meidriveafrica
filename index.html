@@ -7,8 +7,8 @@
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'%3E%3Crect width='200' height='200' rx='40' fill='%230A192F'/%3E%3Crect x='10' y='10' width='180' height='180' rx='35' fill='none' stroke='%2300FF88' stroke-width='3'/%3E%3Ctext x='100' y='85' font-size='48' text-anchor='middle' fill='%2300FF88' font-weight='800' font-family='Arial, sans-serif'%3EMEI%3C/text%3E%3Ctext x='100' y='135' font-size='28' text-anchor='middle' fill='%2300FF88' font-weight='700' font-family='Arial, sans-serif'%3EDRIVE%3C/text%3E%3Ctext x='100' y='168' font-size='16' text-anchor='middle' fill='%2300FF88' opacity='0.8'%3EAFRICA%3C/text%3E%3C/svg%3E">
     <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'%3E%3Crect width='200' height='200' rx='40' fill='%230A192F'/%3E%3Ctext x='100' y='115' font-size='50' text-anchor='middle' fill='%2300FF88' font-weight='800'%3EM%3C/text%3E%3C/svg%3E">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <!-- Shared Supabase Configuration - Single Source of Truth -->
-    <script src="supabase-config.js"></script>
+    <!-- SINGLE SOURCE OF TRUTH -->
+    <script src="supabase.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Segoe UI', 'Inter', system-ui, sans-serif; background: #0A192F; color: #fff; overflow-x: hidden; }
@@ -385,9 +385,8 @@
     <div id="toast" class="toast"></div>
 
     <script>
-        // Use the shared supabase instance from supabase-config.js
-        // No need to redeclare - it's already available globally
-        const supabase = window.supabaseClient;
+        // Use MEIDrive global from supabase.js
+        const MEI = window.MEIDrive;
         
         // App State
         let currentUser = null;
@@ -415,8 +414,8 @@
         // Auth Functions
         async function checkAuth() {
             console.log('🔐 Checking authentication...');
-            const { data: { session } } = await supabase.auth.getSession();
-            currentUser = session?.user || null;
+            const user = await MEI.getCurrentUser();
+            currentUser = user;
             renderAuthButtons();
             if (currentUser) {
                 console.log('✅ User authenticated:', currentUser.email);
@@ -479,8 +478,8 @@
             
             try {
                 if (authMode === 'login') {
-                    const { error } = await supabase.auth.signInWithPassword({ email, password });
-                    if (error) throw error;
+                    const result = await MEI.loginUser(email, password);
+                    if (!result.success) throw new Error(result.error);
                     successDiv.textContent = 'Login successful! Redirecting...';
                     setTimeout(() => {
                         closeAuthModal();
@@ -488,8 +487,8 @@
                         renderCourses();
                     }, 1500);
                 } else {
-                    const { error } = await supabase.auth.signUp({ email, password });
-                    if (error) throw error;
+                    const result = await MEI.registerUser(email, password);
+                    if (!result.success) throw new Error(result.error);
                     successDiv.textContent = 'Account created! You can now login.';
                     setTimeout(() => {
                         authMode = 'login';
@@ -502,7 +501,7 @@
         }
         
         async function logout() {
-            await supabase.auth.signOut();
+            await MEI.logoutUser();
             currentUser = null;
             userEnrollments.clear();
             renderAuthButtons();
@@ -514,19 +513,10 @@
         async function loadCourses() {
             try {
                 console.log('📚 Loading courses from Supabase...');
-                const { data, error } = await supabase
-                    .from('courses')
-                    .select('*')
-                    .order('id');
+                const courses = await MEI.fetchCourses();
                 
-                if (error) {
-                    console.error('Error loading courses:', error);
-                    showToast('Error loading courses: ' + error.message, true);
-                    return;
-                }
-                
-                if (data && data.length > 0) {
-                    allCourses = data;
+                if (courses && courses.length > 0) {
+                    allCourses = courses;
                     console.log(`✅ Loaded ${allCourses.length} courses from database`);
                     document.getElementById('coursesCount').textContent = allCourses.length;
                     renderCourses();
@@ -546,21 +536,18 @@
             
             try {
                 console.log('📋 Loading enrollments...');
-                const { data, error } = await supabase
-                    .from('enrollments')
-                    .select('*')
-                    .eq('user_id', currentUser.id);
+                const enrollments = await MEI.fetchEnrollments(currentUser.id);
                 
-                if (!error && data) {
+                if (enrollments && enrollments.length > 0) {
                     userEnrollments.clear();
-                    data.forEach(enrollment => {
+                    enrollments.forEach(enrollment => {
                         userEnrollments.set(enrollment.course_id, {
                             enrolled: true,
                             progress: enrollment.progress || 0,
                             enrolled_at: enrollment.enrolled_at
                         });
                     });
-                    console.log(`✅ Loaded ${data.length} enrollments`);
+                    console.log(`✅ Loaded ${enrollments.length} enrollments`);
                     renderCourses();
                 }
             } catch (error) {
@@ -572,25 +559,13 @@
             if (!currentUser) return false;
             
             try {
-                const { error } = await supabase
-                    .from('enrollments')
-                    .insert([{
-                        user_id: currentUser.id,
-                        course_id: courseId,
-                        progress: 0,
-                        status: 'active',
-                        enrolled_at: new Date().toISOString()
-                    }]);
-                
-                if (error) {
-                    console.error('Enrollment error:', error);
-                    return false;
-                }
+                const result = await MEI.enrollInCourse(currentUser.id, courseId);
+                if (!result.success) throw new Error(result.error);
                 
                 await loadEnrollments();
                 return true;
             } catch (error) {
-                console.error('Error:', error);
+                console.error('Enrollment error:', error);
                 return false;
             }
         }
@@ -771,7 +746,7 @@
         
         async function loadQuizCount() {
             try {
-                const { count, error } = await supabase
+                const { count, error } = await MEI.supabase
                     .from('quiz_questions')
                     .select('*', { count: 'exact', head: true });
                 
@@ -875,10 +850,16 @@
         // Initialize App
         async function init() {
             console.log('🚀 Initializing MEI Drive Africa...');
-            await checkAuth();
-            await loadCourses();
-            await loadQuizCount();
-            console.log('✅ App initialized');
+            if (MEI.isReady()) {
+                console.log('✅ MEIDrive ready');
+                await checkAuth();
+                await loadCourses();
+                await loadQuizCount();
+                console.log('✅ App initialized');
+            } else {
+                console.error('❌ MEIDrive not ready');
+                showToast('Error initializing app. Please refresh.', true);
+            }
         }
         
         init();
