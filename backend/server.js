@@ -1,4 +1,4 @@
-// server.js - M-Pesa STK Push Integration for MEI Drive Africa
+// server.js - Complete M-Pesa Integration for MEI DRIVE AFRICA
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
@@ -9,200 +9,103 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 // ============================================================
-// SUPABASE CLIENT
+// 1. CORS CONFIGURATION (Fix #19)
 // ============================================================
-const supabaseUrl = process.env.SUPABASE_URL || 'https://qpqkmmkrzxlhcpccefjn.supabase.co';
-const supabaseKey = process.env.SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFwcWttbWtyenhsaGNwY2NlZmpuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk1MjU0NzIsImV4cCI6MjA5NTEwMTQ3Mn0.Vw1hexN3NKoF_y9VFBFs_NUhJgFNNMwuyzDjImUcM6s';
-const supabase = createClient(supabaseUrl, supabaseKey);
-
-// ============================================================
-// MIDDLEWARE
-// ============================================================
-const corsOrigins = (process.env.CORS_ORIGIN || 'http://localhost:3000,http://localhost:5500').split(',');
+const corsOrigins = (process.env.CORS_ORIGIN || 'https://meidriveafrica.com,http://localhost:3000,http://localhost:5500').split(',');
 app.use(cors({
     origin: corsOrigins,
-    credentials: process.env.CORS_CREDENTIALS === 'true'
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization']
 }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // ============================================================
-// LOGGING
+// 2. SUPABASE CONNECTION (Fix #20)
 // ============================================================
-const LOG_LEVEL = process.env.LOG_LEVEL || 'info';
-function log(level, message, data = null) {
-    const levels = { error: 0, warn: 1, info: 2, debug: 3 };
-    if (levels[level] <= levels[LOG_LEVEL]) {
-        console.log(`[${new Date().toISOString()}] [${level.toUpperCase()}] ${message}`);
-        if (data) console.log(data);
-    }
-}
+const supabase = createClient(
+    process.env.SUPABASE_URL,
+    process.env.SUPABASE_ANON_KEY
+);
 
 // ============================================================
-// CONFIGURATION (from .env)
+// 3. M-PESA CONFIGURATION (Fix #6)
 // ============================================================
 const config = {
-    // Primary Credentials (Automat EA)
     consumerKey: process.env.MPESA_CONSUMER_KEY,
     consumerSecret: process.env.MPESA_CONSUMER_SECRET,
-    
-    // Secondary Backup Credentials (Masika Benevolent)
-    consumerKeyBackup: process.env.MPESA_CONSUMER_KEY_BACKUP,
-    consumerSecretBackup: process.env.MPESA_CONSUMER_SECRET_BACKUP,
-    
-    // Paybill
     shortCode: process.env.MPESA_SHORTCODE,
     passkey: process.env.MPESA_PASSKEY,
-    
-    // Environment
-    environment: process.env.MPESA_ENVIRONMENT || 'sandbox',
-    
-    // Callback URLs
-    callbackUrl: process.env.MPESA_CALLBACK_URL,
-    timeoutUrl: process.env.MPESA_TIMEOUT_URL,
-    resultUrl: process.env.MPESA_RESULT_URL,
-    confirmationUrl: process.env.MPESA_CONFIRMATION_URL,
-    validationUrl: process.env.MPESA_VALIDATION_URL,
-    
-    // Test data
-    testPhone: process.env.MPESA_TEST_PHONE,
-    testPin: process.env.MPESA_TEST_PIN,
-    
-    // Feature flags
-    enableMpesa: process.env.ENABLE_MPESA === 'true',
-    enableStkPush: process.env.ENABLE_STK_PUSH === 'true',
-    
-    // Webhook security
-    webhookSecret: process.env.MPESA_WEBHOOK_SECRET,
-    
-    // API URLs
-    apiUrls: {
-        sandbox: {
-            auth: 'https://sandbox.safaricom.co.ke/oauth/v1/generate?grant_type=client_credentials',
-            stkPush: 'https://sandbox.safaricom.co.ke/mpesa/stkpush/v1/processrequest',
-            stkQuery: 'https://sandbox.safaricom.co.ke/mpesa/stkpushquery/v1/query',
-            stkPushStatus: 'https://sandbox.safaricom.co.ke/mpesa/stkpushquery/v1/query',
-            c2bSimulate: 'https://sandbox.safaricom.co.ke/mpesa/c2b/v1/simulate',
-            accountBalance: 'https://sandbox.safaricom.co.ke/mpesa/accountbalance/v1/query',
-            transactionStatus: 'https://sandbox.safaricom.co.ke/mpesa/transactionstatus/v1/query',
-            reversal: 'https://sandbox.safaricom.co.ke/mpesa/reversal/v1/request',
-            b2c: 'https://sandbox.safaricom.co.ke/mpesa/b2c/v1/paymentrequest'
-        },
-        production: {
-            auth: 'https://api.safaricom.co.ke/oauth/v1/generate?grant_type=client_credentials',
-            stkPush: 'https://api.safaricom.co.ke/mpesa/stkpush/v1/processrequest',
-            stkQuery: 'https://api.safaricom.co.ke/mpesa/stkpushquery/v1/query',
-            stkPushStatus: 'https://api.safaricom.co.ke/mpesa/stkpushquery/v1/query',
-            c2bSimulate: 'https://api.safaricom.co.ke/mpesa/c2b/v1/simulate',
-            accountBalance: 'https://api.safaricom.co.ke/mpesa/accountbalance/v1/query',
-            transactionStatus: 'https://api.safaricom.co.ke/mpesa/transactionstatus/v1/query',
-            reversal: 'https://api.safaricom.co.ke/mpesa/reversal/v1/request',
-            b2c: 'https://api.safaricom.co.ke/mpesa/b2c/v1/paymentrequest'
-        }
+    environment: process.env.MPESA_ENVIRONMENT || 'production',
+    callbackUrl: process.env.MPESA_CALLBACK_URL
+};
+
+const apiUrls = {
+    production: {
+        auth: 'https://api.safaricom.co.ke/oauth/v1/generate?grant_type=client_credentials',
+        stkPush: 'https://api.safaricom.co.ke/mpesa/stkpush/v1/processrequest',
+        stkQuery: 'https://api.safaricom.co.ke/mpesa/stkpushquery/v1/query'
+    },
+    sandbox: {
+        auth: 'https://sandbox.safaricom.co.ke/oauth/v1/generate?grant_type=client_credentials',
+        stkPush: 'https://sandbox.safaricom.co.ke/mpesa/stkpush/v1/processrequest',
+        stkQuery: 'https://sandbox.safaricom.co.ke/mpesa/stkpushquery/v1/query'
     }
 };
 
-const currentApi = config.apiUrls[config.environment];
-
-// Validate required config
-if (!config.enableMpesa) {
-    log('warn', 'M-Pesa is disabled. Set ENABLE_MPESA=true to enable');
-}
-
-if (!config.consumerKey || !config.consumerSecret) {
-    log('error', 'Missing M-Pesa credentials. Check your .env file');
-}
-
-log('info', `M-Pesa Configuration loaded`, {
-    environment: config.environment,
-    shortCode: config.shortCode,
-    enableStkPush: config.enableStkPush,
-    callbackUrl: config.callbackUrl
-});
+const currentApi = apiUrls[config.environment];
 
 // ============================================================
-// TOKEN MANAGEMENT (with caching and backup)
+// 4. TOKEN CACHING (Fix #7)
 // ============================================================
 let accessToken = null;
 let tokenExpiry = null;
-let currentCredentialsIndex = 0; // 0 = primary, 1 = backup
 
 async function getAccessToken() {
-    // Return cached token if still valid
     if (accessToken && tokenExpiry && tokenExpiry > Date.now()) {
-        log('debug', 'Using cached access token');
         return accessToken;
     }
 
-    // Try primary credentials first, then backup if available
-    const credentials = [
-        { key: config.consumerKey, secret: config.consumerSecret, name: 'primary' },
-        { key: config.consumerKeyBackup, secret: config.consumerSecretBackup, name: 'backup' }
-    ].filter(c => c.key && c.secret);
-
-    for (let i = currentCredentialsIndex; i < credentials.length; i++) {
-        const cred = credentials[i];
-        try {
-            log('info', `Fetching new access token using ${cred.name} credentials...`);
-            const auth = Buffer.from(`${cred.key}:${cred.secret}`).toString('base64');
-
-            const response = await axios.get(currentApi.auth, {
-                headers: { Authorization: `Basic ${auth}` },
-                timeout: 10000
-            });
-
-            accessToken = response.data.access_token;
-            tokenExpiry = Date.now() + (response.data.expires_in - 60) * 1000;
-            currentCredentialsIndex = i;
-            log('info', `Token obtained successfully using ${cred.name} credentials`);
-            return accessToken;
-        } catch (error) {
-            log('error', `Failed with ${cred.name} credentials:`, error.response?.data || error.message);
-            if (i === credentials.length - 1) {
-                throw new Error('All authentication attempts failed');
-            }
-            log('info', 'Failing over to backup credentials...');
-        }
-    }
-
-    throw new Error('No valid credentials available');
+    const auth = Buffer.from(`${config.consumerKey}:${config.consumerSecret}`).toString('base64');
+    
+    const response = await axios.get(currentApi.auth, {
+        headers: { Authorization: `Basic ${auth}` }
+    });
+    
+    accessToken = response.data.access_token;
+    tokenExpiry = Date.now() + (response.data.expires_in - 60) * 1000;
+    return accessToken;
 }
 
 // ============================================================
-// HELPER FUNCTIONS
+// 5. HELPER FUNCTIONS
 // ============================================================
 function getTimestamp() {
-    const date = new Date();
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-    const hours = String(date.getHours()).padStart(2, '0');
-    const minutes = String(date.getMinutes()).padStart(2, '0');
-    const seconds = String(date.getSeconds()).padStart(2, '0');
-    return `${year}${month}${day}${hours}${minutes}${seconds}`;
-}
-
-function getPassword(shortCode, passkey, timestamp) {
-    const str = `${shortCode}${passkey}${timestamp}`;
-    return Buffer.from(str).toString('base64');
+    const d = new Date();
+    return d.getFullYear() +
+        String(d.getMonth() + 1).padStart(2, '0') +
+        String(d.getDate()).padStart(2, '0') +
+        String(d.getHours()).padStart(2, '0') +
+        String(d.getMinutes()).padStart(2, '0') +
+        String(d.getSeconds()).padStart(2, '0');
 }
 
 function formatPhoneNumber(phone) {
+    // Fix #11: Format 0703738707 → 254703738707
     let formatted = phone.replace(/\D/g, '');
     if (formatted.startsWith('0')) {
         formatted = '254' + formatted.substring(1);
     } else if (formatted.startsWith('+254')) {
         formatted = '254' + formatted.substring(4);
-    } else if (formatted.length === 9) {
-        formatted = '254' + formatted;
     }
     return formatted;
 }
 
 // ============================================================
-// DATABASE FUNCTIONS
+// 6. DATABASE FUNCTIONS (Fix #17, #18, #20)
 // ============================================================
-async function savePaymentRecord(userId, phoneNumber, amount, courseName, checkoutRequestID) {
+async function savePayment(userId, phoneNumber, amount, courseName, checkoutRequestId) {
     const { data, error } = await supabase
         .from('payments')
         .insert({
@@ -210,34 +113,26 @@ async function savePaymentRecord(userId, phoneNumber, amount, courseName, checko
             phone_number: phoneNumber,
             amount: amount,
             course_name: courseName,
-            checkout_request_id: checkoutRequestID,
+            checkout_request_id: checkoutRequestId,
             status: 'pending',
             created_at: new Date().toISOString()
         });
     
-    if (error) {
-        log('error', 'Failed to save payment record:', error);
-        return null;
-    }
-    return data;
+    if (error) console.error('Save payment error:', error);
+    return { data, error };
 }
 
-async function updatePaymentStatus(checkoutRequestID, status, mpesaReceipt = null, errorMessage = null) {
+async function updatePaymentStatus(checkoutRequestId, status, mpesaReceipt = null) {
     const updateData = { status };
     if (mpesaReceipt) updateData.mpesa_receipt = mpesaReceipt;
-    if (errorMessage) updateData.error_message = errorMessage;
     if (status === 'completed') updateData.completed_at = new Date().toISOString();
     
     const { data, error } = await supabase
         .from('payments')
         .update(updateData)
-        .eq('checkout_request_id', checkoutRequestID);
+        .eq('checkout_request_id', checkoutRequestId);
     
-    if (error) {
-        log('error', 'Failed to update payment status:', error);
-        return false;
-    }
-    return true;
+    return { data, error };
 }
 
 async function enrollUserInCourse(userId, courseName, mpesaReceipt) {
@@ -250,38 +145,16 @@ async function enrollUserInCourse(userId, courseName, mpesaReceipt) {
             enrolled_at: new Date().toISOString()
         });
     
-    if (error) {
-        log('error', 'Failed to enroll user:', error);
-        return false;
-    }
-    return true;
-}
-
-async function getPaymentByCheckoutId(checkoutRequestID) {
-    const { data, error } = await supabase
-        .from('payments')
-        .select('user_id, course_name')
-        .eq('checkout_request_id', checkoutRequestID)
-        .single();
-    
-    if (error) {
-        log('error', 'Failed to get payment record:', error);
-        return null;
-    }
-    return data;
+    return { data, error };
 }
 
 // ============================================================
-// STK PUSH (Lipa Na M-Pesa)
+// 7. STK PUSH FUNCTION (Fix #8)
 // ============================================================
 async function stkPush(phoneNumber, amount, accountReference, transactionDesc) {
-    if (!config.enableStkPush) {
-        throw new Error('STK Push is disabled by configuration');
-    }
-
     const token = await getAccessToken();
     const timestamp = getTimestamp();
-    const password = getPassword(config.shortCode, config.passkey, timestamp);
+    const password = Buffer.from(`${config.shortCode}${config.passkey}${timestamp}`).toString('base64');
     const formattedPhone = formatPhoneNumber(phoneNumber);
 
     const requestBody = {
@@ -289,7 +162,7 @@ async function stkPush(phoneNumber, amount, accountReference, transactionDesc) {
         Password: password,
         Timestamp: timestamp,
         TransactionType: 'CustomerPayBillOnline',
-        Amount: Math.round(parseFloat(amount)),
+        Amount: Math.round(amount),
         PartyA: formattedPhone,
         PartyB: config.shortCode,
         PhoneNumber: formattedPhone,
@@ -298,311 +171,103 @@ async function stkPush(phoneNumber, amount, accountReference, transactionDesc) {
         TransactionDesc: transactionDesc.slice(0, 13)
     };
 
-    log('info', 'Initiating STK Push', {
-        phone: formattedPhone,
-        amount: requestBody.Amount,
-        accountRef: accountReference,
-        environment: config.environment
-    });
-
     const response = await axios.post(currentApi.stkPush, requestBody, {
-        headers: {
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'application/json'
-        },
-        timeout: 30000
-    });
-
-    log('info', 'STK Push Response', response.data);
-    return response.data;
-}
-
-// ============================================================
-// QUERY STK PUSH STATUS
-// ============================================================
-async function queryStatus(checkoutRequestID) {
-    const token = await getAccessToken();
-    const timestamp = getTimestamp();
-    const password = getPassword(config.shortCode, config.passkey, timestamp);
-
-    const requestBody = {
-        BusinessShortCode: config.shortCode,
-        Password: password,
-        Timestamp: timestamp,
-        CheckoutRequestID: checkoutRequestID
-    };
-
-    const response = await axios.post(currentApi.stkQuery, requestBody, {
-        headers: {
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'application/json'
-        },
-        timeout: 15000
+        headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' }
     });
 
     return response.data;
 }
 
 // ============================================================
-// VERIFY WEBHOOK SIGNATURE
-// ============================================================
-function verifyWebhookSignature(req) {
-    const signature = req.headers['x-mpesa-signature'];
-    if (!config.webhookSecret) {
-        log('warn', 'Webhook secret not configured, skipping signature verification');
-        return true;
-    }
-    return true;
-}
-
-// ============================================================
-// API ROUTES
+// 8. API ROUTES
 // ============================================================
 
 // Health check
 app.get('/', (req, res) => {
-    res.json({
-        status: 'OK',
-        service: 'M-Pesa Integration Server',
-        environment: config.environment,
-        shortCode: config.shortCode,
-        features: {
-            mpesa: config.enableMpesa,
-            stkPush: config.enableStkPush
-        },
-        timestamp: new Date().toISOString()
-    });
+    res.json({ status: 'OK', service: 'MEI Drive Africa API', environment: config.environment });
 });
 
-// STK Push endpoint
+// STK Push Route (Fix #2, #3)
 app.post('/api/mpesa/stkpush', async (req, res) => {
     try {
         const { phoneNumber, amount, accountReference, transactionDesc, userId } = req.body;
-
-        // Validation
-        if (!phoneNumber || !amount) {
-            return res.status(400).json({
-                success: false,
-                error: 'Phone number and amount are required'
-            });
+        
+        // Fix #12: Input Validation
+        if (!phoneNumber) {
+            return res.status(400).json({ success: false, error: 'Phone number is required' });
         }
-
-        const numericAmount = Number(amount);
-        if (isNaN(numericAmount) || numericAmount < 1 || numericAmount > 150000) {
-            return res.status(400).json({
-                success: false,
-                error: 'Amount must be between 1 and 150,000 KES'
-            });
+        if (!amount || amount < 10 || amount > 150000) {
+            return res.status(400).json({ success: false, error: 'Amount must be between 10 and 150,000 KES' });
         }
-
-        const result = await stkPush(
-            phoneNumber,
-            numericAmount,
-            accountReference || 'Course Payment',
-            transactionDesc || 'MEI Drive Africa Course'
-        );
-
+        if (!accountReference) {
+            return res.status(400).json({ success: false, error: 'Course name is required' });
+        }
+        
+        // Format phone for display
+        const displayPhone = phoneNumber;
+        const formattedPhone = formatPhoneNumber(phoneNumber);
+        
+        const result = await stkPush(phoneNumber, amount, accountReference, transactionDesc || 'Course Payment');
+        
         if (result.ResponseCode !== '0') {
-            return res.status(400).json({
-                success: false,
-                error: result.ResponseDescription,
-                responseCode: result.ResponseCode
-            });
+            return res.status(400).json({ success: false, error: result.ResponseDescription });
         }
-
-        // Save payment record to Supabase
+        
+        // Save to database
         if (userId) {
-            await savePaymentRecord(
-                userId,
-                formatPhoneNumber(phoneNumber),
-                numericAmount,
-                accountReference || 'Course Payment',
-                result.CheckoutRequestID
-            );
+            await savePayment(userId, formattedPhone, amount, accountReference, result.CheckoutRequestID);
         }
-
+        
         res.json({
             success: true,
-            message: 'STK Push sent. Check your phone for the M-Pesa prompt.',
-            checkoutRequestID: result.CheckoutRequestID,
-            merchantRequestID: result.MerchantRequestID,
-            customerMessage: result.CustomerMessage
+            message: 'STK Push sent! Check your phone.',
+            checkoutRequestID: result.CheckoutRequestID
         });
     } catch (error) {
-        log('error', 'STK Push error:', error.response?.data || error.message);
-        res.status(500).json({
-            success: false,
-            error: error.response?.data?.errorMessage || error.message || 'Internal server error'
-        });
+        console.error('STK Push error:', error.response?.data || error.message);
+        res.status(500).json({ success: false, error: error.response?.data?.errorMessage || error.message });
     }
 });
 
-// Query status endpoint
-app.post('/api/mpesa/query', async (req, res) => {
-    try {
-        const { checkoutRequestID } = req.body;
-
-        if (!checkoutRequestID) {
-            return res.status(400).json({
-                success: false,
-                error: 'CheckoutRequestID is required'
-            });
-        }
-
-        const result = await queryStatus(checkoutRequestID);
-
-        res.json({
-            success: true,
-            data: result
-        });
-    } catch (error) {
-        log('error', 'Query error:', error.response?.data || error.message);
-        res.status(500).json({
-            success: false,
-            error: error.response?.data?.errorMessage || error.message
-        });
-    }
-});
-
-// M-Pesa Callback endpoint
+// Callback Route (Fix #9, #10)
 app.post('/api/mpesa/callback', async (req, res) => {
-    log('info', 'Callback received');
-    log('debug', 'Callback body:', req.body);
-
-    // Verify webhook signature
-    if (!verifyWebhookSignature(req)) {
-        log('warn', 'Invalid webhook signature');
-        return res.status(401).json({ ResultCode: 1, ResultDesc: 'Invalid signature' });
-    }
-
+    console.log('Callback received:', JSON.stringify(req.body, null, 2));
+    
     const { Body } = req.body;
     const { stkCallback } = Body;
-
+    
     if (stkCallback.ResultCode === 0) {
-        // Payment successful
-        const checkoutRequestID = stkCallback.CheckoutRequestID;
-        const mpesaReceiptNumber = stkCallback.CallbackMetadata?.Item?.find(
-            item => item.Name === 'MpesaReceiptNumber'
-        )?.Value;
-        const amount = stkCallback.CallbackMetadata?.Item?.find(
-            item => item.Name === 'Amount'
-        )?.Value;
-        const phoneNumber = stkCallback.CallbackMetadata?.Item?.find(
-            item => item.Name === 'PhoneNumber'
-        )?.Value;
-
-        log('info', '✅ Payment successful!', {
-            receipt: mpesaReceiptNumber,
-            amount: `KES ${amount}`,
-            phone: phoneNumber,
-            checkoutId: checkoutRequestID
-        });
-
-        // Update payment status in Supabase
-        await updatePaymentStatus(checkoutRequestID, 'completed', mpesaReceiptNumber);
-
-        // Get payment record to enroll user
-        const paymentRecord = await getPaymentByCheckoutId(checkoutRequestID);
+        const checkoutId = stkCallback.CheckoutRequestID;
+        const mpesaReceipt = stkCallback.CallbackMetadata?.Item?.find(i => i.Name === 'MpesaReceiptNumber')?.Value;
+        const amount = stkCallback.CallbackMetadata?.Item?.find(i => i.Name === 'Amount')?.Value;
         
-        if (paymentRecord && paymentRecord.user_id && paymentRecord.course_name) {
-            await enrollUserInCourse(
-                paymentRecord.user_id,
-                paymentRecord.course_name,
-                mpesaReceiptNumber
-            );
-            log('info', '✅ User enrolled in course successfully!');
+        console.log(`✅ Payment successful! Receipt: ${mpesaReceipt}, Amount: KES ${amount}`);
+        
+        // Update payment status
+        await updatePaymentStatus(checkoutId, 'completed', mpesaReceipt);
+        
+        // Get payment to enroll user (Fix #18)
+        const { data: payment } = await supabase
+            .from('payments')
+            .select('user_id, course_name')
+            .eq('checkout_request_id', checkoutId)
+            .single();
+        
+        if (payment && payment.user_id) {
+            await enrollUserInCourse(payment.user_id, payment.course_name, mpesaReceipt);
+            console.log(`✅ User ${payment.user_id} enrolled in ${payment.course_name}`);
         }
     } else {
-        // Payment failed
-        log('error', `❌ Payment failed: ${stkCallback.ResultDesc}`);
-        
-        // Update payment status to failed
-        await updatePaymentStatus(
-            stkCallback.CheckoutRequestID,
-            'failed',
-            null,
-            stkCallback.ResultDesc
-        );
+        console.log(`❌ Payment failed: ${stkCallback.ResultDesc}`);
+        await updatePaymentStatus(stkCallback.CheckoutRequestID, 'failed');
     }
-
-    // Always respond with success to M-Pesa
-    res.json({ ResultCode: 0, ResultDesc: 'Success' });
-});
-
-// Timeout endpoint
-app.post('/api/mpesa/timeout', (req, res) => {
-    log('warn', 'Timeout received:', req.body);
-    res.json({ ResultCode: 0, ResultDesc: 'Success' });
-});
-
-// Result endpoint
-app.post('/api/mpesa/result', (req, res) => {
-    log('info', 'Result received:', req.body);
-    res.json({ ResultCode: 0, ResultDesc: 'Success' });
-});
-
-// Confirmation endpoint (for C2B)
-app.post('/api/mpesa/confirmation', (req, res) => {
-    log('info', 'Confirmation received:', req.body);
-    res.json({ ResultCode: 0, ResultDesc: 'Success' });
-});
-
-// Validation endpoint (for C2B)
-app.post('/api/mpesa/validation', (req, res) => {
-    log('info', 'Validation received:', req.body);
-    res.json({ ResultCode: 0, ResultDesc: 'Success' });
-});
-
-// Error handling middleware
-app.use((err, req, res, next) => {
-    log('error', 'Unhandled error:', err);
-    res.status(500).json({
-        success: false,
-        error: 'Internal server error'
-    });
-});
-
-// 404 handler
-app.use((req, res) => {
-    res.status(404).json({
-        success: false,
-        error: 'Endpoint not found'
-    });
-});
-
-// ============================================================
-// START SERVER
-// ============================================================
-app.listen(PORT, () => {
-    console.log(`
-╔══════════════════════════════════════════════════════════════╗
-║                                                              ║
-║   🚀 MEI DRIVE AFRICA - M-PESA Integration Server          ║
-║                                                              ║
-╠══════════════════════════════════════════════════════════════╣
-║  Environment:   ${config.environment.padEnd(44)}║
-║  Shortcode:     ${config.shortCode.padEnd(44)}║
-║  Port:          ${PORT.toString().padEnd(44)}║
-║  Callback URL:  ${(config.callbackUrl || 'not set').slice(0, 44).padEnd(44)}║
-║  M-Pesa:        ${config.enableMpesa ? '✅ Enabled' : '❌ Disabled'.padEnd(44)}║
-║  STK Push:      ${config.enableStkPush ? '✅ Enabled' : '❌ Disabled'.padEnd(44)}║
-║  Supabase:      ✅ Connected                                   ║
-║                                                              ║
-║  Status:        🟢 Running                                   ║
-║                                                              ║
-╚══════════════════════════════════════════════════════════════╝
-    `);
     
-    if (config.environment === 'sandbox') {
-        console.log(`
-╔══════════════════════════════════════════════════════════════╗
-║  ⚠️  SANDBOX MODE                                           ║
-║  Test Phone:   ${config.testPhone || '254708374149'}                           ║
-║  Test PIN:     ${config.testPin || '123456'}                                 ║
-║                                                              ║
-║  ✅ Real M-Pesa app WILL NOT receive prompts in sandbox.    ║
-║  ✅ Use Safaricom Developer Portal simulator to test.       ║
-╚══════════════════════════════════════════════════════════════╝
-        `);
-    }
+    res.json({ ResultCode: 0, ResultDesc: 'Success' });
+});
+
+// Start server
+app.listen(PORT, () => {
+    console.log(`\n🚀 MEI Drive Africa API running on port ${PORT}`);
+    console.log(`📡 Environment: ${config.environment}`);
+    console.log(`🏦 Shortcode: ${config.shortCode}\n`);
 });
