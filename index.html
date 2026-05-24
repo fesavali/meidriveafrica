@@ -67,17 +67,20 @@
         .btn-login:hover { background: rgba(0, 255, 136, 0.1); transform: translateY(-2px); }
         .btn-register { background: #00FF88; color: #0A192F; }
         .btn-register:hover { background: #00cc6a; transform: translateY(-2px); }
-        .user-info { display: flex; align-items: center; gap: 15px; }
+        .user-info { display: flex; align-items: center; gap: 15px; flex-wrap: wrap; }
         .user-email { color: #00FF88; font-size: 14px; }
-        .btn-logout {
+        .btn-logout, .btn-payments {
             background: rgba(255, 255, 255, 0.1);
             border: 1px solid rgba(255, 255, 255, 0.3);
             color: white;
             padding: 8px 20px;
             border-radius: 8px;
             cursor: pointer;
+            font-size: 14px;
         }
+        .btn-payments { background: rgba(0, 255, 136, 0.15); border-color: #00FF88; color: #00FF88; }
         .btn-logout:hover { background: rgba(255, 255, 255, 0.2); }
+        .btn-payments:hover { background: rgba(0, 255, 136, 0.3); }
         .hero {
             min-height: 100vh;
             display: flex;
@@ -154,7 +157,7 @@
             border: 1px solid rgba(0, 255, 136, 0.3);
         }
         .modal-content h2 { margin-bottom: 20px; text-align: center; color: #00FF88; }
-        .modal-content input {
+        .modal-content input, .modal-content select {
             width: 100%;
             padding: 14px;
             margin-bottom: 15px;
@@ -164,7 +167,7 @@
             color: white;
             font-size: 16px;
         }
-        .modal-content input:focus { outline: none; border-color: #00FF88; }
+        .modal-content input:focus, .modal-content select:focus { outline: none; border-color: #00FF88; }
         .modal-content button {
             width: 100%;
             padding: 14px;
@@ -176,11 +179,13 @@
             cursor: pointer;
             margin-bottom: 15px;
         }
+        .modal-content button:disabled { opacity: 0.5; cursor: not-allowed; }
         .modal-switch { text-align: center; color: rgba(255, 255, 255, 0.6); cursor: pointer; }
         .modal-switch span { color: #00FF88; }
         .close-modal { position: absolute; top: 20px; right: 30px; font-size: 30px; cursor: pointer; color: white; }
         .error-msg { color: #ff4444; text-align: center; margin-bottom: 15px; font-size: 14px; }
         .success-msg { color: #00FF88; text-align: center; margin-bottom: 15px; font-size: 14px; }
+        .info-msg { color: #ffaa44; text-align: center; margin-bottom: 15px; font-size: 14px; }
         .courses-section { padding: 80px 5%; background: #0A192F; }
         .section-title { text-align: center; font-size: 42px; margin-bottom: 16px; font-weight: 700; }
         .section-title span { color: #00FF88; }
@@ -199,10 +204,19 @@
         .course-icon { font-size: 52px; margin-bottom: 20px; }
         .course-card h3 { font-size: 24px; margin-bottom: 12px; font-weight: 700; }
         .course-card p { opacity: 0.7; line-height: 1.6; margin-bottom: 20px; }
+        .course-price { font-size: 20px; font-weight: 700; color: #00FF88; margin-bottom: 15px; }
         .course-meta { display: flex; justify-content: space-between; align-items: center; margin-top: 20px; padding-top: 20px; border-top: 1px solid rgba(0, 255, 136, 0.15); flex-wrap: wrap; gap: 10px; }
         .duration { font-size: 14px; opacity: 0.6; }
-        .start-btn { background: #00FF88; color: #0A192F; border: none; padding: 8px 22px; border-radius: 8px; cursor: pointer; font-weight: 700; }
-        .start-btn:hover { transform: scale(1.05); background: #00cc6a; }
+        .start-btn, .pay-btn {
+            background: #00FF88;
+            color: #0A192F;
+            border: none;
+            padding: 8px 22px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 700;
+        }
+        .start-btn:hover, .pay-btn:hover { transform: scale(1.05); background: #00cc6a; }
         .features-section { padding: 80px 5%; background: #0D2137; }
         .features-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 40px; max-width: 1200px; margin: 0 auto; }
         .feature { text-align: center; padding: 30px; background: rgba(10, 25, 47, 0.6); border-radius: 16px; border: 1px solid rgba(0, 255, 136, 0.1); transition: all 0.3s; }
@@ -215,6 +229,25 @@
         @keyframes spin { to { transform: rotate(360deg); } }
         .footer { background: #051020; text-align: center; padding: 40px; border-top: 1px solid rgba(0, 255, 136, 0.1); }
         .footer p { opacity: 0.6; font-size: 14px; }
+        .payment-toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #1a472a;
+            color: #00FF88;
+            padding: 12px 24px;
+            border-radius: 12px;
+            font-weight: 600;
+            z-index: 3000;
+            display: none;
+            animation: slideUp 0.3s ease;
+            border: 1px solid #00FF88;
+        }
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateX(-50%) translateY(20px); }
+            to { opacity: 1; transform: translateX(-50%) translateY(0); }
+        }
         @media (max-width: 768px) {
             .navbar { flex-direction: column; text-align: center; position: relative; }
             .hero h1 { font-size: 36px; }
@@ -242,6 +275,7 @@
         <div id="authContainer" class="auth-buttons"></div>
     </nav>
 
+    <!-- Auth Modal -->
     <div id="authModal" class="modal">
         <div class="modal-content">
             <span class="close-modal">&times;</span>
@@ -252,6 +286,30 @@
             <input type="password" id="modalPassword" placeholder="Password">
             <button id="modalSubmitBtn">Login</button>
             <div class="modal-switch" id="modalSwitch">Don't have an account? <span>Register</span></div>
+        </div>
+    </div>
+
+    <!-- Payment Modal -->
+    <div id="paymentModal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal" onclick="window.actions.closePaymentModal()">&times;</span>
+            <h2>💳 Complete Payment</h2>
+            <div id="paymentError" class="error-msg"></div>
+            <div id="paymentSuccess" class="success-msg"></div>
+            <div id="paymentInfo" class="info-msg"></div>
+            <div class="form-group">
+                <input type="text" id="paymentPhone" placeholder="M-Pesa Phone Number (e.g., 0712345678)" required>
+            </div>
+            <div class="form-group">
+                <input type="text" id="paymentAmount" placeholder="Amount (KES)" readonly style="background: #1a2a3a;">
+            </div>
+            <div class="form-group">
+                <input type="text" id="paymentCourse" placeholder="Course" readonly style="background: #1a2a3a;">
+            </div>
+            <button id="payNowBtn" onclick="window.actions.processPayment()">💳 Pay with M-Pesa</button>
+            <p style="font-size: 12px; text-align: center; margin-top: 15px; opacity: 0.6;">
+                <i class="payment-note">Paybill: 4095377 | You'll receive a prompt on your phone</i>
+            </p>
         </div>
     </div>
 
@@ -289,8 +347,10 @@
 
     <footer class="footer" id="contact">
         <p>&copy; 2026 MEI DRIVE AFRICA. All rights reserved. | NTSA Approved Training Provider</p>
-        <p style="margin-top: 10px; font-size: 12px;">Email: admin@meidriveafrica.com</p>
+        <p style="margin-top: 10px; font-size: 12px;">Email: admin@meidriveafrica.com | Paybill: 4095377</p>
     </footer>
+
+    <div id="paymentToast" class="payment-toast"></div>
 
     <script>
         (function() {
@@ -303,15 +363,21 @@
             const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
             window.__MEI_SUPABASE__ = supabase;
             
+            // API Base URL (adjust for production)
+            const API_BASE = window.location.origin;
+            
             const STATE = {
                 user: null,
                 authModalOpen: false,
+                paymentModalOpen: false,
                 authMode: 'login',
                 authError: null,
                 authSuccess: null,
                 courses: [],
                 quizCount: 0,
-                loading: { courses: true, quizCount: true }
+                selectedCourse: null,
+                loading: { courses: true, quizCount: true },
+                processingPayment: false
             };
             
             function escapeHtml(str) {
@@ -319,14 +385,30 @@
                 return str.replace(/[&<>]/g, m => m === '&' ? '&amp;' : m === '<' ? '&lt;' : m === '>' ? '&gt;' : m);
             }
             
+            function showToast(message, isError = false) {
+                const toast = document.getElementById('paymentToast');
+                toast.textContent = message;
+                toast.style.display = 'block';
+                toast.style.background = isError ? '#8b0000' : '#1a472a';
+                toast.style.color = isError ? '#ff8888' : '#00FF88';
+                setTimeout(() => { toast.style.display = 'none'; }, 4000);
+            }
+            
             function renderUI() {
                 const authContainer = document.getElementById('authContainer');
                 if (STATE.user) {
-                    authContainer.innerHTML = `<div class="user-info"><span class="user-email">${escapeHtml(STATE.user.email)}</span><button class="btn-logout" onclick="window.actions.logout()">Logout</button></div>`;
+                    authContainer.innerHTML = `
+                        <div class="user-info">
+                            <span class="user-email">${escapeHtml(STATE.user.email)}</span>
+                            <button class="btn-payments" onclick="window.actions.viewPayments()">💳 My Payments</button>
+                            <button class="btn-logout" onclick="window.actions.logout()">Logout</button>
+                        </div>
+                    `;
                 } else {
                     authContainer.innerHTML = `<button class="btn-login" onclick="window.actions.openModal('login')">Login</button><button class="btn-register" onclick="window.actions.openModal('register')">Register</button>`;
                 }
                 
+                // Auth Modal
                 const modal = document.getElementById('authModal');
                 if (STATE.authModalOpen) {
                     modal.classList.add('active');
@@ -339,6 +421,17 @@
                     modal.classList.remove('active');
                 }
                 
+                // Payment Modal
+                const paymentModal = document.getElementById('paymentModal');
+                if (STATE.paymentModalOpen && STATE.selectedCourse) {
+                    paymentModal.classList.add('active');
+                    document.getElementById('paymentAmount').value = STATE.selectedCourse.price || '2999';
+                    document.getElementById('paymentCourse').value = STATE.selectedCourse.title;
+                    document.getElementById('paymentPhone').value = '';
+                } else {
+                    paymentModal.classList.remove('active');
+                }
+                
                 document.getElementById('coursesCount').textContent = STATE.courses.length;
                 document.getElementById('questionsCount').textContent = STATE.quizCount || '500+';
                 
@@ -349,14 +442,15 @@
                     grid.innerHTML = '<div class="loading">No courses available. Please check back later.</div>';
                 } else {
                     grid.innerHTML = STATE.courses.map(course => `
-                        <div class="course-card" onclick="window.actions.selectCourse('${course.title.replace(/'/g, "\\'")}')">
+                        <div class="course-card">
                             <div class="course-icon">${course.icon || '📚'}</div>
                             <h3>${escapeHtml(course.title)}</h3>
                             <p>${escapeHtml(course.description || 'Professional driver training course')}</p>
+                            <div class="course-price">💰 KES ${course.price || '2,999'}</div>
                             <div class="course-meta">
                                 <span class="duration">⏱️ ${course.duration || 'Flexible'}</span>
                                 ${course.units_count > 0 ? `<span class="duration">📚 ${course.units_count} Units</span>` : ''}
-                                <button class="start-btn">Start Learning →</button>
+                                <button class="pay-btn" onclick="window.actions.enrollCourse('${course.title.replace(/'/g, "\\'")}', ${course.price || 2999})">Enroll Now →</button>
                             </div>
                         </div>
                     `).join('');
@@ -408,6 +502,7 @@
                     renderUI();
                 },
                 closeModal() { STATE.authModalOpen = false; renderUI(); },
+                closePaymentModal() { STATE.paymentModalOpen = false; STATE.selectedCourse = null; renderUI(); },
                 async handleAuthSubmit() {
                     const email = document.getElementById('modalEmail').value;
                     const password = document.getElementById('modalPassword').value;
@@ -416,9 +511,123 @@
                     if (STATE.authMode === 'login') await actions.login(email, password);
                     else await actions.register(email, password);
                 },
-                selectCourse(title) {
-                    sessionStorage.setItem('selectedCourse', title);
-                    window.location.href = 'course.html';
+                enrollCourse(courseTitle, price) {
+                    if (!STATE.user) {
+                        showToast('Please login first to enroll', true);
+                        actions.openModal('login');
+                        return;
+                    }
+                    STATE.selectedCourse = { title: courseTitle, price: price };
+                    STATE.paymentModalOpen = true;
+                    renderUI();
+                },
+                async processPayment() {
+                    if (STATE.processingPayment) return;
+                    
+                    const phone = document.getElementById('paymentPhone').value;
+                    const amount = document.getElementById('paymentAmount').value;
+                    const courseTitle = document.getElementById('paymentCourse').value;
+                    
+                    if (!phone) {
+                        document.getElementById('paymentError').textContent = 'Please enter your M-Pesa phone number';
+                        return;
+                    }
+                    
+                    STATE.processingPayment = true;
+                    document.getElementById('payNowBtn').disabled = true;
+                    document.getElementById('payNowBtn').textContent = 'Processing...';
+                    document.getElementById('paymentError').textContent = '';
+                    document.getElementById('paymentSuccess').textContent = '';
+                    
+                    try {
+                        const response = await fetch(`${API_BASE}/api/mpesa/stkpush`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                phoneNumber: phone,
+                                amount: parseFloat(amount),
+                                accountReference: `COURSE-${Date.now()}`,
+                                transactionDesc: `Enrollment: ${courseTitle}`,
+                                userId: STATE.user?.id
+                            })
+                        });
+                        
+                        const result = await response.json();
+                        
+                        if (result.success) {
+                            document.getElementById('paymentSuccess').textContent = '✓ STK Push sent! Check your phone for M-Pesa prompt.';
+                            showToast('Payment request sent! Enter PIN on your phone');
+                            
+                            // Poll for status
+                            let attempts = 0;
+                            const interval = setInterval(async () => {
+                                attempts++;
+                                const statusRes = await fetch(`${API_BASE}/api/mpesa/status`, {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify({ checkoutRequestID: result.checkoutRequestID })
+                                });
+                                const statusResult = await statusRes.json();
+                                
+                                if (statusResult.status === 'completed') {
+                                    clearInterval(interval);
+                                    document.getElementById('paymentSuccess').textContent = '✓ Payment completed successfully! You are now enrolled.';
+                                    showToast('Payment successful! Welcome to the course 🎉');
+                                    setTimeout(() => {
+                                        STATE.paymentModalOpen = false;
+                                        STATE.selectedCourse = null;
+                                        renderUI();
+                                    }, 2000);
+                                } else if (statusResult.status === 'failed' || attempts > 20) {
+                                    clearInterval(interval);
+                                    document.getElementById('paymentError').textContent = statusResult.resultDesc || 'Payment failed. Please try again.';
+                                    showToast('Payment failed. Please try again.', true);
+                                }
+                            }, 3000);
+                            
+                            setTimeout(() => {
+                                if (interval) {
+                                    clearInterval(interval);
+                                    if (document.getElementById('paymentSuccess').textContent.includes('sent')) {
+                                        document.getElementById('paymentError').textContent = 'Payment timeout. Please check transaction status in My Payments.';
+                                    }
+                                }
+                            }, 60000);
+                        } else {
+                            document.getElementById('paymentError').textContent = result.error?.errorMessage || result.error || 'Payment failed. Please try again.';
+                            showToast('Payment failed. Please try again.', true);
+                        }
+                    } catch (error) {
+                        console.error('Payment error:', error);
+                        document.getElementById('paymentError').textContent = 'Network error. Please try again.';
+                        showToast('Network error. Please try again.', true);
+                    } finally {
+                        STATE.processingPayment = false;
+                        document.getElementById('payNowBtn').disabled = false;
+                        document.getElementById('payNowBtn').textContent = '💳 Pay with M-Pesa';
+                    }
+                },
+                async viewPayments() {
+                    try {
+                        const response = await fetch(`${API_BASE}/api/mpesa/transactions`);
+                        const data = await response.json();
+                        if (data.success && data.transactions.length > 0) {
+                            const txList = data.transactions.filter(t => t.user_id === STATE.user?.id || !t.user_id);
+                            if (txList.length > 0) {
+                                let msg = 'Your Payments:\n';
+                                txList.slice(0, 5).forEach(t => {
+                                    msg += `\n💰 KES ${t.amount} - ${t.status.toUpperCase()}\n   ${t.account_reference}\n`;
+                                });
+                                alert(msg);
+                            } else {
+                                alert('No payment history found.');
+                            }
+                        } else {
+                            alert('No payment history found.');
+                        }
+                    } catch (error) {
+                        alert('Error fetching payments');
+                    }
                 },
                 async loadCourses() {
                     STATE.loading.courses = true;
@@ -446,7 +655,10 @@
             document.getElementById('modalSubmitBtn').onclick = () => actions.handleAuthSubmit();
             document.getElementById('modalSwitch').onclick = () => { STATE.authMode = STATE.authMode === 'login' ? 'register' : 'login'; renderUI(); };
             document.querySelector('.close-modal').onclick = () => actions.closeModal();
-            window.onclick = (event) => { if (event.target === document.getElementById('authModal')) actions.closeModal(); };
+            window.onclick = (event) => { 
+                if (event.target === document.getElementById('authModal')) actions.closeModal();
+                if (event.target === document.getElementById('paymentModal')) actions.closePaymentModal();
+            };
             
             async function init() { await actions.syncAuth(); await actions.loadCourses(); await actions.loadQuizCount(); }
             init();
