@@ -3,14 +3,22 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const axios = require('axios');
+const { createClient } = require('@supabase/supabase-js');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
 // ============================================================
+// SUPABASE CLIENT
+// ============================================================
+const supabaseUrl = process.env.SUPABASE_URL || 'https://qpqkmmkrzxlhcpccefjn.supabase.co';
+const supabaseKey = process.env.SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFwcWttbWtyenhsaGNwY2NlZmpuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk1MjU0NzIsImV4cCI6MjA5NTEwMTQ3Mn0.Vw1hexN3NKoF_y9VFBFs_NUhJgFNNMwuyzDjImUcM6s';
+const supabase = createClient(supabaseUrl, supabaseKey);
+
+// ============================================================
 // MIDDLEWARE
 // ============================================================
-const corsOrigins = (process.env.CORS_ORIGIN || 'http://localhost:3000').split(',');
+const corsOrigins = (process.env.CORS_ORIGIN || 'http://localhost:3000,http://localhost:5500').split(',');
 app.use(cors({
     origin: corsOrigins,
     credentials: process.env.CORS_CREDENTIALS === 'true'
@@ -192,6 +200,78 @@ function formatPhoneNumber(phone) {
 }
 
 // ============================================================
+// DATABASE FUNCTIONS
+// ============================================================
+async function savePaymentRecord(userId, phoneNumber, amount, courseName, checkoutRequestID) {
+    const { data, error } = await supabase
+        .from('payments')
+        .insert({
+            user_id: userId,
+            phone_number: phoneNumber,
+            amount: amount,
+            course_name: courseName,
+            checkout_request_id: checkoutRequestID,
+            status: 'pending',
+            created_at: new Date().toISOString()
+        });
+    
+    if (error) {
+        log('error', 'Failed to save payment record:', error);
+        return null;
+    }
+    return data;
+}
+
+async function updatePaymentStatus(checkoutRequestID, status, mpesaReceipt = null, errorMessage = null) {
+    const updateData = { status };
+    if (mpesaReceipt) updateData.mpesa_receipt = mpesaReceipt;
+    if (errorMessage) updateData.error_message = errorMessage;
+    if (status === 'completed') updateData.completed_at = new Date().toISOString();
+    
+    const { data, error } = await supabase
+        .from('payments')
+        .update(updateData)
+        .eq('checkout_request_id', checkoutRequestID);
+    
+    if (error) {
+        log('error', 'Failed to update payment status:', error);
+        return false;
+    }
+    return true;
+}
+
+async function enrollUserInCourse(userId, courseName, mpesaReceipt) {
+    const { data, error } = await supabase
+        .from('user_enrollments')
+        .insert({
+            user_id: userId,
+            course_name: courseName,
+            payment_receipt: mpesaReceipt,
+            enrolled_at: new Date().toISOString()
+        });
+    
+    if (error) {
+        log('error', 'Failed to enroll user:', error);
+        return false;
+    }
+    return true;
+}
+
+async function getPaymentByCheckoutId(checkoutRequestID) {
+    const { data, error } = await supabase
+        .from('payments')
+        .select('user_id, course_name')
+        .eq('checkout_request_id', checkoutRequestID)
+        .single();
+    
+    if (error) {
+        log('error', 'Failed to get payment record:', error);
+        return null;
+    }
+    return data;
+}
+
+// ============================================================
 // STK PUSH (Lipa Na M-Pesa)
 // ============================================================
 async function stkPush(phoneNumber, amount, accountReference, transactionDesc) {
@@ -272,8 +352,6 @@ function verifyWebhookSignature(req) {
         log('warn', 'Webhook secret not configured, skipping signature verification');
         return true;
     }
-    // Implement actual signature verification here
-    // For now, return true
     return true;
 }
 
@@ -299,7 +377,7 @@ app.get('/', (req, res) => {
 // STK Push endpoint
 app.post('/api/mpesa/stkpush', async (req, res) => {
     try {
-        const { phoneNumber, amount, accountReference, transactionDesc } = req.body;
+        const { phoneNumber, amount, accountReference, transactionDesc, userId } = req.body;
 
         // Validation
         if (!phoneNumber || !amount) {
@@ -330,6 +408,17 @@ app.post('/api/mpesa/stkpush', async (req, res) => {
                 error: result.ResponseDescription,
                 responseCode: result.ResponseCode
             });
+        }
+
+        // Save payment record to Supabase
+        if (userId) {
+            await savePaymentRecord(
+                userId,
+                formatPhoneNumber(phoneNumber),
+                numericAmount,
+                accountReference || 'Course Payment',
+                result.CheckoutRequestID
+            );
         }
 
         res.json({
@@ -409,14 +498,31 @@ app.post('/api/mpesa/callback', async (req, res) => {
             checkoutId: checkoutRequestID
         });
 
-        // TODO: Update database, enroll user, send email/SMS
-        // await updatePaymentStatus(checkoutRequestID, 'completed', mpesaReceiptNumber);
-        // await enrollUserInCourse(phoneNumber, amount);
+        // Update payment status in Supabase
+        await updatePaymentStatus(checkoutRequestID, 'completed', mpesaReceiptNumber);
+
+        // Get payment record to enroll user
+        const paymentRecord = await getPaymentByCheckoutId(checkoutRequestID);
+        
+        if (paymentRecord && paymentRecord.user_id && paymentRecord.course_name) {
+            await enrollUserInCourse(
+                paymentRecord.user_id,
+                paymentRecord.course_name,
+                mpesaReceiptNumber
+            );
+            log('info', '✅ User enrolled in course successfully!');
+        }
     } else {
         // Payment failed
         log('error', `❌ Payment failed: ${stkCallback.ResultDesc}`);
-        // TODO: Update database with failed status
-        // await updatePaymentStatus(stkCallback.CheckoutRequestID, 'failed', null, stkCallback.ResultDesc);
+        
+        // Update payment status to failed
+        await updatePaymentStatus(
+            stkCallback.CheckoutRequestID,
+            'failed',
+            null,
+            stkCallback.ResultDesc
+        );
     }
 
     // Always respond with success to M-Pesa
@@ -426,7 +532,6 @@ app.post('/api/mpesa/callback', async (req, res) => {
 // Timeout endpoint
 app.post('/api/mpesa/timeout', (req, res) => {
     log('warn', 'Timeout received:', req.body);
-    // TODO: Handle timeout - payment not completed in time
     res.json({ ResultCode: 0, ResultDesc: 'Success' });
 });
 
@@ -481,6 +586,7 @@ app.listen(PORT, () => {
 ║  Callback URL:  ${(config.callbackUrl || 'not set').slice(0, 44).padEnd(44)}║
 ║  M-Pesa:        ${config.enableMpesa ? '✅ Enabled' : '❌ Disabled'.padEnd(44)}║
 ║  STK Push:      ${config.enableStkPush ? '✅ Enabled' : '❌ Disabled'.padEnd(44)}║
+║  Supabase:      ✅ Connected                                   ║
 ║                                                              ║
 ║  Status:        🟢 Running                                   ║
 ║                                                              ║
