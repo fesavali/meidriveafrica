@@ -192,6 +192,26 @@
         .error-msg { color: #ff4444; text-align: center; margin-bottom: 15px; font-size: 14px; }
         .success-msg { color: #00FF88; text-align: center; margin-bottom: 15px; font-size: 14px; }
         
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #1a472a;
+            color: #00FF88;
+            padding: 12px 24px;
+            border-radius: 12px;
+            font-weight: 600;
+            z-index: 3000;
+            display: none;
+            animation: slideUp 0.3s ease;
+            border: 1px solid #00FF88;
+        }
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateX(-50%) translateY(20px); }
+            to { opacity: 1; transform: translateX(-50%) translateY(0); }
+        }
+        
         @media (max-width: 900px) {
             .main-content { grid-template-columns: 1fr; }
             .units-sidebar { position: relative; top: 0; }
@@ -232,11 +252,14 @@
         <div class="loading"><div class="spinner"></div>Loading course content...</div>
     </div>
 
+    <div id="toast" class="toast"></div>
+
     <script>
         (function() {
+            // Initialize Supabase
             if (!window.__MEI_SUPABASE__) {
                 const SUPABASE_URL = 'https://qpqkmmkrzxlhcpccefjn.supabase.co';
-                const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFwcWttbWtyenhsaGNwY2NlZmpuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk1MjU0NzIsImV4cCI6MjA5NTEwMTQ3Mn0.Vw1hexN3NKoF_y9VFBFs_NUhJgFNNMwuyzDjImUcM6s';
+                const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBwcWttbWtyenhsaGNwY2NlZmpuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk1MjU0NzIsImV4cCI6MjA5NTEwMTQ3Mn0.Vw1hexN3NKoF_y9VFBFs_NUhJgFNNMwuyzDjImUcM6s';
                 window.__MEI_SUPABASE__ = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
             }
             const supabase = window.__MEI_SUPABASE__;
@@ -251,8 +274,18 @@
                 units: [],
                 currentUnitIndex: 0,
                 loading: true,
-                error: null
+                error: null,
+                enrollment: null
             };
+            
+            function showToast(message, isError = false) {
+                const toast = document.getElementById('toast');
+                toast.textContent = message;
+                toast.style.display = 'block';
+                toast.style.background = isError ? '#8b0000' : '#1a472a';
+                toast.style.color = isError ? '#ff8888' : '#00FF88';
+                setTimeout(() => { toast.style.display = 'none'; }, 4000);
+            }
             
             function escapeHtml(str) { 
                 if (!str) return ''; 
@@ -260,9 +293,10 @@
             }
             
             function formatContent(content) {
-                if (!content) return '';
+                if (!content) return '<p>Content coming soon.</p>';
                 // Split by double newlines for paragraphs
-                return content.split(/\n\n+/).map(para => `<p>${escapeHtml(para)}</p>`).join('');
+                const paragraphs = content.split(/\n\n+/);
+                return paragraphs.map(para => `<p>${escapeHtml(para)}</p>`).join('');
             }
             
             function renderUI() {
@@ -305,6 +339,41 @@
                     return;
                 }
                 
+                // Check if user is enrolled (for premium courses)
+                const isPremium = STATE.course.type !== 'free' && STATE.course.price > 0;
+                const isEnrolled = STATE.enrollment !== null;
+                
+                if (isPremium && !isEnrolled && STATE.user) {
+                    container.innerHTML = `
+                        <div class="empty-state">
+                            <div class="empty-state-icon">💰</div>
+                            <h3>Premium Course</h3>
+                            <p>You need to purchase this course to access the content.</p>
+                            <p style="font-size: 24px; color: #00FF88; margin: 20px 0;">KES ${(STATE.course.price || 2999).toLocaleString()}</p>
+                            <button class="btn-primary" onclick="window.actions.purchaseCourse()" style="background:#00FF88; color:#0A192F; padding:14px 38px; border:none; border-radius:8px; cursor:pointer; font-weight:700;">💳 Purchase Course</button>
+                            <div style="margin-top: 20px;">
+                                <a href="index.html" style="color:#00FF88;">← Back to Courses</a>
+                            </div>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                if (isPremium && !STATE.user) {
+                    container.innerHTML = `
+                        <div class="empty-state">
+                            <div class="empty-state-icon">🔒</div>
+                            <h3>Login to Access Course</h3>
+                            <p>Please login or register to purchase and access this premium course.</p>
+                            <button class="btn-primary" onclick="window.actions.openModal('login')" style="background:#00FF88; color:#0A192F; padding:14px 38px; border:none; border-radius:8px; cursor:pointer; font-weight:700;">Login to Continue</button>
+                            <div style="margin-top: 20px;">
+                                <a href="index.html" style="color:#00FF88;">← Back to Courses</a>
+                            </div>
+                        </div>
+                    `;
+                    return;
+                }
+                
                 if (!STATE.units || STATE.units.length === 0) {
                     container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📖</div><h3>No Units Available</h3><p>This course content is being prepared.</p><a href="index.html" style="color:#00FF88; margin-top:20px; display:inline-block;">← Back to Courses</a></div>';
                     return;
@@ -330,6 +399,7 @@
                         <div class="course-meta">
                             <span class="meta-badge">${escapeHtml(STATE.course.duration || 'Flexible')}</span>
                             <span class="meta-badge">📚 ${STATE.units.length} Units</span>
+                            ${STATE.enrollment ? '<span class="meta-badge" style="background:#00FF88; color:#0A192F;">✅ Enrolled</span>' : ''}
                         </div>
                         <div class="progress-container"><div class="progress-bar" style="width: ${progress}%"></div></div>
                         <div class="progress-text">Unit ${STATE.currentUnitIndex + 1} of ${STATE.units.length} • ${Math.round(progress)}% Complete</div>
@@ -356,7 +426,7 @@
                                 <span>📖 Unit ${STATE.currentUnitIndex + 1} of ${STATE.units.length}</span>
                             </div>
                             <div class="unit-content-text">
-                                ${formatContent(currentUnit.content || 'Content coming soon.')}
+                                ${formatContent(currentUnit.content)}
                             </div>
                             
                             <div class="nav-buttons">
@@ -373,7 +443,7 @@
                     STATE.authError = null; STATE.authSuccess = null; renderUI();
                     const { data, error } = await supabase.auth.signInWithPassword({ email, password });
                     if (error) STATE.authError = error.message;
-                    else { STATE.user = data.user; STATE.authSuccess = 'Login successful!'; STATE.authModalOpen = false; setTimeout(() => { STATE.authSuccess = null; renderUI(); }, 2000); }
+                    else { STATE.user = data.user; STATE.authSuccess = 'Login successful!'; STATE.authModalOpen = false; await actions.checkEnrollment(); setTimeout(() => { STATE.authSuccess = null; renderUI(); }, 2000); }
                     renderUI();
                 },
                 async register(email, password) {
@@ -383,7 +453,7 @@
                     else { STATE.authSuccess = 'Registration successful! You can now login.'; setTimeout(() => { STATE.authMode = 'login'; STATE.authSuccess = null; renderUI(); }, 2000); }
                     renderUI();
                 },
-                async logout() { await supabase.auth.signOut(); STATE.user = null; window.location.href = 'index.html'; },
+                async logout() { await supabase.auth.signOut(); STATE.user = null; STATE.enrollment = null; window.location.href = 'index.html'; },
                 openModal(mode) { STATE.authMode = mode; STATE.authModalOpen = true; STATE.authError = null; STATE.authSuccess = null; renderUI(); },
                 closeModal() { STATE.authModalOpen = false; renderUI(); },
                 async handleAuthSubmit() {
@@ -406,8 +476,90 @@
                     if (STATE.currentUnitIndex < STATE.units.length - 1) {
                         actions.loadUnit(STATE.currentUnitIndex + 1);
                     } else {
-                        alert('🎉 Congratulations! You completed all units in this course!');
+                        showToast('🎉 Congratulations! You completed all units in this course!');
                     }
+                },
+                async purchaseCourse() {
+                    if (!STATE.user) {
+                        showToast('Please login first', true);
+                        actions.openModal('login');
+                        return;
+                    }
+                    
+                    const phone = prompt(`Enter M-Pesa phone number for payment of KES ${STATE.course.price}:\n(e.g., 0712345678)`);
+                    
+                    if (!phone) {
+                        showToast('Payment cancelled', true);
+                        return;
+                    }
+                    
+                    // Format phone number
+                    let formattedPhone = phone.replace(/\D/g, '');
+                    if (formattedPhone.startsWith('0')) {
+                        formattedPhone = '254' + formattedPhone.slice(1);
+                    }
+                    
+                    showToast('Processing payment...');
+                    
+                    try {
+                        const response = await fetch('/api/mpesa/stkpush', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                phoneNumber: formattedPhone,
+                                amount: STATE.course.price,
+                                accountReference: `COURSE_${STATE.course.id}`,
+                                transactionDesc: `Purchase: ${STATE.course.title}`,
+                                userId: STATE.user.id
+                            })
+                        });
+                        
+                        const result = await response.json();
+                        
+                        if (result.success) {
+                            showToast('Payment request sent! Check your phone for M-Pesa prompt');
+                            
+                            // Poll for enrollment
+                            let attempts = 0;
+                            const interval = setInterval(async () => {
+                                attempts++;
+                                await actions.checkEnrollment();
+                                
+                                if (STATE.enrollment) {
+                                    clearInterval(interval);
+                                    showToast('✅ Payment successful! Course unlocked!');
+                                    renderUI();
+                                } else if (attempts > 20) {
+                                    clearInterval(interval);
+                                    showToast('Payment confirmation timeout. Check your email for updates.', true);
+                                }
+                            }, 3000);
+                            
+                            setTimeout(() => clearInterval(interval), 60000);
+                        } else {
+                            throw new Error(result.error || 'Payment failed');
+                        }
+                    } catch (error) {
+                        console.error('Payment error:', error);
+                        showToast('Payment failed. Please try again or use Paybill 4095377', true);
+                    }
+                },
+                async checkEnrollment() {
+                    if (!STATE.user || !STATE.course) return;
+                    
+                    const { data, error } = await supabase
+                        .from('enrollments')
+                        .select('*')
+                        .eq('user_id', STATE.user.id)
+                        .eq('course_id', STATE.course.id)
+                        .single();
+                    
+                    if (!error && data) {
+                        STATE.enrollment = data;
+                    } else {
+                        STATE.enrollment = null;
+                    }
+                    renderUI();
                 },
                 async loadCourse() {
                     STATE.loading = true;
@@ -415,30 +567,34 @@
                     renderUI();
                     
                     try {
+                        const urlParams = new URLSearchParams(window.location.search);
+                        let courseId = urlParams.get('id');
                         const courseTitle = sessionStorage.getItem('selectedCourse');
-                        if (!courseTitle) {
-                            STATE.error = 'No course selected. Please go back and choose a course.';
-                            STATE.loading = false;
-                            renderUI();
-                            return;
+                        
+                        if (!courseId && courseTitle) {
+                            // Get course by title
+                            const { data: course, error: courseError } = await supabase
+                                .from('courses')
+                                .select('*')
+                                .eq('title', courseTitle)
+                                .single();
+                            
+                            if (courseError) throw courseError;
+                            courseId = course.id;
+                            STATE.course = course;
+                        } else if (courseId) {
+                            // Get course by ID
+                            const { data: course, error: courseError } = await supabase
+                                .from('courses')
+                                .select('*')
+                                .eq('id', parseInt(courseId))
+                                .single();
+                            
+                            if (courseError) throw courseError;
+                            STATE.course = course;
+                        } else {
+                            throw new Error('No course selected');
                         }
-                        
-                        // Get course
-                        const { data: course, error: courseError } = await supabase
-                            .from('courses')
-                            .select('*')
-                            .eq('title', courseTitle)
-                            .single();
-                        
-                        if (courseError) {
-                            console.error('Course error:', courseError);
-                            STATE.error = 'Course not found. Please go back and try again.';
-                            STATE.loading = false;
-                            renderUI();
-                            return;
-                        }
-                        
-                        STATE.course = course;
                         
                         // Get units for this course
                         const { data: units, error: unitsError } = await supabase
@@ -448,22 +604,22 @@
                             .eq('is_published', true)
                             .order('unit_number', { ascending: true });
                         
-                        if (unitsError) {
-                            console.error('Units error:', unitsError);
-                            STATE.error = 'Could not load course content. Please try again.';
-                            STATE.loading = false;
-                            renderUI();
-                            return;
-                        }
+                        if (unitsError) throw unitsError;
                         
                         STATE.units = units || [];
                         STATE.currentUnitIndex = 0;
+                        
+                        // Check enrollment
+                        if (STATE.user) {
+                            await actions.checkEnrollment();
+                        }
+                        
                         STATE.loading = false;
                         renderUI();
                         
                     } catch(e) {
                         console.error('Load course error:', e);
-                        STATE.error = 'An unexpected error occurred. Please try again.';
+                        STATE.error = e.message || 'An unexpected error occurred. Please try again.';
                         STATE.loading = false;
                         renderUI();
                     }
