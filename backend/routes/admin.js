@@ -326,4 +326,122 @@ router.get('/dashboard/stats', async (req, res) => {
     try {
         // Get counts
         const [
-            { count:
+            { count: totalUsers },
+            { count: totalCourses },
+            { count: totalEnrollments },
+            { count: totalRevenue },
+            { count: completedEnrollments }
+        ] = await Promise.all([
+            supabase.from('profiles').select('*', { count: 'exact', head: true }),
+            supabase.from('courses').select('*', { count: 'exact', head: true }),
+            supabase.from('enrollments').select('*', { count: 'exact', head: true }),
+            supabase.from('payments').select('*', { count: 'exact', head: true }).eq('status', 'completed'),
+            supabase.from('enrollments').select('*', { count: 'exact', head: true }).eq('status', 'completed')
+        ]);
+        
+        // Get recent enrollments
+        const { data: recentEnrollments } = await supabase
+            .from('enrollments')
+            .select('*, users(email), courses(title)')
+            .order('created_at', { ascending: false })
+            .limit(10);
+        
+        // Get revenue by month
+        const { data: monthlyRevenue } = await supabase
+            .from('payments')
+            .select('amount, created_at')
+            .eq('status', 'completed');
+        
+        res.json({
+            success: true,
+            stats: {
+                total_users: totalUsers || 0,
+                total_courses: totalCourses || 0,
+                total_enrollments: totalEnrollments || 0,
+                completed_enrollments: completedEnrollments || 0,
+                total_revenue: totalRevenue || 0
+            },
+            recent_enrollments: recentEnrollments || [],
+            monthly_revenue: monthlyRevenue || []
+        });
+        
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// ============================================
+// ALL ENROLLMENTS (Admin view)
+// ============================================
+
+router.get('/enrollments', async (req, res) => {
+    try {
+        const { page = 1, limit = 20, status } = req.query;
+        const offset = (page - 1) * limit;
+        
+        let query = supabase
+            .from('enrollments')
+            .select('*, users(email), courses(title, price)', { count: 'exact' });
+        
+        if (status) query = query.eq('status', status);
+        
+        const { data, error, count } = await query
+            .range(offset, offset + limit - 1)
+            .order('created_at', { ascending: false });
+        
+        if (error) throw error;
+        
+        res.json({
+            success: true,
+            enrollments: data,
+            pagination: {
+                page: parseInt(page),
+                limit: parseInt(limit),
+                total: count,
+                pages: Math.ceil(count / limit)
+            }
+        });
+        
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// ============================================
+// ALL PAYMENTS (Admin view)
+// ============================================
+
+router.get('/payments', async (req, res) => {
+    try {
+        const { page = 1, limit = 20, status } = req.query;
+        const offset = (page - 1) * limit;
+        
+        let query = supabase
+            .from('payments')
+            .select('*, users(email), courses(title)', { count: 'exact' });
+        
+        if (status) query = query.eq('status', status);
+        
+        const { data, error, count } = await query
+            .range(offset, offset + limit - 1)
+            .order('created_at', { ascending: false });
+        
+        if (error) throw error;
+        
+        res.json({
+            success: true,
+            payments: data,
+            pagination: {
+                page: parseInt(page),
+                limit: parseInt(limit),
+                total: count,
+                pages: Math.ceil(count / limit)
+            }
+        });
+        
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+export default router;
