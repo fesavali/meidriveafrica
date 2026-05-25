@@ -5,24 +5,20 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
     <title>MEI DRIVE AFRICA | Professional Driver Training</title>
     
-    <!-- Favicon - MEI DRIVE AFRICA custom logo (FIXED 404) -->
-    <link rel="icon" type="image/png" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' fill='%230A192F'/%3E%3Ctext x='50' y='38' font-size='18' font-family='Arial, sans-serif' font-weight='bold' fill='%2300FF88' text-anchor='middle'%3EMEI%3C/text%3E%3Ctext x='50' y='58' font-size='9' font-family='Arial, sans-serif' font-weight='bold' fill='%23FFFFFF' text-anchor='middle'%3EDRIVE%3C/text%3E%3Ctext x='50' y='74' font-size='7' font-family='Arial, sans-serif' fill='%2300FF88' text-anchor='middle'%3EAFRICA%3C/text%3E%3C/svg%3E">
-    <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' fill='%230A192F'/%3E%3Ctext x='50' y='38' font-size='18' font-family='Arial, sans-serif' font-weight='bold' fill='%2300FF88' text-anchor='middle'%3EMEI%3C/text%3E%3Ctext x='50' y='58' font-size='9' font-family='Arial, sans-serif' font-weight='bold' fill='%23FFFFFF' text-anchor='middle'%3EDRIVE%3C/text%3E%3Ctext x='50' y='74' font-size='7' font-family='Arial, sans-serif' fill='%2300FF88' text-anchor='middle'%3EAFRICA%3C/text%3E%3C/svg%3E">
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' fill='%230A192F'/%3E%3Ctext x='50' y='38' font-size='18' font-family='Arial' font-weight='bold' fill='%2300FF88' text-anchor='middle'%3EMEI%3C/text%3E%3Ctext x='50' y='58' font-size='9' font-family='Arial' font-weight='bold' fill='%23FFFFFF' text-anchor='middle'%3EDRIVE%3C/text%3E%3Ctext x='50' y='74' font-size='7' font-family='Arial' fill='%2300FF88' text-anchor='middle'%3EAFRICA%3C/text%3E%3C/svg%3E">
     
-    <!-- Supabase JS - SINGLE IMPORT (NO DUPLICATE) -->
+    <!-- Supabase JS -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
-            font-family: 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+            font-family: 'Segoe UI', system-ui, sans-serif;
             background: #0A192F;
             color: #fff;
             line-height: 1.5;
         }
-        ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-track { background: #0D2137; }
-        ::-webkit-scrollbar-thumb { background: #00FF88; border-radius: 4px; }
         
         .navbar {
             background: rgba(10, 25, 47, 0.95);
@@ -48,8 +44,8 @@
             gap: 10px;
         }
         .logo-icon {
-            width: 48px;
-            height: 48px;
+            width: 44px;
+            height: 44px;
             background: linear-gradient(135deg, #00FF88, #00cc6a);
             border-radius: 12px;
             display: flex;
@@ -71,7 +67,7 @@
             font-weight: 500;
         }
         .nav-links a:hover { color: #00FF88; }
-        .auth-buttons { display: flex; gap: 12px; }
+        
         .btn-login, .btn-register {
             padding: 8px 24px;
             border-radius: 8px;
@@ -91,6 +87,7 @@
             color: #0A192F;
         }
         .btn-register:hover { background: #00cc6a; transform: translateY(-2px); }
+        
         .user-info {
             display: flex;
             align-items: center;
@@ -111,10 +108,9 @@
             padding: 6px 16px;
             border-radius: 30px;
             cursor: pointer;
-            transition: all 0.2s;
             font-size: 13px;
         }
-        .btn-logout:hover { background: rgba(255, 100, 100, 0.2); border-color: #ff6666; }
+        .btn-logout:hover { background: rgba(255, 100, 100, 0.2); }
         
         .hero {
             min-height: 100vh;
@@ -125,7 +121,7 @@
             padding: 120px 20px 80px;
             background: linear-gradient(135deg, #0A192F 0%, #0D2137 50%, #0A192F 100%);
         }
-        .hero h1 { font-size: 68px; margin-bottom: 24px; line-height: 1.2; }
+        .hero h1 { font-size: 68px; margin-bottom: 24px; }
         .hero h1 span { color: #00FF88; }
         .hero p { font-size: 20px; opacity: 0.85; margin-bottom: 32px; }
         .hero-buttons { display: flex; gap: 20px; justify-content: center; margin-bottom: 60px; flex-wrap: wrap; }
@@ -192,9 +188,7 @@
             border-radius: 40px;
             cursor: pointer;
             font-weight: 700;
-            transition: all 0.3s;
         }
-        .enroll-btn:hover, .continue-btn:hover { background: #00cc6a; }
         .enrolled-badge {
             background: #00FF88;
             color: #0A192F;
@@ -206,16 +200,6 @@
             top: 18px;
             right: 18px;
         }
-        .progress-mini {
-            width: 100%;
-            height: 5px;
-            background: rgba(255,255,255,0.15);
-            border-radius: 10px;
-            margin-top: 12px;
-            overflow: hidden;
-        }
-        .progress-mini-fill { height: 100%; background: #00FF88; border-radius: 10px; }
-        .completion-text { font-size: 11px; text-align: right; margin-top: 6px; opacity: 0.7; }
         
         .modal {
             display: none;
@@ -289,7 +273,6 @@
         }
         .close-modal:hover { color: #00FF88; }
         .error-msg { color: #ff8888; text-align: center; margin-bottom: 16px; font-size: 14px; }
-        .success-msg { color: #88ff88; text-align: center; margin-bottom: 16px; }
         .loading-spinner { text-align: center; padding: 60px; color: #00FF88; font-size: 18px; }
         .footer { background: #051020; text-align: center; padding: 40px; margin-top: 40px; }
         .footer p { opacity: 0.6; font-size: 14px; margin: 6px 0; }
@@ -306,14 +289,12 @@
             z-index: 3000;
             font-weight: 500;
             text-align: center;
-            font-size: 14px;
         }
         @media (max-width: 768px) {
             .hero h1 { font-size: 36px; }
             .navbar { position: relative; flex-direction: column; text-align: center; }
             .courses-grid { grid-template-columns: 1fr; }
             .stats { gap: 40px; }
-            .toast { white-space: normal; width: 90%; }
         }
     </style>
 </head>
@@ -327,7 +308,7 @@
         <div class="nav-links">
             <a onclick="document.getElementById('home').scrollIntoView({behavior:'smooth'})">Home</a>
             <a onclick="document.getElementById('courses').scrollIntoView({behavior:'smooth'})">Courses</a>
-            <a onclick="window.showQuizBank()">Quiz Bank</a>
+            <a onclick="showQuizBank()">Quiz Bank</a>
             <a onclick="document.getElementById('contact').scrollIntoView({behavior:'smooth'})">Contact</a>
         </div>
         <div id="authContainer"></div>
@@ -336,11 +317,11 @@
     <!-- Auth Modal -->
     <div id="authModal" class="modal">
         <div class="modal-content">
-            <span class="close-modal" onclick="window.closeAuthModal()">&times;</span>
+            <span class="close-modal" onclick="closeAuthModal()">&times;</span>
             <h2 id="modalTitle">Welcome Back</h2>
             <div id="modalError" class="error-msg"></div>
-            <input type="email" id="modalEmail" placeholder="Email address" autocomplete="email">
-            <input type="password" id="modalPassword" placeholder="Password" autocomplete="current-password">
+            <input type="email" id="modalEmail" placeholder="Email address">
+            <input type="password" id="modalPassword" placeholder="Password">
             <button id="modalSubmitBtn">Sign In</button>
             <div class="modal-switch" id="modalSwitch">New here? <span>Create account</span></div>
         </div>
@@ -353,7 +334,7 @@
             <p>NTSA-approved courses for Kenyan drivers</p>
             <div class="hero-buttons">
                 <button class="btn-primary" onclick="document.getElementById('courses').scrollIntoView({behavior:'smooth'})">Explore Courses</button>
-                <button class="btn-secondary" onclick="window.openAuthModal('register')">Get Started</button>
+                <button class="btn-secondary" id="getStartedBtn">Get Started</button>
             </div>
             <div class="stats">
                 <div><div class="stat-number" id="coursesCount">0</div><div class="stat-label">Courses</div></div>
@@ -378,12 +359,12 @@
 
     <script>
         // ============================================================
-        // SUPABASE CREDENTIALS - SINGLE SOURCE OF TRUTH
+        // SUPABASE CREDENTIALS
         // ============================================================
         const SUPABASE_URL = 'https://qpqkmmkrzxlhcpccefjn.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFwcWttbWtyenhsaGNwY2NlZmpuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk1MjU0NzIsImV4cCI6MjA5NTEwMTQ3Mn0.Vw1hexN3NKoF_y9VFBFs_NUhJgFNNMwuyzDjImUcM6s';
         
-        // SINGLE SUPABASE CLIENT - NO DUPLICATE
+        // SINGLE SUPABASE CLIENT
         const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         
         // Global state
@@ -403,7 +384,7 @@
         
         function escapeHtml(str) { if (!str) return ''; return str.replace(/[&<>]/g, m => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;' }[m])); }
         
-        // Load courses from Supabase
+        // Load courses
         async function loadCourses() {
             try {
                 const { data, error } = await supabase.from('courses').select('*').order('id');
@@ -424,12 +405,12 @@
                 }
                 renderCourses();
             } catch (err) {
-                console.error('Error loading courses:', err);
+                console.error(err);
                 document.getElementById('coursesGrid').innerHTML = `<div class="loading-spinner">⚠️ Error loading courses. Please run SQL setup.</div>`;
             }
         }
         
-        // Load user enrollments
+        // Load enrollments
         async function loadEnrollments() {
             if (!currentUser) return;
             try {
@@ -442,7 +423,7 @@
                     data.forEach(en => userEnrollments.set(en.course_id, { enrolled: true, progress: en.progress || 0 }));
                     renderCourses();
                 }
-            } catch(e) { console.warn('Enrollments error:', e); }
+            } catch(e) { console.warn(e); }
         }
         
         // Load student count
@@ -471,14 +452,10 @@
                         <div class="course-price">💰 KES ${(course.price || 0).toLocaleString()}</div>
                         <div class="course-meta">
                             ${isEnrolled ? 
-                                `<button class="continue-btn" onclick="window.continueCourse(${course.id})">▶ Continue</button>` :
-                                `<button class="enroll-btn" onclick="window.enrollInCourse(${course.id})">Enroll Now →</button>`
+                                `<button class="continue-btn" onclick="continueCourse(${course.id})">▶ Continue</button>` :
+                                `<button class="enroll-btn" onclick="enrollInCourse(${course.id})">Enroll Now →</button>`
                             }
                         </div>
-                        ${isEnrolled && progress > 0 ? `
-                            <div class="progress-mini"><div class="progress-mini-fill" style="width: ${progress}%;"></div></div>
-                            <div class="completion-text">${progress}% complete</div>
-                        ` : ''}
                     </div>
                 `;
             }).join('');
@@ -486,7 +463,7 @@
         
         // Enrollment
         window.enrollInCourse = async function(courseId) {
-            if (!currentUser) { showToast('Please login first', true); window.openAuthModal('login'); return; }
+            if (!currentUser) { showToast('Please login first', true); openAuthModal('login'); return; }
             const course = allCourses.find(c => c.id === courseId);
             if (!course) return;
             if (userEnrollments.has(courseId)) { showToast('Already enrolled!'); return; }
@@ -506,7 +483,7 @@
             showToast('📘 Course content coming soon!', false);
         };
         
-        // ========== AUTHENTICATION - FULLY WORKING ==========
+        // ========== AUTHENTICATION - FIXED ==========
         async function checkAuth() {
             const { data: { user } } = await supabase.auth.getUser();
             
@@ -515,7 +492,7 @@
                 document.getElementById('authContainer').innerHTML = `
                     <div class="user-info">
                         <span class="user-email">✉️ ${escapeHtml(user.email.split('@')[0])}</span>
-                        <button class="btn-logout" onclick="window.logout()">🚪 Logout</button>
+                        <button class="btn-logout" onclick="logout()">🚪 Logout</button>
                     </div>
                 `;
                 await loadEnrollments();
@@ -523,8 +500,8 @@
                 currentUser = null;
                 userEnrollments.clear();
                 document.getElementById('authContainer').innerHTML = `
-                    <button class="btn-login" onclick="window.openAuthModal('login')">Login</button>
-                    <button class="btn-register" onclick="window.openAuthModal('register')">Register</button>
+                    <button class="btn-login" onclick="openAuthModal('login')">Login</button>
+                    <button class="btn-register" onclick="openAuthModal('register')">Register</button>
                 `;
                 renderCourses();
             }
@@ -571,13 +548,13 @@
                     const { error } = await supabase.auth.signInWithPassword({ email, password });
                     if (error) throw error;
                     showToast('✅ Login successful!');
-                    window.closeAuthModal();
+                    closeAuthModal();
                     await checkAuth();
                 } else {
                     const { error } = await supabase.auth.signUp({ email, password });
                     if (error) throw error;
                     showToast('🎉 Account created! Please verify your email.');
-                    window.closeAuthModal();
+                    closeAuthModal();
                 }
             } catch (err) {
                 document.getElementById('modalError').innerText = err.message;
@@ -585,22 +562,27 @@
         }
         
         window.showQuizBank = function() {
-            if (!currentUser) { showToast('Please login first', true); window.openAuthModal('login'); return; }
+            if (!currentUser) { showToast('Please login first', true); openAuthModal('login'); return; }
             showToast('📚 Quiz bank: 500+ NTSA questions coming soon!', false);
         };
         
         // Event listeners
         document.getElementById('modalSubmitBtn').onclick = handleAuth;
         document.getElementById('modalSwitch').onclick = () => {
-            window.openAuthModal(authMode === 'login' ? 'register' : 'login');
+            openAuthModal(authMode === 'login' ? 'register' : 'login');
+        };
+        
+        // FIX: Get Started button - make sure it works
+        document.getElementById('getStartedBtn').onclick = function() {
+            openAuthModal('register');
         };
         
         // Close modal when clicking outside
         document.getElementById('authModal').onclick = function(e) {
-            if (e.target === this) window.closeAuthModal();
+            if (e.target === this) closeAuthModal();
         };
         
-        // Auth state listener - SINGLE SOURCE OF TRUTH
+        // Auth state listener
         supabase.auth.onAuthStateChange(async (event, session) => {
             if (session?.user) {
                 currentUser = { id: session.user.id, email: session.user.email };
