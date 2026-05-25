@@ -8,7 +8,7 @@
     <!-- Favicon -->
     <link rel="icon" type="image/png" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' fill='%230A192F'/%3E%3Ctext x='50' y='38' font-size='18' font-family='Arial' font-weight='bold' fill='%2300FF88' text-anchor='middle'%3EMEI%3C/text%3E%3Ctext x='50' y='58' font-size='9' font-family='Arial' font-weight='bold' fill='%23FFFFFF' text-anchor='middle'%3EDRIVE%3C/text%3E%3Ctext x='50' y='74' font-size='7' font-family='Arial' fill='%2300FF88' text-anchor='middle'%3EAFRICA%3C/text%3E%3C/svg%3E">
     
-    <!-- Supabase JS - SINGLE SOURCE OF TRUTH -->
+    <!-- Supabase JS -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     
     <style>
@@ -342,6 +342,19 @@
         </div>
     </div>
 
+    <!-- M-Pesa Payment Modal -->
+    <div id="mpesaModal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal" onclick="closeMpesaModal()">&times;</span>
+            <h2 id="mpesaTitle">💰 Pay with M-Pesa</h2>
+            <div id="mpesaError" class="error-msg"></div>
+            <p id="mpesaAmount" style="text-align:center;margin-bottom:20px;font-size:20px;color:#00FF88;"></p>
+            <input type="tel" id="mpesaPhone" placeholder="Enter M-Pesa number (07XXXXXXXX)">
+            <button id="mpesaPayBtn" style="background:#00FF88;padding:14px;width:100%;border:none;border-radius:40px;font-weight:700;cursor:pointer;">💳 Pay Now</button>
+            <div id="mpesaStatus" style="text-align:center;margin-top:15px;font-size:14px;color:#aaa;"></div>
+        </div>
+    </div>
+
     <!-- Hero Section -->
     <section class="hero" id="home">
         <div class="hero-content">
@@ -374,14 +387,13 @@
 
     <script>
         // ============================================================
-        // SUPABASE CREDENTIALS - SINGLE SOURCE OF TRUTH
+        // SUPABASE CREDENTIALS - ANON KEY (SAFE FOR FRONTEND)
         // ============================================================
         const SUPABASE_URL = 'https://qpqkmmkrzxlhcpccefjn.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFwcWttbWtyenhsaGNwY2NlZmpuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk1MjU0NzIsImV4cCI6MjA5NTEwMTQ3Mn0.Vw1hexN3NKoF_y9VFBFs_NUhJgFNNMwuyzDjImUcM6s';
         
         // ============================================================
-        // SINGLE SUPABASE CLIENT - THE ONE AND ONLY SOURCE OF TRUTH
-        // ALL data (auth, courses, enrollments) comes from/to this client
+        // SINGLE SUPABASE CLIENT
         // ============================================================
         const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         
@@ -390,6 +402,8 @@
         let allCourses = [];
         let userEnrollments = new Map();
         let authMode = 'login';
+        let pendingCourseId = null;
+        let paymentPollInterval = null;
         
         // Helper functions
         function showToast(msg, isError = false) {
@@ -403,10 +417,9 @@
         function escapeHtml(str) { if (!str) return ''; return str.replace(/[&<>]/g, m => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;' }[m])); }
         
         // ============================================================
-        // DATA FETCHING - FROM SUPABASE (SINGLE SOURCE OF TRUTH)
+        // DATA FETCHING FROM SUPABASE
         // ============================================================
         
-        // Load courses from Supabase courses table
         async function loadCourses() {
             try {
                 console.log('🔄 [Supabase] Fetching courses from database...');
@@ -417,7 +430,6 @@
                 document.getElementById('coursesCount').innerText = allCourses.length;
                 console.log(`✅ [Supabase] Loaded ${allCourses.length} courses`);
                 
-                // Auto-seed if no courses exist
                 if (allCourses.length === 0) {
                     console.log('📝 [Supabase] No courses found, seeding defaults...');
                     const defaultCourses = [
@@ -440,7 +452,6 @@
             }
         }
         
-        // Load user enrollments from Supabase enrollments table
         async function loadEnrollments() {
             if (!currentUser) return;
             try {
@@ -456,7 +467,6 @@
             } catch(e) { console.warn('[Supabase] Enrollments error:', e); }
         }
         
-        // Load student count from Supabase
         async function loadStudentCount() {
             try {
                 const { count } = await supabase.from('enrollments').select('*', { count: 'exact', head: true });
@@ -464,7 +474,6 @@
             } catch(e) { document.getElementById('studentsCount').innerText = '150+'; }
         }
         
-        // Render courses from loaded data
         function renderCourses() {
             const grid = document.getElementById('coursesGrid');
             if (!allCourses.length) { 
@@ -499,24 +508,26 @@
         }
         
         // ============================================================
-        // ENROLLMENT - WRITES TO SUPABASE
+        // ENROLLMENT & M-PESA PAYMENT
         // ============================================================
+        
         window.enrollInCourse = async function(courseId) {
             if (!currentUser) { 
                 showToast('Please login first', true); 
                 openAuthModal('login'); 
                 return; 
             }
+            
             const course = allCourses.find(c => c.id === courseId);
             if (!course) return;
+            
             if (userEnrollments.has(courseId)) { 
                 showToast('Already enrolled!'); 
                 return; 
             }
             
-            console.log(`🔄 [Supabase] Enrolling user ${currentUser.id} in course ${courseId}`);
-            
             if (course.price === 0) {
+                // Free course - direct enrollment
                 const { error } = await supabase.from('enrollments').insert([{
                     user_id: currentUser.id, 
                     course_id: courseId, 
@@ -529,20 +540,125 @@
                 } else {
                     await loadEnrollments();
                     showToast(`✅ Enrolled in ${course.title}!`);
-                    console.log(`✅ [Supabase] Enrolled in ${course.title}`);
                 }
             } else {
-                showToast(`💰 KES ${course.price} - Use Paybill 4095377`, false);
+                // Paid course - open M-Pesa payment modal
+                pendingCourseId = courseId;
+                openMpesaModal(course);
             }
         };
+        
+        function openMpesaModal(course) {
+            document.getElementById('mpesaTitle').innerText = `💰 Pay for ${course.title}`;
+            document.getElementById('mpesaAmount').innerText = `Amount: KES ${course.price.toLocaleString()}`;
+            document.getElementById('mpesaError').innerText = '';
+            document.getElementById('mpesaPhone').value = '';
+            document.getElementById('mpesaStatus').innerText = '';
+            document.getElementById('mpesaModal').classList.add('active');
+        }
+        
+        function closeMpesaModal() {
+            document.getElementById('mpesaModal').classList.remove('active');
+            if (paymentPollInterval) {
+                clearInterval(paymentPollInterval);
+                paymentPollInterval = null;
+            }
+            pendingCourseId = null;
+        }
+        
+        document.getElementById('mpesaPayBtn').onclick = async function() {
+            const phone = document.getElementById('mpesaPhone').value.trim();
+            const statusEl = document.getElementById('mpesaStatus');
+            const errorEl = document.getElementById('mpesaError');
+            
+            if (!phone || phone.length < 10) {
+                errorEl.innerText = 'Please enter a valid M-Pesa number (e.g., 0712345678)';
+                return;
+            }
+            
+            const course = allCourses.find(c => c.id === pendingCourseId);
+            if (!course) return;
+            
+            errorEl.innerText = '';
+            statusEl.innerText = '⏳ Initiating payment...';
+            
+            try {
+                // CALL YOUR BACKEND API (M-Pesa integration)
+                const response = await fetch('http://localhost:3000/api/payments/mpesa/initiate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        phoneNumber: phone,
+                        amount: course.price,
+                        courseId: pendingCourseId,
+                        userId: currentUser.id
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    statusEl.innerHTML = '✅ STK Push sent! Check your phone for M-Pesa prompt.';
+                    showToast('📱 Check your phone for M-Pesa payment prompt!');
+                    closeMpesaModal();
+                    
+                    // Start polling for payment status
+                    startPaymentPolling(data.checkoutRequestId);
+                } else {
+                    statusEl.innerHTML = '❌ Payment failed: ' + (data.error || 'Unknown error');
+                    errorEl.innerText = data.error || 'Payment initiation failed';
+                }
+            } catch (error) {
+                console.error('M-Pesa error:', error);
+                statusEl.innerHTML = '❌ Error connecting to payment server';
+                errorEl.innerText = 'Please make sure your backend is running on port 3000';
+            }
+        };
+        
+        function startPaymentPolling(checkoutRequestId) {
+            if (paymentPollInterval) {
+                clearInterval(paymentPollInterval);
+            }
+            
+            let attempts = 0;
+            const maxAttempts = 24; // 2 minutes (5s intervals)
+            
+            paymentPollInterval = setInterval(async () => {
+                attempts++;
+                
+                try {
+                    const response = await fetch(`http://localhost:3000/api/payments/mpesa/status/${checkoutRequestId}`);
+                    const data = await response.json();
+                    
+                    if (data.payment?.status === 'completed') {
+                        clearInterval(paymentPollInterval);
+                        paymentPollInterval = null;
+                        showToast('✅ Payment successful! You are now enrolled.');
+                        await loadEnrollments();
+                        renderCourses();
+                    } else if (data.payment?.status === 'failed') {
+                        clearInterval(paymentPollInterval);
+                        paymentPollInterval = null;
+                        showToast('❌ Payment failed. Please try again.', true);
+                    } else if (attempts >= maxAttempts) {
+                        clearInterval(paymentPollInterval);
+                        paymentPollInterval = null;
+                        showToast('⏰ Payment timeout. Check M-Pesa messages.', true);
+                    }
+                } catch (error) {
+                    console.warn('Payment status check error:', error);
+                }
+            }, 5000);
+        }
         
         window.continueCourse = function(courseId) {
             showToast('📘 Course content coming soon!', false);
         };
         
         // ============================================================
-        // AUTHENTICATION - SUPABASE IS SINGLE SOURCE OF TRUTH
+        // AUTHENTICATION
         // ============================================================
+        
         async function checkAuth() {
             const { data: { user } } = await supabase.auth.getUser();
             
@@ -567,13 +683,11 @@
         }
         
         window.logout = async function() {
-            console.log('🔄 [Supabase] Logging out...');
             await supabase.auth.signOut();
             currentUser = null;
             userEnrollments.clear();
             await checkAuth();
             showToast('Logged out successfully');
-            console.log('✅ [Supabase] Logged out');
         };
         
         window.openAuthModal = function(mode) {
@@ -606,20 +720,16 @@
             
             try {
                 if (authMode === 'login') {
-                    console.log(`🔄 [Supabase] Logging in: ${email}`);
                     const { error } = await supabase.auth.signInWithPassword({ email, password });
                     if (error) throw error;
                     showToast('✅ Login successful!');
                     closeAuthModal();
                     await checkAuth();
-                    console.log(`✅ [Supabase] User logged in: ${email}`);
                 } else {
-                    console.log(`🔄 [Supabase] Registering: ${email}`);
                     const { error } = await supabase.auth.signUp({ email, password });
                     if (error) throw error;
                     showToast('🎉 Account created! Please verify your email.');
                     closeAuthModal();
-                    console.log(`✅ [Supabase] User registered: ${email}`);
                 }
             } catch (err) {
                 document.getElementById('modalError').innerText = err.message;
@@ -645,29 +755,29 @@
         };
         document.getElementById('closeModalBtn').onclick = closeAuthModal;
         
-        // Get Started button
         const getStartedBtn = document.getElementById('getStartedBtn');
         if (getStartedBtn) {
             getStartedBtn.onclick = function(e) {
                 e.preventDefault();
-                console.log('📱 Get Started clicked - opening register modal');
                 openAuthModal('register');
             };
         }
         
-        // Quiz Bank link
         const quizBankLink = document.getElementById('quizBankLink');
         if (quizBankLink) {
             quizBankLink.onclick = showQuizBank;
         }
         
-        // Close modal when clicking outside
         document.getElementById('authModal').onclick = function(e) {
             if (e.target === this) closeAuthModal();
         };
         
+        document.getElementById('mpesaModal').onclick = function(e) {
+            if (e.target === this) closeMpesaModal();
+        };
+        
         // ============================================================
-        // SUPABASE AUTH STATE LISTENER - REAL-TIME SYNC
+        // SUPABASE AUTH STATE LISTENER
         // ============================================================
         supabase.auth.onAuthStateChange(async (event, session) => {
             console.log(`🔄 [Supabase] Auth state change: ${event}`);
