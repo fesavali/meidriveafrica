@@ -3,16 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>MEI DRIVE AFRICA | NTSA Driver Training & Certification</title>
-    <meta name="description" content="NTSA-approved driver training platform. Practice daily, revise smarter, pass with confidence.">
+    <title>MEI DRIVE AFRICA | Practice. Revise. Pass.</title>
+    <meta name="description" content="Practice daily, revise smarter, pass with confidence. NTSA-approved driver training platform.">
     <meta name="theme-color" content="#0a192f">
     
-    <!-- Working Favicon - SVG with MEI DRIVE AFRICA text -->
+    <!-- Favicon - SVG with MEI DRIVE AFRICA text -->
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%230a192f'/%3E%3Ctext x='50' y='35' font-size='18' font-weight='bold' text-anchor='middle' fill='%2300ff88' font-family='Arial, sans-serif'%3EMEI%3C/text%3E%3Ctext x='50' y='58' font-size='14' text-anchor='middle' fill='%2300ff88' font-family='Arial, sans-serif'%3EDRIVE%3C/text%3E%3Ctext x='50' y='78' font-size='10' text-anchor='middle' fill='%2388ffcc' font-family='Arial, sans-serif'%3EAFRICA%3C/text%3E%3C/svg%3E">
     <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%230a192f'/%3E%3Ctext x='50' y='35' font-size='18' font-weight='bold' text-anchor='middle' fill='%2300ff88' font-family='Arial, sans-serif'%3EMEI%3C/text%3E%3Ctext x='50' y='58' font-size='14' text-anchor='middle' fill='%2300ff88' font-family='Arial, sans-serif'%3EDRIVE%3C/text%3E%3Ctext x='50' y='78' font-size='10' text-anchor='middle' fill='%2388ffcc' font-family='Arial, sans-serif'%3EAFRICA%3C/text%3E%3C/svg%3E">
-    
-    <!-- Fallback PNG favicon for older browsers -->
-    <link rel="icon" type="image/png" sizes="32x32" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAACXBIWXMAAAsTAAALEwEAmpwYAAABy0lEQVR4nO2Wv0vDUBDHv0kREQQRRV11c3B2cCj4F+jg3yA4OImDgwgOooiLi6igo4uLoDh1cRBEcBBBEETRQVArpW3a5IeXNGmbpBWxfvCF0Lv3fXf33l1yKQzDMAzDMAzDMAzDMAzDMIw/KPlPlHwv0Bts3N6t89PtbyhZgXHttErjIFFboDvY7FcKjxNQ2mI8jjWNd7t0AIfnExj5slrTxHUoCrkeQnmrG8UwDaDrAwtHCgVhHHzdgNL2uF4sCg7U/ZoEYL0oJACl3Q7AIglAWvZ9AMp2dwBmKgrZziNqA+BqKvPzAHhZAMZ5D8iyLAAug9K2C8BZAOgnM4rIApB3AdDdJw1A+n2+hiz5RnkA7gIAlkCct0+2BzBNwM2rSgPwGoCYlKXJizw9BQEQpUQAENPSRAB1fdZ0kScBaOoy/wEw0VUuAZBpuoYugTStUgDok5g+ia2P67oC5FsAAI5OjG+CDDCAfAtgfpR+QrLb+Pbr0jQAdRLXl5G8A8A0wNUTAABlD4CyLvIA6P4Yy2s+LcfsOhbDMAzDMAzDMAzDMAzDMIxf4gNt+kf6LGrSNAAAAABJRU5ErkJggg==">
     
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -96,6 +93,8 @@
         .stat-card { background: #0d2137; padding: 1rem; border-radius: 16px; text-align: center; }
         .stat-value { font-size: 2rem; font-weight: 800; color: var(--primary); }
         .lesson-nav { display: flex; justify-content: space-between; margin-top: 2rem; gap: 1rem; flex-wrap: wrap; }
+        .empty-state { text-align: center; padding: 3rem; background: #0d2137; border-radius: 20px; margin: 2rem auto; }
+        .empty-state i { font-size: 4rem; color: var(--primary); margin-bottom: 1rem; }
     </style>
 </head>
 <body>
@@ -131,11 +130,13 @@
         currentRoute: 'home',
         isLoading: false,
         courses: [],
+        lessons: [],
+        questions: [],
+        libraryResources: [],
         userStats: { totalProgress: 0, completedCourses: 0, quizScore: 0 },
         routeParams: {}
     };
     
-    // Helper functions
     function showToast(msg, type = 'info') {
         const container = document.getElementById('toast-container');
         const id = Date.now();
@@ -150,13 +151,12 @@
     
     function escapeHtml(str) { if (!str) return ''; return str.replace(/[&<>]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[m])); }
     
-    // ==================== LOAD COURSES FROM SUPABASE ====================
+    // ==================== LOAD REAL DATA FROM SUPABASE ====================
     async function loadCoursesFromSupabase() {
         try {
             const { data, error } = await appState.supabase
                 .from('courses')
                 .select('*')
-                .eq('active', true)
                 .order('id');
             
             if (error) throw error;
@@ -164,21 +164,82 @@
             if (data && data.length > 0) {
                 appState.courses = data;
                 console.log('✅ Courses loaded from Supabase:', appState.courses.length);
+                return true;
             } else {
-                // Fallback to default courses if none exist
-                console.warn('No courses found in Supabase, using defaults');
-                appState.courses = [
-                    { id: 1, name: "Learner Hub", type: "learner", price: 0, duration: "25 hours", lessons: 21, description: "Complete NTSA-approved driver training", icon: "fa-id-card", active: true },
-                    { id: 2, name: "EV Drivers & Riders", type: "ev", price: 0, duration: "12 hours", lessons: 12, description: "Electric vehicle safety training", icon: "fa-charging-station", active: true },
-                    { id: 3, name: "Boda Boda Safety", type: "boda", price: 0, duration: "18 hours", lessons: 12, description: "Motorcycle safety & defensive riding", icon: "fa-motorcycle", active: true },
-                    { id: 4, name: "PSV Professional", type: "psv", price: 2999, duration: "15 hours", lessons: 8, description: "Commercial driver certification", icon: "fa-bus", active: true },
-                    { id: 5, name: "School Bus/Van Driver", type: "schoolbus", price: 1999, duration: "12 hours", lessons: 12, description: "School transport safety training", icon: "fa-chalkboard-user", active: true },
-                    { id: 6, name: "Advanced Driver Academy", type: "advanced", price: 4999, duration: "20 hours", lessons: 10, description: "Professional driver excellence", icon: "fa-award", active: true }
-                ];
+                console.warn('⚠️ No courses found in Supabase');
+                appState.courses = [];
+                return false;
             }
         } catch (err) {
             console.error('Error loading courses:', err);
-            showToast('Error loading courses', 'error');
+            showToast('Error loading courses from database', 'error');
+            appState.courses = [];
+            return false;
+        }
+    }
+    
+    async function loadLessonsFromSupabase() {
+        try {
+            const { data, error } = await appState.supabase
+                .from('lessons')
+                .select('*')
+                .order('order', { ascending: true });
+            
+            if (error) throw error;
+            
+            if (data && data.length > 0) {
+                appState.lessons = data;
+                console.log('✅ Lessons loaded from Supabase:', appState.lessons.length);
+            } else {
+                console.warn('⚠️ No lessons found in Supabase');
+                appState.lessons = [];
+            }
+        } catch (err) {
+            console.error('Error loading lessons:', err);
+            appState.lessons = [];
+        }
+    }
+    
+    async function loadQuestionsFromSupabase() {
+        try {
+            const { data, error } = await appState.supabase
+                .from('questions')
+                .select('*');
+            
+            if (error) throw error;
+            
+            if (data && data.length > 0) {
+                appState.questions = data;
+                console.log('✅ Questions loaded from Supabase:', appState.questions.length);
+            } else {
+                console.warn('⚠️ No questions found in Supabase');
+                appState.questions = [];
+            }
+        } catch (err) {
+            console.error('Error loading questions:', err);
+            appState.questions = [];
+        }
+    }
+    
+    async function loadLibraryFromSupabase() {
+        try {
+            const { data, error } = await appState.supabase
+                .from('library_resources')
+                .select('*')
+                .order('id');
+            
+            if (error) throw error;
+            
+            if (data && data.length > 0) {
+                appState.libraryResources = data;
+                console.log('✅ Library loaded from Supabase:', appState.libraryResources.length);
+            } else {
+                console.warn('⚠️ No library resources found in Supabase');
+                appState.libraryResources = [];
+            }
+        } catch (err) {
+            console.error('Error loading library:', err);
+            appState.libraryResources = [];
         }
     }
     
@@ -192,7 +253,14 @@
                 renderCurrentRoute();
             });
             await checkSession();
-            await loadCoursesFromSupabase();
+            
+            // Load all real data
+            await Promise.all([
+                loadCoursesFromSupabase(),
+                loadLessonsFromSupabase(),
+                loadQuestionsFromSupabase(),
+                loadLibraryFromSupabase()
+            ]);
         } catch (err) { showToast('Connection error', 'error'); }
     }
     
@@ -305,6 +373,10 @@
     }
     
     // ==================== RENDERING FUNCTIONS ====================
+    function showEmptyState(message, icon = 'fa-database') {
+        return `<div class="empty-state"><i class="fas ${icon}"></i><h3>${message}</h3><p>Please add data to get started.</p></div>`;
+    }
+    
     async function renderCurrentRoute() {
         if (appState.isLoading) return;
         appState.isLoading = true;
@@ -334,17 +406,24 @@
     }
     
     async function renderHome() {
+        const hasCourses = appState.courses && appState.courses.length > 0;
+        const coursesGrid = hasCourses ? 
+            `<div class="grid">${appState.courses.slice(0, 3).map(c => `<div class="card" onclick="app.navigateToCourse('${c.type}')"><i class="fas ${c.icon || 'fa-book'}" style="font-size:2rem; color:var(--primary);"></i><h3>${escapeHtml(c.name)}</h3><p>${escapeHtml(c.description || '')}</p><div class="module-price">${c.price === 0 ? 'FREE' : `KES ${c.price.toLocaleString()}`}</div><button class="btn btn-primary btn-small">Enroll Now</button></div>`).join('')}</div>` :
+            showEmptyState('No courses available yet', 'fa-book');
+        
         const html = `
             <section class="hero"><div class="hero-content"><h1>Practice Daily.<br><span>Revise Smarter. Pass with Confidence.</span></h1><p>For Learners and Experienced Drivers — Refresh Your Skills with MEI DRIVE AFRICA. NTSA-approved courses.</p><div class="btn-group"><button class="btn btn-primary" onclick="app.navigate('courses')"><i class="fas fa-road"></i> Explore Courses</button><button class="btn btn-outline" onclick="app.showLoginModal()"><i class="fas fa-user-graduate"></i> Get Started</button></div></div></section>
-            <div class="stats-bar"><div class="stat-item"><h3>10K+</h3><p>Students</p></div><div class="stat-item"><h3>6</h3><p>Courses</p></div><div class="stat-item"><h3>98%</h3><p>Pass Rate</p></div></div>
-            <div class="container section"><h2 class="section-title">Our <span>Courses</span></h2><div class="grid" id="homeCoursesGrid"></div></div>
+            <div class="stats-bar"><div class="stat-item"><h3>${appState.courses.length || 0}+</h3><p>Courses</p></div><div class="stat-item"><h3>${appState.questions.length || 0}+</h3><p>Questions</p></div><div class="stat-item"><h3>${appState.libraryResources.length || 0}</h3><p>Resources</p></div></div>
+            <div class="container section"><h2 class="section-title">Our <span>Courses</span></h2>${coursesGrid}</div>
         `;
         document.getElementById('page-content').innerHTML = html;
-        const grid = document.getElementById('homeCoursesGrid');
-        if (grid) grid.innerHTML = appState.courses.map(c => `<div class="card" onclick="app.navigateToCourse('${c.type}')"><i class="fas ${c.icon || 'fa-book'}" style="font-size:2rem; color:var(--primary);"></i><h3>${escapeHtml(c.name)}</h3><p>${escapeHtml(c.description || '')}</p><div class="module-price">${c.price === 0 ? 'FREE' : `KES ${c.price.toLocaleString()}`}</div><button class="btn btn-primary btn-small">Enroll Now</button></div>`).join('');
     }
     
     async function renderCourses() {
+        if (appState.courses.length === 0) {
+            document.getElementById('page-content').innerHTML = `<div class="container" style="padding-top:100px;">${showEmptyState('No courses found in database', 'fa-book')}</div>`;
+            return;
+        }
         document.getElementById('page-content').innerHTML = `<div class="container" style="padding-top:100px;"><h1 class="section-title">Our <span>Courses</span></h1><div class="grid" id="coursesGrid"></div></div>`;
         document.getElementById('coursesGrid').innerHTML = appState.courses.map(c => `<div class="card" onclick="app.navigateToCourse('${c.type}')"><i class="fas ${c.icon || 'fa-book'}" style="font-size:2rem; color:var(--primary);"></i><h3>${escapeHtml(c.name)}</h3><p>${escapeHtml(c.description || '')}</p><div class="module-price">${c.price === 0 ? 'FREE' : `KES ${c.price.toLocaleString()}`}</div><button class="btn btn-primary btn-small">Enroll Now</button></div>`).join('');
     }
@@ -380,9 +459,9 @@
         const { data: enrollment } = await appState.supabase.from('enrollments').select('id').eq('user_id', appState.currentUser.id).eq('course_id', courseId).eq('payment_status', 'verified').maybeSingle();
         if (!enrollment && course.price > 0) { showToast('Enroll first', 'warning'); app.navigate('course-detail', { courseType: course.type }); return; }
         
-        const { data: lessons, error } = await appState.supabase.from('lessons').select('*').eq('course_id', courseId).order('order', { ascending: true });
-        if (error || !lessons || lessons.length === 0) {
-            document.getElementById('page-content').innerHTML = `<div class="container" style="padding-top:100px;"><div class="card"><h2>${escapeHtml(course.name)}</h2><p>No lessons yet. Content coming soon.</p><button class="btn btn-outline" onclick="app.navigate('courses')">Back</button></div></div>`;
+        const lessons = appState.lessons.filter(l => l.course_id === courseId).sort((a,b) => a.order - b.order);
+        if (!lessons || lessons.length === 0) {
+            document.getElementById('page-content').innerHTML = `<div class="container" style="padding-top:100px;"><div class="card"><h2>${escapeHtml(course.name)}</h2><p>No lessons yet. Please add lessons to this course in the admin panel.</p><button class="btn btn-outline" onclick="app.navigate('courses')">Back</button></div></div>`;
             return;
         }
         
@@ -468,17 +547,9 @@
     
     // ==================== DIGITAL SAFETY LIBRARY ====================
     async function renderLibraryPage() {
-        let resources = [];
-        try {
-            const { data, error } = await appState.supabase.from('library_resources').select('*').order('id');
-            if (!error && data) resources = data;
-        } catch(e) { console.warn('Library table not ready'); }
-        if (resources.length === 0) {
-            resources = [
-                { id: 1, title: 'Defensive Driving Checklist', description: 'Top 10 defensive driving habits', category: 'Tip', content_text: '1. Scan ahead\n2. Maintain gap\n3. Cover brake', tags: ['defensive'] },
-                { id: 2, title: 'EV Safety Handbook', description: 'Complete guide to electric vehicle safety', category: 'PDF', content_url: '#', tags: ['ev'] },
-                { id: 3, title: 'First Aid for Road Accidents', description: 'What to do before help arrives', category: 'Article', content_text: 'Check breathing, control bleeding', tags: ['first aid'] }
-            ];
+        if (appState.libraryResources.length === 0) {
+            document.getElementById('page-content').innerHTML = `<div class="container" style="padding-top:100px;">${showEmptyState('No library resources found in database', 'fa-book-open')}</div>`;
+            return;
         }
         
         const html = `
@@ -493,15 +564,15 @@
         `;
         document.getElementById('page-content').innerHTML = html;
         
-        const categories = [...new Set(resources.map(r => r.category))];
+        const categories = [...new Set(appState.libraryResources.map(r => r.category).filter(Boolean))];
         const filterDiv = document.getElementById('libraryCategoryFilter');
         filterDiv.innerHTML = `<button class="quiz-category-btn active" data-cat="all" onclick="app.filterLibrary('all')">All</button>` +
             categories.map(cat => `<button class="quiz-category-btn" data-cat="${cat}" onclick="app.filterLibrary('${cat}')">${cat}</button>`).join('');
         
-        window.app.libraryResources = resources;
+        window.app.libraryResources = appState.libraryResources;
         window.app.filterLibrary = (category = 'all', searchTerm = null) => {
             const search = searchTerm || document.getElementById('librarySearch')?.value.toLowerCase() || '';
-            let filtered = resources;
+            let filtered = appState.libraryResources;
             if (category !== 'all') filtered = filtered.filter(r => r.category === category);
             if (search) {
                 filtered = filtered.filter(r => r.title.toLowerCase().includes(search) || (r.tags && r.tags.some(t => t.toLowerCase().includes(search))));
@@ -520,7 +591,7 @@
         window.app.filterLibrary();
         
         window.app.viewResource = (id) => {
-            const res = resources.find(r => r.id === id);
+            const res = appState.libraryResources.find(r => r.id === id);
             if (res.content_url) window.open(res.content_url, '_blank');
             else if (res.content_text) {
                 showToast(`${res.title}: ${res.content_text.substring(0, 150)}...`, 'info');
@@ -537,14 +608,14 @@
     async function renderQuizPage() {
         if (!appState.currentUser) { app.showLoginModal(); return; }
         
+        if (appState.questions.length === 0) {
+            document.getElementById('page-content').innerHTML = `<div class="container" style="padding-top:100px;">${showEmptyState('No quiz questions found in database', 'fa-brain')}</div>`;
+            return;
+        }
+        
         let categories = ['All'];
-        try {
-            const { data, error } = await appState.supabase.from('questions').select('category').limit(1000);
-            if (!error && data) {
-                const unique = [...new Set(data.map(q => q.category))];
-                categories = ['All', ...unique];
-            }
-        } catch(e) { console.warn('Questions table not ready'); }
+        const unique = [...new Set(appState.questions.map(q => q.category).filter(Boolean))];
+        categories = ['All', ...unique];
         
         const html = `
             <div class="container" style="padding-top:100px;">
@@ -571,16 +642,15 @@
             });
         };
         
-        window.app.startQuiz = async () => {
+        window.app.startQuiz = () => {
             const category = window.app.selectedQuizCategory === 'All' ? null : window.app.selectedQuizCategory;
-            let query = appState.supabase.from('questions').select('*');
-            if (category) query = query.eq('category', category);
-            const { data, error } = await query;
-            if (error || !data || data.length === 0) {
+            let filtered = appState.questions;
+            if (category) filtered = filtered.filter(q => q.category === category);
+            if (filtered.length === 0) {
                 showToast('No questions available for this category', 'error');
                 return;
             }
-            const shuffled = [...data];
+            const shuffled = [...filtered];
             for (let i = shuffled.length - 1; i > 0; i--) {
                 const j = Math.floor(Math.random() * (i + 1));
                 [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
