@@ -4,16 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>MEI DRIVE AFRICA | Practice. Revise. Pass.</title>
-    <meta name="description" content="Practice daily, revise smarter, pass with confidence. NTSA-approved driver training platform.">
+    <meta name="description" content="NTSA-approved driver training platform. Practice daily, revise smarter, pass with confidence.">
     <meta name="theme-color" content="#0a192f">
-    
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%230a192f'/%3E%3Ctext x='50' y='35' font-size='18' font-weight='bold' text-anchor='middle' fill='%2300ff88' font-family='Arial, sans-serif'%3EMEI%3C/text%3E%3Ctext x='50' y='58' font-size='14' text-anchor='middle' fill='%2300ff88' font-family='Arial, sans-serif'%3EDRIVE%3C/text%3E%3Ctext x='50' y='78' font-size='10' text-anchor='middle' fill='%2388ffcc' font-family='Arial, sans-serif'%3EAFRICA%3C/text%3E%3C/svg%3E">
-    <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%230a192f'/%3E%3Ctext x='50' y='35' font-size='18' font-weight='bold' text-anchor='middle' fill='%2300ff88' font-family='Arial, sans-serif'%3EMEI%3C/text%3E%3Ctext x='50' y='58' font-size='14' text-anchor='middle' fill='%2300ff88' font-family='Arial, sans-serif'%3EDRIVE%3C/text%3E%3Ctext x='50' y='78' font-size='10' text-anchor='middle' fill='%2388ffcc' font-family='Arial, sans-serif'%3EAFRICA%3C/text%3E%3C/svg%3E">
     
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.0/dist/umd/supabase.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/dompurify@3.0.6/dist/purify.min.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Inter', sans-serif; background: #0a192f; color: #ffffff; line-height: 1.5; }
@@ -21,12 +17,9 @@
             --primary: #00ff88;
             --primary-dark: #00cc66;
             --primary-light: #88ffcc;
-            --gradient-green: linear-gradient(135deg, #00ff88 0%, #00cc66 100%);
             --dark-card: #0d2137;
             --border: rgba(0, 255, 136, 0.25);
             --text-muted: #a0b3d9;
-            --success: #00ff88;
-            --danger: #ff4757;
         }
         .navbar {
             position: fixed;
@@ -39,65 +32,50 @@
             padding: 0.8rem 2rem;
         }
         .nav-container { max-width: 1400px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; }
-        .logo { font-size: 1.3rem; font-weight: 800; background: var(--gradient-green); -webkit-background-clip: text; background-clip: text; color: transparent; cursor: pointer; display: flex; align-items: center; gap: 8px; }
+        .logo { font-size: 1.3rem; font-weight: 800; background: linear-gradient(135deg, #00ff88, #00cc66); -webkit-background-clip: text; background-clip: text; color: transparent; cursor: pointer; display: flex; align-items: center; gap: 8px; }
         .logo i { color: var(--primary); font-size: 1.5rem; }
         .nav-links { display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap; }
         .nav-links button { background: transparent; border: none; color: #a0b3d9; padding: 8px 14px; border-radius: 50px; cursor: pointer; font-size: 13px; font-weight: 500; transition: 0.2s; }
         .nav-links button:hover { background: rgba(0, 255, 136, 0.1); color: var(--primary); }
-        .btn-primary-nav { background: var(--gradient-green); color: #0a192f !important; font-weight: 700; }
         .user-badge { background: rgba(0, 255, 136, 0.15); border-radius: 40px; padding: 6px 16px; display: flex; align-items: center; gap: 8px; font-size: 13px; }
         .mobile-menu { display: none; font-size: 1.5rem; cursor: pointer; color: var(--primary); }
         @media (max-width: 768px) { .navbar { padding: 0.8rem 1rem; } .nav-links { display: none; width: 100%; flex-direction: column; padding: 1rem 0; } .nav-links.show { display: flex; } .mobile-menu { display: block; } }
-        .hero { min-height: 85vh; background: linear-gradient(135deg, rgba(10, 25, 47, 0.95) 0%, rgba(13, 33, 55, 0.85) 100%), url('https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80'); background-size: cover; background-position: center; display: flex; align-items: center; padding: 100px 2rem 4rem; }
+        .hero { min-height: 85vh; background: linear-gradient(135deg, rgba(10, 25, 47, 0.95), rgba(13, 33, 55, 0.85)), url('https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80'); background-size: cover; background-position: center; display: flex; align-items: center; padding: 100px 2rem 4rem; }
         .hero-content { max-width: 1400px; margin: 0 auto; }
         .hero h1 { font-size: 3.2rem; font-weight: 800; line-height: 1.2; margin-bottom: 1.5rem; }
         .hero h1 span { color: var(--primary); }
         .hero p { font-size: 1.1rem; color: var(--text-muted); max-width: 600px; margin-bottom: 2rem; }
         .btn { padding: 12px 28px; border-radius: 50px; font-weight: 700; cursor: pointer; border: none; font-size: 1rem; transition: 0.2s; display: inline-flex; align-items: center; gap: 8px; }
-        .btn-primary { background: var(--gradient-green); color: #0a192f; }
+        .btn-primary { background: linear-gradient(135deg, #00ff88, #00cc66); color: #0a192f; }
         .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(0, 255, 136, 0.3); }
         .btn-outline { border: 1px solid var(--primary); color: var(--primary); background: transparent; }
         .btn-outline:hover { background: rgba(0, 255, 136, 0.1); }
-        .btn-danger { background: #ff4757; color: #fff; }
         .stats-bar { background: #0d2137; border-bottom: 1px solid var(--border); padding: 2rem; display: flex; justify-content: space-around; flex-wrap: wrap; gap: 2rem; text-align: center; }
         .stat-item h3 { font-size: 2rem; color: var(--primary); }
         .container { max-width: 1400px; margin: 0 auto; padding: 0 20px; }
         .section { padding: 4rem 0; }
         .section-title { text-align: center; font-size: 2.2rem; margin-bottom: 2.5rem; }
         .section-title span { color: var(--primary); }
-        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.8rem; }
-        .card { background: #0d2137; border: 1px solid var(--border); border-radius: 20px; padding: 1.5rem; transition: 0.3s; cursor: pointer; position: relative; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1.8rem; }
+        .card { background: #0d2137; border: 1px solid var(--border); border-radius: 20px; padding: 1.5rem; transition: 0.3s; cursor: pointer; }
         .card:hover { border-color: var(--primary); transform: translateY(-4px); }
         .course-price { font-size: 1.5rem; font-weight: 800; color: var(--primary); margin: 0.8rem 0; }
         .progress-bar { background: #1e2a3a; border-radius: 10px; height: 6px; margin: 12px 0; }
         .progress-fill { background: var(--primary); height: 6px; border-radius: 10px; width: 0%; }
         .quiz-option { padding: 12px 16px; background: #112240; border-radius: 12px; margin-bottom: 10px; cursor: pointer; border: 1px solid var(--border); transition: 0.2s; }
         .quiz-option:hover { border-color: var(--primary); background: rgba(0, 255, 136, 0.1); }
-        .quiz-option.correct { border-color: #00ff88; background: rgba(0,255,136,0.1); }
-        .quiz-option.wrong { border-color: #ff4757; background: rgba(255,71,87,0.1); }
-        .quiz-category-selector { margin-bottom: 1.5rem; display: flex; gap: 0.5rem; flex-wrap: wrap; }
-        .quiz-category-btn { background: #112240; border: 1px solid var(--border); border-radius: 50px; padding: 6px 14px; cursor: pointer; transition: 0.2s; color: #a0b3d9; }
-        .quiz-category-btn.active, .quiz-category-btn:hover { background: var(--primary); color: #0a192f; border-color: var(--primary); }
-        .search-input { background: #0f1a2c; border: 1px solid var(--border); padding: 10px 16px; border-radius: 50px; color: white; width: 100%; max-width: 300px; }
-        .resource-tag { background: rgba(0, 255, 136, 0.2); padding: 4px 8px; border-radius: 20px; font-size: 0.7rem; display: inline-block; margin: 2px; }
         .loading-spinner { width: 40px; height: 40px; border: 3px solid #1e2a3a; border-top-color: var(--primary); border-radius: 50%; animation: spin 1s linear infinite; margin: 40px auto; }
         @keyframes spin { to { transform: rotate(360deg); } }
-        .toast-container { position: fixed; bottom: 20px; right: 20px; z-index: 2100; max-height: 300px; overflow-y: auto; }
+        .toast-container { position: fixed; bottom: 20px; right: 20px; z-index: 2100; }
         .toast { background: #0d2137; border-left: 4px solid var(--primary); padding: 12px 20px; border-radius: 12px; margin-top: 8px; display: flex; justify-content: space-between; align-items: center; gap: 12px; }
-        .toast-close { cursor: pointer; color: var(--text-muted); font-size: 14px; }
         footer { text-align: center; padding: 2rem; border-top: 1px solid var(--border); color: var(--text-muted); font-size: 0.85rem; }
         @media (max-width: 768px) { .hero h1 { font-size: 2rem; } .grid { grid-template-columns: 1fr; } }
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.96); backdrop-filter: blur(12px); z-index: 2000; justify-content: center; align-items: center; }
         .modal.active { display: flex; }
         .modal-content { background: #0d2137; border: 1px solid var(--primary); border-radius: 24px; width: 90%; max-width: 500px; padding: 2rem; }
         .modal-content input { background: #0f1a2c; border: 1px solid var(--border); padding: 12px; border-radius: 12px; color: white; width: 100%; margin: 8px 0; }
-        .dashboard-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
-        .stat-card { background: #0d2137; padding: 1rem; border-radius: 16px; text-align: center; }
-        .stat-value { font-size: 2rem; font-weight: 800; color: var(--primary); }
-        .lesson-nav { display: flex; justify-content: space-between; margin-top: 2rem; gap: 1rem; flex-wrap: wrap; }
         .empty-state { text-align: center; padding: 3rem; background: #0d2137; border-radius: 20px; margin: 2rem auto; }
         .empty-state i { font-size: 4rem; color: var(--primary); margin-bottom: 1rem; }
-        .course-banner { background: linear-gradient(135deg, rgba(0,255,136,0.1), #0d2137); border-radius: 20px; padding: 2rem; margin-bottom: 2rem; }
     </style>
 </head>
 <body>
@@ -110,14 +88,13 @@
                 <button onclick="navigateTo('home')">🏠 Home</button>
                 <button onclick="navigateTo('courses')">📚 Courses</button>
                 <button onclick="navigateTo('quiz')">📝 Quiz</button>
-                <button onclick="navigateTo('library')">📖 Safety Library</button>
-                <button id="dashboardNavBtn" onclick="navigateTo('dashboard')" style="display:none;">📊 Dashboard</button>
+                <button onclick="navigateTo('library')">📖 Library</button>
                 <div id="authButtons"></div>
             </div>
         </div>
     </nav>
     <main id="page-content"><div class="container" style="padding: 120px 20px;"><div class="loading-spinner"></div></div></main>
-    <footer>© 2026 MEI DRIVE AFRICA | NTSA Approved | <a href="#" onclick="showLegal('privacy')" style="color:var(--primary);">Privacy</a> | <a href="#" onclick="showLegal('terms')" style="color:var(--primary);">Terms</a></footer>
+    <footer>© 2026 MEI DRIVE AFRICA | NTSA Approved | <a href="#" style="color:var(--primary);">Privacy</a> | <a href="#" style="color:var(--primary);">Terms</a></footer>
 </div>
 <div id="toast-container" class="toast-container"></div>
 
@@ -128,370 +105,249 @@
     
     let supabase;
     let currentUser = null;
-    let isAdmin = false;
     let currentPage = 'home';
     let courses = [];
     let lessons = [];
     let questions = [];
-    let libraryResources = [];
-    let enrollments = [];
-    let userStats = { totalProgress: 0, completedCourses: 0, quizScore: 0 };
-    let routeParams = {};
-    let userProgress = {};
+    let library = [];
     
-    // Quiz state
-    let currentQuizQuestions = [];
-    let quizCurrentIndex = 0;
-    let quizScore = 0;
-    let quizUserAnswers = [];
-    
-    // Helper functions
     function showToast(msg, type = 'info') {
         const container = document.getElementById('toast-container');
-        const id = Date.now();
         const toast = document.createElement('div');
         toast.className = 'toast';
-        toast.id = `toast-${id}`;
-        const icons = { success: '✅', error: '❌', warning: '⚠️', info: 'ℹ️' };
-        toast.innerHTML = `${icons[type] || 'ℹ️'} ${escapeHtml(msg)}<span class="toast-close" onclick="closeToast('${id}')">×</span>`;
+        toast.innerHTML = `${type === 'success' ? '✅' : type === 'error' ? '❌' : 'ℹ️'} ${msg}<span style="cursor:pointer;margin-left:8px;" onclick="this.parentElement.remove()">×</span>`;
         container.appendChild(toast);
-        setTimeout(() => closeToast(id), 5000);
+        setTimeout(() => toast.remove(), 4000);
     }
     
     function escapeHtml(str) { if (!str) return ''; return str.replace(/[&<>]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[m])); }
-    function closeToast(id) { document.getElementById(`toast-${id}`)?.remove(); }
     function toggleMobileMenu() { document.getElementById('navLinks')?.classList.toggle('show'); }
     
-    // ==================== SUPABASE INIT ====================
+    // ==================== LOAD DATA ====================
+    async function loadCourses() {
+        const { data, error } = await supabase.from('courses').select('*').order('id');
+        if (error) console.error('Courses error:', error);
+        else courses = data || [];
+        console.log('Courses loaded:', courses.length);
+    }
+    
+    async function loadLessons() {
+        const { data, error } = await supabase.from('lessons').select('*').order('order', { ascending: true });
+        if (error) console.error('Lessons error:', error);
+        else lessons = data || [];
+        console.log('Lessons loaded:', lessons.length);
+    }
+    
+    async function loadQuestions() {
+        const { data, error } = await supabase.from('questions').select('*');
+        if (error) console.error('Questions error:', error);
+        else questions = data || [];
+        console.log('Questions loaded:', questions.length);
+    }
+    
+    async function loadLibrary() {
+        const { data, error } = await supabase.from('library_resources').select('*');
+        if (error) console.error('Library error:', error);
+        else library = data || [];
+        console.log('Library loaded:', library.length);
+    }
+    
+    async function loadAllData() {
+        await Promise.all([loadCourses(), loadLessons(), loadQuestions(), loadLibrary()]);
+        renderPage();
+    }
+    
+    // ==================== AUTH ====================
     async function initSupabase() {
-        // FIXED: Use global supabase object (not supabaseJs)
         supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         
         supabase.auth.onAuthStateChange(async (event, session) => {
-            if (event === 'SIGNED_IN' && session) await handleUserLogin(session.user);
-            else if (event === 'SIGNED_OUT') handleUserLogout();
-            await checkSession();
+            if (event === 'SIGNED_IN') {
+                currentUser = session.user;
+                showToast(`Welcome ${currentUser.email.split('@')[0]}!`, 'success');
+            } else if (event === 'SIGNED_OUT') {
+                currentUser = null;
+                showToast('Logged out', 'info');
+            }
+            updateAuthUI();
         });
-        await checkSession();
-        await loadAllData();
-        renderPage();
-    }
-    
-    async function checkSession() {
+        
         const { data: { session } } = await supabase.auth.getSession();
-        if (session && !currentUser) await handleUserLogin(session.user);
-        else if (!session && currentUser) handleUserLogout();
+        currentUser = session?.user || null;
         updateAuthUI();
+        await loadAllData();
     }
     
-    async function handleUserLogin(user) {
-        currentUser = user;
-        let { data: profile } = await supabase.from('user_profiles').select('*').eq('id', user.id).maybeSingle();
-        if (!profile) {
-            const { data: newProfile } = await supabase.from('user_profiles').insert({
-                id: user.id, email: user.email, full_name: user.user_metadata?.full_name || user.email.split('@')[0], is_admin: false
-            }).select().single();
-            profile = newProfile;
-        }
-        isAdmin = profile?.is_admin === true;
-        await loadUserStats();
-        updateAuthUI();
-        renderPage();
-        showToast(`Welcome ${profile?.full_name || user.email.split('@')[0]}!`, 'success');
-    }
-    
-    function handleUserLogout() { currentUser = null; isAdmin = false; userStats = { totalProgress: 0, completedCourses: 0, quizScore: 0 }; updateAuthUI(); renderPage(); }
-    
-    async function loadAllData() {
-        const [coursesRes, lessonsRes, questionsRes, libraryRes, enrollmentsRes] = await Promise.all([
-            supabase.from('courses').select('*').order('id'),
-            supabase.from('lessons').select('*').order('order', { ascending: true }),
-            supabase.from('questions').select('*'),
-            supabase.from('library_resources').select('*').order('id'),
-            currentUser ? supabase.from('enrollments').select('*').eq('user_id', currentUser.id) : Promise.resolve({ data: [] })
-        ]);
-        courses = coursesRes.data || [];
-        lessons = lessonsRes.data || [];
-        questions = questionsRes.data || [];
-        libraryResources = libraryRes.data || [];
-        enrollments = enrollmentsRes.data || [];
-    }
-    
-    async function loadUserStats() {
-        if (!currentUser) return;
-        const { data: progress } = await supabase.from('user_progress').select('progress_percentage, lesson_id').eq('user_id', currentUser.id);
-        if (progress?.length) {
-            userStats.totalProgress = Math.round(progress.reduce((a, p) => a + (p.progress_percentage || 0), 0) / progress.length);
-            progress.forEach(p => { userProgress[p.lesson_id] = p.progress_percentage; });
-        }
-        userStats.completedCourses = enrollments.filter(e => e.payment_status === 'verified').length;
-        const { data: quizzes } = await supabase.from('quiz_attempts').select('score').eq('user_id', currentUser.id).order('id', { ascending: false }).limit(1);
-        if (quizzes?.[0]) userStats.quizScore = quizzes[0].score;
-    }
-    
-    function hasCourseAccess(courseId) { return enrollments.some(e => e.course_id === courseId && e.payment_status === 'verified'); }
-    
-    async function enrollInCourse(courseId, price) {
-        if (!currentUser) { showToast('Please login', 'warning'); showLoginModal(); return false; }
-        if (price === 0) {
-            const { error } = await supabase.from('enrollments').upsert({ user_id: currentUser.id, course_id: courseId, payment_status: 'verified', amount: 0, verified_at: new Date() });
-            if (error) { showToast('Enrollment failed', 'error'); return false; }
-            showToast('Enrolled successfully!', 'success');
-            await loadAllData(); await loadUserStats();
-            return true;
-        }
-        showToast(`Processing KES ${price}...`, 'info');
-        const { data, error } = await supabase.rpc('process_enrollment', { p_course_id: courseId, p_amount: price });
-        if (error || !data) { showToast('Payment failed', 'error'); return false; }
-        showToast('Enrolled!', 'success');
-        await loadAllData(); await loadUserStats();
-        return true;
-    }
-    
-    async function updateProgress(lessonId, progressPercent) {
-        if (!currentUser) return false;
-        await supabase.from('user_progress').upsert({ 
-            user_id: currentUser.id, 
-            lesson_id: lessonId, 
-            progress_percentage: progressPercent, 
-            last_accessed_at: new Date() 
-        });
-        await loadUserStats();
-        return true;
-    }
-    
-    // ==================== AUTH UI ====================
     function updateAuthUI() {
         const container = document.getElementById('authButtons');
-        const dashboardBtn = document.getElementById('dashboardNavBtn');
         if (!container) return;
         if (currentUser) {
-            container.innerHTML = `<div class="user-badge"><i class="fas fa-user"></i> ${escapeHtml(currentUser.email?.split('@')[0])}</div><button onclick="logout()">Logout</button>${isAdmin ? '<button class="btn-primary-nav" onclick="navigateTo(\'admin\')">Admin</button>' : ''}`;
-            if (dashboardBtn) dashboardBtn.style.display = 'inline-block';
+            container.innerHTML = `<div class="user-badge"><i class="fas fa-user"></i> ${escapeHtml(currentUser.email.split('@')[0])}</div><button onclick="logout()">Logout</button>`;
         } else {
-            container.innerHTML = `<button onclick="showLoginModal()">Login</button><button class="btn-primary-nav" onclick="showSignupModal()">Sign Up</button>`;
-            if (dashboardBtn) dashboardBtn.style.display = 'none';
+            container.innerHTML = `<button onclick="showLoginModal()">Login</button><button onclick="showSignupModal()">Sign Up</button>`;
         }
     }
     
-    async function signUp(email, password, fullName) {
-        const { error } = await supabase.auth.signUp({ email, password, options: { data: { full_name: fullName } } });
-        if (error) { showToast(error.message, 'error'); return false; }
-        showToast('Account created! Please verify your email.', 'success');
-        return true;
-    }
-    
-    async function signIn(email, password) {
-        const { error } = await supabase.auth.signInWithPassword({ email, password });
-        if (error) { showToast(error.message, 'error'); return false; }
-        showToast('Logged in!', 'success');
-        closeModal();
-        return true;
-    }
-    
-    async function logout() { await supabase.auth.signOut(); showToast('Logged out', 'info'); navigateTo('home'); }
+    async function logout() { await supabase.auth.signOut(); navigateTo('home'); }
     
     function showLoginModal() {
-        const modalHtml = `<div class="modal active" id="authModal"><div class="modal-content"><h2>🔐 Login</h2><input type="email" id="loginEmail" placeholder="Email"><input type="password" id="loginPassword" placeholder="Password"><button class="btn btn-primary" style="width:100%" onclick="performLogin()">Login</button><p style="margin-top:1rem; text-align:center;">No account? <span style="color:var(--primary);cursor:pointer;" onclick="showSignupModal()">Sign up</span></p><button class="btn btn-outline" style="width:100%; margin-top:0.5rem;" onclick="closeModal()">Cancel</button></div></div>`;
-        document.body.insertAdjacentHTML('beforeend', modalHtml);
+        document.getElementById('page-content').innerHTML = `
+            <div class="container" style="max-width:450px; margin:40px auto;">
+                <div class="card"><h2>🔐 Login</h2>
+                <input type="email" id="loginEmail" placeholder="Email">
+                <input type="password" id="loginPassword" placeholder="Password">
+                <button class="btn btn-primary" style="width:100%" onclick="performLogin()">Login</button>
+                <p style="margin-top:1rem;">No account? <span style="color:var(--primary);cursor:pointer;" onclick="showSignupModal()">Sign up</span></p>
+                <button class="btn btn-outline" style="width:100%; margin-top:0.5rem;" onclick="closeModal()">Cancel</button></div></div>`;
     }
     
     function showSignupModal() {
-        const modalHtml = `<div class="modal active" id="authModal"><div class="modal-content"><h2>📝 Sign Up</h2><input type="text" id="signupName" placeholder="Full Name"><input type="email" id="signupEmail" placeholder="Email"><input type="password" id="signupPassword" placeholder="Password (min 6)"><button class="btn btn-primary" style="width:100%" onclick="performSignup()">Create Account</button><p style="margin-top:1rem; text-align:center;">Have an account? <span style="color:var(--primary);cursor:pointer;" onclick="showLoginModal()">Login</span></p><button class="btn btn-outline" style="width:100%; margin-top:0.5rem;" onclick="closeModal()">Cancel</button></div></div>`;
-        document.body.insertAdjacentHTML('beforeend', modalHtml);
+        document.getElementById('page-content').innerHTML = `
+            <div class="container" style="max-width:450px; margin:40px auto;">
+                <div class="card"><h2>📝 Sign Up</h2>
+                <input type="text" id="signupName" placeholder="Full Name">
+                <input type="email" id="signupEmail" placeholder="Email">
+                <input type="password" id="signupPassword" placeholder="Password (min 6)">
+                <button class="btn btn-primary" style="width:100%" onclick="performSignup()">Create Account</button>
+                <p style="margin-top:1rem;">Have an account? <span style="color:var(--primary);cursor:pointer;" onclick="showLoginModal()">Login</span></p>
+                <button class="btn btn-outline" style="width:100%; margin-top:0.5rem;" onclick="closeModal()">Cancel</button></div></div>`;
     }
     
-    window.performLogin = async () => { await signIn(document.getElementById('loginEmail')?.value, document.getElementById('loginPassword')?.value); };
-    window.performSignup = async () => { await signUp(document.getElementById('signupEmail')?.value, document.getElementById('signupPassword')?.value, document.getElementById('signupName')?.value); };
-    window.closeModal = () => document.getElementById('authModal')?.remove();
+    async function performLogin() {
+        const email = document.getElementById('loginEmail')?.value;
+        const password = document.getElementById('loginPassword')?.value;
+        const { error } = await supabase.auth.signInWithPassword({ email, password });
+        if (error) showToast(error.message, 'error');
+        else { closeModal(); await loadAllData(); navigateTo('home'); }
+    }
+    
+    async function performSignup() {
+        const email = document.getElementById('signupEmail')?.value;
+        const password = document.getElementById('signupPassword')?.value;
+        const fullName = document.getElementById('signupName')?.value;
+        const { error } = await supabase.auth.signUp({ email, password, options: { data: { full_name: fullName } } });
+        if (error) showToast(error.message, 'error');
+        else { showToast('Account created! Please verify email.', 'success'); closeModal(); }
+    }
+    
+    function closeModal() { document.querySelector('.modal')?.remove(); }
     
     // ==================== PAGE RENDERING ====================
+    function renderHome() {
+        const featured = courses.slice(0, 3);
+        document.getElementById('page-content').innerHTML = `
+            <section class="hero"><div class="hero-content">
+                <h1>Practice Daily.<br><span>Revise Smarter. Pass with Confidence.</span></h1>
+                <p>For Learners and Experienced Drivers — Refresh Your Skills with MEI DRIVE AFRICA. NTSA-approved courses.</p>
+                <button class="btn btn-primary" onclick="navigateTo('courses')"><i class="fas fa-road"></i> Explore Courses</button>
+            </div></section>
+            <div class="stats-bar"><div class="stat-item"><h3>${courses.length}</h3><p>Courses</p></div><div class="stat-item"><h3>${questions.length}</h3><p>Questions</p></div><div class="stat-item"><h3>${library.length}</h3><p>Resources</p></div></div>
+            <div class="container section"><h2 class="section-title">Our <span>Courses</span></h2><div class="grid" id="homeGrid"></div></div>`;
+        
+        const grid = document.getElementById('homeGrid');
+        if (grid && featured.length) {
+            grid.innerHTML = featured.map(c => `<div class="card" onclick="viewCourse(${c.id})"><i class="fas ${c.icon || 'fa-book'}" style="font-size:2rem; color:var(--primary);"></i><h3>${escapeHtml(c.name)}</h3><p>${escapeHtml(c.description || '')}</p><div class="course-price">${c.price === 0 ? 'FREE' : `KES ${c.price.toLocaleString()}`}</div><button class="btn btn-primary">View Course</button></div>`).join('');
+        }
+    }
+    
+    function renderCourses() {
+        if (!courses.length) { document.getElementById('page-content').innerHTML = '<div class="container" style="padding-top:100px;"><div class="empty-state"><i class="fas fa-database"></i><h3>No Courses Found</h3><p>Please check your database connection.</p></div></div>'; return; }
+        
+        document.getElementById('page-content').innerHTML = `<div class="container" style="padding-top:100px;"><h1 class="section-title">All <span>Courses</span></h1><div class="grid" id="coursesGrid"></div></div>`;
+        const grid = document.getElementById('coursesGrid');
+        if (grid) {
+            grid.innerHTML = courses.map(c => `<div class="card" onclick="viewCourse(${c.id})"><i class="fas ${c.icon || 'fa-book'}" style="font-size:2rem; color:var(--primary);"></i><h3>${escapeHtml(c.name)}</h3><p>${escapeHtml(c.description || '')}</p><div class="course-price">${c.price === 0 ? 'FREE' : `KES ${c.price.toLocaleString()}`}</div><button class="btn btn-primary">View Course</button></div>`).join('');
+        }
+    }
+    
+    function viewCourse(courseId) {
+        const course = courses.find(c => c.id === courseId);
+        const courseLessons = lessons.filter(l => l.course_id === courseId).sort((a,b) => a.order - b.order);
+        
+        document.getElementById('page-content').innerHTML = `
+            <div class="container" style="padding-top:100px;">
+                <div style="background: linear-gradient(135deg, rgba(0,255,136,0.1), #0d2137); border-radius: 20px; padding: 2rem; margin-bottom: 2rem;">
+                    <h1>${escapeHtml(course.name)}</h1>
+                    <p>${escapeHtml(course.description || '')}</p>
+                    <div class="course-price">${course.price === 0 ? 'FREE' : `KES ${course.price.toLocaleString()}`}</div>
+                </div>
+                <div class="card"><h3>📖 Course Modules (${courseLessons.length} lessons)</h3>
+                ${courseLessons.length ? `<div class="grid">${courseLessons.map((l, idx) => `<div class="card" onclick="viewLesson(${l.id})"><h4>${idx+1}. ${escapeHtml(l.title)}</h4><p>${escapeHtml(l.content?.substring(0, 100) || 'Click to view content')}...</p><button class="btn btn-outline">View Lesson</button></div>`).join('')}</div>` : '<p>No lessons available yet. Content coming soon.</p>'}
+                <button class="btn btn-outline" style="margin-top:1rem;" onclick="navigateTo('courses')">← Back to Courses</button></div>
+            </div>`;
+    }
+    
+    function viewLesson(lessonId) {
+        const lesson = lessons.find(l => l.id === lessonId);
+        if (!lesson) return;
+        document.getElementById('page-content').innerHTML = `
+            <div class="container" style="padding-top:100px; max-width:800px;">
+                <div class="card"><h2>${escapeHtml(lesson.title)}</h2>
+                <div style="margin-top:1.5rem; line-height:1.6; white-space:pre-wrap;">${escapeHtml(lesson.content || 'Content coming soon...')}</div>
+                <button class="btn btn-outline" style="margin-top:2rem;" onclick="navigateTo('courses')">← Back to Courses</button></div>
+            </div>`;
+    }
+    
+    function renderQuiz() {
+        if (!questions.length) { document.getElementById('page-content').innerHTML = '<div class="container" style="padding-top:100px;"><div class="empty-state"><i class="fas fa-brain"></i><h3>No Questions Available</h3><p>Quiz questions will appear here once added.</p></div></div>'; return; }
+        
+        let currentIndex = 0;
+        let score = 0;
+        let userAnswers = [];
+        
+        function renderQuestion() {
+            if (currentIndex >= questions.length) {
+                const percent = Math.round((score / questions.length) * 100);
+                document.getElementById('quizContainer').innerHTML = `<div style="text-align:center; padding:2rem;"><h3>🎉 Quiz Complete!</h3><p>Your score: ${score} / ${questions.length} (${percent}%)</p><button class="btn btn-primary" onclick="navigateTo('home')">Done</button><button class="btn btn-outline" onclick="renderQuiz()">Restart</button></div>`;
+                return;
+            }
+            const q = questions[currentIndex];
+            document.getElementById('quizContainer').innerHTML = `
+                <div class="quiz-question" style="font-size:1.3rem; margin-bottom:1.5rem;">Q${currentIndex+1}. ${escapeHtml(q.question_text)}</div>
+                <div class="quiz-options">${[q.option_a, q.option_b, q.option_c, q.option_d].map((opt, idx) => `<div class="quiz-option" onclick="submitAnswer(${idx})">${String.fromCharCode(65+idx)}. ${escapeHtml(opt)}</div>`).join('')}</div>
+                <div id="quizFeedback" class="quiz-feedback" style="margin-top:1rem;"></div>
+                <div style="margin-top:1rem;">Question ${currentIndex+1} of ${questions.length}</div>`;
+        }
+        
+        window.submitAnswer = (selected) => {
+            const q = questions[currentIndex];
+            const isCorrect = selected === (q.correct_option === 'a' ? 0 : q.correct_option === 'b' ? 1 : q.correct_option === 'c' ? 2 : 3);
+            if (isCorrect) score++;
+            const fb = document.getElementById('quizFeedback');
+            fb.innerHTML = `<span style="color:${isCorrect ? '#00ff88' : '#ff4757'}">${isCorrect ? '✓ Correct!' : `✗ Incorrect. Correct: ${q.correct_option.toUpperCase()}. ${escapeHtml(q.explanation || '')}`}</span><button class="btn btn-primary" style="margin-top:1rem;" onclick="nextQuestion()">Next →</button>`;
+            document.querySelectorAll('.quiz-option').forEach(opt => opt.style.pointerEvents = 'none');
+        };
+        
+        window.nextQuestion = () => { currentIndex++; renderQuestion(); };
+        
+        document.getElementById('page-content').innerHTML = `<div class="container" style="padding-top:100px;"><div class="card"><h2>📝 NTSA Practice Exam</h2><div id="quizContainer"></div></div></div>`;
+        renderQuestion();
+    }
+    
+    function renderLibrary() {
+        if (!library.length) { document.getElementById('page-content').innerHTML = '<div class="container" style="padding-top:100px;"><div class="empty-state"><i class="fas fa-book-open"></i><h3>No Library Resources</h3><p>Check back later for resources.</p></div></div>'; return; }
+        
+        document.getElementById('page-content').innerHTML = `<div class="container" style="padding-top:100px;"><h1 class="section-title">Digital <span>Safety Library</span></h1><div class="grid" id="libraryGrid"></div></div>`;
+        const grid = document.getElementById('libraryGrid');
+        if (grid) {
+            grid.innerHTML = library.map(r => `<div class="card"><i class="fas fa-file-pdf" style="font-size:2rem; color:var(--primary);"></i><h3>${escapeHtml(r.title)}</h3><p>${escapeHtml(r.description || '')}</p><button class="btn btn-outline" onclick="showToast('Resource: ${escapeHtml(r.title)}', 'info')">View Resource</button></div>`).join('');
+        }
+    }
+    
     async function renderPage() {
         const container = document.getElementById('page-content');
         container.innerHTML = '<div class="container" style="padding:120px 20px;"><div class="loading-spinner"></div></div>';
         await loadAllData();
         if (currentPage === 'home') renderHome();
         else if (currentPage === 'courses') renderCourses();
-        else if (currentPage === 'course-detail') renderCourseDetail();
-        else if (currentPage === 'learn') renderLearnPage();
-        else if (currentPage === 'quiz') renderQuizPage();
-        else if (currentPage === 'library') renderLibraryPage();
-        else if (currentPage === 'dashboard') { if (!currentUser) { showLoginModal(); return; } renderDashboard(); }
-        else if (currentPage === 'admin') { if (!isAdmin) { showToast('Admin access denied', 'error'); navigateTo('home'); return; } renderAdminDashboard(); }
+        else if (currentPage === 'quiz') renderQuiz();
+        else if (currentPage === 'library') renderLibrary();
         else renderHome();
-        window.scrollTo({ top: 0 });
         if (window.innerWidth <= 768) document.getElementById('navLinks')?.classList.remove('show');
     }
     
-    function renderHome() {
-        const featured = courses.slice(0, 3);
-        document.getElementById('page-content').innerHTML = `
-            <section class="hero"><div class="hero-content"><h1>Practice Daily.<br><span>Revise Smarter. Pass with Confidence.</span></h1><p>For Learners and Experienced Drivers — Refresh Your Skills with MEI DRIVE AFRICA. NTSA-approved courses.</p><div class="btn-group"><button class="btn btn-primary" onclick="navigateTo('courses')"><i class="fas fa-road"></i> Explore Courses</button><button class="btn btn-outline" onclick="showLoginModal()"><i class="fas fa-user-graduate"></i> Get Started</button></div></div></section>
-            <div class="stats-bar"><div class="stat-item"><h3>${courses.length}</h3><p>Courses</p></div><div class="stat-item"><h3>${questions.length}</h3><p>Questions</p></div><div class="stat-item"><h3>${libraryResources.length}</h3><p>Resources</p></div></div>
-            <div class="container section"><h2 class="section-title">Featured <span>Courses</span></h2><div class="grid">${featured.map(c => `<div class="card" onclick="viewCourse(${c.id})"><i class="fas ${c.icon || 'fa-book'}" style="font-size:2rem; color:var(--primary);"></i><h3>${escapeHtml(c.name)}</h3><p>${escapeHtml(c.description || '')}</p><div class="course-price">${c.price === 0 ? 'FREE' : `KES ${c.price.toLocaleString()}`}</div><button class="btn btn-primary btn-small">View Course</button></div>`).join('')}</div><div style="text-align:center; margin-top:2rem;"><button class="btn btn-outline" onclick="navigateTo('courses')">View All Courses →</button></div></div>
-        `;
-    }
+    function navigateTo(page) { currentPage = page; renderPage(); window.scrollTo({ top: 0 }); }
     
-    function renderCourses() {
-        document.getElementById('page-content').innerHTML = `<div class="container" style="padding-top:100px;"><h1 class="section-title">All <span>Courses</span></h1><div class="grid" id="coursesGrid"></div></div>`;
-        document.getElementById('coursesGrid').innerHTML = courses.map(c => `<div class="card" onclick="viewCourse(${c.id})"><i class="fas ${c.icon || 'fa-book'}" style="font-size:2rem; color:var(--primary);"></i><h3>${escapeHtml(c.name)}</h3><p>${escapeHtml(c.description || '')}</p><div class="course-price">${c.price === 0 ? 'FREE' : `KES ${c.price.toLocaleString()}`}</div><button class="btn btn-primary btn-small">View Course</button></div>`).join('');
-    }
-    
-    window.viewCourse = (courseId) => { navigateTo('course-detail', { courseId }); };
-    
-    function renderCourseDetail() {
-        const courseId = routeParams.courseId;
-        const course = courses.find(c => c.id === courseId);
-        if (!course) { navigateTo('courses'); return; }
-        const isEnrolled = hasCourseAccess(courseId);
-        const courseLessons = lessons.filter(l => l.course_id === courseId).sort((a,b) => a.order - b.order);
-        const completedLessons = courseLessons.filter(l => userProgress[l.id] === 100).length;
-        const progress = courseLessons.length > 0 ? Math.round((completedLessons / courseLessons.length) * 100) : 0;
-        
-        document.getElementById('page-content').innerHTML = `
-            <div class="container" style="padding-top:100px;">
-                <div class="course-banner"><h1>${escapeHtml(course.name)}</h1><p>${escapeHtml(course.description || '')}</p><div class="course-price" style="margin-top:1rem;">${course.price === 0 ? 'FREE' : `KES ${course.price.toLocaleString()}`}</div></div>
-                ${isEnrolled ? `<div class="card"><h3>📖 Course Modules</h3><div class="progress-bar"><div class="progress-fill" style="width: ${progress}%"></div></div><div class="grid" style="margin-top:1rem;">${courseLessons.map((l, idx) => `<div class="card" onclick="startLesson(${courseId}, ${l.id}, ${idx})"><h4>${idx+1}. ${escapeHtml(l.title)}</h4><div class="progress-bar"><div class="progress-fill" style="width: ${userProgress[l.id] || 0}%"></div></div><button class="btn btn-small">${userProgress[l.id] === 100 ? 'Completed' : 'Continue'}</button></div>`).join('')}</div></div>` : `<div class="card" style="text-align:center;"><h3>Enroll to Access Course Content</h3><button class="btn btn-primary" onclick="enrollAndStart(${courseId}, ${course.price})">${course.price === 0 ? 'Enroll Now' : `Pay KES ${course.price} & Enroll`}</button></div>`}
-                <button class="btn btn-outline" style="margin-top:1rem;" onclick="navigateTo('courses')">← Back to Courses</button>
-            </div>
-        `;
-    }
-    
-    window.enrollAndStart = async (courseId, price) => {
-        const success = await enrollInCourse(courseId, price);
-        if (success) navigateTo('course-detail', { courseId });
-    };
-    
-    window.startLesson = (courseId, lessonId, index) => { navigateTo('learn', { courseId, lessonId, lessonIndex: index }); };
-    
-    function renderLearnPage() {
-        const courseId = routeParams.courseId;
-        const lessonId = routeParams.lessonId;
-        const course = courses.find(c => c.id === courseId);
-        const courseLessons = lessons.filter(l => l.course_id === courseId).sort((a,b) => a.order - b.order);
-        let currentIndex = routeParams.lessonIndex !== undefined ? routeParams.lessonIndex : courseLessons.findIndex(l => l.id === lessonId);
-        if (currentIndex < 0) currentIndex = 0;
-        const lesson = courseLessons[currentIndex];
-        if (!course || !lesson) { navigateTo('courses'); return; }
-        const progressPercent = ((currentIndex + 1) / courseLessons.length) * 100;
-        
-        document.getElementById('page-content').innerHTML = `
-            <div class="container" style="padding-top:100px; max-width:800px;">
-                <div class="card"><div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap;"><h2>${escapeHtml(course.name)}</h2><span style="background:var(--primary); color:#0a192f; padding:4px 12px; border-radius:50px;">Lesson ${currentIndex+1} of ${courseLessons.length}</span></div>
-                <div class="progress-bar" style="margin:1rem 0;"><div class="progress-fill" style="width: ${progressPercent}%"></div></div>
-                <h3>${escapeHtml(lesson.title)}</h3><div style="margin-top:1.5rem; line-height:1.6;">${DOMPurify.sanitize(lesson.content || '<p>Content coming soon...</p>', { ALLOWED_TAGS: ['h1','h2','h3','p','ul','li','strong','em','div','br','hr','a','i','b','blockquote'] })}</div>
-                <div class="lesson-nav"><button class="btn btn-outline" onclick="prevLesson(${courseId}, ${currentIndex})" ${currentIndex === 0 ? 'disabled' : ''}>◀ Previous</button>
-                <button class="btn btn-primary" onclick="completeLesson(${courseId}, ${lesson.id}, ${currentIndex}, ${courseLessons.length})">✓ Mark Complete & Continue</button>
-                <button class="btn btn-outline" onclick="nextLesson(${courseId}, ${currentIndex})" ${currentIndex === courseLessons.length-1 ? 'disabled' : ''}>Next ▶</button></div>
-                <button class="btn btn-outline" style="margin-top:1rem;" onclick="navigateTo('course-detail', { courseId: ${courseId} })">← Back to Course</button></div>
-            </div>
-        `;
-    }
-    
-    window.prevLesson = (courseId, idx) => { if (idx > 0) navigateTo('learn', { courseId, lessonIndex: idx-1 }); };
-    window.nextLesson = (courseId, idx) => { const total = lessons.filter(l => l.course_id === courseId).length; if (idx < total - 1) navigateTo('learn', { courseId, lessonIndex: idx+1 }); };
-    window.completeLesson = async (courseId, lessonId, idx, total) => {
-        await updateProgress(lessonId, 100);
-        showToast('Lesson completed!', 'success');
-        if (idx + 1 < total) navigateTo('learn', { courseId, lessonIndex: idx+1 });
-        else { showToast('🎉 Course Completed!', 'success'); navigateTo('dashboard'); }
-    };
-    
-    function renderDashboard() {
-        const enrolledCourses = courses.filter(c => hasCourseAccess(c.id));
-        document.getElementById('page-content').innerHTML = `
-            <div class="container" style="padding-top:100px;"><h1 class="section-title">My <span>Dashboard</span></h1>
-            <div class="dashboard-stats"><div class="stat-card"><div class="stat-value">${userStats.totalProgress}%</div><div>Overall Progress</div></div>
-            <div class="stat-card"><div class="stat-value">${userStats.completedCourses}</div><div>Completed Courses</div></div>
-            <div class="stat-card"><div class="stat-value">${userStats.quizScore}%</div><div>Best Quiz Score</div></div></div>
-            <div class="card"><h3>📚 My Courses</h3>${enrolledCourses.length ? `<div class="grid">${enrolledCourses.map(c => `<div class="card" onclick="navigateTo('course-detail', { courseId: ${c.id} })"><i class="fas ${c.icon || 'fa-book'}" style="font-size:1.5rem; color:var(--primary);"></i><h3>${escapeHtml(c.name)}</h3><button class="btn btn-outline btn-small">Continue Learning</button></div>`).join('')}</div>` : '<p>You haven’t enrolled in any courses yet. <a href="#" onclick="navigateTo(\'courses\')" style="color:var(--primary);">Browse courses</a></p>'}</div>
-            <button class="btn btn-primary" onclick="navigateTo('courses')">Browse More Courses →</button></div>
-        `;
-    }
-    
-    function renderAdminDashboard() {
-        document.getElementById('page-content').innerHTML = `
-            <div class="container" style="padding-top:100px;"><h1 class="section-title">Admin <span>Dashboard</span></h1>
-            <div class="dashboard-stats"><div class="stat-card"><div class="stat-value">${courses.length}</div><div>Total Courses</div></div>
-            <div class="stat-card"><div class="stat-value">${questions.length}</div><div>Quiz Questions</div></div>
-            <div class="stat-card"><div class="stat-value">${libraryResources.length}</div><div>Library Items</div></div></div>
-            <div class="card"><h2><i class="fas fa-users"></i> Quick Actions</h2><div style="display:flex; gap:1rem; flex-wrap:wrap; margin-top:1rem;"><button class="btn btn-primary" onclick="window.location.href='admin.html'">Go to Full Admin Panel →</button><button class="btn btn-outline" onclick="showToast('Manage courses via Supabase dashboard', 'info')">Manage Courses</button><button class="btn btn-outline" onclick="showToast('Add questions via Supabase dashboard', 'info')">Add Questions</button></div></div>
-            <div class="card"><h2><i class="fas fa-chart-line"></i> Recent Activity</h2><p>Use the full admin panel at <strong>admin.html</strong> for complete control over users, payments, and content.</p></div></div>
-        `;
-    }
-    
-    function renderQuizPage() {
-        if (!currentUser) { showLoginModal(); return; }
-        if (questions.length === 0) { document.getElementById('page-content').innerHTML = `<div class="container" style="padding-top:100px;"><div class="empty-state"><i class="fas fa-brain"></i><h3>No Questions Available</h3><p>Check back later for quiz questions.</p></div></div>`; return; }
-        
-        const categories = ['All', ...new Set(questions.map(q => q.category).filter(Boolean))];
-        document.getElementById('page-content').innerHTML = `
-            <div class="container" style="padding-top:100px;"><div class="card"><h2>📝 NTSA Practice Exam</h2>
-            <div id="quizSetup"><div class="quiz-category-selector" id="quizCategorySelector">${categories.map(cat => `<button class="quiz-category-btn ${cat === 'All' ? 'active' : ''}" onclick="selectQuizCategory('${cat}')">${cat}</button>`).join('')}</div>
-            <button class="btn btn-primary" onclick="startQuiz()">Start Randomized Quiz (20 Questions)</button></div>
-            <div id="quizContainer" style="display:none;"></div></div></div>
-        `;
-    }
-    
-    window.selectedQuizCategory = 'All';
-    window.selectQuizCategory = (cat) => { window.selectedQuizCategory = cat; document.querySelectorAll('#quizCategorySelector .quiz-category-btn').forEach(btn => { btn.classList.toggle('active', btn.innerText === cat); }); };
-    
-    window.startQuiz = () => {
-        let filtered = questions;
-        if (window.selectedQuizCategory !== 'All') filtered = questions.filter(q => q.category === window.selectedQuizCategory);
-        if (filtered.length === 0) { showToast('No questions available', 'error'); return; }
-        const shuffled = [...filtered];
-        for (let i = shuffled.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]]; }
-        currentQuizQuestions = shuffled.slice(0, 20);
-        quizCurrentIndex = 0; quizScore = 0; quizUserAnswers = new Array(currentQuizQuestions.length).fill(null);
-        document.getElementById('quizSetup').style.display = 'none';
-        document.getElementById('quizContainer').style.display = 'block';
-        renderQuizQuestion();
-    };
-    
-    function renderQuizQuestion() {
-        if (quizCurrentIndex >= currentQuizQuestions.length) {
-            const percent = Math.round((quizScore / currentQuizQuestions.length) * 100);
-            saveQuizScore(percent);
-            document.getElementById('quizContainer').innerHTML = `<div style="text-align:center;"><h3>🎉 Quiz Complete!</h3><p>Score: ${quizScore}/${currentQuizQuestions.length} (${percent}%)</p><button class="btn btn-primary" onclick="navigateTo('dashboard')">Dashboard</button><button class="btn btn-outline" onclick="resetQuiz()">Try Again</button></div>`;
-            return;
-        }
-        const q = currentQuizQuestions[quizCurrentIndex];
-        const options = [q.option_a, q.option_b, q.option_c, q.option_d];
-        const letters = ['a','b','c','d'];
-        const currentAnswer = quizUserAnswers[quizCurrentIndex];
-        document.getElementById('quizContainer').innerHTML = `
-            <div class="quiz-question">${escapeHtml(q.question_text)}</div><div class="quiz-options">${options.map((opt, idx) => `<div class="quiz-option ${currentAnswer !== null && letters[idx] === q.correct_option ? 'correct' : (currentAnswer === letters[idx] ? 'wrong' : '')}" onclick="if(${currentAnswer === null}) submitAnswer('${letters[idx]}', ${idx === q.correct_option})">${String.fromCharCode(65+idx)}. ${escapeHtml(opt)}</div>`).join('')}</div>
-            <div id="quizFeedback">${currentAnswer !== null ? `<span style="color: ${currentAnswer === q.correct_option ? '#00ff88' : '#ff4757'}">${currentAnswer === q.correct_option ? '✓ Correct!' : '✗ Incorrect'}</span> ${escapeHtml(q.explanation || '')}` : ''}</div>
-            <div style="display:flex; justify-content:space-between; margin-top:1rem;"><button class="btn btn-outline" onclick="prevQuizQuestion()" ${quizCurrentIndex === 0 ? 'disabled' : ''}>◀ Previous</button><span>${quizCurrentIndex+1}/${currentQuizQuestions.length}</span><button class="btn btn-primary" onclick="nextQuizQuestion()">Next ▶</button></div>
-        `;
-    }
-    
-    window.submitAnswer = (selectedLetter, isCorrect) => {
-        if (quizUserAnswers[quizCurrentIndex] !== null) return;
-        quizUserAnswers[quizCurrentIndex] = selectedLetter;
-        if (isCorrect) quizScore++;
-        renderQuizQuestion();
-    };
-    window.nextQuizQuestion = () => { if (quizCurrentIndex < currentQuizQuestions.length - 1) { quizCurrentIndex++; renderQuizQuestion(); } else { quizCurrentIndex = currentQuizQuestions.length; renderQuizQuestion(); } };
-    window.prevQuizQuestion = () => { if (quizCurrentIndex > 0) { quizCurrentIndex--; renderQuizQuestion(); } };
-    window.resetQuiz = () => { document.getElementById('quizSetup').style.display = 'block'; document.getElementById('quizContainer').style.display = 'none'; currentQuizQuestions = []; };
-    
-    async function saveQuizScore(percent) {
-        if (!currentUser) return;
-        await supabase.from('quiz_attempts').insert({ user_id: currentUser.id, score: percent, total: 100, completed_at: new Date() });
-        await loadUserStats();
-    }
-    
-    function renderLibraryPage() {
-        if (libraryResources.length === 0) { document.getElementById('page-content').innerHTML = `<div class="container" style="padding-top:100px;"><div class="empty-state"><i class="fas fa-book-open"></i><h3>No Library Resources</h3><p>Check back later.</p></div></div>`; return; }
-        document.getElementById('page-content').innerHTML = `<div class="container" style="padding-top:100px;"><h1 class="section-title">Digital <span>Safety Library</span></h1><div class="grid">${libraryResources.map(r => `<div class="card"><i class="fas ${r.category === 'PDF' ? 'fa-file-pdf' : 'fa-lightbulb'}" style="font-size:2rem; color:var(--primary);"></i><h3>${escapeHtml(r.title)}</h3><p>${escapeHtml(r.description || '')}</p><button class="btn btn-outline btn-small" onclick="showToast('Resource: ${escapeHtml(r.title)}', 'info')">View Resource</button></div>`).join('')}</div></div>`;
-    }
-    
-    function showLegal(page) { alert(`${page === 'privacy' ? 'Privacy Policy' : 'Terms of Service'} - Standard NTSA-aligned policies.`); }
-    function navigateTo(page, params = {}) { currentPage = page; routeParams = params; renderPage(); }
-    
-    // Start the app
     initSupabase();
 </script>
 </body>
