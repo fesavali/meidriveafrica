@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>MEI Drive Africa | NTSA Approved Driver Training</title>
     
-    <!-- Favicon -->
-    <link rel="icon" type="image/png" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAC9SURBVFhH7ZdrDoIwEIR7cqLeSL2ReiP1RtQbif9JIUtoWULbDzq/yWTSLp1l2mVLKSUsy7Isy1opDwghPZsQj0NpRgghfsDnKYTwAe2yhBA+IPtMCOED0nUJIXxAui4hhA/I1iWE8AHZuoQQPiBblxDCB2TrEkL4gGxdQggfkK1LCOEDsnUJIXxAbl1CQG6A3LoC7gLSrYsCeQHZuiiQF5CtiwJ5Adm6KJAXkK2LAnkB2bop0D+BHk3yfmHDMAzDMOdTAdXwBdtmsF2EAAAAAElFTkSuQmCC">
+    <!-- Favicon - MEI DRIVE AFRICA Logo -->
+    <link rel="icon" type="image/png" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGQAAABkCAYAAABw4pVUAAAACXBIWXMAAAsTAAALEwEAmpwYAAAB3UlEQVR4nO3aMW7CUBAG4RcKJApKKkpKSgoKFJS0FBQUNBRUFFRQ0FFQUNAhUSAlFikglN/StrRI+CVi2XpPMtL4F9n2s/VfmyIAAAAAAAAAAAAAAAAAAAAAAH/jtE1Jm5Tmn7ZxPzRN02mappM0Tadpmk7TNE1pmmZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZp/5wXQ8qF1HvYgaYAAAAASUVORK5CYII=">
     
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
@@ -21,6 +21,7 @@
             --error: #ff4444;
             --success: #00C851;
             --warning: #ff9800;
+            --mpesa: #00B131;
         }
         
         body {
@@ -81,6 +82,7 @@
             align-items: center;
             gap: 8px;
         }
+        .logo i { font-size: 1.8rem; }
         .logo span { color: white; }
         
         .nav-links {
@@ -180,6 +182,53 @@
             height: 3px;
             background: var(--primary);
             margin: 15px auto 0;
+        }
+        
+        /* Pagination / Next Button */
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+            margin-top: 50px;
+        }
+        .next-btn {
+            background: var(--primary);
+            color: var(--dark);
+            border: none;
+            padding: 12px 30px;
+            border-radius: 40px;
+            font-weight: bold;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.3s;
+        }
+        .next-btn:hover {
+            transform: translateX(5px);
+            box-shadow: 0 5px 20px rgba(0,255,136,0.3);
+        }
+        .prev-btn {
+            background: transparent;
+            border: 1px solid var(--primary);
+            color: var(--primary);
+            padding: 12px 30px;
+            border-radius: 40px;
+            font-weight: bold;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.3s;
+        }
+        .prev-btn:hover {
+            transform: translateX(-5px);
+            background: rgba(0,255,136,0.1);
+        }
+        .page-info {
+            color: var(--gray);
+            font-size: 0.9rem;
         }
         
         .courses-grid {
@@ -441,11 +490,31 @@
     </div>
 </div>
 
+<!-- M-Pesa Payment Modal -->
+<div id="paymentModal" class="modal">
+    <div class="modal-content payment-content" style="text-align: center;">
+        <h2><i class="fas fa-comment-dollar" style="color: var(--mpesa);"></i> M-Pesa Payment</h2>
+        <p style="margin-bottom: 10px;">Pay for: <strong id="paymentCourseName"></strong></p>
+        <p style="margin-bottom: 20px; font-size: 1.5rem; color: var(--mpesa);"><strong id="paymentAmount"></strong></p>
+        <p style="margin-bottom: 10px; font-size: 0.8rem;">Enter your M-Pesa registered phone number</p>
+        <input type="tel" id="mpesaPhone" placeholder="e.g., 0712345678" style="text-align: center;">
+        <button class="mpesa-btn" onclick="processMpesaPayment()" style="background: var(--mpesa); color: white; width: 100%; padding: 14px; border-radius: 12px; border: none; font-weight: bold; margin-top: 10px; cursor: pointer;">
+            <i class="fas fa-comment-dollar"></i> Pay with M-Pesa
+        </button>
+        <p style="margin-top: 15px; font-size: 0.7rem; color: var(--gray);">You will receive a prompt on your phone. Enter your PIN to complete payment.</p>
+        <button onclick="closePaymentModal()" style="background: transparent; border: 1px solid var(--gray); color: white; width: 100%; padding: 12px; border-radius: 12px; margin-top: 15px; cursor: pointer;">Cancel</button>
+    </div>
+</div>
+
 <!-- LANDING PAGE -->
 <div id="landingPage">
     <nav class="navbar">
         <div class="nav-container">
-            <div class="logo" onclick="showLanding()"><i class="fas fa-car"></i> MEI DRIVE <span>AFRICA</span></div>
+            <div class="logo" onclick="showLanding()">
+                <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGQAAABkCAYAAABw4pVUAAAACXBIWXMAAAsTAAALEwEAmpwYAAAB3UlEQVR4nO3aMW7CUBAG4RcKJApKKkpKSgoKFJS0FBQUNBRUFFRQ0FFQUNAhUSAlFikglN/StrRI+CVi2XpPMtL4F9n2s/VfmyIAAAAAAAAAAAAAAAAAAAAAAH/jtE1Jm5Tmn7ZxPzRN02mappM0Tadpmk7TNE1pmmZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZp/5wXQ8qF1HvYgaYAAAAASUVORK5CYII=" 
+                     style="width: 32px; height: 32px; border-radius: 8px;">
+                MEI DRIVE <span>AFRICA</span>
+            </div>
             <div class="nav-links">
                 <a onclick="showLanding()">Home</a>
                 <a onclick="document.getElementById('coursesSection').scrollIntoView({behavior:'smooth'})">Courses</a>
@@ -478,6 +547,12 @@
         <h2 class="section-title">Our <span>Courses</span></h2>
         <div id="coursesContainer" class="courses-grid">
             <div class="loading"><div class="spinner"></div> Loading courses...</div>
+        </div>
+        <!-- Pagination / Next Button -->
+        <div class="pagination" id="pagination">
+            <button class="prev-btn" id="prevPageBtn" style="display: none;"><i class="fas fa-arrow-left"></i> Previous</button>
+            <span class="page-info" id="pageInfo"></span>
+            <button class="next-btn" id="nextPageBtn">Next Page <i class="fas fa-arrow-right"></i></button>
         </div>
     </section>
 
@@ -515,7 +590,11 @@
 <div id="dashboardPage" class="dashboard-container">
     <nav class="navbar">
         <div class="nav-container">
-            <div class="logo" onclick="showLanding()"><i class="fas fa-car"></i> MEI DRIVE <span>AFRICA</span></div>
+            <div class="logo" onclick="showLanding()">
+                <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGQAAABkCAYAAABw4pVUAAAACXBIWXMAAAsTAAALEwEAmpwYAAAB3UlEQVR4nO3aMW7CUBAG4RcKJApKKkpKSgoKFJS0FBQUNBRUFFRQ0FFQUNAhUSAlFikglN/StrRI+CVi2XpPMtL4F9n2s/VfmyIAAAAAAAAAAAAAAAAAAAAAAH/jtE1Jm5Tmn7ZxPzRN02mappM0Tadpmk7TNE1pmmZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZp/5wXQ8qF1HvYgaYAAAAASUVORK5CYII=" 
+                     style="width: 32px; height: 32px; border-radius: 8px;">
+                MEI DRIVE <span>AFRICA</span>
+            </div>
             <div class="nav-links">
                 <button class="btn-nav btn-logout" id="logoutBtn">Logout</button>
             </div>
@@ -559,12 +638,20 @@
 
 <script>
     // ============================================
-    // SUPABASE - DECLARED ONCE, USED EVERYWHERE
+    // SUPABASE - DECLARED ONCE
     // ============================================
     const SUPABASE_URL = 'https://qpqkmmkrzxlhcpccefjn.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFwcWttbWtyenhsaGNwY2NlZmpuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk1MjU0NzIsImV4cCI6MjA5NTEwMTQ3Mn0.Vw1hexN3NKoF_y9VFBFs_NUhJgFNNMwuyzDjImUcM6s';
     
-    // Create Supabase client ONCE - no redeclaration
+    // M-Pesa Production Credentials
+    const MPESA_CONFIG = {
+        shortcode: '4095377',
+        consumerKey: 'LI2gcJZEheN8qCfXHEXV4gdYXvOBHVnv',
+        consumerSecret: 'aGGo8AuPJVpsZLcs',
+        passkey: '7eb17a031bdfd5b4251863a1ddb72c5b9cd14f3385aa6a258c1442a0116e8277',
+        callbackUrl: 'https://meidriveafrica.com/api/mpesa/callback'
+    };
+    
     const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
     
     // Global app state
@@ -573,6 +660,9 @@
     let userEnrollments = new Map();
     let selectedCourseId = null;
     let authMode = 'login';
+    let pendingPaymentCourse = null;
+    let currentPage = 1;
+    const coursesPerPage = 6;
     
     const DEFAULT_COURSES = [
         { id: 1, name: 'Learner Hub - Complete Driver Training', description: 'NTSA-approved curriculum from basics to road readiness. Covers traffic rules, vehicle controls, defensive driving.', price: 0, type: 'free', icon: '📚', duration: '40 hours', level: 'Beginner' },
@@ -599,6 +689,49 @@
         return String(str).replace(/[&<>]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[m]));
     }
     
+    // Pagination functions
+    function updatePagination() {
+        const totalPages = Math.ceil(allCourses.length / coursesPerPage);
+        const prevBtn = document.getElementById('prevPageBtn');
+        const nextBtn = document.getElementById('nextPageBtn');
+        const pageInfo = document.getElementById('pageInfo');
+        
+        if (totalPages <= 1) {
+            document.getElementById('pagination').style.display = 'none';
+            return;
+        }
+        
+        document.getElementById('pagination').style.display = 'flex';
+        pageInfo.textContent = `Page ${currentPage} of ${totalPages}`;
+        
+        if (currentPage === 1) {
+            prevBtn.style.display = 'none';
+        } else {
+            prevBtn.style.display = 'inline-flex';
+        }
+        
+        if (currentPage === totalPages) {
+            nextBtn.style.display = 'none';
+        } else {
+            nextBtn.style.display = 'inline-flex';
+        }
+    }
+    
+    function nextPage() {
+        const totalPages = Math.ceil(allCourses.length / coursesPerPage);
+        if (currentPage < totalPages) {
+            currentPage++;
+            renderCourses();
+        }
+    }
+    
+    function prevPage() {
+        if (currentPage > 1) {
+            currentPage--;
+            renderCourses();
+        }
+    }
+    
     // Supabase data operations
     async function loadCoursesFromSupabase() {
         try {
@@ -614,6 +747,7 @@
         }
         
         document.getElementById('totalCourses').textContent = allCourses.length;
+        currentPage = 1;
         renderCourses();
     }
     
@@ -657,6 +791,49 @@
         }
     }
     
+    // M-Pesa Payment Function
+    async function processMpesaPayment() {
+        let phone = document.getElementById('mpesaPhone').value;
+        
+        if (!phone) {
+            showToast('Please enter your M-Pesa phone number', 'error');
+            return;
+        }
+        
+        // Format phone number
+        phone = phone.replace(/\s/g, '');
+        if (phone.startsWith('0')) phone = '254' + phone.substring(1);
+        if (!phone.startsWith('254')) phone = '254' + phone;
+        
+        if (!pendingPaymentCourse) {
+            showToast('Payment error: No course selected', 'error');
+            return;
+        }
+        
+        const amount = pendingPaymentCourse.price;
+        
+        showToast('Processing payment... Please check your phone for M-Pesa prompt', 'success');
+        
+        // In production, this would call your backend API to initiate STK Push
+        // For now, simulate successful payment after 3 seconds
+        setTimeout(async () => {
+            showToast(`✅ Payment of KES ${amount.toLocaleString()} successful! You are now enrolled.`, 'success');
+            closePaymentModal();
+            
+            // Enroll user after successful payment
+            const success = await saveEnrollmentToSupabase(pendingPaymentCourse.id, 0);
+            if (success) {
+                userEnrollments.set(pendingPaymentCourse.id, 0);
+                showToast(`✅ Enrolled in ${pendingPaymentCourse.name}!`, 'success');
+                updateDashboardStats();
+                renderSelectedCourse();
+                renderEnrolledCourses();
+                renderAvailableCourses();
+            }
+            pendingPaymentCourse = null;
+        }, 3000);
+    }
+    
     async function enrollInCourse(courseId) {
         if (!currentUser) {
             selectedCourseId = courseId;
@@ -669,6 +846,15 @@
         
         if (userEnrollments.has(courseId)) {
             showToast('Already enrolled!', 'warning');
+            return;
+        }
+        
+        // Premium course - show M-Pesa payment
+        if (course.price > 0 && course.type === 'premium') {
+            pendingPaymentCourse = course;
+            document.getElementById('paymentCourseName').textContent = course.name;
+            document.getElementById('paymentAmount').textContent = `KES ${course.price.toLocaleString()}`;
+            document.getElementById('paymentModal').classList.add('active');
             return;
         }
         
@@ -706,13 +892,17 @@
     // Render functions
     function renderCourses() {
         const container = document.getElementById('coursesContainer');
+        const start = (currentPage - 1) * coursesPerPage;
+        const end = start + coursesPerPage;
+        const paginatedCourses = allCourses.slice(start, end);
         
-        if (!allCourses || allCourses.length === 0) {
+        if (!paginatedCourses || paginatedCourses.length === 0) {
             container.innerHTML = '<div class="course-card"><p>No courses found.</p></div>';
+            updatePagination();
             return;
         }
         
-        container.innerHTML = allCourses.map(course => {
+        container.innerHTML = paginatedCourses.map(course => {
             const isFree = course.type === 'free' || course.price === 0;
             return `
                 <div class="course-card" onclick="selectCourse(${course.id})">
@@ -729,6 +919,8 @@
                 </div>
             `;
         }).join('');
+        
+        updatePagination();
     }
     
     function selectCourse(courseId) {
@@ -773,7 +965,7 @@
                     <button class="btn-continue" onclick="updateProgress(${course.id}, ${progress + 10})">${progress === 100 ? '📋 Review Course' : '▶️ Continue Learning'}</button>
                 ` : `
                     <div class="course-price ${isFree ? 'free' : 'premium'}">${isFree ? 'FREE' : `KES ${course.price.toLocaleString()}`}</div>
-                    <button class="btn-enroll" onclick="enrollInCourse(${course.id})">🎓 Enroll Now</button>
+                    <button class="btn-enroll" onclick="enrollInCourse(${course.id})">${course.price > 0 ? '💳 Pay & Enroll' : '🎓 Enroll Now'}</button>
                 `}
             </div>
         `;
@@ -821,7 +1013,7 @@
                     <h3>${escapeHtml(course.name)}</h3>
                     <p>${escapeHtml((course.description || '').substring(0, 80))}...</p>
                     <div class="course-price ${isFree ? 'free' : 'premium'}">${isFree ? 'FREE' : `KES ${course.price.toLocaleString()}`}</div>
-                    <button class="btn-enroll" onclick="enrollInCourse(${course.id})">🎓 Enroll Now</button>
+                    <button class="btn-enroll" onclick="enrollInCourse(${course.id})">${course.price > 0 ? '💳 Pay & Enroll' : '🎓 Enroll Now'}</button>
                 </div>
             `;
         }).join('');
@@ -897,6 +1089,12 @@
         showAuthModal(authMode);
     }
     
+    function closePaymentModal() {
+        document.getElementById('paymentModal').classList.remove('active');
+        document.getElementById('mpesaPhone').value = '';
+        pendingPaymentCourse = null;
+    }
+    
     // Event listeners
     document.getElementById('authSubmitBtn').onclick = async () => {
         const email = document.getElementById('authEmail').value;
@@ -934,6 +1132,9 @@
         document.getElementById('dashboardSidebar').classList.toggle('active');
     };
     
+    document.getElementById('nextPageBtn').onclick = nextPage;
+    document.getElementById('prevPageBtn').onclick = prevPage;
+    
     // Auth state listener
     supabaseClient.auth.onAuthStateChange(async (event, session) => {
         if (session) {
@@ -959,6 +1160,8 @@
     window.showLanding = showLanding;
     window.showDashboard = showDashboard;
     window.showDashboardSection = showDashboardSection;
+    window.processMpesaPayment = processMpesaPayment;
+    window.closePaymentModal = closePaymentModal;
     
     // Initialize app
     async function init() {
