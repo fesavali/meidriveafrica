@@ -560,51 +560,383 @@
 
 <script>
     // ============================================
-    // SUPABASE CONFIGURATION - REAL PRODUCTION KEYS
+    // SUPABASE CONFIGURATION - FIXED NO REDECLARATION
     // ============================================
-    const SUPABASE_URL = 'https://qpqkmmkrzxlhcpccefjn.supabase.co';
-    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFwcWttbWtyenhsaGNwY2NlZmpuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk1MjU0NzIsImV4cCI6MjA5NTEwMTQ3Mn0.Vw1hexN3NKoF_y9VFBFs_NUhJgFNNMwuyzDjImUcM6s';
-    
-    let supabase;
-    let currentUser = null;
-    let allCourses = [];
-    let userEnrollments = new Map();
-    let selectedCourseId = null;
-    let authMode = 'login';
-    
-    // Default courses - will be replaced by Supabase data
-    const DEFAULT_COURSES = [
-        { id: 1, name: 'Learner Hub - Complete Driver Training', description: 'NTSA-approved curriculum from basics to road readiness. Covers traffic rules, vehicle controls, defensive driving.', price: 0, type: 'free', icon: '📚', duration: '40 hours', level: 'Beginner' },
-        { id: 2, name: 'Boda Boda Professional Course', description: 'Professional motorcycle taxi training including safety, customer service, road regulations.', price: 0, type: 'free', icon: '🏍️', duration: '20 hours', level: 'Beginner' },
-        { id: 3, name: 'Defensive Driving Course', description: 'Master advanced driving techniques, hazard perception, emergency maneuvers.', price: 1999, type: 'premium', icon: '🛡️', duration: '16 hours', level: 'Advanced' },
-        { id: 4, name: 'Professional Driver Course', description: 'Comprehensive training for PSV, logistics, and commercial drivers.', price: 4999, type: 'premium', icon: '🚛', duration: '32 hours', level: 'Professional' },
-        { id: 5, name: 'Electric Vehicle Course', description: 'Master EV technology, charging systems, battery maintenance.', price: 2999, type: 'premium', icon: '⚡', duration: '12 hours', level: 'Intermediate' },
-        { id: 6, name: 'School Transport Safety', description: 'Specialized certification for school bus drivers.', price: 1999, type: 'premium', icon: '🚸', duration: '24 hours', level: 'Professional' },
-        { id: 7, name: 'E-Safety Library', description: 'Digital safety for drivers - online records, cybersecurity.', price: 0, type: 'free', icon: '💻', duration: 'Self-paced', level: 'All Levels' },
-        { id: 8, name: 'Quiz Bank - Exam Preparation', description: '1000+ NTSA practice questions for driving theory test.', price: 0, type: 'free', icon: '📝', duration: 'Self-paced', level: 'All Levels' }
-    ];
-    
-    // ============================================
-    // INITIALIZATION - LOAD FROM SUPABASE
-    // ============================================
-    async function init() {
-        supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    (function() {
+        const SUPABASE_URL = 'https://qpqkmmkrzxlhcpccefjn.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFwcWttbWtyenhsaGNwY2NlZmpuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk1MjU0NzIsImV4cCI6MjA5NTEwMTQ3Mn0.Vw1hexN3NKoF_y9VFBFs_NUhJgFNNMwuyzDjImUcM6s';
         
-        // Load courses from Supabase
-        await loadCoursesFromSupabase();
+        // Create client inside IIFE to avoid global conflicts
+        const _supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         
-        // Check authentication
-        const { data: { session } } = await supabase.auth.getSession();
-        if (session) {
-            currentUser = session.user;
-            await loadEnrollmentsFromSupabase();
-            showDashboard();
-            updateProfileUI();
-            showToast(`Welcome back, ${currentUser.email.split('@')[0]}!`, 'success');
+        let currentUser = null;
+        let allCourses = [];
+        let userEnrollments = new Map();
+        let selectedCourseId = null;
+        let authMode = 'login';
+        
+        const DEFAULT_COURSES = [
+            { id: 1, name: 'Learner Hub - Complete Driver Training', description: 'NTSA-approved curriculum from basics to road readiness. Covers traffic rules, vehicle controls, defensive driving.', price: 0, type: 'free', icon: '📚', duration: '40 hours', level: 'Beginner' },
+            { id: 2, name: 'Boda Boda Professional Course', description: 'Professional motorcycle taxi training including safety, customer service, road regulations.', price: 0, type: 'free', icon: '🏍️', duration: '20 hours', level: 'Beginner' },
+            { id: 3, name: 'Defensive Driving Course', description: 'Master advanced driving techniques, hazard perception, emergency maneuvers.', price: 1999, type: 'premium', icon: '🛡️', duration: '16 hours', level: 'Advanced' },
+            { id: 4, name: 'Professional Driver Course', description: 'Comprehensive training for PSV, logistics, and commercial drivers.', price: 4999, type: 'premium', icon: '🚛', duration: '32 hours', level: 'Professional' },
+            { id: 5, name: 'Electric Vehicle Course', description: 'Master EV technology, charging systems, battery maintenance.', price: 2999, type: 'premium', icon: '⚡', duration: '12 hours', level: 'Intermediate' },
+            { id: 6, name: 'School Transport Safety', description: 'Specialized certification for school bus drivers.', price: 1999, type: 'premium', icon: '🚸', duration: '24 hours', level: 'Professional' },
+            { id: 7, name: 'E-Safety Library', description: 'Digital safety for drivers - online records, cybersecurity.', price: 0, type: 'free', icon: '💻', duration: 'Self-paced', level: 'All Levels' },
+            { id: 8, name: 'Quiz Bank - Exam Preparation', description: '1000+ NTSA practice questions for driving theory test.', price: 0, type: 'free', icon: '📝', duration: 'Self-paced', level: 'All Levels' }
+        ];
+        
+        // Helper functions
+        function showToast(message, type = 'success') {
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.innerHTML = `<i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'}"></i> ${message}`;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
         }
         
-        // Listen for auth changes
-        supabase.auth.onAuthStateChange(async (event, session) => {
+        function escapeHtml(str) {
+            if (!str) return '';
+            return String(str).replace(/[&<>]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[m]));
+        }
+        
+        // Supabase operations
+        async function loadCoursesFromSupabase() {
+            try {
+                const { data, error } = await _supabase.from('courses').select('*').order('id');
+                if (!error && data && data.length > 0) {
+                    allCourses = data;
+                    console.log(`✅ Loaded ${data.length} courses from Supabase`);
+                } else {
+                    allCourses = DEFAULT_COURSES;
+                }
+            } catch (err) {
+                allCourses = DEFAULT_COURSES;
+            }
+            
+            document.getElementById('totalCourses').textContent = allCourses.length;
+            renderCourses();
+        }
+        
+        async function loadEnrollmentsFromSupabase() {
+            if (!currentUser) return;
+            
+            try {
+                const { data, error } = await _supabase
+                    .from('enrollments')
+                    .select('course_id, progress')
+                    .eq('user_id', currentUser.id);
+                
+                userEnrollments.clear();
+                if (!error && data) {
+                    data.forEach(e => userEnrollments.set(e.course_id, e.progress || 0));
+                }
+            } catch (err) {}
+            
+            updateDashboardStats();
+            renderEnrolledCourses();
+            renderAvailableCourses();
+        }
+        
+        async function saveEnrollmentToSupabase(courseId, progress = 0) {
+            if (!currentUser) return false;
+            
+            try {
+                const { error } = await _supabase
+                    .from('enrollments')
+                    .upsert({
+                        user_id: currentUser.id,
+                        course_id: courseId,
+                        progress: progress,
+                        updated_at: new Date()
+                    });
+                
+                if (error) throw error;
+                return true;
+            } catch (err) {
+                return false;
+            }
+        }
+        
+        async function enrollInCourse(courseId) {
+            if (!currentUser) {
+                selectedCourseId = courseId;
+                showAuthModal('login');
+                return;
+            }
+            
+            const course = allCourses.find(c => c.id === courseId);
+            if (!course) return;
+            
+            if (userEnrollments.has(courseId)) {
+                showToast('Already enrolled!', 'warning');
+                return;
+            }
+            
+            const success = await saveEnrollmentToSupabase(courseId, 0);
+            if (success) {
+                userEnrollments.set(courseId, 0);
+                showToast(`✅ Enrolled in ${course.name}!`, 'success');
+                updateDashboardStats();
+                renderSelectedCourse();
+                renderEnrolledCourses();
+                renderAvailableCourses();
+            } else {
+                showToast('Enrollment failed', 'error');
+            }
+        }
+        
+        async function updateProgress(courseId, newProgress) {
+            if (!currentUser || !userEnrollments.has(courseId)) return;
+            
+            const progress = Math.min(100, newProgress);
+            userEnrollments.set(courseId, progress);
+            
+            await _supabase
+                .from('enrollments')
+                .update({ progress, updated_at: new Date() })
+                .eq('user_id', currentUser.id)
+                .eq('course_id', courseId);
+            
+            if (progress === 100) showToast('🎉 Course completed! Congratulations!', 'success');
+            updateDashboardStats();
+            renderSelectedCourse();
+            renderEnrolledCourses();
+        }
+        
+        // Render functions
+        function renderCourses() {
+            const container = document.getElementById('coursesContainer');
+            
+            if (!allCourses || allCourses.length === 0) {
+                container.innerHTML = '<div class="course-card"><p>No courses found.</p></div>';
+                return;
+            }
+            
+            container.innerHTML = allCourses.map(course => {
+                const isFree = course.type === 'free' || course.price === 0;
+                return `
+                    <div class="course-card" onclick="window.selectCourse(${course.id})">
+                        <div class="course-icon">${course.icon || '📚'}</div>
+                        <span class="course-badge ${isFree ? 'badge-free' : 'badge-premium'}">${isFree ? 'FREE' : 'PREMIUM'}</span>
+                        <h3>${escapeHtml(course.name)}</h3>
+                        <p>${escapeHtml((course.description || '').substring(0, 100))}...</p>
+                        <div style="display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--gray); margin-bottom: 10px;">
+                            <span>⏱️ ${course.duration || 'Self-paced'}</span>
+                            <span>📊 ${course.level || 'All Levels'}</span>
+                        </div>
+                        <div class="course-price ${isFree ? 'free' : 'premium'}">${isFree ? 'FREE' : `KES ${(course.price || 0).toLocaleString()}`}</div>
+                        <button class="btn-view" onclick="event.stopPropagation(); window.selectCourse(${course.id})">View Course →</button>
+                    </div>
+                `;
+            }).join('');
+        }
+        
+        function selectCourse(courseId) {
+            selectedCourseId = courseId;
+            if (currentUser) {
+                showDashboard();
+                renderSelectedCourse();
+            } else {
+                showAuthModal('login');
+            }
+        }
+        
+        function renderSelectedCourse() {
+            const container = document.getElementById('selectedCourseCard');
+            if (!selectedCourseId) {
+                container.innerHTML = '<div class="course-card"><p>📌 Select a course from the homepage to start learning</p></div>';
+                return;
+            }
+            
+            const course = allCourses.find(c => c.id === selectedCourseId);
+            if (!course) return;
+            
+            const isEnrolled = userEnrollments.has(course.id);
+            const progress = userEnrollments.get(course.id) || 0;
+            const isFree = course.type === 'free' || course.price === 0;
+            
+            container.innerHTML = `
+                <div class="course-card">
+                    <div class="course-icon">${course.icon || '📚'}</div>
+                    <span class="course-badge ${isEnrolled ? 'badge-enrolled' : (isFree ? 'badge-free' : 'badge-premium')}">
+                        ${isEnrolled ? '✅ ENROLLED' : (isFree ? 'FREE' : 'PREMIUM')}
+                    </span>
+                    <h3>${escapeHtml(course.name)}</h3>
+                    <p>${escapeHtml(course.description || '')}</p>
+                    <div style="display: flex; gap: 15px; font-size: 0.8rem; color: var(--gray); margin: 10px 0;">
+                        <span>⏱️ ${course.duration || 'Self-paced'}</span>
+                        <span>📊 ${course.level || 'All Levels'}</span>
+                    </div>
+                    ${isEnrolled ? `
+                        <div class="progress-bar"><div class="progress-fill" style="width: ${progress}%"></div></div>
+                        <p style="text-align: center;">${progress}% Complete</p>
+                        <button class="btn-continue" onclick="updateProgress(${course.id}, ${progress + 10})">${progress === 100 ? '📋 Review Course' : '▶️ Continue Learning'}</button>
+                    ` : `
+                        <div class="course-price ${isFree ? 'free' : 'premium'}">${isFree ? 'FREE' : `KES ${course.price.toLocaleString()}`}</div>
+                        <button class="btn-enroll" onclick="enrollInCourse(${course.id})">🎓 Enroll Now</button>
+                    `}
+                </div>
+            `;
+        }
+        
+        function renderEnrolledCourses() {
+            const container = document.getElementById('enrolledCoursesList');
+            const enrolled = allCourses.filter(c => userEnrollments.has(c.id));
+            
+            if (enrolled.length === 0) {
+                container.innerHTML = '<div class="course-card"><p>No enrolled courses yet.</p></div>';
+                return;
+            }
+            
+            container.innerHTML = enrolled.map(course => {
+                const progress = userEnrollments.get(course.id) || 0;
+                return `
+                    <div class="course-card">
+                        <div class="course-icon">${course.icon || '📚'}</div>
+                        <span class="course-badge badge-enrolled">✅ ENROLLED</span>
+                        <h3>${escapeHtml(course.name)}</h3>
+                        <div class="progress-bar"><div class="progress-fill" style="width: ${progress}%"></div></div>
+                        <p style="text-align: center;">${progress}% Complete</p>
+                        <button class="btn-continue" onclick="updateProgress(${course.id}, ${progress + 10})">Continue →</button>
+                    </div>
+                `;
+            }).join('');
+        }
+        
+        function renderAvailableCourses() {
+            const container = document.getElementById('availableCoursesList');
+            const available = allCourses.filter(c => !userEnrollments.has(c.id));
+            
+            if (available.length === 0) {
+                container.innerHTML = '<div class="course-card"><p>🎉 You\'re enrolled in all courses!</p></div>';
+                return;
+            }
+            
+            container.innerHTML = available.map(course => {
+                const isFree = course.type === 'free' || course.price === 0;
+                return `
+                    <div class="course-card">
+                        <div class="course-icon">${course.icon || '📚'}</div>
+                        <span class="course-badge ${isFree ? 'badge-free' : 'badge-premium'}">${isFree ? 'FREE' : 'PREMIUM'}</span>
+                        <h3>${escapeHtml(course.name)}</h3>
+                        <p>${escapeHtml((course.description || '').substring(0, 80))}...</p>
+                        <div class="course-price ${isFree ? 'free' : 'premium'}">${isFree ? 'FREE' : `KES ${course.price.toLocaleString()}`}</div>
+                        <button class="btn-enroll" onclick="enrollInCourse(${course.id})">🎓 Enroll Now</button>
+                    </div>
+                `;
+            }).join('');
+        }
+        
+        function updateDashboardStats() {
+            const enrolledCount = userEnrollments.size;
+            const completedCount = Array.from(userEnrollments.values()).filter(p => p === 100).length;
+            const totalProgress = Array.from(userEnrollments.values()).reduce((sum, p) => sum + p, 0);
+            const avgProgress = enrolledCount > 0 ? Math.round(totalProgress / enrolledCount) : 0;
+            
+            document.getElementById('dashTotalCourses').textContent = allCourses.length;
+            document.getElementById('dashEnrolledCount').textContent = enrolledCount;
+            document.getElementById('dashCompletedCount').textContent = completedCount;
+            document.getElementById('dashOverallProgress').textContent = `${avgProgress}%`;
+        }
+        
+        function updateProfileUI() {
+            if (currentUser) {
+                const name = currentUser.email.split('@')[0];
+                document.getElementById('profileName').textContent = name;
+                document.getElementById('profileEmail').textContent = currentUser.email;
+                document.getElementById('dashboardUserName').textContent = name;
+            }
+        }
+        
+        // Navigation
+        function showLanding() {
+            document.getElementById('landingPage').style.display = 'block';
+            document.getElementById('dashboardPage').style.display = 'none';
+            document.getElementById('dashboardSidebar').classList.remove('active');
+        }
+        
+        function showDashboard() {
+            document.getElementById('landingPage').style.display = 'none';
+            document.getElementById('dashboardPage').style.display = 'block';
+            updateDashboardStats();
+            renderSelectedCourse();
+            renderEnrolledCourses();
+            renderAvailableCourses();
+            document.getElementById('dashboardSidebar').classList.remove('active');
+        }
+        
+        function showDashboardSection(section) {
+            document.getElementById('dashboardOverview').style.display = section === 'overview' ? 'block' : 'none';
+            document.getElementById('dashboardCourses').style.display = section === 'courses' ? 'block' : 'none';
+            
+            document.querySelectorAll('#dashboardSidebar a').forEach(a => a.classList.remove('active'));
+            if (section === 'overview') {
+                document.querySelector('#dashboardSidebar a:first-child').classList.add('active');
+            } else {
+                document.querySelector('#dashboardSidebar a:last-child').classList.add('active');
+            }
+        }
+        
+        // Auth
+        function showAuthModal(mode) {
+            authMode = mode;
+            document.getElementById('modalTitle').textContent = mode === 'login' ? 'Login' : 'Register';
+            document.getElementById('authSubmitBtn').textContent = mode === 'login' ? 'Login' : 'Register';
+            document.getElementById('authToggleText').innerHTML = mode === 'login' ? "Don't have an account?" : "Already have an account?";
+            document.getElementById('authModal').classList.add('active');
+        }
+        
+        function closeAuthModal() {
+            document.getElementById('authModal').classList.remove('active');
+            document.getElementById('authEmail').value = '';
+            document.getElementById('authPassword').value = '';
+        }
+        
+        function toggleAuthMode() {
+            authMode = authMode === 'login' ? 'register' : 'login';
+            showAuthModal(authMode);
+        }
+        
+        // Event listeners
+        document.getElementById('authSubmitBtn').onclick = async () => {
+            const email = document.getElementById('authEmail').value;
+            const password = document.getElementById('authPassword').value;
+            
+            if (!email || !password) {
+                showToast('Please fill in all fields', 'error');
+                return;
+            }
+            
+            try {
+                if (authMode === 'login') {
+                    const { error } = await _supabase.auth.signInWithPassword({ email, password });
+                    if (error) throw error;
+                    closeAuthModal();
+                    if (selectedCourseId) showDashboard();
+                } else {
+                    const { error } = await _supabase.auth.signUp({ email, password });
+                    if (error) throw error;
+                    showToast('Account created! Please check your email to confirm.', 'success');
+                    closeAuthModal();
+                }
+            } catch (error) {
+                showToast(error.message, 'error');
+            }
+        };
+        
+        document.getElementById('logoutBtn').onclick = async () => {
+            await _supabase.auth.signOut();
+            showToast('Logged out successfully', 'success');
+            showLanding();
+        };
+        
+        document.getElementById('mobileMenuBtn').onclick = () => {
+            document.getElementById('dashboardSidebar').classList.toggle('active');
+        };
+        
+        // Auth state listener
+        _supabase.auth.onAuthStateChange(async (event, session) => {
             if (session) {
                 currentUser = session.user;
                 await loadEnrollmentsFromSupabase();
@@ -618,382 +950,32 @@
             }
         });
         
-        // Mobile menu
-        document.getElementById('mobileMenuBtn').onclick = () => {
-            document.getElementById('dashboardSidebar').classList.toggle('active');
-        };
-    }
-    
-    // ============================================
-    // SUPABASE DATA OPERATIONS
-    // ============================================
-    async function loadCoursesFromSupabase() {
-        try {
-            const { data, error } = await supabase.from('courses').select('*').order('id');
-            if (!error && data && data.length > 0) {
-                allCourses = data;
-                console.log(`✅ Loaded ${data.length} courses from Supabase`);
-            } else {
-                console.log('No courses in Supabase, using defaults. Insert courses via SQL editor.');
-                allCourses = DEFAULT_COURSES;
+        // Expose necessary functions to window
+        window.selectCourse = selectCourse;
+        window.enrollInCourse = enrollInCourse;
+        window.updateProgress = updateProgress;
+        window.showAuthModal = showAuthModal;
+        window.closeAuthModal = closeAuthModal;
+        window.toggleAuthMode = toggleAuthMode;
+        window.showLanding = showLanding;
+        window.showDashboard = showDashboard;
+        window.showDashboardSection = showDashboardSection;
+        
+        // Initialize
+        async function init() {
+            await loadCoursesFromSupabase();
+            const { data: { session } } = await _supabase.auth.getSession();
+            if (session) {
+                currentUser = session.user;
+                await loadEnrollmentsFromSupabase();
+                showDashboard();
+                updateProfileUI();
+                showToast(`Welcome back, ${currentUser.email.split('@')[0]}!`, 'success');
             }
-        } catch (err) {
-            console.error('Supabase error:', err);
-            allCourses = DEFAULT_COURSES;
         }
         
-        document.getElementById('totalCourses').textContent = allCourses.length;
-        renderCourses();
-    }
-    
-    async function loadEnrollmentsFromSupabase() {
-        if (!currentUser) return;
-        
-        try {
-            const { data, error } = await supabase
-                .from('enrollments')
-                .select('course_id, progress')
-                .eq('user_id', currentUser.id);
-            
-            userEnrollments.clear();
-            if (!error && data) {
-                data.forEach(e => userEnrollments.set(e.course_id, e.progress || 0));
-                console.log(`✅ Loaded ${data.length} enrollments from Supabase`);
-            }
-        } catch (err) {
-            console.log('Enrollments table may not exist yet');
-        }
-        
-        updateDashboardStats();
-        renderEnrolledCourses();
-        renderAvailableCourses();
-    }
-    
-    async function saveEnrollmentToSupabase(courseId, progress = 0) {
-        if (!currentUser) return false;
-        
-        try {
-            const { error } = await supabase
-                .from('enrollments')
-                .upsert({
-                    user_id: currentUser.id,
-                    course_id: courseId,
-                    progress: progress,
-                    updated_at: new Date()
-                });
-            
-            if (error) throw error;
-            return true;
-        } catch (err) {
-            console.error('Save error:', err);
-            return false;
-        }
-    }
-    
-    async function enrollInCourse(courseId) {
-        if (!currentUser) {
-            selectedCourseId = courseId;
-            showAuthModal('login');
-            return;
-        }
-        
-        const course = allCourses.find(c => c.id === courseId);
-        if (!course) return;
-        
-        if (userEnrollments.has(courseId)) {
-            showToast('Already enrolled!', 'warning');
-            return;
-        }
-        
-        const success = await saveEnrollmentToSupabase(courseId, 0);
-        if (success) {
-            userEnrollments.set(courseId, 0);
-            showToast(`✅ Enrolled in ${course.name}!`, 'success');
-            updateDashboardStats();
-            renderSelectedCourse();
-            renderEnrolledCourses();
-            renderAvailableCourses();
-        } else {
-            showToast('Enrollment failed', 'error');
-        }
-    }
-    
-    async function updateProgress(courseId, newProgress) {
-        if (!currentUser || !userEnrollments.has(courseId)) return;
-        
-        const progress = Math.min(100, newProgress);
-        userEnrollments.set(courseId, progress);
-        
-        await supabase
-            .from('enrollments')
-            .update({ progress, updated_at: new Date() })
-            .eq('user_id', currentUser.id)
-            .eq('course_id', courseId);
-        
-        if (progress === 100) showToast('🎉 Course completed! Congratulations!', 'success');
-        updateDashboardStats();
-        renderSelectedCourse();
-        renderEnrolledCourses();
-    }
-    
-    // ============================================
-    // RENDER FUNCTIONS
-    // ============================================
-    function renderCourses() {
-        const container = document.getElementById('coursesContainer');
-        
-        if (!allCourses || allCourses.length === 0) {
-            container.innerHTML = '<div class="course-card"><p>No courses found. Please add courses to your database.</p></div>';
-            return;
-        }
-        
-        container.innerHTML = allCourses.map(course => {
-            const isFree = course.type === 'free' || course.price === 0;
-            return `
-                <div class="course-card" onclick="selectCourse(${course.id})">
-                    <div class="course-icon">${course.icon || '📚'}</div>
-                    <span class="course-badge ${isFree ? 'badge-free' : 'badge-premium'}">${isFree ? 'FREE' : 'PREMIUM'}</span>
-                    <h3>${escapeHtml(course.name)}</h3>
-                    <p>${escapeHtml((course.description || '').substring(0, 100))}...</p>
-                    <div style="display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--gray); margin-bottom: 10px;">
-                        <span>⏱️ ${course.duration || 'Self-paced'}</span>
-                        <span>📊 ${course.level || 'All Levels'}</span>
-                    </div>
-                    <div class="course-price ${isFree ? 'free' : 'premium'}">${isFree ? 'FREE' : `KES ${(course.price || 0).toLocaleString()}`}</div>
-                    <button class="btn-view" onclick="event.stopPropagation(); selectCourse(${course.id})">View Course →</button>
-                </div>
-            `;
-        }).join('');
-    }
-    
-    function selectCourse(courseId) {
-        selectedCourseId = courseId;
-        if (currentUser) {
-            showDashboard();
-            renderSelectedCourse();
-        } else {
-            showAuthModal('login');
-        }
-    }
-    
-    function renderSelectedCourse() {
-        const container = document.getElementById('selectedCourseCard');
-        if (!selectedCourseId) {
-            container.innerHTML = '<div class="course-card"><p>📌 Select a course from the homepage to start learning</p></div>';
-            return;
-        }
-        
-        const course = allCourses.find(c => c.id === selectedCourseId);
-        if (!course) return;
-        
-        const isEnrolled = userEnrollments.has(course.id);
-        const progress = userEnrollments.get(course.id) || 0;
-        const isFree = course.type === 'free' || course.price === 0;
-        
-        container.innerHTML = `
-            <div class="course-card">
-                <div class="course-icon">${course.icon || '📚'}</div>
-                <span class="course-badge ${isEnrolled ? 'badge-enrolled' : (isFree ? 'badge-free' : 'badge-premium')}">
-                    ${isEnrolled ? '✅ ENROLLED' : (isFree ? 'FREE' : 'PREMIUM')}
-                </span>
-                <h3>${escapeHtml(course.name)}</h3>
-                <p>${escapeHtml(course.description || '')}</p>
-                <div style="display: flex; gap: 15px; font-size: 0.8rem; color: var(--gray); margin: 10px 0;">
-                    <span>⏱️ ${course.duration || 'Self-paced'}</span>
-                    <span>📊 ${course.level || 'All Levels'}</span>
-                </div>
-                ${isEnrolled ? `
-                    <div class="progress-bar"><div class="progress-fill" style="width: ${progress}%"></div></div>
-                    <p style="text-align: center;">${progress}% Complete</p>
-                    <button class="btn-continue" onclick="updateProgress(${course.id}, ${progress + 10})">${progress === 100 ? '📋 Review Course' : '▶️ Continue Learning'}</button>
-                ` : `
-                    <div class="course-price ${isFree ? 'free' : 'premium'}">${isFree ? 'FREE' : `KES ${course.price.toLocaleString()}`}</div>
-                    <button class="btn-enroll" onclick="enrollInCourse(${course.id})">🎓 Enroll Now</button>
-                `}
-            </div>
-        `;
-    }
-    
-    function renderEnrolledCourses() {
-        const container = document.getElementById('enrolledCoursesList');
-        const enrolled = allCourses.filter(c => userEnrollments.has(c.id));
-        
-        if (enrolled.length === 0) {
-            container.innerHTML = '<div class="course-card"><p>No enrolled courses yet. Browse and enroll from Available Courses!</p></div>';
-            return;
-        }
-        
-        container.innerHTML = enrolled.map(course => {
-            const progress = userEnrollments.get(course.id) || 0;
-            return `
-                <div class="course-card">
-                    <div class="course-icon">${course.icon || '📚'}</div>
-                    <span class="course-badge badge-enrolled">✅ ENROLLED</span>
-                    <h3>${escapeHtml(course.name)}</h3>
-                    <div class="progress-bar"><div class="progress-fill" style="width: ${progress}%"></div></div>
-                    <p style="text-align: center;">${progress}% Complete</p>
-                    <button class="btn-continue" onclick="updateProgress(${course.id}, ${progress + 10})">Continue →</button>
-                </div>
-            `;
-        }).join('');
-    }
-    
-    function renderAvailableCourses() {
-        const container = document.getElementById('availableCoursesList');
-        const available = allCourses.filter(c => !userEnrollments.has(c.id));
-        
-        if (available.length === 0) {
-            container.innerHTML = '<div class="course-card"><p>🎉 You\'re enrolled in all courses! Great job!</p></div>';
-            return;
-        }
-        
-        container.innerHTML = available.map(course => {
-            const isFree = course.type === 'free' || course.price === 0;
-            return `
-                <div class="course-card">
-                    <div class="course-icon">${course.icon || '📚'}</div>
-                    <span class="course-badge ${isFree ? 'badge-free' : 'badge-premium'}">${isFree ? 'FREE' : 'PREMIUM'}</span>
-                    <h3>${escapeHtml(course.name)}</h3>
-                    <p>${escapeHtml((course.description || '').substring(0, 80))}...</p>
-                    <div class="course-price ${isFree ? 'free' : 'premium'}">${isFree ? 'FREE' : `KES ${course.price.toLocaleString()}`}</div>
-                    <button class="btn-enroll" onclick="enrollInCourse(${course.id})">🎓 Enroll Now</button>
-                </div>
-            `;
-        }).join('');
-    }
-    
-    function updateDashboardStats() {
-        const enrolledCount = userEnrollments.size;
-        const completedCount = Array.from(userEnrollments.values()).filter(p => p === 100).length;
-        const totalProgress = Array.from(userEnrollments.values()).reduce((sum, p) => sum + p, 0);
-        const avgProgress = enrolledCount > 0 ? Math.round(totalProgress / enrolledCount) : 0;
-        
-        document.getElementById('dashTotalCourses').textContent = allCourses.length;
-        document.getElementById('dashEnrolledCount').textContent = enrolledCount;
-        document.getElementById('dashCompletedCount').textContent = completedCount;
-        document.getElementById('dashOverallProgress').textContent = `${avgProgress}%`;
-    }
-    
-    function updateProfileUI() {
-        if (currentUser) {
-            const name = currentUser.email.split('@')[0];
-            document.getElementById('profileName').textContent = name;
-            document.getElementById('profileEmail').textContent = currentUser.email;
-            document.getElementById('dashboardUserName').textContent = name;
-        }
-    }
-    
-    // ============================================
-    // NAVIGATION & AUTH
-    // ============================================
-    function showLanding() {
-        document.getElementById('landingPage').style.display = 'block';
-        document.getElementById('dashboardPage').style.display = 'none';
-        document.getElementById('dashboardSidebar').classList.remove('active');
-    }
-    
-    function showDashboard() {
-        document.getElementById('landingPage').style.display = 'none';
-        document.getElementById('dashboardPage').style.display = 'block';
-        updateDashboardStats();
-        renderSelectedCourse();
-        renderEnrolledCourses();
-        renderAvailableCourses();
-        document.getElementById('dashboardSidebar').classList.remove('active');
-    }
-    
-    function showDashboardSection(section) {
-        document.getElementById('dashboardOverview').style.display = section === 'overview' ? 'block' : 'none';
-        document.getElementById('dashboardCourses').style.display = section === 'courses' ? 'block' : 'none';
-        
-        document.querySelectorAll('#dashboardSidebar a').forEach(a => a.classList.remove('active'));
-        if (section === 'overview') {
-            document.querySelector('#dashboardSidebar a:first-child').classList.add('active');
-        } else {
-            document.querySelector('#dashboardSidebar a:last-child').classList.add('active');
-        }
-    }
-    
-    function showAuthModal(mode) {
-        authMode = mode;
-        document.getElementById('modalTitle').textContent = mode === 'login' ? 'Login' : 'Register';
-        document.getElementById('authSubmitBtn').textContent = mode === 'login' ? 'Login' : 'Register';
-        document.getElementById('authToggleText').innerHTML = mode === 'login' ? "Don't have an account?" : "Already have an account?";
-        document.getElementById('authModal').classList.add('active');
-    }
-    
-    function closeAuthModal() {
-        document.getElementById('authModal').classList.remove('active');
-        document.getElementById('authEmail').value = '';
-        document.getElementById('authPassword').value = '';
-    }
-    
-    function toggleAuthMode() {
-        authMode = authMode === 'login' ? 'register' : 'login';
-        showAuthModal(authMode);
-    }
-    
-    document.getElementById('authSubmitBtn').onclick = async () => {
-        const email = document.getElementById('authEmail').value;
-        const password = document.getElementById('authPassword').value;
-        
-        if (!email || !password) {
-            showToast('Please fill in all fields', 'error');
-            return;
-        }
-        
-        try {
-            if (authMode === 'login') {
-                const { error } = await supabase.auth.signInWithPassword({ email, password });
-                if (error) throw error;
-                closeAuthModal();
-                if (selectedCourseId) showDashboard();
-            } else {
-                const { error } = await supabase.auth.signUp({ email, password });
-                if (error) throw error;
-                showToast('Account created! Please check your email to confirm.', 'success');
-                closeAuthModal();
-            }
-        } catch (error) {
-            showToast(error.message, 'error');
-        }
-    };
-    
-    document.getElementById('logoutBtn').onclick = async () => {
-        await supabase.auth.signOut();
-        showToast('Logged out successfully', 'success');
-        showLanding();
-    };
-    
-    // ============================================
-    // HELPERS
-    // ============================================
-    function showToast(message, type = 'success') {
-        const toast = document.createElement('div');
-        toast.className = `toast ${type}`;
-        toast.innerHTML = `<i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'}"></i> ${message}`;
-        document.body.appendChild(toast);
-        setTimeout(() => toast.remove(), 3000);
-    }
-    
-    function escapeHtml(str) {
-        if (!str) return '';
-        return String(str).replace(/[&<>]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[m]));
-    }
-    
-    // Make functions global
-    window.selectCourse = selectCourse;
-    window.enrollInCourse = enrollInCourse;
-    window.updateProgress = updateProgress;
-    window.showAuthModal = showAuthModal;
-    window.closeAuthModal = closeAuthModal;
-    window.toggleAuthMode = toggleAuthMode;
-    window.showLanding = showLanding;
-    window.showDashboard = showDashboard;
-    window.showDashboardSection = showDashboardSection;
-    
-    // Start the application
-    init();
+        init();
+    })();
 </script>
 </body>
 </html>
