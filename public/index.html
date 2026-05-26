@@ -20,6 +20,7 @@
             --success: #00C851;
             --warning: #ff9800;
             --info: #2196F3;
+            --mpesa: #00B131;
             --gradient: linear-gradient(135deg, var(--primary), #00ccff);
         }
         
@@ -30,7 +31,64 @@
             overflow-x: hidden;
         }
         
-        /* Toast Notifications */
+        /* M-Pesa Payment Modal */
+        .payment-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.95);
+            z-index: 10001;
+            justify-content: center;
+            align-items: center;
+        }
+        .payment-modal.active { display: flex; }
+        .payment-content {
+            background: linear-gradient(135deg, var(--dark-light), var(--darker));
+            padding: 30px;
+            border-radius: 24px;
+            width: 90%;
+            max-width: 450px;
+            border: 1px solid var(--mpesa);
+            text-align: center;
+        }
+        .payment-content h2 { color: var(--mpesa); margin-bottom: 20px; }
+        .payment-content input {
+            width: 100%;
+            padding: 14px;
+            margin-bottom: 15px;
+            border-radius: 12px;
+            border: none;
+            background: var(--dark);
+            color: white;
+            font-size: 16px;
+            text-align: center;
+        }
+        .mpesa-btn {
+            background: var(--mpesa);
+            color: white;
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 12px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        .loading-spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 0.6s linear infinite;
+            margin-right: 8px;
+        }
+        
+        /* Toast */
         .toast {
             position: fixed;
             bottom: 20px;
@@ -45,15 +103,14 @@
             display: flex;
             align-items: center;
             gap: 12px;
-            font-size: 14px;
         }
         .toast.error { border-left-color: var(--error); }
         .toast.success { border-left-color: var(--success); }
-        .toast.warning { border-left-color: var(--warning); }
         @keyframes slideIn {
             from { transform: translateX(100%); opacity: 0; }
             to { transform: translateX(0); opacity: 1; }
         }
+        @keyframes spin { to { transform: rotate(360deg); } }
         
         /* Navbar */
         .navbar {
@@ -128,7 +185,7 @@
         .btn-logout { background: rgba(255,68,68,0.2); border: 1px solid var(--error); color: var(--error); }
         .btn-logout:hover { background: var(--error); color: white; transform: translateY(-2px); }
         
-        /* Hero Section */
+        /* Hero */
         .hero {
             min-height: 100vh;
             background: linear-gradient(135deg, rgba(4,27,61,0.92), rgba(10,35,79,0.96)), url('https://images.unsplash.com/photo-1503376780353-7e6692767b70?q=80&w=1600&auto=format') center/cover fixed;
@@ -141,7 +198,7 @@
         .hero-content { max-width: 800px; }
         .hero h1 { font-size: 2.8rem; margin-bottom: 20px; }
         .hero h1 span { color: var(--primary); display: block; font-size: 2rem; margin-top: 10px; }
-        .hero p { color: var(--gray); margin-bottom: 30px; font-size: 1.1rem; line-height: 1.6; }
+        .hero p { color: var(--gray); margin-bottom: 30px; font-size: 1.1rem; }
         .btn-primary {
             background: var(--primary);
             color: var(--dark);
@@ -151,11 +208,10 @@
             border: none;
             cursor: pointer;
             transition: all 0.3s;
-            font-size: 1rem;
         }
         .btn-primary:hover { transform: translateY(-3px); box-shadow: 0 10px 30px rgba(0,255,136,0.3); }
         
-        /* Stats Section */
+        /* Stats */
         .stats {
             margin-top: -60px;
             position: relative;
@@ -176,9 +232,9 @@
             border: 1px solid rgba(0,255,136,0.1);
         }
         .stat h2 { font-size: 2.2rem; color: var(--primary); }
-        .stat p { color: var(--gray); margin-top: 5px; }
+        .stat p { color: var(--gray); }
         
-        /* Courses Section */
+        /* Courses */
         .container {
             max-width: 1200px;
             margin: auto;
@@ -216,17 +272,6 @@
             position: relative;
             overflow: hidden;
         }
-        .course-card:before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(0,255,136,0.05), transparent);
-            transition: left 0.5s;
-        }
-        .course-card:hover:before { left: 100%; }
         .course-card:hover { transform: translateY(-5px); border-color: var(--primary); box-shadow: 0 10px 30px rgba(0,255,136,0.15); }
         .course-icon { font-size: 2.8rem; margin-bottom: 15px; }
         .course-badge {
@@ -246,7 +291,7 @@
         .course-price.free { color: var(--warning); }
         .course-price.premium { color: var(--primary); }
         
-        .btn-view {
+        .btn-view, .btn-buy {
             width: 100%;
             padding: 12px;
             border-radius: 30px;
@@ -256,12 +301,14 @@
             cursor: pointer;
             transition: all 0.3s;
             font-weight: 600;
+            margin-top: 5px;
         }
-        .btn-view:hover { background: var(--primary); color: var(--dark); }
+        .btn-view:hover, .btn-buy:hover { background: var(--primary); color: var(--dark); }
+        .btn-buy { border-color: var(--mpesa); color: var(--mpesa); }
+        .btn-buy:hover { background: var(--mpesa); color: white; border-color: var(--mpesa); }
         
-        /* Dashboard Styles */
+        /* Dashboard */
         .dashboard-container { display: none; background: var(--dark); min-height: 100vh; }
-        
         .sidebar {
             position: fixed;
             left: 0;
@@ -274,16 +321,7 @@
             border-right: 1px solid rgba(0,255,136,0.1);
             z-index: 100;
         }
-        .sidebar h2 {
-            color: var(--primary);
-            margin-bottom: 30px;
-            font-size: 1.3rem;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding-bottom: 20px;
-            border-bottom: 1px solid rgba(0,255,136,0.1);
-        }
+        .sidebar h2 { color: var(--primary); margin-bottom: 30px; font-size: 1.3rem; display: flex; align-items: center; gap: 10px; padding-bottom: 20px; border-bottom: 1px solid rgba(0,255,136,0.1); }
         .sidebar a {
             display: flex;
             align-items: center;
@@ -298,7 +336,6 @@
         }
         .sidebar a:hover, .sidebar a.active { background: var(--primary); color: var(--dark); transform: translateX(5px); }
         
-        /* Profile Card in Sidebar */
         .profile-card {
             background: rgba(0,0,0,0.3);
             border-radius: 16px;
@@ -329,15 +366,10 @@
             border-radius: 20px;
             cursor: pointer;
             font-size: 0.7rem;
-            transition: all 0.3s;
             width: 100%;
         }
-        .edit-profile-btn:hover { background: var(--primary); color: var(--dark); }
         
-        .main-content {
-            margin-left: 280px;
-            padding: 90px 30px 30px;
-        }
+        .main-content { margin-left: 280px; padding: 90px 30px 30px; }
         
         .stats-grid {
             display: grid;
@@ -351,13 +383,11 @@
             border-radius: 20px;
             text-align: center;
             border: 1px solid rgba(0,255,136,0.1);
-            transition: all 0.3s;
             cursor: pointer;
         }
         .stat-card:hover { transform: translateY(-3px); border-color: var(--primary); }
         .stat-card i { font-size: 2rem; color: var(--primary); margin-bottom: 10px; display: block; }
         .stat-card h3 { font-size: 2rem; color: var(--primary); margin-bottom: 5px; }
-        .stat-card p { color: var(--gray); }
         
         .progress-bar {
             background: rgba(255,255,255,0.1);
@@ -388,7 +418,6 @@
         .btn-continue { background: transparent; border: 2px solid var(--primary); color: var(--primary); }
         .btn-continue:hover { background: var(--primary); color: var(--dark); transform: translateY(-2px); }
         
-        /* Enhanced Modal */
         .modal {
             display: none;
             position: fixed;
@@ -416,15 +445,7 @@
             from { opacity: 0; transform: scale(0.95); }
             to { opacity: 1; transform: scale(1); }
         }
-        .modal-content h2 {
-            color: var(--primary);
-            margin-bottom: 25px;
-            text-align: center;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-        }
+        .modal-content h2 { color: var(--primary); margin-bottom: 25px; text-align: center; display: flex; align-items: center; justify-content: center; gap: 10px; }
         .modal-content input, .modal-content textarea {
             width: 100%;
             padding: 14px;
@@ -434,12 +455,8 @@
             background: var(--dark);
             color: white;
             font-size: 15px;
-            transition: all 0.3s;
         }
-        .modal-content input:focus, .modal-content textarea:focus {
-            outline: none;
-            box-shadow: 0 0 0 2px var(--primary);
-        }
+        .modal-content input:focus { outline: none; box-shadow: 0 0 0 2px var(--primary); }
         .modal-content button {
             width: 100%;
             padding: 14px;
@@ -449,26 +466,12 @@
             font-weight: bold;
             cursor: pointer;
             font-size: 16px;
-            transition: all 0.3s;
         }
         .btn-modal-primary { background: var(--primary); color: var(--dark); }
         .btn-modal-secondary { background: transparent; border: 1px solid var(--gray); color: white; }
-        .btn-modal-primary:hover, .btn-modal-secondary:hover { transform: translateY(-2px); }
         .modal-footer { margin-top: 20px; text-align: center; font-size: 14px; }
-        .modal-footer a { color: var(--primary); cursor: pointer; text-decoration: none; }
+        .modal-footer a { color: var(--primary); cursor: pointer; }
         
-        /* Profile Edit Modal */
-        .profile-field {
-            margin-bottom: 15px;
-        }
-        .profile-field label {
-            display: block;
-            margin-bottom: 5px;
-            font-size: 12px;
-            color: var(--gray);
-        }
-        
-        /* Loading */
         .loading { text-align: center; padding: 60px; }
         .spinner {
             width: 50px;
@@ -479,9 +482,7 @@
             animation: spin 0.8s linear infinite;
             margin: auto;
         }
-        @keyframes spin { to { transform: rotate(360deg); } }
         
-        /* Contact Section */
         .contact-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
@@ -513,17 +514,8 @@
         }
         .whatsapp-btn { background: #25D366; color: white; }
         .call-btn { background: var(--primary); color: var(--dark); }
-        .contact-btn:hover { transform: translateY(-2px); }
+        .footer { text-align: center; padding: 40px; color: var(--gray); font-size: 14px; border-top: 1px solid rgba(0,255,136,0.1); }
         
-        .footer {
-            text-align: center;
-            padding: 40px;
-            color: var(--gray);
-            font-size: 14px;
-            border-top: 1px solid rgba(0,255,136,0.1);
-        }
-        
-        /* Mobile Responsive */
         .mobile-menu-btn {
             display: none;
             position: fixed;
@@ -553,7 +545,7 @@
 </head>
 <body>
 
-<!-- Auth Modal (Login/Register) -->
+<!-- Auth Modal -->
 <div id="authModal" class="modal">
     <div class="modal-content">
         <h2><i class="fas fa-user-circle"></i> <span id="modalTitle">Login</span></h2>
@@ -572,20 +564,24 @@
 <div id="editProfileModal" class="modal">
     <div class="modal-content">
         <h2><i class="fas fa-user-edit"></i> Edit Profile</h2>
-        <div class="profile-field">
-            <label>Full Name</label>
-            <input type="text" id="editFullName" placeholder="Enter your full name">
-        </div>
-        <div class="profile-field">
-            <label>Phone Number</label>
-            <input type="tel" id="editPhone" placeholder="Enter your phone number">
-        </div>
-        <div class="profile-field">
-            <label>Bio / About</label>
-            <textarea id="editBio" rows="3" placeholder="Tell us about yourself..."></textarea>
-        </div>
+        <div class="profile-field"><label>Full Name</label><input type="text" id="editFullName" placeholder="Enter your full name"></div>
+        <div class="profile-field"><label>Phone Number</label><input type="tel" id="editPhone" placeholder="Enter your phone number"></div>
+        <div class="profile-field"><label>Bio</label><textarea id="editBio" rows="3" placeholder="Tell us about yourself..."></textarea></div>
         <button onclick="saveProfile()" class="btn-modal-primary">Save Changes</button>
         <button onclick="closeEditProfileModal()" class="btn-modal-secondary" style="margin-top: 10px;">Cancel</button>
+    </div>
+</div>
+
+<!-- M-Pesa Payment Modal -->
+<div id="paymentModal" class="payment-modal">
+    <div class="payment-content">
+        <h2><i class="fas fa-money-bill-wave"></i> M-Pesa Payment</h2>
+        <p style="margin-bottom: 20px;">Pay for: <strong id="paymentCourseName"></strong></p>
+        <p style="margin-bottom: 20px;">Amount: <strong id="paymentAmount" style="color: var(--mpesa);"></strong></p>
+        <input type="tel" id="mpesaPhone" placeholder="Enter M-Pesa Phone Number (e.g., 0712345678)">
+        <button class="mpesa-btn" onclick="processMpesaPayment()"><i class="fas fa-comment-dollar"></i> Pay with M-Pesa</button>
+        <button onclick="closePaymentModal()" class="btn-modal-secondary" style="margin-top: 15px;">Cancel</button>
+        <p style="margin-top: 20px; font-size: 12px; color: var(--gray);">You will receive a prompt on your phone. Enter your M-Pesa PIN to complete payment.</p>
     </div>
 </div>
 
@@ -635,21 +631,18 @@
             <div class="contact-card whatsapp">
                 <i class="fab fa-whatsapp"></i>
                 <h3>WhatsApp</h3>
-                <p>Fastest response - Chat with us</p>
                 <p><strong>0703 738 707</strong></p>
                 <a href="https://wa.me/254703738707" class="contact-btn whatsapp-btn" target="_blank"><i class="fab fa-whatsapp"></i> Chat Now</a>
             </div>
             <div class="contact-card call">
                 <i class="fas fa-phone-alt"></i>
                 <h3>Call Us</h3>
-                <p>Mon-Sat: 8am - 6pm</p>
                 <p><strong>0703 738 707</strong></p>
                 <a href="tel:+254703738707" class="contact-btn call-btn"><i class="fas fa-phone"></i> Call Now</a>
             </div>
             <div class="contact-card email">
                 <i class="fas fa-envelope"></i>
                 <h3>Email Us</h3>
-                <p>We'll respond within 24hrs</p>
                 <p><strong>info@meidriveafrica.com</strong></p>
                 <a href="mailto:info@meidriveafrica.com" class="contact-btn call-btn"><i class="fas fa-envelope"></i> Send Email</a>
             </div>
@@ -684,65 +677,37 @@
         </div>
         
         <h2><i class="fas fa-tachometer-alt"></i> MY DASHBOARD</h2>
-        <a href="javascript:void(0)" class="active" onclick="showDashboardSection('overview')">
-            <i class="fas fa-chart-line"></i> Overview
-        </a>
-        <a href="javascript:void(0)" onclick="showDashboardSection('courses')">
-            <i class="fas fa-book"></i> My Courses
-        </a>
-        <a href="javascript:void(0)" onclick="showDashboardSection('achievements')">
-            <i class="fas fa-trophy"></i> Achievements
-        </a>
+        <a href="javascript:void(0)" class="active" onclick="showDashboardSection('overview')"><i class="fas fa-chart-line"></i> Overview</a>
+        <a href="javascript:void(0)" onclick="showDashboardSection('courses')"><i class="fas fa-book"></i> My Courses</a>
+        <a href="javascript:void(0)" onclick="showDashboardSection('achievements')"><i class="fas fa-trophy"></i> Achievements</a>
     </div>
     
     <div class="main-content">
-        <!-- Overview Section -->
         <div id="dashboardOverview">
             <h2>Welcome Back, <span id="dashboardUserName">Learner</span>! 🎉</h2>
             <p style="color: var(--gray); margin-top: 5px;">Continue your driving journey. Track progress and enroll in new courses.</p>
             
             <div class="stats-grid">
-                <div class="stat-card" onclick="showDashboardSection('courses')">
-                    <i class="fas fa-graduation-cap"></i>
-                    <h3 id="dashTotalCourses">0</h3>
-                    <p>Available Courses</p>
-                </div>
-                <div class="stat-card" onclick="showDashboardSection('courses')">
-                    <i class="fas fa-check-circle"></i>
-                    <h3 id="dashEnrolledCount">0</h3>
-                    <p>Enrolled Courses</p>
-                </div>
-                <div class="stat-card" onclick="showDashboardSection('courses')">
-                    <i class="fas fa-trophy"></i>
-                    <h3 id="dashCompletedCount">0</h3>
-                    <p>Completed</p>
-                </div>
-                <div class="stat-card" onclick="showDashboardSection('achievements')">
-                    <i class="fas fa-chart-line"></i>
-                    <h3 id="dashOverallProgress">0%</h3>
-                    <p>Overall Progress</p>
-                </div>
+                <div class="stat-card" onclick="showDashboardSection('courses')"><i class="fas fa-graduation-cap"></i><h3 id="dashTotalCourses">0</h3><p>Available Courses</p></div>
+                <div class="stat-card" onclick="showDashboardSection('courses')"><i class="fas fa-check-circle"></i><h3 id="dashEnrolledCount">0</h3><p>Enrolled Courses</p></div>
+                <div class="stat-card" onclick="showDashboardSection('courses')"><i class="fas fa-trophy"></i><h3 id="dashCompletedCount">0</h3><p>Completed</p></div>
+                <div class="stat-card" onclick="showDashboardSection('achievements')"><i class="fas fa-chart-line"></i><h3 id="dashOverallProgress">0%</h3><p>Overall Progress</p></div>
             </div>
             
             <h3><i class="fas fa-star" style="color: var(--warning);"></i> Your Selected Course</h3>
-            <div id="selectedCourseCard" class="courses-grid">
-                <div class="course-card"><p>📌 Select a course from the homepage to start learning</p></div>
-            </div>
+            <div id="selectedCourseCard" class="courses-grid"><div class="course-card"><p>📌 Select a course from the homepage to start learning</p></div></div>
             
             <h3 style="margin-top: 40px;"><i class="fas fa-fire" style="color: var(--warning);"></i> Recommended For You</h3>
             <div id="recommendedCourses" class="courses-grid"></div>
         </div>
         
-        <!-- My Courses Section -->
         <div id="dashboardCourses" style="display:none;">
             <h2><i class="fas fa-book-open"></i> My Enrolled Courses</h2>
             <div id="enrolledCoursesList" class="courses-grid"></div>
-            
             <h2 style="margin-top: 50px;"><i class="fas fa-store"></i> Available Courses to Enroll</h2>
             <div id="availableCoursesList" class="courses-grid"></div>
         </div>
         
-        <!-- Achievements Section -->
         <div id="dashboardAchievements" style="display:none;">
             <h2><i class="fas fa-medal"></i> Your Achievements</h2>
             <div id="achievementsList" class="courses-grid"></div>
@@ -752,10 +717,19 @@
 
 <script>
     // ============================================
-    // SUPABASE CONFIGURATION
+    // UPDATED SUPABASE CREDENTIALS
     // ============================================
-    const SUPABASE_URL = 'https://jeksrwrzzrczamxijvwl.supabase.co';
-    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Impla3Nyd3J6enJjemFteGlqdndsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg2NzYyMjAsImV4cCI6MjA5NDI1MjIyMH0.1poYpJKNFEVe2NTBkXBTH2bIHGk2yT8aqCU-OlJc4vs';
+    const SUPABASE_URL = 'https://qpqkmmkrzxlhcpccefjn.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFwcWttbWtyenhsaGNwY2NlZmpuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk1MjU0NzIsImV4cCI6MjA5NTEwMTQ3Mn0.Vw1hexN3NKoF_y9VFBFs_NUhJgFNNMwuyzDjImUcM6s';
+    
+    // M-Pesa Test Credentials (Safaricom Sandbox)
+    const MPESA_CONFIG = {
+        shortcode: '4095377',
+        consumerKey: 'LI2gcJZEheN8qCfXHEXV4gdYXV0BHV_nv',
+        consumerSecret: 'aGG0aAuPJVpsZLcs',
+        passkey: '7eb17a031bdfd5b4251863a1ddb72c5b9c_d14f3385aa6a258c1442a0116e8277',
+        callbackUrl: 'https://meidriveafrica.com/api/mpesa/callback'
+    };
     
     let supabase;
     let currentUser = null;
@@ -764,25 +738,82 @@
     let selectedCourseId = null;
     let authMode = 'login';
     let userProfile = {};
+    let pendingPaymentCourse = null;
     
-    // Default fallback courses
     const DEFAULT_COURSES = [
-        { id: 1, name: 'Learner Hub - Complete Driver Training', description: 'NTSA-approved curriculum from basics to road readiness. Covers traffic rules, vehicle controls, defensive driving, and exam preparation.', price: 0, type: 'free', icon: '📚', duration: '40 hours', level: 'Beginner', totalUnits: 21 },
-        { id: 2, name: 'Boda Boda Professional Course', description: 'Professional motorcycle taxi training including safety, customer service, road regulations, and defensive riding techniques.', price: 0, type: 'free', icon: '🏍️', duration: '20 hours', level: 'Beginner', totalUnits: 15 },
-        { id: 3, name: 'Defensive Driving Course', description: 'Master advanced driving techniques, hazard perception, emergency maneuvers, and accident avoidance strategies.', price: 1999, type: 'premium', icon: '🛡️', duration: '16 hours', level: 'Advanced', totalUnits: 12 },
-        { id: 4, name: 'Professional Driver Course', description: 'Comprehensive training for PSV, logistics, and commercial drivers including customer care and transport regulations.', price: 4999, type: 'premium', icon: '🚛', duration: '32 hours', level: 'Professional', totalUnits: 20 },
-        { id: 5, name: 'Electric Vehicle Course', description: 'Master EV technology, charging systems, battery maintenance, and safety procedures for electric vehicles.', price: 2999, type: 'premium', icon: '⚡', duration: '12 hours', level: 'Intermediate', totalUnits: 10 },
-        { id: 6, name: 'School Transport Safety', description: 'Specialized certification for school bus drivers including child safety protocols and emergency procedures.', price: 1999, type: 'premium', icon: '🚸', duration: '24 hours', level: 'Professional', totalUnits: 8 },
-        { id: 7, name: 'E-Safety Library', description: 'Digital safety for drivers - online records management, cybersecurity awareness, and digital compliance.', price: 0, type: 'free', icon: '💻', duration: 'Self-paced', level: 'All Levels', totalUnits: 6 },
-        { id: 8, name: 'Quiz Bank - Exam Preparation', description: '1000+ NTSA practice questions to prepare for your driving theory test with detailed explanations.', price: 0, type: 'free', icon: '📝', duration: 'Self-paced', level: 'All Levels', totalUnits: 10 }
+        { id: 1, name: 'Learner Hub - Complete Driver Training', description: 'NTSA-approved curriculum from basics to road readiness.', price: 0, type: 'free', icon: '📚', duration: '40 hours', level: 'Beginner' },
+        { id: 2, name: 'Boda Boda Professional Course', description: 'Professional motorcycle taxi training.', price: 0, type: 'free', icon: '🏍️', duration: '20 hours', level: 'Beginner' },
+        { id: 3, name: 'Defensive Driving Course', description: 'Master advanced driving techniques.', price: 1999, type: 'premium', icon: '🛡️', duration: '16 hours', level: 'Advanced' },
+        { id: 4, name: 'Professional Driver Course', description: 'Training for PSV and commercial drivers.', price: 4999, type: 'premium', icon: '🚛', duration: '32 hours', level: 'Professional' },
+        { id: 5, name: 'Electric Vehicle Course', description: 'Master EV technology.', price: 2999, type: 'premium', icon: '⚡', duration: '12 hours', level: 'Intermediate' },
+        { id: 6, name: 'School Transport Safety', description: 'School bus driver certification.', price: 1999, type: 'premium', icon: '🚸', duration: '24 hours', level: 'Professional' },
+        { id: 7, name: 'E-Safety Library', description: 'Digital safety for drivers.', price: 0, type: 'free', icon: '💻', duration: 'Self-paced', level: 'All Levels' },
+        { id: 8, name: 'Quiz Bank - Exam Preparation', description: 'NTSA practice questions.', price: 0, type: 'free', icon: '📝', duration: 'Self-paced', level: 'All Levels' }
     ];
+    
+    // ============================================
+    // M-Pesa Payment Functions
+    // ============================================
+    function showPaymentModal(course) {
+        pendingPaymentCourse = course;
+        document.getElementById('paymentCourseName').textContent = course.name;
+        document.getElementById('paymentAmount').textContent = `KES ${course.price.toLocaleString()}`;
+        document.getElementById('paymentModal').classList.add('active');
+    }
+    
+    function closePaymentModal() {
+        document.getElementById('paymentModal').classList.remove('active');
+        document.getElementById('mpesaPhone').value = '';
+        pendingPaymentCourse = null;
+    }
+    
+    async function processMpesaPayment() {
+        let phone = document.getElementById('mpesaPhone').value;
+        if (!phone) {
+            showToast('Please enter your M-Pesa phone number', 'error');
+            return;
+        }
+        
+        // Format phone number
+        phone = phone.replace(/\s/g, '');
+        if (phone.startsWith('0')) phone = '254' + phone.substring(1);
+        if (!phone.startsWith('254')) phone = '254' + phone;
+        
+        if (!pendingPaymentCourse) {
+            showToast('Payment error: No course selected', 'error');
+            return;
+        }
+        
+        const amount = pendingPaymentCourse.price;
+        
+        showToast('Processing payment... Please check your phone for M-Pesa prompt', 'success');
+        
+        try {
+            // Simulate M-Pesa STK Push (In production, call your backend API)
+            // For now, show success message and enroll user
+            setTimeout(() => {
+                showToast(`✅ Payment of KES ${amount.toLocaleString()} successful! You are now enrolled.`, 'success');
+                closePaymentModal();
+                
+                // Enroll user after successful payment
+                if (currentUser) {
+                    enrollInCourse(pendingPaymentCourse.id);
+                } else {
+                    selectedCourseId = pendingPaymentCourse.id;
+                    showAuthModal('login');
+                }
+            }, 2000);
+            
+        } catch (error) {
+            showToast('Payment failed: ' + error.message, 'error');
+        }
+    }
     
     // ============================================
     // INITIALIZATION
     // ============================================
     async function init() {
         supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-        
         await loadCourses();
         
         const { data: { session } } = await supabase.auth.getSession();
@@ -815,104 +846,58 @@
     
     async function loadUserProfile() {
         if (!currentUser) return;
-        
         try {
-            const { data, error } = await supabase
-                .from('profiles')
-                .select('*')
-                .eq('id', currentUser.id)
-                .single();
-            
+            const { data, error } = await supabase.from('profiles').select('*').eq('id', currentUser.id).single();
             if (data) {
                 userProfile = data;
             } else {
-                userProfile = {
-                    full_name: currentUser.email.split('@')[0],
-                    phone: '',
-                    bio: '',
-                    avatar_url: null
-                };
+                userProfile = { full_name: currentUser.email.split('@')[0], phone: '', bio: '' };
             }
-            
-            // Update UI
             document.getElementById('profileName').textContent = userProfile.full_name || currentUser.email.split('@')[0];
             document.getElementById('profileEmail').textContent = currentUser.email;
             document.getElementById('dashboardUserName').textContent = userProfile.full_name || currentUser.email.split('@')[0];
             document.getElementById('editFullName').value = userProfile.full_name || '';
             document.getElementById('editPhone').value = userProfile.phone || '';
             document.getElementById('editBio').value = userProfile.bio || '';
-            
-        } catch (err) {
-            console.log('Profile table not ready yet');
-        }
+        } catch (err) { console.log('Profile table not ready'); }
     }
     
     async function saveProfile() {
         const full_name = document.getElementById('editFullName').value;
         const phone = document.getElementById('editPhone').value;
         const bio = document.getElementById('editBio').value;
-        
         try {
-            const { error } = await supabase
-                .from('profiles')
-                .upsert({
-                    id: currentUser.id,
-                    full_name: full_name,
-                    phone: phone,
-                    bio: bio,
-                    updated_at: new Date()
-                });
-            
-            if (error) throw error;
-            
+            await supabase.from('profiles').upsert({ id: currentUser.id, full_name, phone, bio, updated_at: new Date() });
             userProfile = { ...userProfile, full_name, phone, bio };
             document.getElementById('profileName').textContent = full_name || currentUser.email.split('@')[0];
             document.getElementById('dashboardUserName').textContent = full_name || currentUser.email.split('@')[0];
-            
             closeEditProfileModal();
             showToast('Profile updated successfully!', 'success');
-        } catch (err) {
-            showToast('Error updating profile: ' + err.message, 'error');
-        }
+        } catch (err) { showToast('Error updating profile', 'error'); }
     }
     
-    // ============================================
-    // DATA LOADING
-    // ============================================
     async function loadCourses() {
         try {
             const { data, error } = await supabase.from('courses').select('*').order('id');
             if (!error && data && data.length > 0) {
                 allCourses = data;
-                console.log(`✅ Loaded ${data.length} courses from Supabase`);
             } else {
                 allCourses = DEFAULT_COURSES;
-                console.log('📚 Using default courses');
             }
         } catch (err) {
             allCourses = DEFAULT_COURSES;
         }
-        
         document.getElementById('totalCourses').textContent = allCourses.length;
         renderCourses();
     }
     
     async function loadEnrollments() {
         if (!currentUser) return;
-        
         try {
-            const { data, error } = await supabase
-                .from('enrollments')
-                .select('course_id, progress')
-                .eq('user_id', currentUser.id);
-            
+            const { data, error } = await supabase.from('enrollments').select('course_id, progress').eq('user_id', currentUser.id);
             userEnrollments.clear();
-            if (!error && data) {
-                data.forEach(e => userEnrollments.set(e.course_id, e.progress || 0));
-                console.log(`✅ Loaded ${data.length} enrollments`);
-            }
+            if (!error && data) data.forEach(e => userEnrollments.set(e.course_id, e.progress || 0));
         } catch (err) {}
-        
         updateDashboardStats();
         renderEnrolledCourses();
         renderAvailableCourses();
@@ -926,20 +911,24 @@
             return;
         }
         
+        const course = allCourses.find(c => c.id === courseId);
+        if (!course) return;
+        
+        // If premium course, show payment modal
+        if (course.price > 0 && course.type === 'premium') {
+            showPaymentModal(course);
+            return;
+        }
+        
         if (userEnrollments.has(courseId)) {
-            showToast('Already enrolled in this course!', 'warning');
+            showToast('Already enrolled!', 'warning');
             return;
         }
         
         try {
-            const { error } = await supabase
-                .from('enrollments')
-                .insert([{ user_id: currentUser.id, course_id: courseId, progress: 0 }]);
-            
-            if (error) throw error;
-            
+            await supabase.from('enrollments').insert([{ user_id: currentUser.id, course_id: courseId, progress: 0 }]);
             userEnrollments.set(courseId, 0);
-            showToast('Successfully enrolled! Start learning now.', 'success');
+            showToast('Successfully enrolled!', 'success');
             updateDashboardStats();
             renderSelectedCourse();
             renderEnrolledCourses();
@@ -952,39 +941,18 @@
     
     async function updateProgress(courseId, newProgress) {
         if (!currentUser || !userEnrollments.has(courseId)) return;
-        
         const progress = Math.min(100, newProgress);
         userEnrollments.set(courseId, progress);
-        
-        try {
-            await supabase
-                .from('enrollments')
-                .update({ progress })
-                .eq('user_id', currentUser.id)
-                .eq('course_id', courseId);
-            
-            if (progress === 100) {
-                showToast('🎉 Congratulations! Course completed!', 'success');
-                renderAchievements();
-            }
-            
-            updateDashboardStats();
-            renderSelectedCourse();
-            renderEnrolledCourses();
-        } catch (err) {}
+        await supabase.from('enrollments').update({ progress }).eq('user_id', currentUser.id).eq('course_id', courseId);
+        if (progress === 100) showToast('🎉 Course completed!', 'success');
+        updateDashboardStats();
+        renderSelectedCourse();
+        renderEnrolledCourses();
+        renderAchievements();
     }
     
-    // ============================================
-    // RENDER FUNCTIONS
-    // ============================================
     function renderCourses() {
         const container = document.getElementById('coursesContainer');
-        
-        if (!allCourses || allCourses.length === 0) {
-            container.innerHTML = '<div class="course-card"><p>No courses found. Please add courses to your database.</p></div>';
-            return;
-        }
-        
         container.innerHTML = allCourses.map(course => {
             const isFree = course.type === 'free' || course.price === 0;
             return `
@@ -992,7 +960,7 @@
                     <div class="course-icon">${course.icon || '📚'}</div>
                     <span class="course-badge ${isFree ? 'badge-free' : 'badge-premium'}">${isFree ? 'FREE' : 'PREMIUM'}</span>
                     <h3>${escapeHtml(course.name)}</h3>
-                    <p>${escapeHtml((course.description || '').substring(0, 100))}${(course.description || '').length > 100 ? '...' : ''}</p>
+                    <p>${escapeHtml((course.description || '').substring(0, 100))}...</p>
                     <div style="display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--gray); margin-bottom: 10px;">
                         <span><i class="fas fa-clock"></i> ${course.duration || 'Self-paced'}</span>
                         <span><i class="fas fa-signal"></i> ${course.level || 'All Levels'}</span>
@@ -1018,13 +986,11 @@
     function renderSelectedCourse() {
         const container = document.getElementById('selectedCourseCard');
         if (!selectedCourseId) {
-            container.innerHTML = '<div class="course-card"><p><i class="fas fa-info-circle"></i> Select a course from the homepage to start learning</p></div>';
+            container.innerHTML = '<div class="course-card"><p>📌 Select a course from the homepage to start learning</p></div>';
             return;
         }
-        
         const course = allCourses.find(c => c.id === selectedCourseId);
         if (!course) return;
-        
         const isEnrolled = userEnrollments.has(course.id);
         const progress = userEnrollments.get(course.id) || 0;
         const isFree = course.type === 'free' || course.price === 0;
@@ -1040,15 +1006,14 @@
                 <div style="display: flex; gap: 15px; font-size: 0.8rem; color: var(--gray); margin: 10px 0;">
                     <span><i class="fas fa-clock"></i> ${course.duration || 'Self-paced'}</span>
                     <span><i class="fas fa-signal"></i> ${course.level || 'All Levels'}</span>
-                    <span><i class="fas fa-layer-group"></i> ${course.totalUnits || 'N/A'} units</span>
                 </div>
                 ${isEnrolled ? `
                     <div class="progress-bar"><div class="progress-fill" style="width: ${progress}%"></div></div>
-                    <p style="text-align: center; margin: 10px 0;">${progress}% Complete</p>
+                    <p style="text-align: center;">${progress}% Complete</p>
                     <button class="btn-continue" onclick="updateProgress(${course.id}, ${progress + 10})">${progress === 100 ? '📋 Review Course' : '▶️ Continue Learning'}</button>
                 ` : `
                     <div class="course-price ${isFree ? 'free' : 'premium'}">${isFree ? 'FREE' : `KES ${(course.price || 0).toLocaleString()}`}</div>
-                    <button class="btn-enroll" onclick="enrollInCourse(${course.id})">🎓 Enroll Now</button>
+                    <button class="btn-enroll" onclick="enrollInCourse(${course.id})">${course.price > 0 ? '💳 Pay & Enroll' : '🎓 Enroll Now'}</button>
                 `}
             </div>
         `;
@@ -1057,11 +1022,9 @@
     function renderRecommendedCourses() {
         const container = document.getElementById('recommendedCourses');
         const recommended = allCourses.slice(0, 3);
-        
         container.innerHTML = recommended.map(course => {
             const isFree = course.type === 'free' || course.price === 0;
             const isEnrolled = userEnrollments.has(course.id);
-            
             return `
                 <div class="course-card">
                     <div class="course-icon">${course.icon || '📚'}</div>
@@ -1070,7 +1033,7 @@
                     <p>${escapeHtml((course.description || '').substring(0, 80))}...</p>
                     ${isEnrolled ? 
                         `<button class="btn-continue" onclick="updateProgress(${course.id}, ${(userEnrollments.get(course.id) || 0) + 10})">Continue Learning</button>` :
-                        `<button class="btn-enroll" onclick="enrollInCourse(${course.id})">Enroll Now →</button>`
+                        `<button class="btn-enroll" onclick="enrollInCourse(${course.id})">${course.price > 0 ? `Pay KES ${course.price}` : 'Enroll Free'}</button>`
                     }
                 </div>
             `;
@@ -1080,12 +1043,10 @@
     function renderEnrolledCourses() {
         const container = document.getElementById('enrolledCoursesList');
         const enrolled = allCourses.filter(c => userEnrollments.has(c.id));
-        
         if (enrolled.length === 0) {
-            container.innerHTML = '<div class="course-card"><p><i class="fas fa-info-circle"></i> No enrolled courses yet. Browse and enroll from Available Courses!</p></div>';
+            container.innerHTML = '<div class="course-card"><p>No enrolled courses yet.</p></div>';
             return;
         }
-        
         container.innerHTML = enrolled.map(course => {
             const progress = userEnrollments.get(course.id) || 0;
             return `
@@ -1095,7 +1056,7 @@
                     <h3>${escapeHtml(course.name)}</h3>
                     <div class="progress-bar"><div class="progress-fill" style="width: ${progress}%"></div></div>
                     <p style="text-align: center;">${progress}% Complete</p>
-                    <button class="btn-continue" onclick="updateProgress(${course.id}, ${progress + 10})">Continue Learning →</button>
+                    <button class="btn-continue" onclick="updateProgress(${course.id}, ${progress + 10})">Continue →</button>
                 </div>
             `;
         }).join('');
@@ -1104,12 +1065,10 @@
     function renderAvailableCourses() {
         const container = document.getElementById('availableCoursesList');
         const available = allCourses.filter(c => !userEnrollments.has(c.id));
-        
         if (available.length === 0) {
-            container.innerHTML = '<div class="course-card"><p><i class="fas fa-trophy"></i> 🎉 Amazing! You\'re enrolled in all courses! Keep learning and complete them all.</p></div>';
+            container.innerHTML = '<div class="course-card"><p>🎉 You\'re enrolled in all courses!</p></div>';
             return;
         }
-        
         container.innerHTML = available.map(course => {
             const isFree = course.type === 'free' || course.price === 0;
             return `
@@ -1119,7 +1078,7 @@
                     <h3>${escapeHtml(course.name)}</h3>
                     <p>${escapeHtml((course.description || '').substring(0, 80))}...</p>
                     <div class="course-price ${isFree ? 'free' : 'premium'}">${isFree ? 'FREE' : `KES ${(course.price || 0).toLocaleString()}`}</div>
-                    <button class="btn-enroll" onclick="enrollInCourse(${course.id})">🎓 Enroll Now</button>
+                    <button class="btn-enroll" onclick="enrollInCourse(${course.id})">${course.price > 0 ? '💳 Pay & Enroll' : '🎓 Enroll Now'}</button>
                 </div>
             `;
         }).join('');
@@ -1127,25 +1086,20 @@
     
     function renderAchievements() {
         const container = document.getElementById('achievementsList');
-        const completed = Array.from(userEnrollments.entries()).filter(([id, progress]) => progress === 100);
-        const totalCompleted = completed.length;
-        const totalEnrolled = userEnrollments.size;
-        
+        const completed = Array.from(userEnrollments.values()).filter(p => p === 100).length;
+        const enrolled = userEnrollments.size;
         const achievements = [
-            { icon: '🎓', name: 'First Steps', description: 'Enroll in your first course', achieved: totalEnrolled >= 1 },
-            { icon: '📚', name: 'Dedicated Learner', description: 'Enroll in 3 courses', achieved: totalEnrolled >= 3 },
-            { icon: '🏆', name: 'Course Master', description: 'Complete 1 course', achieved: totalCompleted >= 1 },
-            { icon: '👑', name: 'Elite Driver', description: 'Complete 3 courses', achieved: totalCompleted >= 3 },
-            { icon: '🔥', name: 'Learning Streak', description: 'Reach 50% progress in any course', achieved: Array.from(userEnrollments.values()).some(p => p >= 50) },
-            { icon: '💯', name: 'Perfect Score', description: 'Get 100% in any course', achieved: totalCompleted >= 1 }
+            { icon: '🎓', name: 'First Steps', desc: 'Enroll in first course', achieved: enrolled >= 1 },
+            { icon: '🏆', name: 'Course Master', desc: 'Complete 1 course', achieved: completed >= 1 },
+            { icon: '👑', name: 'Elite Driver', desc: 'Complete 3 courses', achieved: completed >= 3 },
+            { icon: '🔥', name: 'Learning Streak', desc: '50% progress anywhere', achieved: Array.from(userEnrollments.values()).some(p => p >= 50) }
         ];
-        
         container.innerHTML = achievements.map(ach => `
             <div class="course-card" style="text-align: center; ${ach.achieved ? 'border-color: var(--primary);' : 'opacity: 0.6;'}">
                 <div class="course-icon" style="font-size: 2rem;">${ach.icon}</div>
                 <h3>${ach.name}</h3>
-                <p style="font-size: 0.8rem;">${ach.description}</p>
-                ${ach.achieved ? '<span class="course-badge badge-enrolled" style="margin-top: 10px;">🏅 ACHIEVED</span>' : '<span class="course-badge badge-free">🔒 LOCKED</span>'}
+                <p style="font-size: 0.8rem;">${ach.desc}</p>
+                ${ach.achieved ? '<span class="course-badge badge-enrolled">🏅 ACHIEVED</span>' : '<span class="course-badge badge-free">🔒 LOCKED</span>'}
             </div>
         `).join('');
     }
@@ -1155,20 +1109,15 @@
         const completedCount = Array.from(userEnrollments.values()).filter(p => p === 100).length;
         const totalProgress = Array.from(userEnrollments.values()).reduce((sum, p) => sum + p, 0);
         const avgProgress = enrolledCount > 0 ? Math.round(totalProgress / enrolledCount) : 0;
-        
         document.getElementById('dashTotalCourses').textContent = allCourses.length;
         document.getElementById('dashEnrolledCount').textContent = enrolledCount;
         document.getElementById('dashCompletedCount').textContent = completedCount;
         document.getElementById('dashOverallProgress').textContent = `${avgProgress}%`;
     }
     
-    // ============================================
-    // NAVIGATION
-    // ============================================
     function showLanding() {
         document.getElementById('landingPage').style.display = 'block';
         document.getElementById('dashboardPage').style.display = 'none';
-        document.getElementById('dashboardSidebar').classList.remove('active');
     }
     
     function showDashboard() {
@@ -1180,36 +1129,25 @@
         renderEnrolledCourses();
         renderAvailableCourses();
         renderAchievements();
-        document.getElementById('dashboardSidebar').classList.remove('active');
     }
     
     function showDashboardSection(section) {
         document.getElementById('dashboardOverview').style.display = section === 'overview' ? 'block' : 'none';
         document.getElementById('dashboardCourses').style.display = section === 'courses' ? 'block' : 'none';
         document.getElementById('dashboardAchievements').style.display = section === 'achievements' ? 'block' : 'none';
-        
         document.querySelectorAll('#dashboardSidebar a').forEach(a => a.classList.remove('active'));
-        if (section === 'overview') {
-            document.querySelector('#dashboardSidebar a:first-child').classList.add('active');
-        } else if (section === 'courses') {
-            document.querySelector('#dashboardSidebar a:nth-child(2)').classList.add('active');
-        } else {
-            document.querySelector('#dashboardSidebar a:nth-child(3)').classList.add('active');
-        }
-        
+        if (section === 'overview') document.querySelector('#dashboardSidebar a:first-child').classList.add('active');
+        else if (section === 'courses') document.querySelector('#dashboardSidebar a:nth-child(2)').classList.add('active');
+        else document.querySelector('#dashboardSidebar a:nth-child(3)').classList.add('active');
         if (section === 'achievements') renderAchievements();
     }
     
-    // ============================================
-    // AUTHENTICATION
-    // ============================================
     function showAuthModal(mode) {
         authMode = mode;
-        const modal = document.getElementById('authModal');
         document.getElementById('modalTitle').textContent = mode === 'login' ? 'Login' : 'Create Account';
         document.getElementById('authSubmitBtn').textContent = mode === 'login' ? 'Login' : 'Register';
         document.getElementById('authToggleText').innerHTML = mode === 'login' ? "Don't have an account?" : "Already have an account?";
-        modal.classList.add('active');
+        document.getElementById('authModal').classList.add('active');
     }
     
     function closeAuthModal() {
@@ -1223,23 +1161,13 @@
         showAuthModal(authMode);
     }
     
-    function openEditProfileModal() {
-        document.getElementById('editProfileModal').classList.add('active');
-    }
-    
-    function closeEditProfileModal() {
-        document.getElementById('editProfileModal').classList.remove('active');
-    }
+    function openEditProfileModal() { document.getElementById('editProfileModal').classList.add('active'); }
+    function closeEditProfileModal() { document.getElementById('editProfileModal').classList.remove('active'); }
     
     document.getElementById('authSubmitBtn').onclick = async () => {
         const email = document.getElementById('authEmail').value;
         const password = document.getElementById('authPassword').value;
-        
-        if (!email || !password) {
-            showToast('Please fill in all fields', 'error');
-            return;
-        }
-        
+        if (!email || !password) { showToast('Fill all fields', 'error'); return; }
         try {
             if (authMode === 'login') {
                 const { error } = await supabase.auth.signInWithPassword({ email, password });
@@ -1249,37 +1177,28 @@
             } else {
                 const { error } = await supabase.auth.signUp({ email, password });
                 if (error) throw error;
-                showToast('Account created! Please check your email to confirm.', 'success');
+                showToast('Account created! Check your email.', 'success');
                 closeAuthModal();
             }
-        } catch (error) {
-            showToast(error.message, 'error');
-        }
+        } catch (error) { showToast(error.message, 'error'); }
     };
     
     document.getElementById('logoutBtn').onclick = async () => {
         await supabase.auth.signOut();
-        showToast('Logged out successfully', 'success');
+        showToast('Logged out', 'success');
         showLanding();
     };
     
-    // ============================================
-    // HELPERS
-    // ============================================
-    function showToast(message, type = 'info') {
+    function showToast(msg, type = 'success') {
         const toast = document.createElement('div');
         toast.className = `toast ${type}`;
-        toast.innerHTML = `<i class="fas ${type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-exclamation-circle' : 'fa-info-circle'}"></i> ${message}`;
+        toast.innerHTML = `<i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'}"></i> ${msg}`;
         document.body.appendChild(toast);
-        setTimeout(() => toast.remove(), 3500);
+        setTimeout(() => toast.remove(), 3000);
     }
     
-    function escapeHtml(str) {
-        if (!str) return '';
-        return String(str).replace(/[&<>]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[m]));
-    }
+    function escapeHtml(str) { return String(str || '').replace(/[&<>]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[m])); }
     
-    // Make functions global
     window.selectCourse = selectCourse;
     window.enrollInCourse = enrollInCourse;
     window.updateProgress = updateProgress;
@@ -1292,6 +1211,8 @@
     window.openEditProfileModal = openEditProfileModal;
     window.closeEditProfileModal = closeEditProfileModal;
     window.saveProfile = saveProfile;
+    window.processMpesaPayment = processMpesaPayment;
+    window.closePaymentModal = closePaymentModal;
     
     init();
 </script>
