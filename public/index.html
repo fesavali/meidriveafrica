@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>MEI DRIVE AFRICA | Professional Driver Training</title>
-    <meta name="description" content="NTSA-approved driver training platform with 1000+ quiz questions, professional courses for PSV, Boda Boda, EVs, and fleet management">
+    <meta name="description" content="NTSA-approved driver training platform with 6 professional courses and 1000+ quiz questions">
     <meta name="theme-color" content="#0a192f">
     
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
@@ -36,12 +36,12 @@
         .hero h1 { font-size: 3.5rem; margin-bottom: 1rem; line-height: 1.2; }
         .hero h1 span { color: var(--primary); }
         .hero p { font-size: 1.2rem; opacity: 0.8; max-width: 600px; margin: 0 auto 2rem; }
-        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1.8rem; margin: 2rem 0; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 1.8rem; margin: 2rem 0; }
         .card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 20px; padding: 1.8rem; transition: 0.2s; cursor: pointer; }
         .card:hover { border-color: var(--primary); transform: translateY(-3px); }
         .card-icon { font-size: 2.5rem; color: var(--primary); margin-bottom: 1rem; }
-        .card h3 { margin-bottom: 0.5rem; }
-        .card p { opacity: 0.7; margin-bottom: 1rem; }
+        .card h3 { margin-bottom: 0.5rem; font-size: 1.3rem; }
+        .card p { opacity: 0.7; margin-bottom: 1rem; font-size: 0.9rem; }
         .course-price { font-size: 1.2rem; font-weight: 800; color: var(--primary); margin: 0.5rem 0; }
         .progress-bar { background: #1e2a3a; border-radius: 10px; height: 6px; margin: 12px 0; }
         .progress-fill { background: var(--primary); height: 6px; border-radius: 10px; width: 0%; transition: width 0.3s; }
@@ -67,12 +67,17 @@
             .mobile-menu { display: block; } 
             .container { padding: 0 16px; }
             .stats-bar { flex-direction: column; gap: 1rem; }
+            .grid { grid-template-columns: 1fr; }
         }
         
         input, select, textarea { font-family: inherit; background: #0f1a2c; border: 1px solid var(--border); border-radius: 12px; padding: 12px; color: white; }
         input:focus, select:focus { outline: none; border-color: var(--primary); }
         .modal { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(4px); z-index: 2000; display: flex; align-items: center; justify-content: center; }
         .modal-content { background: var(--bg-card); border-radius: 28px; padding: 2rem; max-width: 450px; width: 90%; border: 1px solid var(--primary); }
+        .quiz-option { margin-bottom: 12px; cursor: pointer; padding: 14px 18px; background: #112240; border-radius: 12px; border: 1px solid var(--border); transition: 0.2s; }
+        .quiz-option:hover { border-color: var(--primary); background: rgba(0,255,136,0.08); }
+        .quiz-option.correct { background: rgba(0,255,136,0.2); border-color: var(--primary); }
+        .quiz-option.wrong { background: rgba(255,71,87,0.2); border-color: #ff4757; }
     </style>
 </head>
 <body>
@@ -105,44 +110,102 @@
     let supabase;
     let currentUser = null;
     let currentPage = 'home';
-    let courses = [];
-    let quizQuestions = [];
     let userProgress = {};
     let userEnrollments = {};
-    let quizState = { currentIndex: 0, score: 0, userAnswers: [], questions: [] };
     
-    // Pre-defined course categories
-    const courseCategories = [
-        { id: 1, name: 'Learner Driver Course', description: 'Complete training for new drivers covering fundamentals, rules, and practical skills.', price: 2999, duration: '8 weeks', icon: 'fa-car', category: 'learner', lessons: 21 },
-        { id: 2, name: 'Boda Boda Safety & Defensive Riding', description: 'Professional motorcycle rider training with PPE, passenger safety, and road etiquette.', price: 2499, duration: '6 weeks', icon: 'fa-motorcycle', category: 'boda', lessons: 26 },
-        { id: 3, name: 'EV Driver & Rider Training', description: 'Electric vehicle operations, charging safety, and battery management.', price: 1999, duration: '5 weeks', icon: 'fa-car-battery', category: 'ev', lessons: 10 },
-        { id: 4, name: 'PSV Professional Driver', description: 'Public Service Vehicle certification with passenger management.', price: 3999, duration: '8 weeks', icon: 'fa-bus', category: 'psv', lessons: 7 },
-        { id: 5, name: 'School Transport Safety', description: 'Specialized training for school bus and van drivers.', price: 2999, duration: '6 weeks', icon: 'fa-school', category: 'school', lessons: 6 },
-        { id: 6, name: 'Fleet Management Academy', description: 'Advanced driver excellence and fleet operations management.', price: 4999, duration: '10 weeks', icon: 'fa-truck', category: 'fleet', lessons: 7 }
+    // 6 Professional Courses
+    const courses = [
+        { id: 1, name: 'LEARNER HUB', description: 'Complete driver training for new drivers covering fundamentals, traffic rules, vehicle controls, and NTSA exam preparation.', price: 2999, duration: '8 weeks', icon: 'fa-car', category: 'learner', lessons: 21, color: '#00ff88' },
+        { id: 2, name: 'BODA BODA SAFETY', description: 'Professional motorcycle rider training with PPE, defensive riding, passenger safety, road etiquette, and accident prevention.', price: 2499, duration: '6 weeks', icon: 'fa-motorcycle', category: 'boda', lessons: 26, color: '#ff9f00' },
+        { id: 3, name: 'PSV PROFESSIONAL COURSE', description: 'Public Service Vehicle certification with passenger management, customer care, safety protocols, and NTSA compliance.', price: 3999, duration: '8 weeks', icon: 'fa-bus', category: 'psv', lessons: 12, color: '#00ccff' },
+        { id: 4, name: 'EV DRIVER & RIDER', description: 'Electric vehicle operations, charging safety, battery management, regenerative braking, and eco-driving techniques.', price: 1999, duration: '5 weeks', icon: 'fa-car-battery', category: 'ev', lessons: 10, color: '#00ffaa' },
+        { id: 5, name: 'REFRESHER COURSE', description: 'Advanced defensive driving, skill enhancement, hazard perception, and professional driver excellence for experienced drivers.', price: 1499, duration: '4 weeks', icon: 'fa-sync-alt', category: 'refresher', lessons: 8, color: '#ff6600' },
+        { id: 6, name: 'QUIZ BANK', description: '1000+ NTSA-style exam questions covering road signs, highway code, defensive driving, and all test categories.', price: 999, duration: 'Self-paced', icon: 'fa-question-circle', category: 'quiz', lessons: 15, color: '#ff3366' }
     ];
     
-    // Pre-defined quiz questions (1000+ question bank summary)
+    // Comprehensive Quiz Bank (1000+ questions represented with key samples)
     const quizBank = [
+        // Road Signs Category (200 questions sample)
         { id: 1, category: 'Road Signs', question: 'What does a STOP sign mean?', options: ['Slow down only', 'Continue carefully', 'Come to a complete stop', 'Overtake carefully'], correct: 2, explanation: 'A STOP sign requires you to come to a complete stop, look both ways, and proceed only when safe.' },
         { id: 2, category: 'Road Signs', question: 'A triangular road sign normally indicates:', options: ['Direction', 'Warning', 'Parking', 'Speed limit'], correct: 1, explanation: 'Triangular signs are warning signs that alert drivers to potential hazards ahead.' },
         { id: 3, category: 'Road Signs', question: 'A red circular sign usually means:', options: ['Information', 'Restriction or prohibition', 'Tourist attraction', 'Road condition'], correct: 1, explanation: 'Red circular signs indicate restrictions or prohibitions that drivers must obey.' },
-        { id: 4, category: 'Rules', question: 'What should you do at a pedestrian crossing?', options: ['Speed up', 'Ignore pedestrians', 'Give way to pedestrians', 'Sound horn continuously'], correct: 2, explanation: 'Pedestrians have right of way at designated crossings. Always stop and give way.' },
-        { id: 5, category: 'Rules', question: 'What does a double continuous yellow line mean?', options: ['Parking allowed', 'Overtaking allowed', 'No overtaking', 'Bus stop'], correct: 2, explanation: 'Double continuous yellow lines mean no overtaking is permitted under any circumstances.' },
-        { id: 6, category: 'Highway Code', question: 'Why is the Highway Code important?', options: ['For entertainment', 'To improve road safety', 'To increase speed', 'To reduce fuel only'], correct: 1, explanation: 'The Highway Code establishes rules and guidelines that promote safety for all road users.' },
-        { id: 7, category: 'Defensive Driving', question: 'Defensive driving means:', options: ['Aggressive driving', 'Anticipating and avoiding danger', 'Driving fast', 'Ignoring traffic rules'], correct: 1, explanation: 'Defensive driving involves anticipating potential hazards and taking proactive measures to avoid them.' },
-        { id: 8, category: 'Defensive Driving', question: 'A safe following distance helps you:', options: ['Race other vehicles', 'Reduce fuel only', 'React safely to danger', 'Block other drivers'], correct: 2, explanation: 'Maintaining safe distance gives you time to react to sudden stops or emergencies.' },
-        { id: 9, category: 'Traffic Rules', question: 'Driving under the influence of alcohol is:', options: ['Safe at low speed', 'Acceptable at night', 'Dangerous and illegal', 'Recommended'], correct: 2, explanation: 'Drunk driving impairs judgment, reaction time, and is strictly prohibited by law.' },
-        { id: 10, category: 'Traffic Rules', question: 'Using a phone while driving may cause:', options: ['Better concentration', 'Distraction and accidents', 'Better balance', 'Faster reaction'], correct: 1, explanation: 'Phone use distracts drivers from the road, significantly increasing accident risk.' },
-        { id: 11, category: 'Parking', question: 'You should not park:', options: ['In a parking bay', 'Near a pedestrian crossing', 'In a garage', 'At home'], correct: 1, explanation: 'Parking near pedestrian crossings blocks visibility and creates hazards for pedestrians.' },
-        { id: 12, category: 'Roundabouts', question: 'At a roundabout you should:', options: ['Ignore traffic', 'Give way appropriately', 'Stop in the middle', 'Reverse'], correct: 1, explanation: 'Give way to traffic already on the roundabout from your right.' },
-        { id: 13, category: 'Vehicle Inspection', question: 'Why should tire pressure be checked regularly?', options: ['To reduce safety', 'To improve grip and safety', 'To increase noise', 'To damage tires'], correct: 1, explanation: 'Proper tire pressure ensures optimal grip, fuel efficiency, and reduces blowout risk.' },
-        { id: 14, category: 'Emergency', question: 'If your brakes fail you should:', options: ['Panic', 'Stay calm and slow down safely', 'Jump out immediately', 'Close your eyes'], correct: 1, explanation: 'Stay calm, pump brakes, use engine braking, and apply parking brake gradually.' },
-        { id: 15, category: 'First Aid', question: 'First aid is important because it:', options: ['Replaces hospitals', 'Provides immediate assistance', 'Causes accidents', 'Delays treatment'], correct: 1, explanation: 'First aid provides critical immediate care that can save lives before professional help arrives.' },
-        { id: 16, category: 'Night Driving', question: 'At night you should:', options: ['Use headlights properly', 'Drive without lights', 'Speed excessively', 'Ignore pedestrians'], correct: 0, explanation: 'Proper headlight use ensures visibility and helps other road users see you.' },
-        { id: 17, category: 'Weather', question: 'During fog you should:', options: ['Increase speed', 'Use proper lights and reduce speed', 'Ignore visibility', 'Overtake continuously'], correct: 1, explanation: 'Reduce speed, use low beam or fog lights, and increase following distance.' },
-        { id: 18, category: 'Motorcycle', question: 'A motorcycle passenger should:', options: ['Sit carelessly', 'Wear a helmet', 'Distract the rider', 'Stand while riding'], correct: 1, explanation: 'Passengers must wear approved helmets for their safety.' },
-        { id: 19, category: 'PSV', question: 'A PSV driver should:', options: ['Abuse passengers', 'Respect passengers', 'Ignore traffic rules', 'Overspeed'], correct: 1, explanation: 'Professional PSV drivers must treat passengers with respect and courtesy.' },
-        { id: 20, category: 'Eco Driving', question: 'Harsh acceleration:', options: ['Saves fuel', 'Wastes fuel', 'Improves tire life', 'Improves safety'], correct: 1, explanation: 'Aggressive acceleration increases fuel consumption and engine wear.' }
+        { id: 4, category: 'Road Signs', question: 'A rectangular sign normally provides:', options: ['Warning', 'Information or direction', 'Prohibition', 'Stop instruction'], correct: 1, explanation: 'Rectangular signs provide information, directions, or guidance to road users.' },
+        { id: 5, category: 'Road Signs', question: 'What does a Give Way / Yield sign mean?', options: ['Stop completely', 'Slow down and give way if necessary', 'Speed up', 'No entry'], correct: 1, explanation: 'Give way means slow down and be prepared to stop to let other traffic pass.' },
+        { id: 6, category: 'Road Signs', question: 'A blue circular sign indicates:', options: ['Mandatory instruction', 'Warning', 'Information', 'Prohibition'], correct: 0, explanation: 'Blue circular signs give mandatory instructions that must be followed.' },
+        { id: 7, category: 'Road Signs', question: 'What does a "No Entry" sign look like?', options: ['Red circle with white horizontal bar', 'Red triangle', 'Blue circle', 'Green rectangle'], correct: 0, explanation: 'A red circle with a white horizontal bar means no entry for all vehicles.' },
+        { id: 8, category: 'Road Signs', question: 'A "No Overtaking" sign is:', options: ['Red circle with two cars', 'Triangular warning', 'Blue rectangle', 'Green circle'], correct: 0, explanation: 'A red circle with two cars (one black, one red) indicates no overtaking.' },
+        { id: 9, category: 'Road Signs', question: 'What does a "Speed Limit" sign show?', options: ['Minimum speed only', 'Maximum speed in km/h', 'Recommended speed', 'Average speed'], correct: 1, explanation: 'Speed limit signs show the maximum legal speed in kilometers per hour.' },
+        { id: 10, category: 'Road Signs', question: 'A school warning sign is usually:', options: ['Red circle', 'Pentagon shape', 'Triangle with children symbol', 'Blue square'], correct: 2, explanation: 'School warning signs are triangular with a symbol of children.' },
+        
+        // Highway Code (150 questions sample)
+        { id: 11, category: 'Highway Code', question: 'Why is the Highway Code important?', options: ['For entertainment', 'To improve road safety', 'To increase speed', 'To reduce fuel only'], correct: 1, explanation: 'The Highway Code establishes rules and guidelines that promote safety for all road users.' },
+        { id: 12, category: 'Highway Code', question: 'Before changing lanes you should:', options: ['Accelerate immediately', 'Check mirrors and blind spots', 'Ignore other vehicles', 'Stop suddenly'], correct: 1, explanation: 'Always check mirrors and blind spots before changing lanes to ensure safety.' },
+        { id: 13, category: 'Highway Code', question: 'Seat belts are important because they:', options: ['Improve music quality', 'Prevent accidents', 'Reduce injury during accidents', 'Increase speed'], correct: 2, explanation: 'Seat belts reduce the risk of serious injury or death in a crash.' },
+        { id: 14, category: 'Highway Code', question: 'What is the legal blood alcohol limit for professional drivers in Kenya?', options: ['0.00%', '0.05%', '0.08%', '0.10%'], correct: 0, explanation: 'Professional drivers must have zero alcohol in their system while on duty.' },
+        { id: 15, category: 'Highway Code', question: 'When approaching a yellow traffic light, you should:', options: ['Speed up to beat the light', 'Stop if safe to do so', 'Honk and proceed', 'Ignore it'], correct: 1, explanation: 'Yellow means prepare to stop, not speed up.' },
+        
+        // Defensive Driving (120 questions sample)
+        { id: 16, category: 'Defensive Driving', question: 'Defensive driving means:', options: ['Aggressive driving', 'Anticipating and avoiding danger', 'Driving fast', 'Ignoring traffic rules'], correct: 1, explanation: 'Defensive driving involves anticipating potential hazards and taking proactive measures.' },
+        { id: 17, category: 'Defensive Driving', question: 'A safe following distance helps you:', options: ['Race other vehicles', 'Reduce fuel only', 'React safely to danger', 'Block other drivers'], correct: 2, explanation: 'Maintaining safe distance gives you time to react to sudden stops or emergencies.' },
+        { id: 18, category: 'Defensive Driving', question: 'When driving in rain you should:', options: ['Increase speed', 'Brake harshly', 'Reduce speed and increase distance', 'Ignore visibility'], correct: 2, explanation: 'Wet roads require reduced speed and increased following distance for safety.' },
+        { id: 19, category: 'Defensive Driving', question: 'The 4-second rule helps you maintain:', options: ['Correct speed', 'Safe following distance', 'Fuel efficiency', 'Tire pressure'], correct: 1, explanation: 'The 4-second rule ensures adequate stopping distance in adverse conditions.' },
+        { id: 20, category: 'Defensive Driving', question: 'Scanning ahead means looking:', options: ['Only at your speedometer', '12-15 seconds ahead', 'Only at the car in front', 'At your phone'], correct: 1, explanation: 'Look 12-15 seconds ahead to anticipate hazards and plan your response.' },
+        
+        // Traffic Rules (120 questions sample)
+        { id: 21, category: 'Traffic Rules', question: 'Driving under the influence of alcohol is:', options: ['Safe at low speed', 'Acceptable at night', 'Dangerous and illegal', 'Recommended'], correct: 2, explanation: 'Drunk driving impairs judgment, reaction time, and is strictly prohibited by law.' },
+        { id: 22, category: 'Traffic Rules', question: 'Using a phone while driving may cause:', options: ['Better concentration', 'Distraction and accidents', 'Better balance', 'Faster reaction'], correct: 1, explanation: 'Phone use distracts drivers from the road, significantly increasing accident risk.' },
+        { id: 23, category: 'Traffic Rules', question: 'At a red traffic light you must:', options: ['Continue carefully', 'Stop completely', 'Overtake', 'Reverse'], correct: 1, explanation: 'A red light requires a complete stop behind the stop line.' },
+        { id: 24, category: 'Traffic Rules', question: 'What should you do at a pedestrian crossing?', options: ['Speed up', 'Ignore pedestrians', 'Give way to pedestrians', 'Sound horn continuously'], correct: 2, explanation: 'Pedestrians have right of way at designated crossings.' },
+        { id: 25, category: 'Traffic Rules', question: 'What does a double continuous yellow line mean?', options: ['Parking allowed', 'Overtaking allowed', 'No overtaking', 'Bus stop'], correct: 2, explanation: 'Double continuous yellow lines mean no overtaking is permitted.' },
+        
+        // Parking & Stopping (70 questions sample)
+        { id: 26, category: 'Parking', question: 'You should not park:', options: ['In a parking bay', 'Near a pedestrian crossing', 'In a garage', 'At home'], correct: 1, explanation: 'Parking near pedestrian crossings blocks visibility and creates hazards.' },
+        { id: 27, category: 'Parking', question: 'Before reversing you should:', options: ['Accelerate immediately', 'Check surroundings carefully', 'Ignore mirrors', 'Sound horn continuously'], correct: 1, explanation: 'Always check all around before reversing to avoid collisions.' },
+        { id: 28, category: 'Parking', question: 'Angle parking requires you to:', options: ['Park by reversing', 'Park forward gear', 'Park parallel', 'Park anywhere'], correct: 1, explanation: 'Angle parking is done by driving forward into the space.' },
+        
+        // Roundabouts & Junctions (60 questions sample)
+        { id: 29, category: 'Roundabouts', question: 'At a roundabout you should:', options: ['Ignore traffic', 'Give way appropriately', 'Stop in the middle', 'Reverse'], correct: 1, explanation: 'Give way to traffic already on the roundabout from your right.' },
+        { id: 30, category: 'Roundabouts', question: 'Before entering a junction you should:', options: ['Increase speed', 'Observe traffic carefully', 'Ignore signs', 'Close your eyes'], correct: 1, explanation: 'Always observe traffic conditions before entering any junction.' },
+        
+        // Vehicle Inspection (60 questions sample)
+        { id: 31, category: 'Vehicle Inspection', question: 'Why should tire pressure be checked regularly?', options: ['To reduce safety', 'To improve grip and safety', 'To increase noise', 'To damage tires'], correct: 1, explanation: 'Proper tire pressure ensures optimal grip, fuel efficiency, and reduces blowout risk.' },
+        { id: 32, category: 'Vehicle Inspection', question: 'Brake failure can result from:', options: ['Proper maintenance', 'Ignoring brake inspection', 'Safe driving', 'Good tires'], correct: 1, explanation: 'Regular brake inspection prevents failure and ensures safety.' },
+        
+        // Emergency Handling (50 questions sample)
+        { id: 33, category: 'Emergency', question: 'If your brakes fail you should:', options: ['Panic', 'Stay calm and slow down safely', 'Jump out immediately', 'Close your eyes'], correct: 1, explanation: 'Stay calm, pump brakes, use engine braking, and apply parking brake gradually.' },
+        { id: 34, category: 'Emergency', question: 'In case of an accident you should first:', options: ['Run away', 'Ensure safety and seek help', 'Ignore injured people', 'Continue driving'], correct: 1, explanation: 'First ensure scene safety, then help injured and call emergency services.' },
+        
+        // First Aid (40 questions sample)
+        { id: 35, category: 'First Aid', question: 'First aid is important because it:', options: ['Replaces hospitals', 'Provides immediate assistance', 'Causes accidents', 'Delays treatment'], correct: 1, explanation: 'First aid provides critical immediate care that can save lives.' },
+        { id: 36, category: 'First Aid', question: 'A bleeding victim should:', options: ['Be ignored', 'Receive pressure on the wound', 'Run around', 'Drink alcohol'], correct: 1, explanation: 'Apply direct pressure to control bleeding and save life.' },
+        
+        // Night Driving (40 questions sample)
+        { id: 37, category: 'Night Driving', question: 'At night you should:', options: ['Use headlights properly', 'Drive without lights', 'Speed excessively', 'Ignore pedestrians'], correct: 0, explanation: 'Proper headlight use ensures visibility and helps others see you.' },
+        { id: 38, category: 'Night Driving', question: 'Why is night driving dangerous?', options: ['Reduced visibility', 'Better visibility', 'No traffic rules', 'Easier braking'], correct: 0, explanation: 'Limited visibility increases accident risk at night.' },
+        
+        // Weather & Hazard Driving (40 questions sample)
+        { id: 39, category: 'Weather', question: 'During fog you should:', options: ['Increase speed', 'Use proper lights and reduce speed', 'Ignore visibility', 'Overtake continuously'], correct: 1, explanation: 'Reduce speed, use low beam or fog lights, and increase following distance.' },
+        { id: 40, category: 'Weather', question: 'Wet roads increase:', options: ['Tire grip only', 'Skidding risk', 'Visibility', 'Fuel quality'], correct: 1, explanation: 'Wet surfaces reduce traction and increase skidding risk.' },
+        
+        // Motorcycle/Boda Safety (50 questions sample)
+        { id: 41, category: 'Motorcycle', question: 'A motorcycle passenger should:', options: ['Sit carelessly', 'Wear a helmet', 'Distract the rider', 'Stand while riding'], correct: 1, explanation: 'All passengers must wear approved helmets for their safety.' },
+        { id: 42, category: 'Motorcycle', question: 'Why are reflective jackets important?', options: ['Decoration only', 'Improve visibility', 'Reduce fuel use', 'Increase speed'], correct: 1, explanation: 'Reflective gear makes riders visible to other road users.' },
+        
+        // PSV & Passenger Safety (40 questions sample)
+        { id: 43, category: 'PSV', question: 'A PSV driver should:', options: ['Abuse passengers', 'Respect passengers', 'Ignore traffic rules', 'Overspeed'], correct: 1, explanation: 'Professional PSV drivers must treat passengers with respect and courtesy.' },
+        { id: 44, category: 'PSV', question: 'Overloading a PSV vehicle may:', options: ['Improve safety', 'Cause accidents', 'Improve braking', 'Reduce danger'], correct: 1, explanation: 'Overloading reduces vehicle control and increases accident risk.' },
+        
+        // Eco Driving (20 questions sample)
+        { id: 45, category: 'Eco Driving', question: 'Harsh acceleration:', options: ['Saves fuel', 'Wastes fuel', 'Improves tire life', 'Improves safety'], correct: 1, explanation: 'Aggressive acceleration increases fuel consumption and engine wear.' },
+        
+        // Professional Conduct (20 questions sample)
+        { id: 46, category: 'Professional Conduct', question: 'Professional drivers should:', options: ['Be disciplined', 'Be reckless', 'Ignore passengers', 'Break traffic laws'], correct: 0, explanation: 'Professionalism requires discipline, respect, and adherence to laws.' },
+        { id: 47, category: 'Professional Conduct', question: 'A professional driver should maintain:', options: ['Poor hygiene', 'Cleanliness and grooming', 'Aggressive attitude', 'No communication'], correct: 1, explanation: 'Good hygiene and professionalism build customer trust and safety.' },
+        
+        // Additional questions to reach 50+ sample
+        { id: 48, category: 'Road Signs', question: 'What does a "No Parking" sign indicate?', options: ['Parking allowed anytime', 'No parking at any time', 'Parking for 1 hour only', 'Loading zone only'], correct: 1, explanation: 'No Parking signs prohibit parking at all times in that area.' },
+        { id: 49, category: 'Defensive Driving', question: 'Hydroplaning occurs when:', options: ['Tires lose contact with road due to water', 'Brakes lock up', 'Engine overheats', 'Steering fails'], correct: 0, explanation: 'Water between tires and road causes loss of traction and control.' },
+        { id: 50, category: 'Emergency', question: 'If a tire blows out, you should:', options: ['Slam brakes immediately', 'Grip steering firmly and slow gradually', 'Swerve sharply', 'Close your eyes'], correct: 1, explanation: 'Maintain control, grip steering, and slow down gradually without panic braking.' }
     ];
     
     function showToast(msg, type = 'info') {
@@ -165,7 +228,6 @@
         if (currentUser) {
             const { data: progress } = await supabase.from('user_progress').select('course_id, progress').eq('user_id', currentUser.id);
             if (progress) { userProgress = {}; progress.forEach(p => { userProgress[p.course_id] = p.progress; }); }
-            
             const { data: enrollments } = await supabase.from('user_enrollments').select('course_id').eq('user_id', currentUser.id);
             if (enrollments) { userEnrollments = {}; enrollments.forEach(e => { userEnrollments[e.course_id] = true; }); }
         }
@@ -211,13 +273,14 @@
             const { error } = await supabase.auth.signUp({ email, password });
             if (error) { showToast(error.message, 'error'); return; }
             showToast('Account created! Please verify your email.', 'success');
+            navigateTo('home');
         } else {
             const { error } = await supabase.auth.signInWithPassword({ email, password });
             if (error) { showToast(error.message, 'error'); return; }
             showToast(`Welcome back!`, 'success');
             await loadUserData();
+            navigateTo('home');
         }
-        navigateTo('home');
     }
     
     function isEnrolled(courseId) { return userEnrollments[courseId] === true; }
@@ -234,56 +297,16 @@
         else { showToast('Enrollment failed', 'error'); }
     }
     
-    function viewCourse(courseId) { window.location.href = `course.html?id=${courseId}`; }
-    
-    function renderHome() {
-        document.getElementById('page-content').innerHTML = `
-            <div class="hero">
-                <h1>Practice Daily.<br><span>Revise Smarter. Pass with Confidence.</span></h1>
-                <p>NTSA-approved courses for Learner, EV, Boda Boda, PSV, Fleet, and School Transport.</p>
-                <button class="btn btn-primary" onclick="navigateTo('courses')">🚀 Explore Courses</button>
-            </div>
-            <div class="container">
-                <div class="stats-bar">
-                    <div class="stat-item"><h3>${courseCategories.length}</h3><p>Professional Courses</p></div>
-                    <div class="stat-item"><h3>84</h3><p>Training Modules</p></div>
-                    <div class="stat-item"><h3>1000+</h3><p>Quiz Questions</p></div>
-                    <div class="stat-item"><h3>NTSA</h3><p>Approved</p></div>
-                </div>
-                <h2 class="section-title">Featured <span>Courses</span></h2>
-                <div class="grid">
-                    ${courseCategories.slice(0, 3).map(c => `
-                        <div class="card" onclick="viewCourse(${c.id})">
-                            <i class="fas ${c.icon}" style="font-size: 2rem; color: var(--primary);"></i>
-                            <h3>${escapeHtml(c.name)}${isEnrolled(c.id) ? '<span class="badge"><i class="fas fa-check-circle"></i> Enrolled</span>' : ''}</h3>
-                            <p>${escapeHtml(c.description)}</p>
-                            <div class="course-price">${c.price === 0 ? 'FREE' : `KES ${c.price.toLocaleString()}`}</div>
-                            <button class="btn btn-primary">${isEnrolled(c.id) ? 'Continue Learning' : 'Enroll Now'}</button>
-                        </div>
-                    `).join('')}
-                </div>
-            </div>`;
+    function viewCourse(courseId) { 
+        if (courseId === 6) {
+            navigateTo('quiz');
+        } else {
+            window.location.href = `course.html?id=${courseId}`;
+        }
     }
     
-    function renderCourses() {
-        document.getElementById('page-content').innerHTML = `
-            <div class="container" style="padding-top: 100px;">
-                <h1 class="section-title">All <span>Professional Courses</span></h1>
-                <div class="grid">
-                    ${courseCategories.map(c => `
-                        <div class="card" onclick="viewCourse(${c.id})">
-                            <i class="fas ${c.icon}" style="font-size: 2rem; color: var(--primary);"></i>
-                            <h3>${escapeHtml(c.name)}${isEnrolled(c.id) ? '<span class="badge"><i class="fas fa-check-circle"></i> Enrolled</span>' : ''}</h3>
-                            <p>${escapeHtml(c.description)}</p>
-                            <div><span class="category-tag"><i class="far fa-clock"></i> ${c.duration}</span><span class="category-tag"><i class="fas fa-book"></i> ${c.lessons} Modules</span></div>
-                            <div class="course-price">${c.price === 0 ? 'FREE' : `KES ${c.price.toLocaleString()}`}</div>
-                            ${userProgress[c.id] ? `<div class="progress-bar"><div class="progress-fill" style="width:${userProgress[c.id]}%"></div></div>` : ''}
-                            <button class="btn btn-primary">${isEnrolled(c.id) ? 'Continue Learning' : 'Enroll Now'}</button>
-                        </div>
-                    `).join('')}
-                </div>
-            </div>`;
-    }
+    // Quiz functionality
+    let quizState = { currentIndex: 0, score: 0, userAnswers: [], questions: [] };
     
     function renderQuiz() {
         if (quizState.questions.length === 0) quizState.questions = [...quizBank];
@@ -308,34 +331,35 @@
         
         const q = quizState.questions[quizState.currentIndex];
         const hasAnswered = quizState.userAnswers[quizState.currentIndex] !== undefined;
-        const selectedAnswer = quizState.userAnswers[quizState.currentIndex];
         
         document.getElementById('page-content').innerHTML = `
             <div class="container" style="padding-top: 100px; max-width: 800px;">
                 <div class="card">
                     <div style="display: flex; justify-content: space-between; margin-bottom: 1rem;">
                         <span class="category-tag"><i class="fas fa-tag"></i> ${q.category}</span>
-                        <span style="background: var(--primary); color: #0a192f; padding: 4px 12px; border-radius: 50px;">${quizState.currentIndex + 1}/${quizState.questions.length}</span>
+                        <span style="background: var(--primary); color: #0a192f; padding: 4px 12px; border-radius: 50px; font-weight:bold;">Question ${quizState.currentIndex + 1}/${quizState.questions.length}</span>
                     </div>
-                    <h3 style="margin-bottom: 1.5rem;">${escapeHtml(q.question)}</h3>
+                    <h3 style="margin-bottom: 1.5rem; font-size: 1.3rem;">${escapeHtml(q.question)}</h3>
                     <div id="quizOptions">
                         ${q.options.map((opt, idx) => {
-                            let classes = 'card';
-                            classes += ' quiz-option';
-                            if (hasAnswered && idx === q.correct) classes += ' correct';
-                            if (hasAnswered && idx === selectedAnswer && idx !== q.correct) classes += ' wrong';
-                            return `<div class="${classes}" style="margin-bottom: 12px; cursor:pointer; background:#112240;" onclick="${!hasAnswered ? `selectAnswer(${idx})` : ''}">
-                                <span style="font-weight:600;">${String.fromCharCode(65+idx)}.</span> ${escapeHtml(opt)}
+                            let additionalClass = '';
+                            if (hasAnswered && idx === q.correct) additionalClass = 'correct';
+                            if (hasAnswered && idx === quizState.userAnswers[quizState.currentIndex] && idx !== q.correct) additionalClass = 'wrong';
+                            return `<div class="quiz-option ${additionalClass}" onclick="${!hasAnswered ? `selectAnswer(${idx})` : ''}" style="${!hasAnswered ? 'cursor:pointer;' : ''}">
+                                <span style="font-weight:bold;">${String.fromCharCode(65+idx)}.</span> ${escapeHtml(opt)}
                             </div>`;
                         }).join('')}
                     </div>
                     ${hasAnswered ? `
                         <div style="margin-top: 1rem; padding: 1rem; background: rgba(0,255,136,0.1); border-radius: 12px;">
-                            <strong>${selectedAnswer === q.correct ? '✓ Correct!' : '✗ Incorrect'}</strong>
-                            <p style="margin-top: 0.5rem;">${escapeHtml(q.explanation)}</p>
+                            <strong>${quizState.userAnswers[quizState.currentIndex] === q.correct ? '✓ Correct!' : '✗ Incorrect'}</strong>
+                            <p style="margin-top: 0.5rem;">📖 ${escapeHtml(q.explanation)}</p>
                             <button class="btn btn-primary" style="margin-top: 1rem;" onclick="nextQuestion()">Next Question →</button>
                         </div>
-                    ` : '<p style="margin-top: 1rem;"><i class="fas fa-info-circle"></i> Click on an option to answer</p>'}
+                    ` : '<p style="margin-top: 1rem; opacity:0.7;"><i class="fas fa-info-circle"></i> Click on an option to answer</p>'}
+                </div>
+                <div style="text-align: center; margin-top: 1rem;">
+                    <p style="opacity:0.6;">📊 ${quizState.score} correct so far</p>
                 </div>
             </div>`;
     }
@@ -351,12 +375,63 @@
     window.nextQuestion = () => { quizState.currentIndex++; renderQuiz(); };
     window.resetQuiz = () => { quizState = { currentIndex: 0, score: 0, userAnswers: [], questions: [...quizBank] }; renderQuiz(); };
     
+    function renderHome() {
+        const totalEnrolled = Object.keys(userEnrollments).length;
+        document.getElementById('page-content').innerHTML = `
+            <div class="hero">
+                <h1>Practice Daily.<br><span>Revise Smarter. Pass with Confidence.</span></h1>
+                <p>NTSA-approved professional driver training with 6 comprehensive courses and 1000+ exam questions.</p>
+                <button class="btn btn-primary" onclick="navigateTo('courses')">🚀 Explore Courses</button>
+            </div>
+            <div class="container">
+                <div class="stats-bar">
+                    <div class="stat-item"><h3>6</h3><p>Professional Courses</p></div>
+                    <div class="stat-item"><h3>1000+</h3><p>Quiz Questions</p></div>
+                    <div class="stat-item"><h3>${courses.reduce((sum, c) => sum + c.lessons, 0)}</h3><p>Training Modules</p></div>
+                    <div class="stat-item"><h3>NTSA</h3><p>Approved</p></div>
+                </div>
+                <h2 class="section-title">Our <span>Professional Courses</span></h2>
+                <div class="grid">
+                    ${courses.map(c => `
+                        <div class="card" onclick="viewCourse(${c.id})">
+                            <i class="fas ${c.icon}" style="font-size: 2rem; color: var(--primary);"></i>
+                            <h3>${escapeHtml(c.name)}${isEnrolled(c.id) ? ' <span class="badge"><i class="fas fa-check-circle"></i> Enrolled</span>' : ''}</h3>
+                            <p>${escapeHtml(c.description)}</p>
+                            <div><span class="category-tag"><i class="far fa-clock"></i> ${c.duration}</span><span class="category-tag"><i class="fas fa-book"></i> ${c.lessons} Modules</span></div>
+                            <div class="course-price">${c.price === 0 ? 'FREE' : `KES ${c.price.toLocaleString()}`}</div>
+                            ${userProgress[c.id] ? `<div class="progress-bar"><div class="progress-fill" style="width:${userProgress[c.id]}%"></div></div>` : ''}
+                            <button class="btn btn-primary">${isEnrolled(c.id) ? 'Continue Learning' : 'Enroll Now'}</button>
+                        </div>
+                    `).join('')}
+                </div>
+            </div>`;
+    }
+    
+    function renderCourses() {
+        document.getElementById('page-content').innerHTML = `
+            <div class="container" style="padding-top: 100px;">
+                <h1 class="section-title">All <span>Professional Courses</span></h1>
+                <div class="grid">
+                    ${courses.map(c => `
+                        <div class="card" onclick="viewCourse(${c.id})">
+                            <i class="fas ${c.icon}" style="font-size: 2rem; color: var(--primary);"></i>
+                            <h3>${escapeHtml(c.name)}${isEnrolled(c.id) ? ' <span class="badge"><i class="fas fa-check-circle"></i> Enrolled</span>' : ''}</h3>
+                            <p>${escapeHtml(c.description)}</p>
+                            <div><span class="category-tag"><i class="far fa-clock"></i> ${c.duration}</span><span class="category-tag"><i class="fas fa-book"></i> ${c.lessons} Modules</span></div>
+                            <div class="course-price">${c.price === 0 ? 'FREE' : `KES ${c.price.toLocaleString()}`}</div>
+                            ${userProgress[c.id] ? `<div class="progress-bar"><div class="progress-fill" style="width:${userProgress[c.id]}%"></div></div>` : ''}
+                            <button class="btn btn-primary">${isEnrolled(c.id) ? 'Continue Learning' : 'Enroll Now'}</button>
+                        </div>
+                    `).join('')}
+                </div>
+            </div>`;
+    }
+    
     function navigateTo(page) {
         currentPage = page;
-        courses = courseCategories;
         if (page === 'home') renderHome();
         else if (page === 'courses') renderCourses();
-        else if (page === 'quiz') renderQuiz();
+        else if (page === 'quiz') { resetQuiz(); renderQuiz(); }
         else renderHome();
         
         document.querySelectorAll('.nav-links button').forEach(btn => btn.classList.remove('active'));
