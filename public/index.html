@@ -5,14 +5,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>MEI Drive Africa | NTSA Approved Driver Training</title>
     
-    <!-- Favicon attached as DataURI PNG - MEI DRIVE AFRICA Logo -->
-    <link rel="icon" type="image/png" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGQAAABkCAYAAABw4pVUAAAACXBIWXMAAAsTAAALEwEAmpwYAAAB3UlEQVR4nO3aMW7CUBAG4RcKJApKKkpKSgoKFJS0FBQUNBRUFFRQ0FFQUNAhUSAlFikglN/StrRI+CVi2XpPMtL4F9n2s/VfmyIAAAAAAAAAAAAAAAAAAAAAAH/jtE1Jm5Tmn7ZxPzRN02mappM0Tadpmk7TNE1pmmZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZp/5wXQ8qF1HvYgaYAAAAASUVORK5CYII=">
+    <!-- Favicon - MEI DRIVE AFRICA Logo (Base64 embedded) -->
+    <link rel="icon" type="image/png" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGQAAABkCAYAAABw4pVUAAAACXBIWXMAAAsTAAALEwEAmpwYAAAB3UlEQVR4nO3aMW7CUBAG4RcKJApKKkpKSgoKFJS0FBQUNBRUFFRQ0FFQUNAhUSAlFikglN/StrRI+CVi2XpPMtL4F9n2s/VfmyIAAAAAAAAAAAAAAAAAAAAAAH/jtE1Jm5Tmn7ZxPzRN02mappM0Tadpmk7TNE1pmmZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZpmqZp/5wXQ8qF1HvYgaYAAAAASUVORK5CYII=">
     
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
         :root {
             --primary: #00FF88;
             --dark: #041B3D;
@@ -23,14 +27,15 @@
             --warning: #ff9800;
             --mpesa: #00B131;
         }
-        
+
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: var(--dark);
             color: white;
             overflow-x: hidden;
         }
-        
+
+        /* Toast Notifications */
         .toast {
             position: fixed;
             bottom: 20px;
@@ -44,7 +49,8 @@
             display: flex;
             align-items: center;
             gap: 12px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            font-weight: 500;
         }
         .toast.error { border-left-color: var(--error); }
         .toast.success { border-left-color: var(--success); }
@@ -52,7 +58,8 @@
             from { transform: translateX(100%); opacity: 0; }
             to { transform: translateX(0); opacity: 1; }
         }
-        
+
+        /* Navbar */
         .navbar {
             position: fixed;
             top: 0;
@@ -63,7 +70,6 @@
             z-index: 1000;
             border-bottom: 1px solid rgba(0, 255, 136, 0.15);
         }
-        
         .nav-container {
             max-width: 1200px;
             margin: auto;
@@ -73,7 +79,6 @@
             flex-wrap: wrap;
             gap: 15px;
         }
-        
         .logo {
             font-size: 1.5rem;
             font-weight: 700;
@@ -85,7 +90,6 @@
         }
         .logo i { font-size: 1.8rem; }
         .logo span { color: white; }
-        
         .nav-links {
             display: flex;
             align-items: center;
@@ -99,9 +103,8 @@
             transition: 0.2s;
         }
         .nav-links a:hover { color: var(--primary); }
-        
         .ntsa-badge {
-            background: rgba(0,255,136,0.1);
+            background: rgba(0, 255, 136, 0.1);
             border-radius: 30px;
             padding: 5px 15px;
             font-size: 0.75rem;
@@ -109,7 +112,6 @@
             align-items: center;
             gap: 8px;
         }
-        
         .btn-nav {
             padding: 8px 20px;
             border-radius: 25px;
@@ -120,11 +122,12 @@
         }
         .btn-login { background: transparent; border: 1px solid var(--primary); color: var(--primary); }
         .btn-register { background: var(--primary); color: var(--dark); }
-        .btn-logout { background: rgba(255,68,68,0.2); border: 1px solid var(--error); color: var(--error); }
-        
+        .btn-logout { background: rgba(255, 68, 68, 0.2); border: 1px solid var(--error); color: var(--error); }
+
+        /* Hero Section */
         .hero {
             min-height: 100vh;
-            background: linear-gradient(135deg, rgba(4,27,61,0.92), rgba(10,35,79,0.96)), url('https://images.unsplash.com/photo-1503376780353-7e6692767b70?q=80&w=1600&auto=format') center/cover fixed;
+            background: linear-gradient(135deg, rgba(4, 27, 61, 0.92), rgba(10, 35, 79, 0.96)), url('https://images.unsplash.com/photo-1503376780353-7e6692767b70?q=80&w=1600&auto=format') center/cover fixed;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -142,10 +145,11 @@
             font-weight: bold;
             border: none;
             cursor: pointer;
-            transition: all 0.3s;
+            transition: 0.3s;
         }
-        .btn-primary:hover { transform: translateY(-3px); box-shadow: 0 10px 30px rgba(0,255,136,0.3); }
-        
+        .btn-primary:hover { transform: translateY(-3px); box-shadow: 0 10px 30px rgba(0, 255, 136, 0.3); }
+
+        /* Stats */
         .stats {
             margin-top: -60px;
             position: relative;
@@ -166,7 +170,8 @@
         }
         .stat h2 { font-size: 2.2rem; color: var(--primary); }
         .stat p { color: var(--gray); }
-        
+
+        /* Containers */
         .container {
             max-width: 1200px;
             margin: auto;
@@ -186,7 +191,8 @@
             background: var(--primary);
             margin: 15px auto 0;
         }
-        
+
+        /* Pagination */
         .pagination {
             display: flex;
             justify-content: center;
@@ -194,10 +200,7 @@
             gap: 15px;
             margin-top: 50px;
         }
-        .next-btn {
-            background: var(--primary);
-            color: var(--dark);
-            border: none;
+        .next-btn, .prev-btn {
             padding: 12px 30px;
             border-radius: 40px;
             font-weight: bold;
@@ -205,46 +208,26 @@
             display: inline-flex;
             align-items: center;
             gap: 10px;
-            transition: all 0.3s;
+            transition: 0.3s;
         }
-        .next-btn:hover {
-            transform: translateX(5px);
-            box-shadow: 0 5px 20px rgba(0,255,136,0.3);
-        }
-        .prev-btn {
-            background: transparent;
-            border: 1px solid var(--primary);
-            color: var(--primary);
-            padding: 12px 30px;
-            border-radius: 40px;
-            font-weight: bold;
-            cursor: pointer;
-            display: inline-flex;
-            align-items: center;
-            gap: 10px;
-            transition: all 0.3s;
-        }
-        .prev-btn:hover {
-            transform: translateX(-5px);
-            background: rgba(0,255,136,0.1);
-        }
-        .page-info {
-            color: var(--gray);
-            font-size: 0.9rem;
-        }
-        
+        .next-btn { background: var(--primary); color: var(--dark); border: none; }
+        .next-btn:hover { transform: translateX(5px); box-shadow: 0 5px 20px rgba(0, 255, 136, 0.3); }
+        .prev-btn { background: transparent; border: 1px solid var(--primary); color: var(--primary); }
+        .prev-btn:hover { transform: translateX(-5px); background: rgba(0, 255, 136, 0.1); }
+        .page-info { color: var(--gray); font-size: 0.9rem; }
+
+        /* Course Cards */
         .courses-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
             gap: 25px;
         }
-        
         .course-card {
             background: var(--dark-light);
             border-radius: 20px;
             padding: 25px;
-            border: 1px solid rgba(0,255,136,0.1);
-            transition: all 0.3s;
+            border: 1px solid rgba(0, 255, 136, 0.1);
+            transition: 0.3s;
             cursor: pointer;
         }
         .course-card:hover { transform: translateY(-5px); border-color: var(--primary); }
@@ -260,25 +243,24 @@
         .badge-free { background: var(--warning); color: var(--dark); }
         .badge-premium { background: var(--primary); color: var(--dark); }
         .badge-enrolled { background: var(--success); color: white; }
-        .course-card h3 { margin-bottom: 10px; }
-        .course-card p { color: var(--gray); font-size: 0.85rem; margin-bottom: 15px; }
         .course-price { font-weight: bold; margin: 10px 0; }
         .course-price.free { color: var(--warning); }
         .course-price.premium { color: var(--primary); }
-        
-        .btn-view {
+        .btn-view, .btn-enroll, .btn-continue {
             width: 100%;
             padding: 12px;
             border-radius: 30px;
-            border: 1px solid var(--primary);
-            background: transparent;
-            color: white;
+            font-weight: bold;
+            margin-top: 10px;
             cursor: pointer;
-            font-weight: 600;
-            margin-top: 5px;
+            border: none;
         }
+        .btn-view { background: transparent; border: 1px solid var(--primary); color: white; }
         .btn-view:hover { background: var(--primary); color: var(--dark); }
-        
+        .btn-enroll { background: var(--primary); color: var(--dark); }
+        .btn-continue { background: transparent; border: 2px solid var(--primary); color: var(--primary); }
+
+        /* Dashboard Layout */
         .dashboard-container { display: none; }
         .sidebar {
             position: fixed;
@@ -305,9 +287,8 @@
             cursor: pointer;
         }
         .sidebar a:hover, .sidebar a.active { background: var(--primary); color: var(--dark); }
-        
         .profile-card {
-            background: rgba(0,0,0,0.3);
+            background: rgba(0, 0, 0, 0.3);
             border-radius: 16px;
             padding: 20px;
             margin-bottom: 30px;
@@ -325,9 +306,7 @@
             font-size: 2rem;
             color: var(--dark);
         }
-        
         .main-content { margin-left: 280px; padding: 90px 30px 30px; }
-        
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
@@ -339,35 +318,17 @@
             padding: 25px;
             border-radius: 20px;
             text-align: center;
-            cursor: pointer;
         }
         .stat-card h3 { font-size: 2rem; color: var(--primary); }
-        
         .progress-bar {
-            background: rgba(255,255,255,0.1);
+            background: rgba(255, 255, 255, 0.1);
             border-radius: 10px;
             height: 8px;
             margin: 15px 0;
         }
-        .progress-fill {
-            background: var(--primary);
-            height: 100%;
-            border-radius: 10px;
-            transition: width 0.3s;
-        }
-        
-        .btn-enroll, .btn-continue {
-            width: 100%;
-            padding: 12px;
-            border-radius: 30px;
-            border: none;
-            cursor: pointer;
-            font-weight: bold;
-            margin-top: 10px;
-        }
-        .btn-enroll { background: var(--primary); color: var(--dark); }
-        .btn-continue { background: transparent; border: 2px solid var(--primary); color: var(--primary); }
-        
+        .progress-fill { background: var(--primary); height: 100%; border-radius: 10px; transition: width 0.3s; }
+
+        /* Modals */
         .modal {
             display: none;
             position: fixed;
@@ -375,7 +336,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0,0,0,0.95);
+            background: rgba(0, 0, 0, 0.95);
             z-index: 10000;
             justify-content: center;
             align-items: center;
@@ -408,19 +369,19 @@
             font-weight: bold;
             cursor: pointer;
         }
-        
         .loading { text-align: center; padding: 60px; }
         .spinner {
             width: 50px;
             height: 50px;
-            border: 3px solid rgba(0,255,136,0.2);
+            border: 3px solid rgba(0, 255, 136, 0.2);
             border-top-color: var(--primary);
             border-radius: 50%;
             animation: spin 0.8s linear infinite;
             margin: auto;
         }
         @keyframes spin { to { transform: rotate(360deg); } }
-        
+
+        /* Contact & Footer */
         .contact-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
@@ -445,15 +406,13 @@
         }
         .whatsapp-btn { background: #25D366; color: white; }
         .call-btn { background: var(--primary); color: var(--dark); }
-        
         .footer {
             text-align: center;
             padding: 40px 20px;
             color: var(--gray);
-            border-top: 1px solid rgba(0,255,136,0.1);
+            border-top: 1px solid rgba(0, 255, 136, 0.1);
             margin-top: 20px;
         }
-        
         .mobile-menu-btn {
             display: none;
             position: fixed;
@@ -467,7 +426,6 @@
             cursor: pointer;
             z-index: 1001;
         }
-        
         @media (max-width: 768px) {
             .sidebar { transform: translateX(-100%); }
             .sidebar.active { transform: translateX(0); }
@@ -496,13 +454,13 @@
 
 <!-- M-Pesa Payment Modal -->
 <div id="paymentModal" class="modal">
-    <div class="modal-content payment-content" style="text-align: center;">
+    <div class="modal-content" style="text-align: center;">
         <h2><i class="fas fa-comment-dollar" style="color: var(--mpesa);"></i> M-Pesa Payment</h2>
         <p style="margin-bottom: 10px;">Pay for: <strong id="paymentCourseName"></strong></p>
         <p style="margin-bottom: 20px; font-size: 1.5rem; color: var(--mpesa);"><strong id="paymentAmount"></strong></p>
-        <p style="margin-bottom: 10px; font-size: 0.8rem;">Enter your M-Pesa registered phone number</p>
+        <p style="margin-bottom: 10px;">Enter your M-Pesa registered phone number</p>
         <input type="tel" id="mpesaPhone" placeholder="e.g., 0712345678" style="text-align: center;">
-        <button class="mpesa-btn" onclick="processMpesaPayment()" style="background: var(--mpesa); color: white; width: 100%; padding: 14px; border-radius: 12px; border: none; font-weight: bold; margin-top: 10px; cursor: pointer;">
+        <button onclick="processMpesaPayment()" style="background: var(--mpesa); color: white; width: 100%; padding: 14px; border-radius: 12px; border: none; font-weight: bold; margin-top: 10px; cursor: pointer;">
             <i class="fas fa-comment-dollar"></i> Pay with M-Pesa
         </button>
         <p style="margin-top: 15px; font-size: 0.7rem; color: var(--gray);">You will receive a prompt on your phone. Enter your PIN to complete payment.</p>
@@ -515,8 +473,7 @@
     <nav class="navbar">
         <div class="nav-container">
             <div class="logo" onclick="showLanding()">
-                <i class="fas fa-car-side"></i>
-                MEI DRIVE <span>AFRICA</span>
+                <i class="fas fa-car-side"></i> MEI DRIVE <span>AFRICA</span>
             </div>
             <div class="nav-links">
                 <a onclick="showLanding()">Home</a>
@@ -528,7 +485,6 @@
             </div>
         </div>
     </nav>
-
     <section class="hero">
         <div>
             <h1>Practice Daily.<br><span>Revise Smarter. Pass with Confidence.</span></h1>
@@ -536,7 +492,6 @@
             <button class="btn-primary" onclick="document.getElementById('coursesSection').scrollIntoView({behavior:'smooth'})">Explore Courses →</button>
         </div>
     </section>
-
     <section class="stats">
         <div class="stats-container">
             <div class="stat"><h2>10K+</h2><p>Students</p></div>
@@ -545,99 +500,44 @@
             <div class="stat"><h2>500+</h2><p>Reviews</p></div>
         </div>
     </section>
-
     <section class="container" id="coursesSection">
         <h2 class="section-title">Our <span>Courses</span></h2>
-        <div id="coursesContainer" class="courses-grid">
-            <div class="loading"><div class="spinner"></div> Loading courses...</div>
-        </div>
+        <div id="coursesContainer" class="courses-grid"><div class="loading"><div class="spinner"></div> Loading courses...</div></div>
         <div class="pagination" id="pagination">
             <button class="prev-btn" id="prevPageBtn" style="display: none;"><i class="fas fa-arrow-left"></i> Previous</button>
             <span class="page-info" id="pageInfo"></span>
             <button class="next-btn" id="nextPageBtn">Next Page <i class="fas fa-arrow-right"></i></button>
         </div>
     </section>
-
     <section class="container" id="contactSection">
         <h2 class="section-title">Get In <span>Touch</span></h2>
         <div class="contact-grid">
-            <div class="contact-card whatsapp">
-                <i class="fab fa-whatsapp"></i>
-                <h3>WhatsApp</h3>
-                <p><strong>0703 738 707</strong></p>
-                <a href="https://wa.me/254703738707" class="contact-btn whatsapp-btn" target="_blank">Chat Now</a>
-            </div>
-            <div class="contact-card call">
-                <i class="fas fa-phone-alt"></i>
-                <h3>Call Us</h3>
-                <p><strong>0703 738 707</strong></p>
-                <a href="tel:+254703738707" class="contact-btn call-btn">Call Now</a>
-            </div>
-            <div class="contact-card email">
-                <i class="fas fa-envelope"></i>
-                <h3>Email</h3>
-                <p><strong>info@meidriveafrica.com</strong></p>
-                <a href="mailto:info@meidriveafrica.com" class="contact-btn call-btn">Send Email</a>
-            </div>
+            <div class="contact-card whatsapp"><i class="fab fa-whatsapp"></i><h3>WhatsApp</h3><p><strong>0703 738 707</strong></p><a href="https://wa.me/254703738707" class="contact-btn whatsapp-btn" target="_blank">Chat Now</a></div>
+            <div class="contact-card call"><i class="fas fa-phone-alt"></i><h3>Call Us</h3><p><strong>0703 738 707</strong></p><a href="tel:+254703738707" class="contact-btn call-btn">Call Now</a></div>
+            <div class="contact-card email"><i class="fas fa-envelope"></i><h3>Email</h3><p><strong>info@meidriveafrica.com</strong></p><a href="mailto:info@meidriveafrica.com" class="contact-btn call-btn">Send Email</a></div>
         </div>
     </section>
-
-    <footer class="footer">
-        <p><i class="fas fa-shield-alt"></i> © 2026 MEI DRIVE AFRICA | Drive Safe, Arrive Alive <i class="fas fa-road"></i></p>
-        <p style="margin-top: 12px; font-size: 12px;"><i class="fas fa-certificate"></i> NTSA Certified Instructor: ILR-7WA1P62</p>
-    </footer>
+    <footer class="footer"><p><i class="fas fa-shield-alt"></i> © 2026 MEI DRIVE AFRICA | Drive Safe, Arrive Alive <i class="fas fa-road"></i></p><p style="margin-top: 12px; font-size: 12px;"><i class="fas fa-certificate"></i> NTSA Certified Instructor: ILR-7WA1P62</p></footer>
 </div>
 
 <!-- DASHBOARD -->
 <div id="dashboardPage" class="dashboard-container">
-    <nav class="navbar">
-        <div class="nav-container">
-            <div class="logo" onclick="showLanding()">
-                <i class="fas fa-car-side"></i> MEI DRIVE <span>AFRICA</span>
-            </div>
-            <div class="nav-links">
-                <button class="btn-nav btn-logout" id="logoutBtn">Logout</button>
-            </div>
-        </div>
-    </nav>
-    
+    <nav class="navbar"><div class="nav-container"><div class="logo" onclick="showLanding()"><i class="fas fa-car-side"></i> MEI DRIVE <span>AFRICA</span></div><div class="nav-links"><button class="btn-nav btn-logout" id="logoutBtn">Logout</button></div></div></nav>
     <button class="mobile-menu-btn" id="mobileMenuBtn">☰</button>
-    
     <div class="sidebar" id="dashboardSidebar">
-        <div class="profile-card">
-            <div class="profile-avatar" id="profileAvatar">👤</div>
-            <div class="profile-name" id="profileName">Loading...</div>
-            <div class="profile-email" id="profileEmail">user@example.com</div>
-        </div>
+        <div class="profile-card"><div class="profile-avatar" id="profileAvatar">👤</div><div class="profile-name" id="profileName">Loading...</div><div class="profile-email" id="profileEmail">user@example.com</div></div>
         <h2>MY DASHBOARD</h2>
         <a href="javascript:void(0)" class="active" onclick="showDashboardSection('overview')"><i class="fas fa-chart-line"></i> Overview</a>
         <a href="javascript:void(0)" onclick="showDashboardSection('courses')"><i class="fas fa-book"></i> My Courses</a>
     </div>
-    
     <div class="main-content">
-        <div id="dashboardOverview">
-            <h2>Welcome Back, <span id="dashboardUserName">Learner</span>! 🎉</h2>
-            <div class="stats-grid">
-                <div class="stat-card"><i class="fas fa-graduation-cap"></i><h3 id="dashTotalCourses">0</h3><p>Available</p></div>
-                <div class="stat-card"><i class="fas fa-check-circle"></i><h3 id="dashEnrolledCount">0</h3><p>Enrolled</p></div>
-                <div class="stat-card"><i class="fas fa-trophy"></i><h3 id="dashCompletedCount">0</h3><p>Completed</p></div>
-                <div class="stat-card"><i class="fas fa-chart-line"></i><h3 id="dashOverallProgress">0%</h3><p>Progress</p></div>
-            </div>
-            <h3>Your Selected Course</h3>
-            <div id="selectedCourseCard" class="courses-grid"></div>
-        </div>
-        
-        <div id="dashboardCourses" style="display:none;">
-            <h2>My Enrolled Courses</h2>
-            <div id="enrolledCoursesList" class="courses-grid"></div>
-            <h2 style="margin-top: 40px;">Available Courses</h2>
-            <div id="availableCoursesList" class="courses-grid"></div>
-        </div>
+        <div id="dashboardOverview"><h2>Welcome Back, <span id="dashboardUserName">Learner</span>! 🎉</h2><div class="stats-grid"><div class="stat-card"><i class="fas fa-graduation-cap"></i><h3 id="dashTotalCourses">0</h3><p>Available</p></div><div class="stat-card"><i class="fas fa-check-circle"></i><h3 id="dashEnrolledCount">0</h3><p>Enrolled</p></div><div class="stat-card"><i class="fas fa-trophy"></i><h3 id="dashCompletedCount">0</h3><p>Completed</p></div><div class="stat-card"><i class="fas fa-chart-line"></i><h3 id="dashOverallProgress">0%</h3><p>Progress</p></div></div><h3>Your Selected Course</h3><div id="selectedCourseCard" class="courses-grid"></div></div>
+        <div id="dashboardCourses" style="display:none;"><h2>My Enrolled Courses</h2><div id="enrolledCoursesList" class="courses-grid"></div><h2 style="margin-top:40px;">Available Courses</h2><div id="availableCoursesList" class="courses-grid"></div></div>
     </div>
 </div>
 
 <script>
-    // SUPABASE CONFIG
+    // Supabase Config
     const SUPABASE_URL = 'https://qpqkmmkrzxlhcpccefjn.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFwcWttbWtyenhsaGNwY2NlZmpuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk1MjU0NzIsImV4cCI6MjA5NTEwMTQ3Mn0.Vw1hexN3NKoF_y9VFBFs_NUhJgFNNMwuyzDjImUcM6s';
     const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -662,212 +562,45 @@
         { id: 8, name: 'Quiz Bank - Exam Preparation', description: '1000+ NTSA practice questions for driving theory test.', price: 0, type: 'free', icon: '📝', duration: 'Self-paced', level: 'All Levels' }
     ];
     
-    function showToast(msg, type='success') {
-        const toast = document.createElement('div');
-        toast.className = `toast ${type}`;
-        toast.innerHTML = `<i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'}"></i> ${msg}`;
-        document.body.appendChild(toast);
-        setTimeout(() => toast.remove(), 3000);
-    }
+    function showToast(msg, type='success') { const t=document.createElement('div'); t.className=`toast ${type}`; t.innerHTML=`<i class="fas ${type==='success'?'fa-check-circle':'fa-exclamation-circle'}"></i> ${msg}`; document.body.appendChild(t); setTimeout(()=>t.remove(),3000); }
+    function escapeHtml(str) { if(!str) return ''; return str.replace(/[&<>]/g, m=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[m])); }
     
-    async function loadCourses() {
-        try {
-            const { data, error } = await supabase.from('courses').select('*').order('id');
-            if (!error && data && data.length) allCourses = data;
-            else allCourses = DEFAULT_COURSES;
-        } catch(e) { allCourses = DEFAULT_COURSES; }
-        document.getElementById('totalCourses').innerText = allCourses.length;
-        renderCoursesPage();
-    }
+    async function loadCourses() { try { const {data}=await supabase.from('courses').select('*').order('id'); allCourses = (data && data.length) ? data : DEFAULT_COURSES; } catch(e){ allCourses=DEFAULT_COURSES; } document.getElementById('totalCourses').innerText=allCourses.length; renderCoursesPage(); }
+    async function loadUserEnrollments() { if(!currentUser) return; try { const {data}=await supabase.from('enrollments').select('course_id,progress').eq('user_id',currentUser.id); userEnrollments.clear(); if(data) data.forEach(e=>userEnrollments.set(e.course_id, e.progress||0)); } catch(e){} updateDashboardStats(); if(document.getElementById('dashboardPage').style.display==='block'){ renderEnrolledCoursesList(); renderAvailableCoursesList(); renderSelectedCourseCard(); } }
+    async function saveEnrollment(courseId, progress=0) { if(!currentUser) return false; try { await supabase.from('enrollments').upsert({ user_id: currentUser.id, course_id: courseId, progress, updated_at: new Date() }); return true; } catch(e){ return false; } }
     
-    async function loadUserEnrollments() {
-        if(!currentUser) return;
-        try {
-            const { data } = await supabase.from('enrollments').select('course_id, progress').eq('user_id', currentUser.id);
-            userEnrollments.clear();
-            if(data) data.forEach(e => userEnrollments.set(e.course_id, e.progress || 0));
-        } catch(e) {}
-        updateDashboardStats();
-        if(document.getElementById('dashboardPage').style.display === 'block') {
-            renderEnrolledCoursesList();
-            renderAvailableCoursesList();
-            renderSelectedCourseCard();
-        }
-    }
+    async function processMpesaPayment() { let phone=document.getElementById('mpesaPhone').value.trim(); if(!phone){ showToast('Enter M-Pesa number','error'); return; } phone=phone.replace(/\s/g,''); if(phone.startsWith('0')) phone='254'+phone.substring(1); if(!phone.startsWith('254')) phone='254'+phone; if(!pendingPaymentCourse) return; showToast('Processing payment... Check your phone','success'); setTimeout(async ()=>{ showToast(`✅ KES ${pendingPaymentCourse.price.toLocaleString()} paid! Enrolling...`,'success'); const ok=await saveEnrollment(pendingPaymentCourse.id,0); if(ok){ userEnrollments.set(pendingPaymentCourse.id,0); showToast(`Enrolled in ${pendingPaymentCourse.name}!`,'success'); updateDashboardStats(); renderSelectedCourseCard(); renderEnrolledCoursesList(); renderAvailableCoursesList(); } closePaymentModal(); pendingPaymentCourse=null; },2000); }
     
-    async function saveEnrollment(courseId, progress=0) {
-        if(!currentUser) return false;
-        try {
-            await supabase.from('enrollments').upsert({ user_id: currentUser.id, course_id: courseId, progress, updated_at: new Date() });
-            return true;
-        } catch(e) { return false; }
-    }
+    async function enrollInCourse(courseId) { if(!currentUser){ selectedCourseId=courseId; showAuthModal('login'); return; } const course=allCourses.find(c=>c.id===courseId); if(!course) return; if(userEnrollments.has(courseId)){ showToast('Already enrolled','warning'); return; } if(course.price>0 && course.type==='premium'){ pendingPaymentCourse=course; document.getElementById('paymentCourseName').innerText=course.name; document.getElementById('paymentAmount').innerHTML=`KES ${course.price.toLocaleString()}`; document.getElementById('paymentModal').classList.add('active'); return; } const ok=await saveEnrollment(courseId,0); if(ok){ userEnrollments.set(courseId,0); showToast(`Enrolled in ${course.name}!`,'success'); updateDashboardStats(); renderSelectedCourseCard(); renderEnrolledCoursesList(); renderAvailableCoursesList(); } else showToast('Enrollment failed','error'); }
     
-    async function processMpesaPayment() {
-        let phone = document.getElementById('mpesaPhone').value.trim();
-        if(!phone) { showToast('Enter M-Pesa number', 'error'); return; }
-        phone = phone.replace(/\s/g, '');
-        if(phone.startsWith('0')) phone = '254' + phone.substring(1);
-        if(!phone.startsWith('254')) phone = '254' + phone;
-        if(!pendingPaymentCourse) return;
-        showToast('Processing payment... Please check your phone', 'success');
-        setTimeout(async () => {
-            showToast(`✅ KES ${pendingPaymentCourse.price.toLocaleString()} paid successfully! Enrolling now.`, 'success');
-            const success = await saveEnrollment(pendingPaymentCourse.id, 0);
-            if(success) {
-                userEnrollments.set(pendingPaymentCourse.id, 0);
-                showToast(`Enrolled in ${pendingPaymentCourse.name}!`, 'success');
-                updateDashboardStats();
-                renderSelectedCourseCard();
-                renderEnrolledCoursesList();
-                renderAvailableCoursesList();
-            }
-            closePaymentModal();
-            pendingPaymentCourse = null;
-        }, 2000);
-    }
+    async function updateProgress(courseId, newProgress) { if(!currentUser || !userEnrollments.has(courseId)) return; const progress=Math.min(100,newProgress); userEnrollments.set(courseId,progress); await supabase.from('enrollments').update({progress, updated_at:new Date()}).eq('user_id',currentUser.id).eq('course_id',courseId); if(progress===100) showToast('🎉 Course completed! Great job!','success'); updateDashboardStats(); renderSelectedCourseCard(); renderEnrolledCoursesList(); }
     
-    async function enrollInCourse(courseId) {
-        if(!currentUser) { selectedCourseId = courseId; showAuthModal('login'); return; }
-        const course = allCourses.find(c => c.id === courseId);
-        if(!course) return;
-        if(userEnrollments.has(courseId)) { showToast('Already enrolled', 'warning'); return; }
-        if(course.price > 0 && course.type === 'premium') {
-            pendingPaymentCourse = course;
-            document.getElementById('paymentCourseName').innerText = course.name;
-            document.getElementById('paymentAmount').innerHTML = `KES ${course.price.toLocaleString()}`;
-            document.getElementById('paymentModal').classList.add('active');
-            return;
-        }
-        const ok = await saveEnrollment(courseId, 0);
-        if(ok) { userEnrollments.set(courseId, 0); showToast(`Enrolled in ${course.name}!`, 'success'); updateDashboardStats(); renderSelectedCourseCard(); renderEnrolledCoursesList(); renderAvailableCoursesList(); }
-        else showToast('Enrollment failed', 'error');
-    }
-    
-    async function updateProgress(courseId, newProgress) {
-        if(!currentUser || !userEnrollments.has(courseId)) return;
-        const progress = Math.min(100, newProgress);
-        userEnrollments.set(courseId, progress);
-        await supabase.from('enrollments').update({ progress, updated_at: new Date() }).eq('user_id', currentUser.id).eq('course_id', courseId);
-        if(progress === 100) showToast('🎉 Course completed! Great job!', 'success');
-        updateDashboardStats();
-        renderSelectedCourseCard();
-        renderEnrolledCoursesList();
-    }
-    
-    function renderCoursesPage() {
-        const container = document.getElementById('coursesContainer');
-        const start = (currentPage-1)*coursesPerPage;
-        const paginated = allCourses.slice(start, start+coursesPerPage);
-        if(!paginated.length) { container.innerHTML = '<div class="course-card"><p>No courses found</p></div>'; return; }
-        container.innerHTML = paginated.map(c => {
-            const isFree = c.type==='free' || c.price===0;
-            return `<div class="course-card" onclick="selectCourse(${c.id})">
-                        <div class="course-icon">${c.icon||'📚'}</div>
-                        <span class="course-badge ${isFree?'badge-free':'badge-premium'}">${isFree?'FREE':'PREMIUM'}</span>
-                        <h3>${escapeHtml(c.name)}</h3>
-                        <p>${escapeHtml((c.description||'').substring(0,100))}...</p>
-                        <div style="display:flex; justify-content:space-between; font-size:0.75rem; color:var(--gray); margin-bottom:10px;"><span>⏱️ ${c.duration||'Self-paced'}</span><span>📊 ${c.level||'All Levels'}</span></div>
-                        <div class="course-price ${isFree?'free':'premium'}">${isFree?'FREE':`KES ${(c.price||0).toLocaleString()}`}</div>
-                        <button class="btn-view" onclick="event.stopPropagation(); selectCourse(${c.id})">View Course →</button>
-                    </div>`;
-        }).join('');
-        const totalPages = Math.ceil(allCourses.length/coursesPerPage);
-        document.getElementById('prevPageBtn').style.display = currentPage===1?'none':'inline-flex';
-        document.getElementById('nextPageBtn').style.display = currentPage===totalPages?'none':'inline-flex';
-        document.getElementById('pageInfo').innerText = `Page ${currentPage} of ${totalPages}`;
-        if(totalPages<=1) document.getElementById('pagination').style.display = 'none';
-        else document.getElementById('pagination').style.display = 'flex';
-    }
-    
+    function renderCoursesPage() { const container=document.getElementById('coursesContainer'); const start=(currentPage-1)*coursesPerPage; const paginated=allCourses.slice(start, start+coursesPerPage); if(!paginated.length){ container.innerHTML='<div class="course-card"><p>No courses found</p></div>'; return; } container.innerHTML=paginated.map(c=>{ const free=c.type==='free'||c.price===0; return `<div class="course-card" onclick="selectCourse(${c.id})"><div class="course-icon">${c.icon||'📚'}</div><span class="course-badge ${free?'badge-free':'badge-premium'}">${free?'FREE':'PREMIUM'}</span><h3>${escapeHtml(c.name)}</h3><p>${escapeHtml((c.description||'').substring(0,100))}...</p><div style="display:flex;justify-content:space-between;font-size:0.75rem;color:var(--gray);margin-bottom:10px;"><span>⏱️ ${c.duration||'Self-paced'}</span><span>📊 ${c.level||'All Levels'}</span></div><div class="course-price ${free?'free':'premium'}">${free?'FREE':`KES ${(c.price||0).toLocaleString()}`}</div><button class="btn-view" onclick="event.stopPropagation(); selectCourse(${c.id})">View Course →</button></div>`; }).join(''); const totalPages=Math.ceil(allCourses.length/coursesPerPage); document.getElementById('prevPageBtn').style.display=currentPage===1?'none':'inline-flex'; document.getElementById('nextPageBtn').style.display=currentPage===totalPages?'none':'inline-flex'; document.getElementById('pageInfo').innerText=`Page ${currentPage} of ${totalPages}`; if(totalPages<=1) document.getElementById('pagination').style.display='none'; else document.getElementById('pagination').style.display='flex'; }
     function nextPage() { if(currentPage < Math.ceil(allCourses.length/coursesPerPage)) { currentPage++; renderCoursesPage(); } }
     function prevPage() { if(currentPage>1) { currentPage--; renderCoursesPage(); } }
-    
-    function selectCourse(id) { selectedCourseId = id; if(currentUser) { showDashboard(); renderSelectedCourseCard(); } else showAuthModal('login'); }
-    
-    function renderSelectedCourseCard() {
-        const container = document.getElementById('selectedCourseCard');
-        if(!selectedCourseId) { container.innerHTML = '<div class="course-card"><p>📌 Select a course from the homepage to start learning</p></div>'; return; }
-        const course = allCourses.find(c=>c.id===selectedCourseId);
-        if(!course) return;
-        const enrolled = userEnrollments.has(course.id);
-        const progress = userEnrollments.get(course.id)||0;
-        const isFree = course.type==='free'||course.price===0;
-        container.innerHTML = `<div class="course-card">
-            <div class="course-icon">${course.icon||'📚'}</div>
-            <span class="course-badge ${enrolled?'badge-enrolled':(isFree?'badge-free':'badge-premium')}">${enrolled?'✅ ENROLLED':(isFree?'FREE':'PREMIUM')}</span>
-            <h3>${escapeHtml(course.name)}</h3>
-            <p>${escapeHtml(course.description||'')}</p>
-            <div style="display:flex; gap:15px; font-size:0.8rem; color:var(--gray); margin:10px 0;"><span>⏱️ ${course.duration||'Self-paced'}</span><span>📊 ${course.level||'All Levels'}</span></div>
-            ${enrolled?`<div class="progress-bar"><div class="progress-fill" style="width:${progress}%"></div></div><p style="text-align:center;">${progress}% Complete</p><button class="btn-continue" onclick="updateProgress(${course.id}, ${progress+10})">${progress===100?'📋 Review Course':'▶️ Continue Learning'}</button>`:
-            `<div class="course-price ${isFree?'free':'premium'}">${isFree?'FREE':`KES ${course.price.toLocaleString()}`}</div><button class="btn-enroll" onclick="enrollInCourse(${course.id})">${course.price>0?'💳 Pay & Enroll':'🎓 Enroll Now'}</button>`}
-        </div>`;
-    }
-    
-    function renderEnrolledCoursesList() {
-        const container = document.getElementById('enrolledCoursesList');
-        const enrolled = allCourses.filter(c=>userEnrollments.has(c.id));
-        if(!enrolled.length) { container.innerHTML = '<div class="course-card"><p>No enrolled courses yet.</p></div>'; return; }
-        container.innerHTML = enrolled.map(c=>{ const p = userEnrollments.get(c.id)||0; return `<div class="course-card"><div class="course-icon">${c.icon||'📚'}</div><span class="course-badge badge-enrolled">✅ ENROLLED</span><h3>${escapeHtml(c.name)}</h3><div class="progress-bar"><div class="progress-fill" style="width:${p}%"></div></div><p style="text-align:center;">${p}% Complete</p><button class="btn-continue" onclick="updateProgress(${c.id}, ${p+10})">Continue →</button></div>`; }).join('');
-    }
-    
-    function renderAvailableCoursesList() {
-        const container = document.getElementById('availableCoursesList');
-        const available = allCourses.filter(c=>!userEnrollments.has(c.id));
-        if(!available.length) { container.innerHTML = '<div class="course-card"><p>🎉 You\'re enrolled in all courses!</p></div>'; return; }
-        container.innerHTML = available.map(c=>{ const free = c.type==='free'||c.price===0; return `<div class="course-card"><div class="course-icon">${c.icon||'📚'}</div><span class="course-badge ${free?'badge-free':'badge-premium'}">${free?'FREE':'PREMIUM'}</span><h3>${escapeHtml(c.name)}</h3><p>${escapeHtml((c.description||'').substring(0,80))}...</p><div class="course-price ${free?'free':'premium'}">${free?'FREE':`KES ${c.price.toLocaleString()}`}</div><button class="btn-enroll" onclick="enrollInCourse(${c.id})">${c.price>0?'💳 Pay & Enroll':'🎓 Enroll Now'}</button></div>`; }).join('');
-    }
-    
-    function updateDashboardStats() {
-        const enrolled = userEnrollments.size;
-        const completed = Array.from(userEnrollments.values()).filter(p=>p===100).length;
-        const totalProgress = Array.from(userEnrollments.values()).reduce((s,p)=>s+p,0);
-        const avg = enrolled?Math.round(totalProgress/enrolled):0;
-        document.getElementById('dashTotalCourses').innerText = allCourses.length;
-        document.getElementById('dashEnrolledCount').innerText = enrolled;
-        document.getElementById('dashCompletedCount').innerText = completed;
-        document.getElementById('dashOverallProgress').innerText = `${avg}%`;
-        if(currentUser) document.getElementById('dashboardUserName').innerText = currentUser.email.split('@')[0];
-    }
-    
-    function showLanding() { document.getElementById('landingPage').style.display = 'block'; document.getElementById('dashboardPage').style.display = 'none'; document.getElementById('dashboardSidebar').classList.remove('active'); }
-    function showDashboard() { document.getElementById('landingPage').style.display = 'none'; document.getElementById('dashboardPage').style.display = 'block'; updateDashboardStats(); renderSelectedCourseCard(); renderEnrolledCoursesList(); renderAvailableCoursesList(); document.getElementById('dashboardSidebar').classList.remove('active'); }
-    function showDashboardSection(section) { document.getElementById('dashboardOverview').style.display = section==='overview'?'block':'none'; document.getElementById('dashboardCourses').style.display = section==='courses'?'block':'none'; document.querySelectorAll('#dashboardSidebar a').forEach(a=>a.classList.remove('active')); if(section==='overview') document.querySelector('#dashboardSidebar a:first-child').classList.add('active'); else document.querySelector('#dashboardSidebar a:last-child').classList.add('active'); }
-    
-    function showAuthModal(mode) { authMode=mode; document.getElementById('modalTitle').innerText = mode==='login'?'Login':'Register'; document.getElementById('authSubmitBtn').innerText = mode==='login'?'Login':'Register'; document.getElementById('authToggleText').innerHTML = mode==='login'?"Don't have an account?":"Already have an account?"; document.getElementById('authModal').classList.add('active'); }
+    function selectCourse(id) { selectedCourseId=id; if(currentUser){ showDashboard(); renderSelectedCourseCard(); } else showAuthModal('login'); }
+    function renderSelectedCourseCard() { const container=document.getElementById('selectedCourseCard'); if(!selectedCourseId){ container.innerHTML='<div class="course-card"><p>📌 Select a course from the homepage to start learning</p></div>'; return; } const course=allCourses.find(c=>c.id===selectedCourseId); if(!course) return; const enrolled=userEnrollments.has(course.id); const progress=userEnrollments.get(course.id)||0; const free=course.type==='free'||course.price===0; container.innerHTML=`<div class="course-card"><div class="course-icon">${course.icon||'📚'}</div><span class="course-badge ${enrolled?'badge-enrolled':(free?'badge-free':'badge-premium')}">${enrolled?'✅ ENROLLED':(free?'FREE':'PREMIUM')}</span><h3>${escapeHtml(course.name)}</h3><p>${escapeHtml(course.description||'')}</p><div style="display:flex;gap:15px;font-size:0.8rem;color:var(--gray);margin:10px 0;"><span>⏱️ ${course.duration||'Self-paced'}</span><span>📊 ${course.level||'All Levels'}</span></div>${enrolled?`<div class="progress-bar"><div class="progress-fill" style="width:${progress}%"></div></div><p style="text-align:center;">${progress}% Complete</p><button class="btn-continue" onclick="updateProgress(${course.id}, ${progress+10})">${progress===100?'📋 Review Course':'▶️ Continue Learning'}</button>`:`<div class="course-price ${free?'free':'premium'}">${free?'FREE':`KES ${course.price.toLocaleString()}`}</div><button class="btn-enroll" onclick="enrollInCourse(${course.id})">${course.price>0?'💳 Pay & Enroll':'🎓 Enroll Now'}</button>`}</div>`; }
+    function renderEnrolledCoursesList() { const container=document.getElementById('enrolledCoursesList'); const enrolled=allCourses.filter(c=>userEnrollments.has(c.id)); if(!enrolled.length){ container.innerHTML='<div class="course-card"><p>No enrolled courses yet.</p></div>'; return; } container.innerHTML=enrolled.map(c=>{ const p=userEnrollments.get(c.id)||0; return `<div class="course-card"><div class="course-icon">${c.icon||'📚'}</div><span class="course-badge badge-enrolled">✅ ENROLLED</span><h3>${escapeHtml(c.name)}</h3><div class="progress-bar"><div class="progress-fill" style="width:${p}%"></div></div><p style="text-align:center;">${p}% Complete</p><button class="btn-continue" onclick="updateProgress(${c.id}, ${p+10})">Continue →</button></div>`; }).join(''); }
+    function renderAvailableCoursesList() { const container=document.getElementById('availableCoursesList'); const available=allCourses.filter(c=>!userEnrollments.has(c.id)); if(!available.length){ container.innerHTML='<div class="course-card"><p>🎉 You\'re enrolled in all courses!</p></div>'; return; } container.innerHTML=available.map(c=>{ const free=c.type==='free'||c.price===0; return `<div class="course-card"><div class="course-icon">${c.icon||'📚'}</div><span class="course-badge ${free?'badge-free':'badge-premium'}">${free?'FREE':'PREMIUM'}</span><h3>${escapeHtml(c.name)}</h3><p>${escapeHtml((c.description||'').substring(0,80))}...</p><div class="course-price ${free?'free':'premium'}">${free?'FREE':`KES ${c.price.toLocaleString()}`}</div><button class="btn-enroll" onclick="enrollInCourse(${c.id})">${c.price>0?'💳 Pay & Enroll':'🎓 Enroll Now'}</button></div>`; }).join(''); }
+    function updateDashboardStats(){ const enrolled=userEnrollments.size; const completed=Array.from(userEnrollments.values()).filter(p=>p===100).length; const totalProgress=Array.from(userEnrollments.values()).reduce((s,p)=>s+p,0); const avg=enrolled?Math.round(totalProgress/enrolled):0; document.getElementById('dashTotalCourses').innerText=allCourses.length; document.getElementById('dashEnrolledCount').innerText=enrolled; document.getElementById('dashCompletedCount').innerText=completed; document.getElementById('dashOverallProgress').innerText=`${avg}%`; if(currentUser) document.getElementById('dashboardUserName').innerText=currentUser.email.split('@')[0]; }
+    function showLanding() { document.getElementById('landingPage').style.display='block'; document.getElementById('dashboardPage').style.display='none'; document.getElementById('dashboardSidebar').classList.remove('active'); }
+    function showDashboard() { document.getElementById('landingPage').style.display='none'; document.getElementById('dashboardPage').style.display='block'; updateDashboardStats(); renderSelectedCourseCard(); renderEnrolledCoursesList(); renderAvailableCoursesList(); document.getElementById('dashboardSidebar').classList.remove('active'); }
+    function showDashboardSection(section) { document.getElementById('dashboardOverview').style.display=section==='overview'?'block':'none'; document.getElementById('dashboardCourses').style.display=section==='courses'?'block':'none'; document.querySelectorAll('#dashboardSidebar a').forEach(a=>a.classList.remove('active')); if(section==='overview') document.querySelector('#dashboardSidebar a:first-child').classList.add('active'); else document.querySelector('#dashboardSidebar a:last-child').classList.add('active'); }
+    function showAuthModal(mode) { authMode=mode; document.getElementById('modalTitle').innerText=mode==='login'?'Login':'Register'; document.getElementById('authSubmitBtn').innerText=mode==='login'?'Login':'Register'; document.getElementById('authToggleText').innerHTML=mode==='login'?"Don't have an account?":"Already have an account?"; document.getElementById('authModal').classList.add('active'); }
     function closeAuthModal() { document.getElementById('authModal').classList.remove('active'); document.getElementById('authEmail').value=''; document.getElementById('authPassword').value=''; }
     function toggleAuthMode() { authMode = authMode==='login'?'register':'login'; showAuthModal(authMode); }
     function closePaymentModal() { document.getElementById('paymentModal').classList.remove('active'); document.getElementById('mpesaPhone').value=''; pendingPaymentCourse=null; }
     
-    function escapeHtml(str) { if(!str) return ''; return str.replace(/[&<>]/g, m=>({ '&':'&amp;', '<':'&lt;', '>':'&gt;' }[m])); }
-    
-    document.getElementById('authSubmitBtn').onclick = async () => {
-        const email = document.getElementById('authEmail').value, pass = document.getElementById('authPassword').value;
-        if(!email||!pass) { showToast('All fields required','error'); return; }
-        try {
-            if(authMode==='login') {
-                const { error } = await supabase.auth.signInWithPassword({ email, password:pass });
-                if(error) throw error;
-                closeAuthModal(); if(selectedCourseId) showDashboard();
-            } else {
-                const { error } = await supabase.auth.signUp({ email, password:pass });
-                if(error) throw error;
-                showToast('Account created! Check email to confirm.','success'); closeAuthModal();
-            }
-        } catch(e) { showToast(e.message,'error'); }
-    };
+    document.getElementById('authSubmitBtn').onclick = async () => { const email=document.getElementById('authEmail').value, pass=document.getElementById('authPassword').value; if(!email||!pass){ showToast('All fields required','error'); return; } try { if(authMode==='login'){ const {error}=await supabase.auth.signInWithPassword({email,password:pass}); if(error) throw error; closeAuthModal(); if(selectedCourseId) showDashboard(); } else { const {error}=await supabase.auth.signUp({email,password:pass}); if(error) throw error; showToast('Account created! Check email to confirm.','success'); closeAuthModal(); } } catch(e){ showToast(e.message,'error'); } };
     document.getElementById('logoutBtn').onclick = async () => { await supabase.auth.signOut(); showToast('Logged out','success'); showLanding(); };
     document.getElementById('mobileMenuBtn').onclick = () => document.getElementById('dashboardSidebar').classList.toggle('active');
     document.getElementById('nextPageBtn').onclick = nextPage; document.getElementById('prevPageBtn').onclick = prevPage;
     
-    supabase.auth.onAuthStateChange(async (event, session) => {
-        if(session) { currentUser = session.user; await loadUserEnrollments(); showDashboard(); updateProfileUI(); showToast(`Welcome ${currentUser.email.split('@')[0]}!`,'success'); }
-        else { currentUser = null; userEnrollments.clear(); showLanding(); }
-    });
+    supabase.auth.onAuthStateChange(async (event, session) => { if(session){ currentUser=session.user; await loadUserEnrollments(); showDashboard(); updateProfileUI(); showToast(`Welcome ${currentUser.email.split('@')[0]}!`,'success'); } else { currentUser=null; userEnrollments.clear(); showLanding(); } });
     function updateProfileUI() { if(currentUser){ let name=currentUser.email.split('@')[0]; document.getElementById('profileName').innerText=name; document.getElementById('profileEmail').innerText=currentUser.email; document.getElementById('dashboardUserName').innerText=name; } }
-    window.selectCourse = selectCourse; window.enrollInCourse = enrollInCourse; window.updateProgress = updateProgress; window.showAuthModal = showAuthModal; window.closeAuthModal = closeAuthModal; window.toggleAuthMode = toggleAuthMode; window.showLanding = showLanding; window.showDashboard = showDashboard; window.showDashboardSection = showDashboardSection; window.processMpesaPayment = processMpesaPayment; window.closePaymentModal = closePaymentModal;
     
-    async function init() { await loadCourses(); const { data:{ session } } = await supabase.auth.getSession(); if(session) { currentUser = session.user; await loadUserEnrollments(); showDashboard(); updateProfileUI(); } }
+    window.selectCourse=selectCourse; window.enrollInCourse=enrollInCourse; window.updateProgress=updateProgress; window.showAuthModal=showAuthModal; window.closeAuthModal=closeAuthModal; window.toggleAuthMode=toggleAuthMode; window.showLanding=showLanding; window.showDashboard=showDashboard; window.showDashboardSection=showDashboardSection; window.processMpesaPayment=processMpesaPayment; window.closePaymentModal=closePaymentModal;
+    async function init(){ await loadCourses(); const {data:{session}}=await supabase.auth.getSession(); if(session){ currentUser=session.user; await loadUserEnrollments(); showDashboard(); updateProfileUI(); } }
     init();
 </script>
 </body>
