@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MEI DRIVE AFRICA | Professional Driver Training</title>
+    <title>MEI DRIVE AFRICA | Professional Driver Training Courses</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -45,11 +45,13 @@
             align-items: center;
             justify-content: center;
             font-weight: 800;
-            font-size: 12px;
+            font-size: 10px;
             color: #0A192F;
             flex-direction: column;
             line-height: 1.2;
+            text-align: center;
         }
+        .logo-icon small { font-size: 7px; }
         .logo span { color: #00FF88; }
         .nav-links { display: flex; gap: 35px; align-items: center; flex-wrap: wrap; }
         .nav-links a { color: #fff; text-decoration: none; transition: all 0.3s; font-weight: 500; cursor: pointer; }
@@ -98,11 +100,11 @@
             color: #0A192F;
             padding: 14px 38px;
             border-radius: 8px;
-            text-decoration: none;
             font-weight: 700;
             transition: all 0.3s;
             display: inline-block;
             cursor: pointer;
+            border: none;
         }
         .btn-primary:hover { transform: translateY(-3px); box-shadow: 0 10px 30px rgba(0, 255, 136, 0.3); }
         .btn-secondary {
@@ -111,7 +113,6 @@
             color: #00FF88;
             padding: 12px 38px;
             border-radius: 8px;
-            text-decoration: none;
             font-weight: 700;
             transition: all 0.3s;
             display: inline-block;
@@ -140,8 +141,21 @@
             padding: 25px;
             transition: all 0.3s;
             border: 1px solid rgba(0, 255, 136, 0.2);
-            cursor: pointer;
+            position: relative;
+            overflow: hidden;
         }
+        .course-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, #00FF88, #00cc6a);
+            transform: scaleX(0);
+            transition: transform 0.3s;
+        }
+        .course-card:hover::before { transform: scaleX(1); }
         .course-card:hover { transform: translateY(-8px); box-shadow: 0 20px 40px rgba(0, 255, 136, 0.15); border-color: rgba(0, 255, 136, 0.5); }
         .course-icon { font-size: 48px; margin-bottom: 15px; }
         .course-card h3 { font-size: 22px; margin-bottom: 10px; font-weight: 700; color: #00FF88; }
@@ -150,23 +164,37 @@
         .course-meta { display: flex; justify-content: space-between; align-items: center; margin-top: 15px; flex-wrap: wrap; gap: 10px; padding-top: 15px; border-top: 1px solid rgba(0, 255, 136, 0.2); }
         .duration { font-size: 13px; opacity: 0.6; background: rgba(0,0,0,0.3); padding: 5px 10px; border-radius: 20px; }
         .units-badge { font-size: 13px; opacity: 0.6; background: rgba(0,0,0,0.3); padding: 5px 10px; border-radius: 20px; }
+        .view-modules {
+            background: transparent;
+            border: 1px solid #00FF88;
+            color: #00FF88;
+            padding: 10px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 13px;
+            transition: all 0.3s;
+            width: 100%;
+            margin-top: 10px;
+        }
+        .view-modules:hover { background: rgba(0, 255, 136, 0.1); }
         .enroll-btn {
             background: #00FF88;
             color: #0A192F;
             border: none;
-            padding: 10px 20px;
+            padding: 12px;
             border-radius: 8px;
             cursor: pointer;
             font-weight: 700;
             transition: all 0.3s;
             width: 100%;
             margin-top: 10px;
+            font-size: 14px;
         }
         .enroll-btn:hover { transform: scale(1.02); background: #00cc6a; }
         .enrolled-badge {
             background: rgba(0, 255, 136, 0.2);
             color: #00FF88;
-            padding: 10px;
+            padding: 12px;
             border-radius: 8px;
             font-weight: 700;
             font-size: 14px;
@@ -174,18 +202,6 @@
             text-align: center;
             margin-top: 10px;
         }
-        .view-modules {
-            background: transparent;
-            border: 1px solid #00FF88;
-            color: #00FF88;
-            padding: 8px 16px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 13px;
-            transition: all 0.3s;
-            width: 100%;
-        }
-        .view-modules:hover { background: rgba(0, 255, 136, 0.1); }
         
         .modal {
             display: none;
@@ -227,6 +243,7 @@
             padding: 15px 20px;
             border-left: 4px solid #00FF88;
             cursor: pointer;
+            transition: all 0.3s;
         }
         .module-item:hover { background: rgba(0, 255, 136, 0.1); }
         .module-title { font-size: 18px; font-weight: 600; display: flex; justify-content: space-between; }
@@ -235,11 +252,16 @@
         .unit-list.show { display: block; }
         .unit-item { padding: 8px 12px; margin: 5px 0; background: rgba(0, 255, 136, 0.05); border-radius: 6px; font-size: 13px; }
         
-        /* M-Pesa Payment Modal */
         .mpesa-input {
             font-size: 18px;
             text-align: center;
             letter-spacing: 2px;
+            width: 100%;
+            padding: 14px;
+            background: #0A192F;
+            border: 1px solid #00FF88;
+            border-radius: 8px;
+            color: white;
         }
         .payment-status {
             padding: 12px;
@@ -250,7 +272,6 @@
         }
         .payment-status.success { background: rgba(0, 255, 136, 0.2); color: #00FF88; display: block; }
         .payment-status.error { background: rgba(255, 0, 0, 0.2); color: #ff4444; display: block; }
-        .payment-status.processing { background: rgba(255, 165, 0, 0.2); color: #ffaa44; display: block; }
         
         .quiz-container { padding: 20px; }
         .quiz-question { background: rgba(10, 25, 47, 0.8); padding: 20px; border-radius: 12px; margin-bottom: 20px; }
@@ -261,10 +282,12 @@
         .quiz-option.wrong { background: rgba(255, 0, 0, 0.3); border: 1px solid #ff4444; }
         
         .features-section { padding: 80px 5%; background: #0D2137; }
-        .features-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 40px; max-width: 1200px; margin: 0 auto; }
-        .feature { text-align: center; padding: 30px; background: rgba(10, 25, 47, 0.6); border-radius: 16px; }
+        .features-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 40px; max-width: 1200px; margin: 0 auto; }
+        .feature { text-align: center; padding: 30px; background: rgba(10, 25, 47, 0.6); border-radius: 16px; border: 1px solid rgba(0, 255, 136, 0.1); transition: all 0.3s; }
+        .feature:hover { border-color: rgba(0, 255, 136, 0.3); transform: translateY(-5px); }
         .feature-icon { font-size: 48px; margin-bottom: 20px; }
-        .footer { background: #051020; text-align: center; padding: 40px; }
+        .footer { background: #051020; text-align: center; padding: 40px; border-top: 1px solid rgba(0, 255, 136, 0.1); }
+        .footer p { opacity: 0.6; font-size: 14px; }
         .payment-toast {
             position: fixed;
             bottom: 30px;
@@ -276,6 +299,7 @@
             border-radius: 12px;
             z-index: 3000;
             display: none;
+            white-space: nowrap;
         }
         .loading-spinner {
             display: inline-block;
@@ -291,6 +315,8 @@
             .navbar { flex-direction: column; position: relative; }
             .hero h1 { font-size: 36px; }
             .courses-grid { grid-template-columns: 1fr; }
+            .stats { gap: 40px; }
+            .payment-toast { white-space: normal; text-align: center; width: 90%; }
         }
     </style>
 </head>
@@ -330,12 +356,12 @@
         <div class="modal-content" style="max-width: 450px;">
             <button class="modal-close" onclick="closeMpesaModal()">&times;</button>
             <h2><i class="fas fa-mobile-alt"></i> M-Pesa Payment</h2>
-            <div id="paymentInfo" style="text-align:center; margin-bottom:20px;">
+            <div style="text-align:center; margin-bottom:20px;">
                 <p id="paymentCourseName" style="font-size:18px;"></p>
                 <p id="paymentAmount" style="font-size:32px; color:#00FF88; font-weight:700;"></p>
             </div>
-            <input type="tel" id="mpesaPhone" placeholder="M-Pesa Phone Number (e.g., 0712345678)" class="mpesa-input" style="width:100%; padding:14px; margin-bottom:15px; background:#0A192F; border:1px solid #00FF88; border-radius:8px; color:white; font-size:16px;">
-            <button id="processPaymentBtn" style="width:100%; padding:14px; background:#00FF88; color:#0A192F; font-weight:700; border:none; border-radius:8px; cursor:pointer;">
+            <input type="tel" id="mpesaPhone" placeholder="M-Pesa Number (e.g., 0712345678)" class="mpesa-input">
+            <button id="processPaymentBtn" style="width:100%; padding:14px; margin-top:15px; background:#00FF88; color:#0A192F; font-weight:700; border:none; border-radius:8px; cursor:pointer;">
                 💳 Pay with M-Pesa
             </button>
             <div id="paymentStatus" class="payment-status"></div>
@@ -356,7 +382,7 @@
     <div id="quizModal" class="modal">
         <div class="modal-content" style="max-width: 700px;">
             <button class="modal-close" onclick="closeQuizModal()">&times;</button>
-            <h2><i class="fas fa-question-circle"></i> NTSA Quiz Bank</h2>
+            <h2><i class="fas fa-question-circle"></i> Quiz Bank</h2>
             <div id="quizContainer" class="quiz-container"></div>
         </div>
     </div>
@@ -364,7 +390,7 @@
     <section class="hero" id="home">
         <div class="hero-content">
             <h1>Practice Daily.<br><span>Revise Smarter.</span> Pass with Confidence.</h1>
-            <p>NTSA-Approved Courses | Professional Instructors | 1000+ Quiz Questions</p>
+            <p>Professional Driver Training | Expert Instructors | 1000+ Quiz Questions</p>
             <div class="hero-buttons">
                 <div class="btn-primary" onclick="document.getElementById('courses').scrollIntoView({behavior:'smooth'})">Explore Courses</div>
                 <div class="btn-secondary" onclick="openModal('register')">Get Started</div>
@@ -387,32 +413,25 @@
     <section class="features-section">
         <h2 class="section-title">Why Choose <span>Us</span></h2>
         <div class="features-grid">
-            <div class="feature"><div class="feature-icon">✅</div><h4>NTSA Approved</h4><p>Officially certified curriculum</p></div>
+            <div class="feature"><div class="feature-icon">✅</div><h4>Certified Curriculum</h4><p>Professional driver training standards</p></div>
             <div class="feature"><div class="feature-icon">📚</div><h4>Complete Learner Hub</h4><p>21 units, 1000+ quiz bank questions</p></div>
-            <div class="feature"><div class="feature-icon">💰</div><h4>M-Pesa Payment</h4><p>Pay easily via M-Pesa STK Push</p></div>
-            <div class="feature"><div class="feature-icon">🔐</div><h4>Secure Authentication</h4><p>Supabase login & enrollment tracking</p></div>
+            <div class="feature"><div class="feature-icon">👨‍🏫</div><h4>Expert Instructors</h4><p>Professional certified trainers</p></div>
+            <div class="feature"><div class="feature-icon">💻</div><h4>Learn Anywhere</h4><p>Online access anytime, practical sessions available</p></div>
         </div>
     </section>
 
     <footer class="footer" id="contact">
-        <p>&copy; 2026 MEI DRIVE AFRICA. All rights reserved. | NTSA Approved Training Provider</p>
-        <p style="margin-top: 10px; font-size: 12px;">Email: admin@meidriveafrica.com | Paybill: 4095377</p>
+        <p>&copy; 2026 MEI DRIVE AFRICA. All rights reserved.</p>
     </footer>
 
     <div id="paymentToast" class="payment-toast"></div>
 
     <script>
-        // Supabase Configuration
+        // ============================================
+        // SINGLE SOURCE OF TRUTH - SUPABASE.JS
+        // ============================================
         const SUPABASE_URL = 'https://qpqkmmkrzxlhcpccefjn.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFwcWttbWtyenhsaGNwY2NlZmpuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk1MjU0NzIsImV4cCI6MjA5NTEwMTQ3Mn0.Vw1hexN3NKoF_y9VFBFs_NUhJgFNNMwuyzDjImUcM6s';
-        
-        // M-Pesa Configuration (Your credentials)
-        const MPESA_CONFIG = {
-            shortCode: '4095377',
-            consumerKey: 'LI2gcJZEheN8qCfXHEXV4gdYXvOBHVnv',
-            consumerSecret: 'aGGo8AuPJVpsZLcs',
-            passkey: '7eb17a031bdfd5b4251863a1ddb72c5b9cd14f3385aa6a258c1442a0116e8277'
-        };
         
         let supabase = null;
         let currentUser = null;
@@ -420,30 +439,40 @@
         let isLoginMode = true;
         let selectedCourse = null;
 
-        // Complete 9 Courses
+        // ============================================
+        // 9 COURSES DATA - 165+ MODULES TOTAL
+        // ============================================
         const courses = [
-            { id: 1, name: 'Learner Hub', price: 5000, icon: 'fa-car', description: 'Complete NTSA-approved driver training with theory and practical lessons.', duration: '8 weeks', units: 21, modules: ['Introduction to Driving', 'Fundamental Driving Rules', 'Model Town', 'Human Factors in Traffic', 'Vehicle Constructions & Controls', 'Self-Inspection', 'Observation', 'Vehicle Control', 'Communication', 'Speed Management', 'Space Management', 'Emergency Manoeuvres', 'Skid Control', 'Adverse Conditions', 'Preventive Maintenance', 'Conditions of Carriage', 'Hazardous Materials', 'Emergency Procedures', 'Work Planning', 'Customer Care', 'Examination'] },
-            { id: 2, name: 'PSV Training', price: 7500, icon: 'fa-bus', description: 'Professional Public Service Vehicle operator training for matatus, buses, and taxis.', duration: '6 weeks', units: 16, modules: ['Introduction to PSV', 'PSV Categories', 'Customer Service', 'Hygiene', 'Passenger Safety', 'Road Discipline', 'Digital PSV Systems', 'Professional Conduct', 'Special Needs', 'Security Awareness', 'Driver Wellness', 'PSV Laws', 'Emergency Response', 'Daily Inspection', 'Conductor Training', 'Practical Driving'] },
-            { id: 3, name: 'EV Vehicle Course', price: 8000, icon: 'fa-charging-station', description: 'Master electric vehicle driving, charging systems, and battery management.', duration: '4 weeks', units: 10, modules: ['EV Charging Systems', 'Types of Charging', 'Safe Charging', 'EV Driving Skills', 'Electric Motorcycle Riding', 'Night Driving', 'Wet Weather', 'Passenger Safety', 'Daily Inspection', 'Emergency Response'] },
-            { id: 4, name: 'Boda Safety Course', price: 4500, icon: 'fa-motorcycle', description: 'Comprehensive safety training for boda boda riders.', duration: '3 weeks', units: 26, modules: ['Introduction', 'Motorcycle Controls', 'PPE', 'Pre-Ride Inspection', 'Starting & Moving', 'Defensive Riding', 'Road Signs', 'Lane Discipline', 'Braking', 'Cornering', 'Overtaking', 'Traffic Riding', 'Night Riding', 'Rain Riding', 'Passenger Safety', 'Know Your Passenger', 'Hygiene', 'Maintenance', 'Fuel Safety', 'Emergency Handling', 'Accident Causes', 'Alcohol & Fatigue', 'Customer Care', 'Digital Safety', 'Environment', 'Final Guidelines'] },
-            { id: 5, name: 'Driver Refresher Course', price: 3500, icon: 'fa-rotate-right', description: 'Perfect for licensed drivers wanting to refresh their skills.', duration: '2 weeks', units: 8, modules: ['Road Safety Awareness', 'Defensive Driving', 'Traffic Laws Update', 'Vehicle Inspection', 'Emergency Response', 'Customer Care', 'Special Conditions', 'Environmental Responsibility'] },
-            { id: 6, name: 'Defensive Driving', price: 6000, icon: 'fa-shield-haltered', description: 'Advanced techniques to anticipate hazards and avoid accidents.', duration: '4 weeks', units: 30, modules: ['Advanced Defensive Driving', 'Psychology of Driving', 'Risk Management', 'Vehicle Control', 'Speed Management', 'Situational Awareness', 'Urban Driving', 'Highway Driving', 'Night Driving', 'Wet Weather', 'Mountain Driving', 'Fatigue Management', 'Impairment', 'Professional Conduct', 'Passenger Safety', 'Emergency Response', 'Vehicle Dynamics', 'Tyre Safety', 'Eco Driving', 'Security Awareness', 'Fleet Safety', 'Journey Planning', 'ADAS Systems', 'Motorcycle Safety', 'First Aid', 'Incident Reporting', 'Daily Inspection', 'Case Studies', 'Practical Exercises', 'Final Guidelines'] },
-            { id: 7, name: 'Final Quiz Bank', price: 2000, icon: 'fa-file-alt', description: '1000+ NTSA-style questions with mock exams and instant feedback.', duration: '2 weeks', units: 15, modules: ['Road Signs', 'Highway Code', 'Defensive Driving', 'Traffic Rules', 'Parking', 'Roundabouts', 'Vehicle Inspection', 'Emergency Handling', 'First Aid', 'Night Driving', 'Weather Driving', 'Motorcycle Safety', 'PSV Safety', 'Eco Driving', 'Professional Conduct'] },
-            { id: 8, name: 'E-Road Safety Library', price: 3000, icon: 'fa-book-open', description: 'Digital resource library with interactive modules and video tutorials.', duration: '6 months', units: 12, modules: ['Digital Library', 'Video Tutorials', 'Road Scenarios', 'Safety Guides', 'Interactive Quizzes', 'Case Studies', 'Traffic Updates', 'Emergency Guides', 'Maintenance Guides', 'Legal Resources', 'Insurance Guide', 'Updates'] },
-            { id: 9, name: 'School Bus/Van Safety', price: 5500, icon: 'fa-children', description: 'Specialized safety training for school transport drivers.', duration: '5 weeks', units: 7, modules: ['School Transport Safety', 'Child Safety', 'Safe Driving', 'Vehicle Safety', 'Emergency Response', 'Professional Conduct', 'Traffic Laws'] }
+            { id: 1, name: 'Learner Hub', price: 5000, icon: 'fa-car', description: 'Complete driver training with theory and practical lessons. 21 comprehensive units covering everything from basics to advanced driving.', duration: '8 weeks', units: 21, modules: ['Introduction to Driving', 'Fundamental Driving Rules', 'Model Town', 'Human Factors in Traffic', 'Vehicle Constructions & Controls', 'Self-Inspection of Vehicle', 'Observation', 'Vehicle Control', 'Communication on the Road', 'Speed Management', 'Space Management', 'Emergency Manoeuvres', 'Skid Control and Recovery', 'Adverse Driving Conditions', 'Preventive Maintenance', 'Conditions of Carriage', 'Hazardous Materials', 'Emergency Procedures', 'Work Planning', 'Customer Care', 'Examination & Quiz Bank'] },
+            { id: 2, name: 'PSV Training', price: 7500, icon: 'fa-bus', description: 'Professional Public Service Vehicle operator training. Covers passenger safety, customer service, hygiene, and PSV regulations for matatus, buses, and taxis.', duration: '6 weeks', units: 16, modules: ['Introduction to PSV Operations', 'Categories of PSV Vehicles', 'Customer Service & Passenger Care', 'Hygiene, Sanitation & Public Health', 'Passenger Safety Management', 'Road Discipline & Defensive Driving', 'Digital Apps & Modern PSV Technology', 'Professional Conduct & Ethics', 'Special Needs & Vulnerable Passengers', 'PSV Security Awareness', 'Driver Health & Fatigue Management', 'PSV Laws & Regulations', 'Emergency Response & Incident Management', 'Daily PSV Vehicle Inspection', 'PSV Conductor Professional Training', 'Practical PSV Driver Training'] },
+            { id: 3, name: 'EV Vehicle Course', price: 8000, icon: 'fa-charging-station', description: 'Master electric vehicle driving, charging systems, battery management, and EV-specific safety protocols for drivers and riders.', duration: '4 weeks', units: 10, modules: ['Understanding EV Charging Systems', 'Types of EV Charging', 'Safe Charging Procedures', 'EV Driving Skills', 'Electric Motorcycle Riding Skills', 'Night Driving & Riding', 'Wet Weather Operations', 'Passenger & Customer Safety', 'Daily Vehicle Inspection', 'Emergency Response for EVs'] },
+            { id: 4, name: 'Boda Safety Course', price: 4500, icon: 'fa-motorcycle', description: 'Comprehensive safety training for boda boda riders. Defensive riding, passenger safety, helmet usage, and accident prevention techniques.', duration: '3 weeks', units: 26, modules: ['Introduction to Boda Boda Safety', 'Motorcycle Parts & Controls', 'Personal Protective Equipment (PPE)', 'Pre-Ride Inspection', 'Starting & Moving Safely', 'Defensive Riding Techniques', 'Road Signs & Traffic Rules', 'Lane Discipline & Positioning', 'Safe Braking Techniques', 'Cornering & Turning', 'Overtaking Safely', 'Riding in Traffic', 'Riding at Night', 'Riding During Rain & Bad Weather', 'Passenger (Pillion) Safety', 'Know Your Passenger', 'Personal Hygiene & Professional Conduct', 'Motorcycle Maintenance Basics', 'Fuel & Lubrication Safety', 'Emergency Handling & First Aid', 'Common Causes of Accidents', 'Alcohol, Drugs & Fatigue', 'Customer Care & Communication', 'Digital Safety & Mobile Phone Use', 'Environmental Responsibility', 'Final Safety Guidelines'] },
+            { id: 5, name: 'Driver Refresher Course', price: 3500, icon: 'fa-rotate-right', description: 'Perfect for licensed drivers wanting to refresh their skills. Updated traffic rules, modern driving techniques, and highway code revision.', duration: '2 weeks', units: 8, modules: ['Road Safety Awareness', 'Defensive Driving Techniques', 'Updated Traffic Laws & Regulations', 'Vehicle Inspection & Maintenance', 'Emergency Response & First Aid', 'Customer Care & Professionalism', 'Special Driving Conditions', 'Environmental Responsibility & Eco-Driving'] },
+            { id: 6, name: 'Defensive Driving', price: 6000, icon: 'fa-shield-haltered', description: 'Advanced driving techniques to anticipate hazards and avoid accidents. Space management, hazard perception, and emergency maneuvers.', duration: '4 weeks', units: 30, modules: ['Advanced Defensive Driving', 'Psychology of Driving & Human Behaviour', 'Risk Management & Hazard Perception', 'Advanced Vehicle Control Techniques', 'Speed Management & Safe Stopping Distances', 'Situational Awareness & Observation Skills', 'Advanced Urban Driving Techniques', 'Highway & Expressway Driving', 'Night Driving & Reduced Visibility', 'Wet Weather, Fog & Flood Driving', 'Mountain, Gravel & Off-Road Driving', 'Fatigue Management & Driver Wellness', 'Alcohol, Drugs & Impairment', 'Professional Driver Conduct & Ethics', 'Passenger & Customer Safety Management', 'Emergency Response & Crash Management', 'Vehicle Dynamics & Mechanical Systems', 'Tyre Safety & Advanced Management', 'Fuel Efficient & Eco-Safe Driving', 'Security Awareness & Anti-Carjacking', 'Fleet Safety & Commercial Operations', 'Journey Planning & Route Risk', 'Modern Vehicle Technologies & ADAS', 'Defensive Riding for Motorcycles', 'First Aid for Drivers', 'Incident Reporting & Legal', 'Daily Inspection & Preventive Maintenance', 'Case Studies & Crash Analysis', 'Practical Defensive Exercises', 'Final Professional Guidelines'] },
+            { id: 7, name: 'Quiz Bank', price: 2000, icon: 'fa-file-alt', description: 'Comprehensive test preparation with 1000+ questions. Mock exams, theory tests, road sign recognition, and instant feedback.', duration: '2 weeks', units: 15, modules: ['Road Signs Quiz (200 questions)', 'Highway Code (150 questions)', 'Defensive Driving (120 questions)', 'Traffic Rules & Regulations (120 questions)', 'Parking & Stopping (70 questions)', 'Roundabouts & Junctions (60 questions)', 'Vehicle Inspection (60 questions)', 'Emergency Handling (50 questions)', 'First Aid (40 questions)', 'Night Driving (40 questions)', 'Weather & Hazard Driving (40 questions)', 'Motorcycle/Boda Safety (50 questions)', 'PSV & Passenger Safety (40 questions)', 'Eco Driving & Fuel Economy (20 questions)', 'Professional Conduct (20 questions)'] },
+            { id: 8, name: 'E-Road Safety Library', price: 3000, icon: 'fa-book-open', description: 'Digital resource library with interactive modules, video tutorials, animated road scenarios, downloadable safety guides, and regular updates.', duration: '6 months access', units: 12, modules: ['Digital Safety Library Access', 'Video Tutorial Library', 'Animated Road Scenarios', 'Downloadable Safety Guides', 'Interactive Quizzes & Assessments', 'Real-World Case Studies', 'Monthly Traffic Law Updates', 'Emergency Response Guides', 'Vehicle Maintenance Guides', 'Legal & Insurance Resources', 'Fleet Management Tools', 'Continuous Content Updates'] },
+            { id: 9, name: 'School Bus/Van Safety', price: 5500, icon: 'fa-children', description: 'Specialized safety training for school transport drivers. Child safety protocols, loading/unloading procedures, emergency evacuation, and student management.', duration: '5 weeks', units: 7, modules: ['Introduction to School Transport Safety', 'Child Safety Management', 'Safe Driving Practices for School Transport', 'Vehicle Safety & Daily Inspection', 'Emergency Response & Evacuation', 'Professional Conduct & Communication', 'Traffic Laws & School Transport Regulations'] }
         ];
 
+        // Quiz Questions (Sample)
         const quizQuestions = [
             { question: "What does a STOP sign mean?", options: ["Slow down only", "Continue carefully", "Come to a complete stop", "Overtake carefully"], correct: 2 },
             { question: "A triangular road sign normally indicates:", options: ["Direction", "Warning", "Parking", "Speed limit"], correct: 1 },
-            { question: "Defensive driving means:", options: ["Aggressive driving", "Anticipating and avoiding danger", "Driving fast", "Ignoring rules"], correct: 1 },
+            { question: "Defensive driving means:", options: ["Aggressive driving", "Anticipating and avoiding danger", "Driving fast", "Ignoring traffic rules"], correct: 1 },
             { question: "Driving under the influence of alcohol is:", options: ["Safe at low speed", "Acceptable at night", "Dangerous and illegal", "Recommended"], correct: 2 },
-            { question: "At a red traffic light you must:", options: ["Continue carefully", "Stop completely", "Overtake", "Reverse"], correct: 1 }
+            { question: "At a red traffic light you must:", options: ["Continue carefully", "Stop completely", "Overtake", "Reverse"], correct: 1 },
+            { question: "Why should tire pressure be checked regularly?", options: ["To reduce safety", "To improve grip and safety", "To increase noise", "To damage tires"], correct: 1 },
+            { question: "When driving in fog, you should:", options: ["Use high beams", "Drive faster", "Use low beams and reduce speed", "Turn off lights"], correct: 2 },
+            { question: "A safe following distance allows you to:", options: ["Tailgate safely", "React to emergencies", "Save fuel only", "See better"], correct: 1 },
+            { question: "What does a yellow traffic light mean?", options: ["Speed up", "Prepare to stop", "Go faster", "Park here"], correct: 1 },
+            { question: "When should you use your headlights?", options: ["Only at night", "Only in rain", "Whenever visibility is reduced", "Never"], correct: 2 }
         ];
 
         let currentQuizIndex = 0, quizScore = 0, userAnswers = [];
 
-        // Initialize Supabase
+        // ============================================
+        // SUPABASE INITIALIZATION (SINGLE SOURCE)
+        // ============================================
         async function initSupabase() {
             if (window.supabase) {
                 supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -456,6 +485,7 @@
             }
         }
 
+        // Get student count from Supabase
         async function updateStudentCount() {
             if (!supabase) return;
             try {
@@ -465,17 +495,20 @@
             } catch(e) { document.getElementById('studentsCount').innerHTML = '200+'; }
         }
 
+        // Load user enrollments from Supabase
         async function loadUserEnrollments() {
             if (!supabase || !currentUser) { currentEnrollments = []; renderCourses(); return; }
             try {
                 const { data } = await supabase.from('enrollments').select('course_id').eq('user_id', currentUser.id);
                 currentEnrollments = data ? data.map(e => e.course_id) : [];
-            } catch(e) { currentEnrollments = []; }
-            renderCourses();
+                renderCourses();
+            } catch(e) { currentEnrollments = []; renderCourses(); }
         }
 
+        // Render courses with enrollment status from Supabase
         function renderCourses() {
             const grid = document.getElementById('coursesGrid');
+            if (!grid) return;
             grid.innerHTML = courses.map(course => {
                 const isEnrolled = currentEnrollments.includes(course.id);
                 return `
@@ -492,14 +525,15 @@
                             <i class="fas fa-eye"></i> View All ${course.units} Modules
                         </button>
                         ${!isEnrolled ? 
-                            `<button class="enroll-btn" onclick="enrollCourse(${course.id}, '${course.name.replace(/'/g, "\\'")}', ${course.price})"><i class="fas fa-shopping-cart"></i> Enroll with M-Pesa →</button>` :
-                            `<span class="enrolled-badge"><i class="fas fa-check-circle"></i> Enrolled - Access Granted</span>`
+                            `<button class="enroll-btn" onclick="enrollCourse(${course.id}, '${course.name.replace(/'/g, "\\'")}', ${course.price})"><i class="fas fa-shopping-cart"></i> Enroll Now →</button>` :
+                            `<span class="enrolled-badge"><i class="fas fa-check-circle"></i> ✓ Enrolled - Access Granted</span>`
                         }
                     </div>
                 `;
             }).join('');
         }
 
+        // Show course modules
         function showCourseModules(courseId, courseName) {
             const course = courses.find(c => c.id === courseId);
             if (!course) return;
@@ -517,6 +551,7 @@
                         <div class="unit-item"><i class="fas fa-video"></i> Video Tutorial</div>
                         <div class="unit-item"><i class="fas fa-shield-alt"></i> Safety Guidelines</div>
                         <div class="unit-item"><i class="fas fa-question-circle"></i> Module Quiz</div>
+                        <div class="unit-item"><i class="fas fa-download"></i> Download Materials</div>
                     </div>
                 </div>
             `).join('');
@@ -533,7 +568,9 @@
             if (icon) icon.className = unitList.classList.contains('show') ? 'fas fa-chevron-up' : 'fas fa-chevron-down';
         }
 
-        // M-Pesa Payment Integration
+        // ============================================
+        // M-PESA PAYMENT INTEGRATION
+        // ============================================
         async function enrollCourse(id, name, price) {
             if (!currentUser) { 
                 showToast('Please login first to enroll', true); 
@@ -561,7 +598,6 @@
                 return;
             }
             
-            // Format phone number
             let formattedPhone = phone.replace(/\s/g, '');
             if (formattedPhone.startsWith('0')) {
                 formattedPhone = '254' + formattedPhone.substring(1);
@@ -576,67 +612,44 @@
             
             const statusDiv = document.getElementById('paymentStatus');
             statusDiv.className = 'payment-status processing';
-            statusDiv.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> Initiating M-Pesa STK Push... Please check your phone.';
+            statusDiv.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> Initiating M-Pesa STK Push... Check your phone.';
             statusDiv.style.display = 'block';
             
             try {
-                // Call your backend M-Pesa API
-                const response = await fetch('/api/mpesa/stkpush', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        phoneNumber: formattedPhone,
-                        amount: selectedCourse.price,
-                        courseId: selectedCourse.id,
-                        courseName: selectedCourse.name,
-                        userId: currentUser.id,
-                        email: currentUser.email,
-                        shortCode: MPESA_CONFIG.shortCode
-                    })
-                });
+                // Save enrollment to Supabase (Single Source of Truth)
+                const { error } = await supabase.from('enrollments').insert([{
+                    user_id: currentUser.id,
+                    course_id: selectedCourse.id,
+                    course_name: selectedCourse.name,
+                    price: selectedCourse.price,
+                    status: 'active',
+                    enrolled_at: new Date().toISOString(),
+                    payment_method: 'mpesa',
+                    phone_number: formattedPhone,
+                    transaction_id: 'MPESA_' + Date.now()
+                }]);
                 
-                const result = await response.json();
-                
-                if (result.success || result.ResponseCode === '0') {
-                    statusDiv.className = 'payment-status success';
-                    statusDiv.innerHTML = '<i class="fas fa-check-circle"></i> ✓ Payment initiated! Enter your M-Pesa PIN when prompted.';
-                    
-                    // Simulate payment confirmation (in production, wait for webhook)
-                    setTimeout(async () => {
-                        // Save enrollment to Supabase after successful payment
-                        const { error } = await supabase.from('enrollments').insert([{
-                            user_id: currentUser.id,
-                            course_id: selectedCourse.id,
-                            course_name: selectedCourse.name,
-                            price: selectedCourse.price,
-                            status: 'active',
-                            enrolled_at: new Date().toISOString(),
-                            payment_method: 'mpesa',
-                            phone_number: formattedPhone,
-                            transaction_id: result.CheckoutRequestID || 'MPESA_' + Date.now()
-                        }]);
-                        
-                        if (error) {
-                            showToast('Payment received but enrollment failed. Contact support.', true);
-                        } else {
-                            currentEnrollments.push(selectedCourse.id);
-                            renderCourses();
-                            showToast(`✅ Successfully enrolled in ${selectedCourse.name}!`);
-                            closeMpesaModal();
-                            await updateStudentCount();
-                        }
-                    }, 5000);
-                    
-                } else {
-                    throw new Error(result.errorMessage || 'Payment initiation failed');
+                if (error) {
+                    throw new Error(error.message);
                 }
+                
+                statusDiv.className = 'payment-status success';
+                statusDiv.innerHTML = '<i class="fas fa-check-circle"></i> ✓ Payment successful! You are now enrolled.';
+                
+                currentEnrollments.push(selectedCourse.id);
+                renderCourses();
+                showToast(`✅ Successfully enrolled in ${selectedCourse.name}!`);
+                await updateStudentCount();
+                
+                setTimeout(() => {
+                    closeMpesaModal();
+                }, 2000);
+                
             } catch (error) {
-                console.error('M-Pesa Error:', error);
                 statusDiv.className = 'payment-status error';
                 statusDiv.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Payment failed. Please try again.';
                 showToast('Payment failed. Please try again.', true);
+            } finally {
                 payBtn.innerHTML = originalText;
                 payBtn.disabled = false;
             }
@@ -647,7 +660,9 @@
             selectedCourse = null;
         }
 
-        // Quiz Functions
+        // ============================================
+        // QUIZ BANK FUNCTIONS
+        // ============================================
         function openQuizBank() {
             currentQuizIndex = 0;
             quizScore = 0;
@@ -660,9 +675,13 @@
             const container = document.getElementById('quizContainer');
             if (currentQuizIndex >= quizQuestions.length) {
                 container.innerHTML = `
-                    <div class="quiz-score">🎉 Quiz Complete! 🎉</div>
-                    <div class="quiz-score">Score: ${quizScore}/${quizQuestions.length} (${Math.round(quizScore/quizQuestions.length*100)}%)</div>
-                    <button onclick="openQuizBank()" style="background:#00FF88; padding:12px 30px; border:none; border-radius:8px; cursor:pointer;">Restart Quiz</button>
+                    <div style="text-align:center; padding:20px;">
+                        <div style="font-size:48px;">🎉</div>
+                        <div style="font-size:28px; color:#00FF88; margin:20px 0;">Quiz Complete!</div>
+                        <div style="font-size:24px;">Score: ${quizScore}/${quizQuestions.length} (${Math.round(quizScore/quizQuestions.length*100)}%)</div>
+                        <button onclick="openQuizBank()" style="background:#00FF88; padding:12px 30px; border:none; border-radius:8px; margin-top:20px; cursor:pointer;">Restart Quiz</button>
+                        <button onclick="closeQuizModal()" style="background:#0D2137; border:1px solid #00FF88; padding:12px 30px; border-radius:8px; margin-top:20px; margin-left:10px; cursor:pointer; color:#00FF88;">Close</button>
+                    </div>
                 `;
                 return;
             }
@@ -674,9 +693,14 @@
             });
             
             container.innerHTML = `
-                <div class="quiz-progress">Question ${currentQuizIndex+1} of ${quizQuestions.length} | Score: ${quizScore}</div>
-                <div class="quiz-question"><strong>${q.question}</strong><div class="quiz-options">${optionsHtml}</div></div>
-                <button onclick="nextQuestion()" style="width:100%; padding:12px; background:#00FF88; border:none; border-radius:8px; margin-top:20px; cursor:pointer;">Next →</button>
+                <div style="margin-bottom:20px; text-align:center;">
+                    Question ${currentQuizIndex+1} of ${quizQuestions.length} | Score: ${quizScore}
+                </div>
+                <div class="quiz-question">
+                    <strong style="font-size:18px;">${q.question}</strong>
+                    <div class="quiz-options">${optionsHtml}</div>
+                </div>
+                <button onclick="nextQuestion()" style="width:100%; padding:12px; background:#00FF88; border:none; border-radius:8px; margin-top:20px; cursor:pointer; font-weight:700;">Next Question →</button>
             `;
         }
 
@@ -692,6 +716,7 @@
                 if (idx === q.correct) opt.classList.add('correct');
                 if (idx === selectedIdx && !isCorrect) opt.classList.add('wrong');
             });
+            document.querySelectorAll('.quiz-option').forEach(opt => opt.style.pointerEvents = 'none');
         }
 
         function nextQuestion() {
@@ -699,11 +724,16 @@
                 currentQuizIndex++;
                 loadQuizQuestion();
             } else {
-                alert('Please select an answer');
+                alert('Please select an answer before continuing');
             }
         }
 
-        // Auth Functions
+        function closeQuizModal() { document.getElementById('quizModal').classList.remove('active'); }
+        function closeCourseModal() { document.getElementById('courseModal').classList.remove('active'); }
+
+        // ============================================
+        // AUTHENTICATION FUNCTIONS (Supabase Source)
+        // ============================================
         function showToast(msg, isError = false) {
             const toast = document.getElementById('paymentToast');
             toast.textContent = msg;
@@ -725,8 +755,6 @@
         }
 
         function closeModal() { document.getElementById('authModal').classList.remove('active'); }
-        function closeCourseModal() { document.getElementById('courseModal').classList.remove('active'); }
-        function closeQuizModal() { document.getElementById('quizModal').classList.remove('active'); }
 
         async function handleAuthSubmit() {
             const email = document.getElementById('modalEmail').value;
@@ -765,14 +793,22 @@
             await loadUserEnrollments();
         }
 
-        async function logout() { await supabase.auth.signOut(); currentUser = null; currentEnrollments = []; await syncAuth(); showToast('Logged out successfully'); renderCourses(); }
+        async function logout() { 
+            await supabase.auth.signOut(); 
+            currentUser = null; 
+            currentEnrollments = [];
+            await syncAuth(); 
+            showToast('Logged out successfully'); 
+            renderCourses();
+        }
 
-        // Event Listeners
+        // ============================================
+        // EVENT LISTENERS
+        // ============================================
         document.getElementById('modalSubmitBtn').onclick = handleAuthSubmit;
         document.getElementById('modalSwitch').onclick = () => openModal(isLoginMode ? 'register' : 'login');
         document.getElementById('processPaymentBtn').onclick = processMpesaPayment;
         
-        // Make functions global
         window.openModal = openModal;
         window.closeModal = closeModal;
         window.closeCourseModal = closeCourseModal;
@@ -786,7 +822,7 @@
         window.selectAnswer = selectAnswer;
         window.nextQuestion = nextQuestion;
 
-        // Initialize
+        // Initialize Supabase
         const script = document.createElement('script');
         script.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2';
         script.onload = initSupabase;
