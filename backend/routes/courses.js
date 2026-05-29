@@ -1,111 +1,219 @@
 // routes/courses.js
+// REAL PRODUCTION - MEI DRIVE AFRICA
+
 import express from 'express';
-import { authenticateUser, optionalAuth } from '../middleware/auth.js';
-import { supabase } from '../config/database.js';
+import { createClient } from '@supabase/supabase-js';
 
 const router = express.Router();
 
-// Get all published courses (public)
-router.get('/', optionalAuth, async (req, res) => {
+// Initialize Supabase directly (no external config file)
+const supabase = createClient(
+    process.env.SUPABASE_URL || 'https://qpqkmmkrzxlhcpccefjn.supabase.co',
+    process.env.SUPABASE_SERVICE_ROLE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFwcWttbWtyenhsaGNwY2NlZmpuIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3OTUyNTQ3MiwiZXhwIjoyMDk1MTAxNDcyfQ.8xHkQ3W5jZR2gZmDvVXq7jKyB5tQnC2ySmY9aBcfVpA'
+);
+
+// Helper: Verify user from token
+async function verifyUser(token) {
+    if (!token) return null;
+    const { data: { user }, error } = await supabase.auth.getUser(token);
+    if (error || !user) return null;
+    return user;
+}
+
+// Helper: Get user enrollments map
+async function getUserEnrollmentsMap(userId) {
+    if (!userId) return new Map();
+    const { data: enrollments } = await supabase
+        .from('enrollments')
+        .select('course_id, progress')
+        .eq('user_id', userId);
+    
+    const map = new Map();
+    enrollments?.forEach(e => map.set(e.course_id, e));
+    return map;
+}
+
+// =====================================================
+// GET ALL COURSES (Public)
+// =====================================================
+router.get('/', async (req, res) => {
     try {
-        let query = supabase
-            .from('courses')
-            .select('*, category:category_id(name, icon)')
-            .eq('is_published', true)
-            .order('display_order', { ascending: true });
+        // Get user from token if provided
+        const authHeader = req.headers.authorization;
+        let userId = null;
         
-        const { data, error } = await query;
+        if (authHeader) {
+            const token = authHeader.split(' ')[1];
+            const user = await verifyUser(token);
+            if (user) userId = user.id;
+        }
+        
+        // Fetch all courses
+        const { data: courses, error } = await supabase
+            .from('courses')
+            .select('*')
+            .order('id', { ascending: true });
         
         if (error) throw error;
         
         // If user is logged in, get enrollment status
-        if (req.userId) {
-            const { data: enrollments } = await supabase
-                .from('enrollments')
-                .select('course_id, progress')
-                .eq('user_id', req.userId);
+        if (userId) {
+            const enrollmentMap = await getUserEnrollmentsMap(userId);
             
-            const enrollmentMap = new Map();
-            enrollments?.forEach(e => enrollmentMap.set(e.course_id, e));
-            
-            const coursesWithEnrollment = data.map(course => ({
+            const coursesWithEnrollment = courses.map(course => ({
                 ...course,
                 is_enrolled: enrollmentMap.has(course.id),
                 progress: enrollmentMap.get(course.id)?.progress || 0
             }));
             
-            return res.json({ success: true, courses: coursesWithEnrollment });
+            return res.json({
+                success: true,
+                courses: coursesWithEnrollment,
+                count: coursesWithEnrollment.length
+            });
         }
         
-        res.json({ success: true, courses: data });
+        res.json({
+            success: true,
+            courses: courses,
+            count: courses.length
+        });
         
     } catch (error) {
-        res.status(500).json({ success: false, error: error.message });
+        console.error('Error fetching courses:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Failed to fetch courses',
+            message: error.message
+        });
     }
 });
 
-// Get single course by slug or ID
-router.get('/:identifier', optionalAuth, async (req, res) => {
+// =====================================================
+// GET SINGLE COURSE BY ID
+// =====================================================
+router.get('/:id', async (req, res) => {
     try {
-        const { identifier } = req.params;
-        const isId = !isNaN(identifier);
+        const { id } = req.params;
+        const courseId = parseInt(id);
         
-        let query = supabase
-            .from('courses')
-            .select('*, category:category_id(*)')
-            .eq(isId ? 'id' : 'slug', identifier)
-            .single();
-        
-        const { data: course, error } = await query;
-        
-        if (error || !course) {
-            return res.status(404).json({ success: false, error: 'Course not found' });
+        if (isNaN(courseId)) {
+            return res.status(400).json({
+                success: false,
+                error: 'Invalid course ID'
+            });
         }
         
-        // Get course units
-        const { data: units } = await supabase
-            .from('units')
-            .select('*')
-            .eq('course_id', course.id)
-            .eq('is_published', true)
-            .order('unit_number', { ascending: true });
+        // Get user from token if provided
+        const authHeader = req.headers.authorization;
+        let userId = null;
         
-        course.units = units || [];
-        course.total_units = units?.length || 0;
+        if (authHeader) {
+            const token = authHeader.split(' ')[1];
+            const user = await verifyUser(token);
+            if (user) userId = user.id;
+        }
+        
+        // Fetch course
+        const { data: course, error } = await supabase
+            .from('courses')
+            .select('*')
+            .eq('id', courseId)
+            .single();
+        
+        if (error || !course) {
+            return res.status(404).json({
+                success: false,
+                error: 'Course not found'
+            });
+        }
+        
+        // Parse modules if stored as JSON
+        let modulesList = course.modules;
+        if (typeof modulesList === 'string') {
+            try {
+                modulesList = JSON.parse(modulesList);
+            } catch(e) {
+                modulesList = [];
+            }
+        }
+        
+        course.modules_list = modulesList || [];
+        course.total_modules = course.modules_list.length;
         
         // Get enrollment status if user is logged in
-        if (req.userId) {
+        if (userId) {
             const { data: enrollment } = await supabase
                 .from('enrollments')
-                .select('*')
-                .eq('user_id', req.userId)
-                .eq('course_id', course.id)
-                .single();
+                .select('id, progress, status, enrolled_at')
+                .eq('user_id', userId)
+                .eq('course_id', courseId)
+                .maybeSingle();
             
             course.is_enrolled = !!enrollment;
             course.enrollment_progress = enrollment?.progress || 0;
             course.enrollment_status = enrollment?.status || null;
+            course.enrolled_at = enrollment?.enrolled_at || null;
+        } else {
+            course.is_enrolled = false;
         }
         
-        res.json({ success: true, course });
+        res.json({
+            success: true,
+            course: course
+        });
         
     } catch (error) {
-        res.status(500).json({ success: false, error: error.message });
+        console.error('Error fetching course:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Failed to fetch course',
+            message: error.message
+        });
     }
 });
 
-// Get course units (for enrolled users)
-router.get('/:courseId/units', authenticateUser, async (req, res) => {
+// =====================================================
+// GET COURSE MODULES (For enrolled users)
+// =====================================================
+router.get('/:courseId/modules', async (req, res) => {
     try {
         const { courseId } = req.params;
+        const id = parseInt(courseId);
+        
+        if (isNaN(id)) {
+            return res.status(400).json({
+                success: false,
+                error: 'Invalid course ID'
+            });
+        }
+        
+        // Verify user
+        const authHeader = req.headers.authorization;
+        if (!authHeader) {
+            return res.status(401).json({
+                success: false,
+                error: 'Authorization required'
+            });
+        }
+        
+        const token = authHeader.split(' ')[1];
+        const user = await verifyUser(token);
+        
+        if (!user) {
+            return res.status(401).json({
+                success: false,
+                error: 'Invalid or expired token'
+            });
+        }
         
         // Check if user is enrolled
         const { data: enrollment, error: enrollmentError } = await supabase
             .from('enrollments')
-            .select('id, status')
-            .eq('user_id', req.userId)
-            .eq('course_id', courseId)
-            .single();
+            .select('id, progress, status')
+            .eq('user_id', user.id)
+            .eq('course_id', id)
+            .maybeSingle();
         
         if (enrollmentError || !enrollment) {
             return res.status(403).json({
@@ -114,35 +222,106 @@ router.get('/:courseId/units', authenticateUser, async (req, res) => {
             });
         }
         
-        // Get units
-        const { data: units, error } = await supabase
-            .from('units')
-            .select('*')
-            .eq('course_id', courseId)
-            .eq('is_published', true)
-            .order('unit_number', { ascending: true });
+        // Get course modules
+        const { data: course, error: courseError } = await supabase
+            .from('courses')
+            .select('name, modules, units')
+            .eq('id', id)
+            .single();
         
-        if (error) throw error;
+        if (courseError) {
+            return res.status(404).json({
+                success: false,
+                error: 'Course not found'
+            });
+        }
         
-        // Get unit progress
-        const { data: progress } = await supabase
-            .from('unit_progress')
-            .select('unit_id, status, quiz_score')
-            .eq('enrollment_id', enrollment.id);
+        // Parse modules
+        let modulesList = course.modules;
+        if (typeof modulesList === 'string') {
+            try {
+                modulesList = JSON.parse(modulesList);
+            } catch(e) {
+                modulesList = [];
+            }
+        }
         
-        const progressMap = new Map();
-        progress?.forEach(p => progressMap.set(p.unit_id, p));
-        
-        const unitsWithProgress = units.map(unit => ({
-            ...unit,
-            progress_status: progressMap.get(unit.id)?.status || 'locked',
-            quiz_score: progressMap.get(unit.id)?.quiz_score || 0
+        // Create module structure with progress
+        const modulesWithProgress = (modulesList || []).map((module, index) => ({
+            id: index + 1,
+            name: module,
+            order: index + 1,
+            is_locked: index > (enrollment.progress || 0),
+            is_completed: index < (enrollment.progress || 0),
+            progress_status: index < (enrollment.progress || 0) ? 'completed' : 
+                           index === (enrollment.progress || 0) ? 'in_progress' : 'locked'
         }));
         
-        res.json({ success: true, units: unitsWithProgress });
+        res.json({
+            success: true,
+            course_name: course.name,
+            enrollment: {
+                id: enrollment.id,
+                progress: enrollment.progress,
+                status: enrollment.status
+            },
+            modules: modulesWithProgress,
+            total_modules: modulesWithProgress.length
+        });
         
     } catch (error) {
-        res.status(500).json({ success: false, error: error.message });
+        console.error('Error fetching modules:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Failed to fetch course modules',
+            message: error.message
+        });
+    }
+});
+
+// =====================================================
+// GET COURSE STATISTICS
+// =====================================================
+router.get('/:courseId/stats', async (req, res) => {
+    try {
+        const { courseId } = req.params;
+        const id = parseInt(courseId);
+        
+        if (isNaN(id)) {
+            return res.status(400).json({
+                success: false,
+                error: 'Invalid course ID'
+            });
+        }
+        
+        // Get total enrollments count
+        const { count: totalEnrollments, error: enrollError } = await supabase
+            .from('enrollments')
+            .select('*', { count: 'exact', head: true })
+            .eq('course_id', id);
+        
+        // Get completed count
+        const { count: completedCount, error: completeError } = await supabase
+            .from('enrollments')
+            .select('*', { count: 'exact', head: true })
+            .eq('course_id', id)
+            .eq('status', 'completed');
+        
+        res.json({
+            success: true,
+            statistics: {
+                total_enrollments: totalEnrollments || 0,
+                completed_count: completedCount || 0,
+                completion_rate: totalEnrollments ? Math.round((completedCount || 0) / totalEnrollments * 100) : 0
+            }
+        });
+        
+    } catch (error) {
+        console.error('Error fetching stats:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Failed to fetch course statistics'
+        });
     }
 });
 
