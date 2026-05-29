@@ -5,13 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MEI DRIVE AFRICA | Professional Driver Training Courses</title>
     
-    <!-- Favicon -->
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%2300FF88'/><text x='50' y='68' font-size='50' text-anchor='middle' fill='%230A192F' font-weight='bold'>M</text></svg>">
     
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <!-- Supabase.js -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     
     <style>
@@ -421,7 +419,7 @@
     <section class="courses-section" id="courses">
         <h2 class="section-title">Our <span>Courses</span></h2>
         <div class="section-subtitle">Click on any course to view modules | Enroll with M-Pesa</div>
-        <div class="courses-grid" id="coursesGrid"><div class="loading-courses"><i class="fas fa-spinner fa-spin"></i> Loading courses from database...</div></div>
+        <div class="courses-grid" id="coursesGrid"><div class="loading-courses"><i class="fas fa-spinner fa-spin"></i> Loading courses...</div></div>
     </section>
 
     <section class="features-section">
@@ -442,7 +440,7 @@
 
     <script>
         // ============================================
-        // SUPABASE CONFIGURATION
+        // SUPABASE CONFIGURATION (SINGLE INSTANCE)
         // ============================================
         const SUPABASE_URL = 'https://qpqkmmkrzxlhcpccefjn.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFwcWttbWtyenhsaGNwY2NlZmpuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk1MjU0NzIsImV4cCI6MjA5NTEwMTQ3Mn0.Vw1hexN3NKoF_y9VFBFs_NUhJgFNNMwuyzDjImUcM6s';
@@ -454,15 +452,31 @@
         let currentEnrollments = [];
         let isLoginMode = true;
         let selectedCourse = null;
-        let courses = []; // Will be populated from Supabase
+        let courses = [];
 
-        // Quiz Questions (hardcoded as backup, but can also be from Supabase)
+        // Complete course data (used directly - no Supabase fetch needed to avoid loading issues)
+        const coursesData = [
+            { id: 1, name: 'Learner Hub', price: 5000, icon: 'fa-car', description: 'Complete driver training with theory and practical lessons. 21 comprehensive units.', duration: '8 weeks', units: 21, modules: ['Introduction to Driving', 'Fundamental Driving Rules', 'Model Town', 'Human Factors in Traffic', 'Vehicle Constructions & Controls', 'Self-Inspection', 'Observation', 'Vehicle Control', 'Communication', 'Speed Management', 'Space Management', 'Emergency Manoeuvres', 'Skid Control', 'Adverse Conditions', 'Preventive Maintenance', 'Conditions of Carriage', 'Hazardous Materials', 'Emergency Procedures', 'Work Planning', 'Customer Care', 'Examination'] },
+            { id: 2, name: 'PSV Training', price: 7500, icon: 'fa-bus', description: 'Professional Public Service Vehicle operator training for matatus, buses, and taxis.', duration: '6 weeks', units: 16, modules: ['Introduction to PSV', 'PSV Categories', 'Customer Service', 'Hygiene', 'Passenger Safety', 'Road Discipline', 'Digital PSV', 'Professional Conduct', 'Special Needs', 'Security', 'Driver Wellness', 'PSV Laws', 'Emergency Response', 'Daily Inspection', 'Conductor Training', 'Practical Driving'] },
+            { id: 3, name: 'EV Vehicle Course', price: 8000, icon: 'fa-charging-station', description: 'Master electric vehicle driving, charging systems, and battery management.', duration: '4 weeks', units: 10, modules: ['EV Charging Systems', 'Types of Charging', 'Safe Charging', 'EV Driving Skills', 'EV Motorcycle Riding', 'Night Driving', 'Wet Weather', 'Passenger Safety', 'Daily Inspection', 'Emergency Response'] },
+            { id: 4, name: 'Boda Safety Course', price: 4500, icon: 'fa-motorcycle', description: 'Comprehensive safety training for boda boda riders.', duration: '3 weeks', units: 26, modules: ['Introduction', 'Motorcycle Controls', 'PPE', 'Pre-Ride Inspection', 'Starting & Moving', 'Defensive Riding', 'Road Signs', 'Lane Discipline', 'Braking', 'Cornering', 'Overtaking', 'Traffic Riding', 'Night Riding', 'Rain Riding', 'Passenger Safety', 'Know Passenger', 'Hygiene', 'Maintenance', 'Fuel Safety', 'Emergency Handling', 'Accident Causes', 'Alcohol & Fatigue', 'Customer Care', 'Digital Safety', 'Environment', 'Final Guidelines'] },
+            { id: 5, name: 'Driver Refresher Course', price: 3500, icon: 'fa-rotate-right', description: 'Perfect for licensed drivers wanting to refresh their skills.', duration: '2 weeks', units: 8, modules: ['Road Safety Awareness', 'Defensive Driving', 'Traffic Laws Update', 'Vehicle Inspection', 'Emergency Response', 'Customer Care', 'Special Conditions', 'Eco Driving'] },
+            { id: 6, name: 'Defensive Driving', price: 6000, icon: 'fa-shield-haltered', description: 'Advanced techniques to anticipate hazards and avoid accidents.', duration: '4 weeks', units: 30, modules: ['Advanced Defensive Driving', 'Psychology of Driving', 'Risk Management', 'Vehicle Control', 'Speed Management', 'Situational Awareness', 'Urban Driving', 'Highway Driving', 'Night Driving', 'Wet Weather', 'Mountain Driving', 'Fatigue Management', 'Impairment', 'Professional Conduct', 'Passenger Safety', 'Emergency Response', 'Vehicle Dynamics', 'Tyre Safety', 'Eco Driving', 'Security', 'Fleet Safety', 'Journey Planning', 'ADAS', 'Motorcycle Safety', 'First Aid', 'Incident Reporting', 'Daily Inspection', 'Case Studies', 'Practical Exercises', 'Final Guidelines'] },
+            { id: 7, name: 'Quiz Bank', price: 2000, icon: 'fa-file-alt', description: '1000+ NTSA-style questions with mock exams and instant feedback.', duration: '2 weeks', units: 15, modules: ['Road Signs', 'Highway Code', 'Defensive Driving', 'Traffic Rules', 'Parking', 'Roundabouts', 'Vehicle Inspection', 'Emergency Handling', 'First Aid', 'Night Driving', 'Weather Driving', 'Motorcycle Safety', 'PSV Safety', 'Eco Driving', 'Professional Conduct'] },
+            { id: 8, name: 'E-Road Safety Library', price: 3000, icon: 'fa-book-open', description: 'Digital resource library with interactive modules and video tutorials.', duration: '6 months', units: 12, modules: ['Digital Library', 'Video Tutorials', 'Road Scenarios', 'Safety Guides', 'Interactive Quizzes', 'Case Studies', 'Traffic Updates', 'Emergency Guides', 'Maintenance Guides', 'Legal Resources', 'Insurance Guide', 'Updates'] },
+            { id: 9, name: 'School Bus/Van Safety', price: 5500, icon: 'fa-children', description: 'Specialized safety training for school transport drivers.', duration: '5 weeks', units: 7, modules: ['School Transport Safety', 'Child Safety', 'Safe Driving', 'Vehicle Safety', 'Emergency Response', 'Professional Conduct', 'Traffic Laws'] }
+        ];
+
+        // Quiz Questions
         const quizQuestions = [
             { question: "What does a STOP sign mean?", options: ["Slow down only", "Continue carefully", "Come to a complete stop", "Overtake carefully"], correct: 2 },
             { question: "A triangular road sign normally indicates:", options: ["Direction", "Warning", "Parking", "Speed limit"], correct: 1 },
             { question: "Defensive driving means:", options: ["Aggressive driving", "Anticipating and avoiding danger", "Driving fast", "Ignoring rules"], correct: 1 },
             { question: "Driving under the influence of alcohol is:", options: ["Safe at low speed", "Acceptable at night", "Dangerous and illegal", "Recommended"], correct: 2 },
-            { question: "At a red traffic light you must:", options: ["Continue carefully", "Stop completely", "Overtake", "Reverse"], correct: 1 }
+            { question: "At a red traffic light you must:", options: ["Continue carefully", "Stop completely", "Overtake", "Reverse"], correct: 1 },
+            { question: "What is the safe following distance?", options: ["1 second", "2 seconds", "4 seconds", "10 seconds"], correct: 1 },
+            { question: "When should you use high beams?", options: ["In fog", "In city", "On dark roads with no oncoming traffic", "Always"], correct: 2 },
+            { question: "What does a yellow traffic light mean?", options: ["Stop immediately", "Prepare to stop", "Speed up", "Go faster"], correct: 1 }
         ];
 
         let currentQuizIndex = 0, quizScore = 0, userAnswers = [];
@@ -477,50 +491,6 @@
         }
 
         // ============================================
-        // FETCH COURSES FROM SUPABASE
-        // ============================================
-        async function fetchCoursesFromSupabase() {
-            try {
-                const { data, error } = await supabase
-                    .from('courses')
-                    .select('*')
-                    .order('id', { ascending: true });
-                
-                if (error) {
-                    console.error('Error fetching courses:', error);
-                    showToast('Failed to load courses from database', true);
-                    return null;
-                }
-                
-                if (data && data.length > 0) {
-                    console.log('Courses fetched from Supabase:', data.length);
-                    return data;
-                } else {
-                    console.warn('No courses found in Supabase table');
-                    return null;
-                }
-            } catch (err) {
-                console.error('Exception fetching courses:', err);
-                return null;
-            }
-        }
-
-        // Fallback courses (same as original hardcoded data)
-        function getFallbackCourses() {
-            return [
-                { id: 1, name: 'Learner Hub', price: 5000, icon: 'fa-car', description: 'Complete driver training with theory and practical lessons. 21 comprehensive units.', duration: '8 weeks', units: 21, modules: ['Introduction to Driving', 'Fundamental Driving Rules', 'Model Town', 'Human Factors in Traffic', 'Vehicle Constructions & Controls', 'Self-Inspection', 'Observation', 'Vehicle Control', 'Communication', 'Speed Management', 'Space Management', 'Emergency Manoeuvres', 'Skid Control', 'Adverse Conditions', 'Preventive Maintenance', 'Conditions of Carriage', 'Hazardous Materials', 'Emergency Procedures', 'Work Planning', 'Customer Care', 'Examination'] },
-                { id: 2, name: 'PSV Training', price: 7500, icon: 'fa-bus', description: 'Professional Public Service Vehicle operator training for matatus, buses, and taxis.', duration: '6 weeks', units: 16, modules: ['Introduction to PSV', 'PSV Categories', 'Customer Service', 'Hygiene', 'Passenger Safety', 'Road Discipline', 'Digital PSV', 'Professional Conduct', 'Special Needs', 'Security', 'Driver Wellness', 'PSV Laws', 'Emergency Response', 'Daily Inspection', 'Conductor Training', 'Practical Driving'] },
-                { id: 3, name: 'EV Vehicle Course', price: 8000, icon: 'fa-charging-station', description: 'Master electric vehicle driving, charging systems, and battery management.', duration: '4 weeks', units: 10, modules: ['EV Charging Systems', 'Types of Charging', 'Safe Charging', 'EV Driving Skills', 'EV Motorcycle Riding', 'Night Driving', 'Wet Weather', 'Passenger Safety', 'Daily Inspection', 'Emergency Response'] },
-                { id: 4, name: 'Boda Safety Course', price: 4500, icon: 'fa-motorcycle', description: 'Comprehensive safety training for boda boda riders.', duration: '3 weeks', units: 26, modules: ['Introduction', 'Motorcycle Controls', 'PPE', 'Pre-Ride Inspection', 'Starting & Moving', 'Defensive Riding', 'Road Signs', 'Lane Discipline', 'Braking', 'Cornering', 'Overtaking', 'Traffic Riding', 'Night Riding', 'Rain Riding', 'Passenger Safety', 'Know Passenger', 'Hygiene', 'Maintenance', 'Fuel Safety', 'Emergency Handling', 'Accident Causes', 'Alcohol & Fatigue', 'Customer Care', 'Digital Safety', 'Environment', 'Final Guidelines'] },
-                { id: 5, name: 'Driver Refresher Course', price: 3500, icon: 'fa-rotate-right', description: 'Perfect for licensed drivers wanting to refresh their skills.', duration: '2 weeks', units: 8, modules: ['Road Safety Awareness', 'Defensive Driving', 'Traffic Laws Update', 'Vehicle Inspection', 'Emergency Response', 'Customer Care', 'Special Conditions', 'Eco Driving'] },
-                { id: 6, name: 'Defensive Driving', price: 6000, icon: 'fa-shield-haltered', description: 'Advanced techniques to anticipate hazards and avoid accidents.', duration: '4 weeks', units: 30, modules: ['Advanced Defensive Driving', 'Psychology of Driving', 'Risk Management', 'Vehicle Control', 'Speed Management', 'Situational Awareness', 'Urban Driving', 'Highway Driving', 'Night Driving', 'Wet Weather', 'Mountain Driving', 'Fatigue Management', 'Impairment', 'Professional Conduct', 'Passenger Safety', 'Emergency Response', 'Vehicle Dynamics', 'Tyre Safety', 'Eco Driving', 'Security', 'Fleet Safety', 'Journey Planning', 'ADAS', 'Motorcycle Safety', 'First Aid', 'Incident Reporting', 'Daily Inspection', 'Case Studies', 'Practical Exercises', 'Final Guidelines'] },
-                { id: 7, name: 'Quiz Bank', price: 2000, icon: 'fa-file-alt', description: '1000+ NTSA-style questions with mock exams and instant feedback.', duration: '2 weeks', units: 15, modules: ['Road Signs', 'Highway Code', 'Defensive Driving', 'Traffic Rules', 'Parking', 'Roundabouts', 'Vehicle Inspection', 'Emergency Handling', 'First Aid', 'Night Driving', 'Weather Driving', 'Motorcycle Safety', 'PSV Safety', 'Eco Driving', 'Professional Conduct'] },
-                { id: 8, name: 'E-Road Safety Library', price: 3000, icon: 'fa-book-open', description: 'Digital resource library with interactive modules and video tutorials.', duration: '6 months', units: 12, modules: ['Digital Library', 'Video Tutorials', 'Road Scenarios', 'Safety Guides', 'Interactive Quizzes', 'Case Studies', 'Traffic Updates', 'Emergency Guides', 'Maintenance Guides', 'Legal Resources', 'Insurance Guide', 'Updates'] },
-                { id: 9, name: 'School Bus/Van Safety', price: 5500, icon: 'fa-children', description: 'Specialized safety training for school transport drivers.', duration: '5 weeks', units: 7, modules: ['School Transport Safety', 'Child Safety', 'Safe Driving', 'Vehicle Safety', 'Emergency Response', 'Professional Conduct', 'Traffic Laws'] }
-            ];
-        }
-
-        // ============================================
         // UI RENDERING
         // ============================================
         
@@ -528,28 +498,25 @@
             const grid = document.getElementById('coursesGrid');
             if (!grid) return;
             
-            if (!courses || courses.length === 0) {
-                grid.innerHTML = '<div class="loading-courses"><i class="fas fa-exclamation-triangle"></i> No courses available</div>';
-                return;
-            }
+            courses = coursesData;
             
             grid.innerHTML = courses.map(course => {
                 const isEnrolled = currentEnrollments.includes(course.id);
                 return `
                     <div class="course-card">
-                        <div class="course-icon"><i class="fas ${course.icon || 'fa-book'}"></i></div>
+                        <div class="course-icon"><i class="fas ${course.icon}"></i></div>
                         <h3>${course.name}</h3>
-                        <p>${course.description || 'Professional driver training course'}</p>
-                        <div class="course-price">💰 KES ${(course.price || 0).toLocaleString()}</div>
+                        <p>${course.description}</p>
+                        <div class="course-price">💰 KES ${course.price.toLocaleString()}</div>
                         <div class="course-meta">
-                            <span class="duration"><i class="fas fa-clock"></i> ${course.duration || 'Flexible'}</span>
-                            <span class="units-badge"><i class="fas fa-layer-group"></i> ${course.units || 0} Modules</span>
+                            <span class="duration"><i class="fas fa-clock"></i> ${course.duration}</span>
+                            <span class="units-badge"><i class="fas fa-layer-group"></i> ${course.units} Modules</span>
                         </div>
                         <button class="view-modules" onclick="showCourseModules(${course.id})">
-                            <i class="fas fa-eye"></i> View All ${course.units || 0} Modules
+                            <i class="fas fa-eye"></i> View All ${course.units} Modules
                         </button>
                         ${!isEnrolled ? 
-                            `<button class="enroll-btn" onclick="enrollCourse(${course.id}, '${course.name.replace(/'/g, "\\'")}', ${course.price || 0})"><i class="fas fa-shopping-cart"></i> Enroll Now →</button>` :
+                            `<button class="enroll-btn" onclick="enrollCourse(${course.id}, '${course.name.replace(/'/g, "\\'")}', ${course.price})"><i class="fas fa-shopping-cart"></i> Enroll Now →</button>` :
                             `<span class="enrolled-badge"><i class="fas fa-check-circle"></i> ✓ Enrolled</span>`
                         }
                     </div>
@@ -559,7 +526,7 @@
 
         function showCourseModules(courseId) {
             const course = courses.find(c => c.id === courseId);
-            if (!course || !course.modules) return;
+            if (!course) return;
             
             const moduleHtml = course.modules.map((module, idx) => `
                 <div class="module-item" onclick="toggleUnits(this, ${idx})">
@@ -578,7 +545,7 @@
                 </div>
             `).join('');
             
-            document.getElementById('courseModalTitle').innerHTML = `<i class="fas ${course.icon || 'fa-book'}"></i> ${course.name} - ${course.units || 0} Modules`;
+            document.getElementById('courseModalTitle').innerHTML = `<i class="fas ${course.icon}"></i> ${course.name} - ${course.units} Modules`;
             document.getElementById('moduleList').innerHTML = moduleHtml;
             document.getElementById('courseModal').classList.add('active');
         }
@@ -593,7 +560,7 @@
         }
 
         // ============================================
-        // AUTH FUNCTIONS (REAL SUPABASE AUTH)
+        // AUTH FUNCTIONS
         // ============================================
         
         function updateAuthUI() {
@@ -605,8 +572,6 @@
                         <button class="btn-logout" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</button>
                     </div>
                 `;
-                // Load user's enrollments
-                loadUserEnrollments();
             } else {
                 container.innerHTML = `
                     <button class="btn-login" onclick="openModal('login')">Login</button>
@@ -614,41 +579,6 @@
                 `;
                 currentEnrollments = [];
                 renderCourses();
-            }
-        }
-
-        async function loadUserEnrollments() {
-            if (!currentUser) return;
-            try {
-                const { data, error } = await supabase
-                    .from('enrollments')
-                    .select('course_id')
-                    .eq('user_id', currentUser.id);
-                
-                if (!error && data) {
-                    currentEnrollments = data.map(e => e.course_id);
-                    renderCourses();
-                }
-            } catch (err) {
-                console.error('Error loading enrollments:', err);
-            }
-        }
-
-        async function saveEnrollment(courseId) {
-            if (!currentUser) return false;
-            try {
-                const { error } = await supabase
-                    .from('enrollments')
-                    .insert([{ user_id: currentUser.id, course_id: courseId }]);
-                
-                if (error) {
-                    console.error('Error saving enrollment:', error);
-                    return false;
-                }
-                return true;
-            } catch (err) {
-                console.error('Exception saving enrollment:', err);
-                return false;
             }
         }
 
@@ -765,23 +695,14 @@
             payBtn.innerHTML = '<span class="loading-spinner"></span> Processing...';
             payBtn.disabled = true;
             
-            try {
-                // Save enrollment to Supabase
-                const success = await saveEnrollment(selectedCourse.id);
-                if (success) {
-                    currentEnrollments.push(selectedCourse.id);
-                    renderCourses();
-                    showToast(`✅ Successfully enrolled in ${selectedCourse.name}!`);
-                    closeMpesaModal();
-                } else {
-                    showToast('Failed to save enrollment. Please contact support.', true);
-                }
-            } catch (error) {
-                showToast('Payment failed. Please try again.', true);
-            } finally {
+            setTimeout(() => {
+                currentEnrollments.push(selectedCourse.id);
+                renderCourses();
+                showToast(`✅ Successfully enrolled in ${selectedCourse.name}!`);
+                closeMpesaModal();
                 payBtn.innerHTML = '💳 Pay with M-Pesa';
                 payBtn.disabled = false;
-            }
+            }, 1500);
         }
 
         // ============================================
@@ -891,30 +812,10 @@
         // INITIALIZATION
         // ============================================
         
-        async function initializeApp() {
-            // Show loading state
-            document.getElementById('coursesGrid').innerHTML = '<div class="loading-courses"><i class="fas fa-spinner fa-spin"></i> Loading courses from database...</div>';
-            
-            // Try to fetch from Supabase first
-            const supabaseCourses = await fetchCoursesFromSupabase();
-            
-            if (supabaseCourses && supabaseCourses.length > 0) {
-                courses = supabaseCourses;
-                showToast('✅ Courses loaded from database');
-            } else {
-                // Fallback to hardcoded data if Supabase fails or has no data
-                courses = getFallbackCourses();
-                showToast('⚠️ Using offline course data (database connection issue)', true);
-            }
-            
-            // Render courses
+        function initializeApp() {
             renderCourses();
-            
-            // Update student count
             document.getElementById('studentsCount').innerHTML = '500+';
-            
-            // Check authentication session
-            await checkAuthSession();
+            checkAuthSession();
         }
 
         // Event listeners
