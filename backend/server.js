@@ -8,9 +8,12 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// Production Backend URL
+const BACKEND_URL = process.env.BACKEND_URL || 'https://mei-drive-api.onrender.com';
+
 // CORS configuration - Allow frontend to access backend
 app.use(cors({
-    origin: ['http://localhost:5500', 'http://127.0.0.1:5500', 'http://localhost:3000', 'https://meidriveafrica.com', 'https://www.meidriveafrica.com'],
+    origin: ['http://localhost:5500', 'http://127.0.0.1:5500', 'http://localhost:3000', 'https://meidriveafrica.com', 'https://www.meidriveafrica.com', 'https://mei-drive-api.onrender.com'],
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization']
@@ -30,6 +33,7 @@ app.get('/api/health', (req, res) => {
         message: 'MEI DRIVE AFRICA API is running - PRODUCTION MODE',
         environment: 'PRODUCTION',
         mpesa: 'LIVE - REAL MONEY',
+        backend_url: BACKEND_URL,
         timestamp: new Date().toISOString(),
         endpoints: {
             health: 'GET /api/health',
@@ -49,6 +53,7 @@ app.get('/api/test', (req, res) => {
         message: 'Backend is working in PRODUCTION mode!',
         environment: 'PRODUCTION',
         mpesa: 'LIVE - Real transactions will deduct money',
+        backend_url: BACKEND_URL,
         timestamp: new Date().toISOString()
     });
 });
@@ -65,7 +70,15 @@ app.use((req, res) => {
     res.status(404).json({
         success: false,
         error: 'Endpoint not found',
-        message: `Cannot ${req.method} ${req.url}`
+        message: `Cannot ${req.method} ${req.url}`,
+        available_endpoints: [
+            'GET /api/health',
+            'GET /api/test',
+            'GET /api/payments/mpesa/test',
+            'POST /api/payments/mpesa/initiate',
+            'POST /api/payments/mpesa/status',
+            'POST /api/payments/mpesa/callback'
+        ]
     });
 });
 
@@ -94,19 +107,21 @@ app.listen(PORT, () => {
 ║     Port: ${PORT}                                                   ║
 ║     Environment: PRODUCTION                                       ║
 ║     M-Pesa Mode: LIVE - REAL MONEY                                ║
+║     Backend URL: ${BACKEND_URL}                                     ║
 ║                                                                   ║
 ║     ⚠️  WARNING: Real money will be deducted!                     ║
 ║                                                                   ║
 ║     API Endpoints:                                                ║
-║     • Health:      GET  http://localhost:${PORT}/api/health         ║
-║     • Test:        GET  http://localhost:${PORT}/api/test           ║
-║     • M-Pesa Test: GET  http://localhost:${PORT}/api/payments/mpesa/test ║
-║     • Initiate:    POST http://localhost:${PORT}/api/payments/mpesa/initiate ║
+║     • Health:      GET  ${BACKEND_URL}/api/health                   ║
+║     • Test:        GET  ${BACKEND_URL}/api/test                     ║
+║     • M-Pesa Test: GET  ${BACKEND_URL}/api/payments/mpesa/test      ║
+║     • Initiate:    POST ${BACKEND_URL}/api/payments/mpesa/initiate  ║
 ║                                                                   ║
 ║     Real M-Pesa Production:                                       ║
 ║     • Paybill: 4095377                                            ║
 ║     • Real customer phone numbers only                            ║
 ║     • Real money will be deducted                                 ║
+║     • Minimum payment: 49 KES                                     ║
 ║                                                                   ║
 ╚═══════════════════════════════════════════════════════════════════╝
     `);
