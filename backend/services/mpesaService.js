@@ -1,14 +1,140 @@
 // services/mpesaService.js
-import { supabase } from '../config/database.js';
-import { initiateStkPush, queryTransactionStatus } from '../config/mpesa.js';
+// REAL PRODUCTION - NO DEMO, NO SANDBOX
 
-// Store transactions in memory (use database in production)
+import { createClient } from '@supabase/supabase-js';
+import axios from 'axios';
+
+// =====================================================
+// SUPABASE CONFIGURATION - DIRECT CONNECTION
+// =====================================================
+const supabase = createClient(
+    process.env.SUPABASE_URL || 'https://qpqkmmkrzxlhcpccefjn.supabase.co',
+    process.env.SUPABASE_SERVICE_ROLE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFwcWttbWtyenhsaGNwY2NlZmpuIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3OTUyNTQ3MiwiZXhwIjoyMDk1MTAxNDcyfQ.8xHkQ3W5jZR2gZmDvVXq7jKyB5tQnC2ySmY9aBcfVpA'
+);
+
+// =====================================================
+// REAL PRODUCTION M-PESA CREDENTIALS
+// =====================================================
+const MPESA_CONSUMER_KEY = process.env.MPESA_CONSUMER_KEY || 'LI2gcJZEheN8qCfXHEXV4gdYXvOBHVnv';
+const MPESA_CONSUMER_SECRET = process.env.MPESA_CONSUMER_SECRET || 'aGGo8AuPJVpsZLcs';
+const MPESA_PASSKEY = process.env.MPESA_PASSKEY || '7eb17a031bdfd5b4251863a1ddb72c5b9cd14f3385aa6a258c1442a0116e8277';
+const MPESA_SHORTCODE = process.env.MPESA_SHORTCODE || '4095377';
+const ENVIRONMENT = 'production'; // REAL PRODUCTION - LIVE MONEY
+
+// Store transactions in memory (fallback only - database is primary)
 const transactionStore = new Map();
 
-// Create a payment record
+// =====================================================
+// HELPER: Get M-Pesa Access Token (REAL PRODUCTION)
+// =====================================================
+async function getMpesaAccessToken() {
+    const auth = Buffer.from(`${MPESA_CONSUMER_KEY}:${MPESA_CONSUMER_SECRET}`).toString('base64');
+    const url = 'https://api.safaricom.co.ke/oauth/v1/generate?grant_type=client_credentials';
+    
+    console.log('🔑 Getting REAL PRODUCTION M-Pesa access token...');
+    
+    try {
+        const response = await axios.get(url, {
+            headers: { Authorization: `Basic ${auth}` }
+        });
+        console.log('✅ PRODUCTION access token obtained');
+        return response.data.access_token;
+    } catch (error) {
+        console.error('❌ Token error:', error.response?.data || error.message);
+        throw new Error(`Failed to get token: ${error.response?.data?.errorMessage || error.message}`);
+    }
+}
+
+// =====================================================
+// HELPER: Format phone number to 254XXXXXXXXX
+// =====================================================
+function formatPhoneNumber(phone) {
+    let cleaned = phone.toString().replace(/\s/g, '');
+    if (cleaned.startsWith('0')) {
+        cleaned = '254' + cleaned.substring(1);
+    } else if (cleaned.startsWith('+')) {
+        cleaned = cleaned.substring(1);
+    } else if (!cleaned.startsWith('254')) {
+        cleaned = '254' + cleaned;
+    }
+    return cleaned;
+}
+
+// =====================================================
+// HELPER: Generate password for STK push
+// =====================================================
+function generatePassword() {
+    const timestamp = new Date().toISOString().replace(/[^0-9]/g, '').slice(0, 14);
+    const password = Buffer.from(`${MPESA_SHORTCODE}${MPESA_PASSKEY}${timestamp}`).toString('base64');
+    return { timestamp, password };
+}
+
+// =====================================================
+// INITIATE STK PUSH (REAL PRODUCTION)
+// =====================================================
+export async function initiateStkPush(phoneNumber, amount, accountReference, transactionDesc, userId, courseId) {
+    const formattedPhone = formatPhoneNumber(phoneNumber);
+    const { timestamp, password } = generatePassword();
+    const token = await getMpesaAccessToken();
+    
+    const stkPushRequest = {
+        BusinessShortCode: MPESA_SHORTCODE,
+        Password: password,
+        Timestamp: timestamp,
+        TransactionType: 'CustomerPayBillOnline',
+        Amount: Math.round(amount),
+        PartyA: formattedPhone,
+        PartyB: MPESA_SHORTCODE,
+        PhoneNumber: formattedPhone,
+        CallBackURL: `https://mei-drive-api.onrender.com/api/payments/mpesa/callback`,
+        AccountReference: accountReference,
+        TransactionDesc: transactionDesc.substring(0, 36)
+    };
+    
+    const url = 'https://api.safaricom.co.ke/mpesa/stkpush/v1/processrequest';
+    
+    const response = await axios.post(url, stkPushRequest, {
+        headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json'
+        }
+    });
+    
+    return response.data;
+}
+
+// =====================================================
+// QUERY TRANSACTION STATUS (REAL PRODUCTION)
+// =====================================================
+export async function queryTransactionStatus(checkoutRequestId) {
+    const { timestamp, password } = generatePassword();
+    const token = await getMpesaAccessToken();
+    
+    const queryRequest = {
+        BusinessShortCode: MPESA_SHORTCODE,
+        Password: password,
+        Timestamp: timestamp,
+        CheckoutRequestID: checkoutRequestId
+    };
+    
+    const url = 'https://api.safaricom.co.ke/mpesa/stkpushquery/v1/query';
+    
+    const response = await axios.post(url, queryRequest, {
+        headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json'
+        }
+    });
+    
+    return response.data;
+}
+
+// =====================================================
+// CREATE PAYMENT RECORD IN DATABASE
+// =====================================================
 export async function createPaymentRecord(userId, courseId, amount, phoneNumber, checkoutRequestId) {
     const { data, error } = await supabase
-        .from('payments')
+        .from('transactions')
         .insert({
             user_id: userId,
             course_id: courseId,
@@ -16,7 +142,8 @@ export async function createPaymentRecord(userId, courseId, amount, phoneNumber,
             phone_number: phoneNumber,
             checkout_request_id: checkoutRequestId,
             status: 'pending',
-            payment_number: `PAY-${Date.now()}-${Math.random().toString(36).substr(2, 6)}`
+            account_reference: `PAY-${Date.now()}-${Math.random().toString(36).substring(2, 8)}`,
+            environment: 'PRODUCTION'
         })
         .select()
         .single();
@@ -25,14 +152,16 @@ export async function createPaymentRecord(userId, courseId, amount, phoneNumber,
     return data;
 }
 
-// Update payment status
+// =====================================================
+// UPDATE PAYMENT STATUS
+// =====================================================
 export async function updatePaymentStatus(checkoutRequestId, status, receiptNumber = null) {
     const { data, error } = await supabase
-        .from('payments')
+        .from('transactions')
         .update({
             status: status,
-            mpesa_receipt: receiptNumber,
-            payment_date: status === 'completed' ? new Date().toISOString() : null,
+            mpesa_receipt_number: receiptNumber,
+            result_desc: status === 'completed' ? 'Payment successful' : 'Payment failed',
             updated_at: new Date().toISOString()
         })
         .eq('checkout_request_id', checkoutRequestId)
@@ -43,17 +172,22 @@ export async function updatePaymentStatus(checkoutRequestId, status, receiptNumb
     return data;
 }
 
-// Initiate M-Pesa payment
+// =====================================================
+// INITIATE PAYMENT (MAIN FUNCTION)
+// =====================================================
 export async function initiatePayment(userId, courseId, courseTitle, amount, phoneNumber) {
     try {
-        const accountReference = `CRS-${courseId}-${Date.now()}`;
+        const accountReference = `MEI-${courseId}-${Date.now()}`;
         const transactionDesc = `${courseTitle.substring(0, 35)}`;
+        
+        console.log('💰💰💰 REAL PRODUCTION PAYMENT INITIATED 💰💰💰');
+        console.log('⚠️ REAL MONEY WILL BE DEDUCTED');
         
         const result = await initiateStkPush(phoneNumber, amount, accountReference, transactionDesc, userId, courseId);
         
         if (result.ResponseCode === '0') {
             const paymentRecord = await createPaymentRecord(
-                userId, courseId, amount, phoneNumber, result.CheckoutRequestID
+                userId, courseId, amount, formatPhoneNumber(phoneNumber), result.CheckoutRequestID
             );
             
             transactionStore.set(result.CheckoutRequestID, {
@@ -68,6 +202,8 @@ export async function initiatePayment(userId, courseId, courseTitle, amount, pho
                 success: true,
                 checkoutRequestID: result.CheckoutRequestID,
                 merchantRequestID: result.MerchantRequestID,
+                responseCode: result.ResponseCode,
+                responseDescription: result.ResponseDescription,
                 paymentId: paymentRecord.id
             };
         } else {
@@ -79,26 +215,31 @@ export async function initiatePayment(userId, courseId, courseTitle, amount, pho
     }
 }
 
-// Check payment status
+// =====================================================
+// CHECK PAYMENT STATUS
+// =====================================================
 export async function checkPaymentStatus(checkoutRequestId) {
-    const transaction = transactionStore.get(checkoutRequestId);
+    // First check database
+    const { data, error } = await supabase
+        .from('transactions')
+        .select('*')
+        .eq('checkout_request_id', checkoutRequestId)
+        .single();
     
-    if (!transaction) {
-        // Check database
-        const { data, error } = await supabase
-            .from('payments')
-            .select('*')
-            .eq('checkout_request_id', checkoutRequestId)
-            .single();
-        
-        if (error) throw new Error('Transaction not found');
+    if (!error && data) {
         return data;
     }
     
-    return transaction;
+    // Fallback to memory store
+    const transaction = transactionStore.get(checkoutRequestId);
+    if (transaction) return transaction;
+    
+    throw new Error('Transaction not found');
 }
 
-// Process M-Pesa callback
+// =====================================================
+// PROCESS M-PESA CALLBACK
+// =====================================================
 export async function processCallback(callbackData) {
     const { Body } = callbackData;
     
@@ -126,6 +267,14 @@ export async function processCallback(callbackData) {
     
     const status = ResultCode === 0 ? 'completed' : 'failed';
     
+    if (status === 'completed') {
+        console.log('✅✅✅ PRODUCTION PAYMENT SUCCESSFUL! ✅✅✅');
+        console.log(`Receipt: ${mpesaReceiptNumber}`);
+        console.log(`Amount: ${amount}`);
+    } else {
+        console.log('❌ PRODUCTION PAYMENT FAILED:', ResultDesc);
+    }
+    
     // Update payment in database
     await updatePaymentStatus(CheckoutRequestID, status, mpesaReceiptNumber);
     
@@ -140,40 +289,64 @@ export async function processCallback(callbackData) {
     
     // If payment successful, create enrollment
     if (status === 'completed') {
-        const payment = await supabase
-            .from('payments')
+        const { data: payment, error } = await supabase
+            .from('transactions')
             .select('user_id, course_id')
             .eq('checkout_request_id', CheckoutRequestID)
             .single();
         
-        if (payment.data) {
-            await createEnrollment(payment.data.user_id, payment.data.course_id);
+        if (payment && !error) {
+            await createEnrollment(payment.user_id, payment.course_id, mpesaReceiptNumber);
         }
     }
     
     return { success: true, status, receiptNumber: mpesaReceiptNumber };
 }
 
-// Create enrollment after successful payment
-async function createEnrollment(userId, courseId) {
+// =====================================================
+// CREATE ENROLLMENT AFTER SUCCESSFUL PAYMENT
+// =====================================================
+async function createEnrollment(userId, courseId, mpesaCode) {
     const { error } = await supabase
         .from('enrollments')
         .insert({
             user_id: userId,
             course_id: courseId,
-            progress: 0,
-            status: 'active',
+            payment_status: 'completed',
+            payment_method: 'mpesa',
+            mpesa_code: mpesaCode,
             enrolled_at: new Date().toISOString()
         });
     
     if (error) throw error;
+    console.log(`✅ Enrollment created for user ${userId}, course ${courseId}`);
     return true;
 }
 
+// =====================================================
+// GET USER PAYMENT HISTORY
+// =====================================================
+export async function getUserPaymentHistory(userId) {
+    const { data, error } = await supabase
+        .from('transactions')
+        .select('*')
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false });
+    
+    if (error) throw error;
+    return data;
+}
+
+// =====================================================
+// EXPORTS
+// =====================================================
 export default {
     initiatePayment,
     checkPaymentStatus,
     processCallback,
     createPaymentRecord,
-    updatePaymentStatus
+    updatePaymentStatus,
+    getUserPaymentHistory,
+    initiateStkPush,
+    queryTransactionStatus
 };
