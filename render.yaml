@@ -1,32 +1,22 @@
 services:
   - type: web
-    name: mei-drive-africa
-    runtime: static
-    buildCommand: echo 'Static site - no build needed'
-    staticPublishPath: ./
-    headers:
-      - path: /*
-        name: X-Content-Type-Options
-        value: nosniff
-      - path: /*
-        name: X-Frame-Options
-        value: DENY
-    routes:
-      - type: rewrite
-        source: /admin-dashboard
-        destination: /admin-dashboard.html
-      - type: rewrite
-        source: /reset-password
-        destination: /reset-password.html
-      - type: rewrite
-        source: /update-password
-        destination: /update-password.html
-      - type: rewrite
-        source: /course
-        destination: /course.html
-      - type: rewrite
-        source: /unit
-        destination: /unit.html
-      - type: rewrite
-        source: /quiz-bank
-        destination: /quiz-bank.html
+    name: mei-drive-backend
+    runtime: node
+    plan: free
+    buildCommand: npm install
+    startCommand: node server.js
+    envVars:
+      - key: PORT
+        value: 3000
+      - key: NODE_ENV
+        value: production
+      - key: MPESA_ENVIRONMENT
+        value: production
+      - key: MPESA_SHORTCODE
+        value: 4095377
+      - key: MPESA_CONSUMER_KEY
+        value: LI2gcJZEheN8qCfXHEXV4gdYXvOBHVnv
+      - key: MPESA_CONSUMER_SECRET
+        value: aGGo8AuPJVpsZLcs
+      - key: MPESA_PASSKEY
+        value: 7eb17a031bdfd5b4251863a1ddb72c5b9cd14f3385aa6a258c1442a0116e8277
