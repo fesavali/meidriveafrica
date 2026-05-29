@@ -1,0 +1,22 @@
+services:
+  - type: web
+    name: mei-drive-backend
+    runtime: node
+    plan: free
+    buildCommand: npm install
+    startCommand: node server.js
+    envVars:
+      - key: PORT
+        value: 3000
+      - key: NODE_ENV
+        value: production
+      - key: MPESA_ENVIRONMENT
+        value: production
+      - key: MPESA_SHORTCODE
+        value: 4095377
+      - key: MPESA_CONSUMER_KEY
+        value: LI2gcJZEheN8qCfXHEXV4gdYXvOBHVnv
+      - key: MPESA_CONSUMER_SECRET
+        value: aGGo8AuPJVpsZLcs
+      - key: MPESA_PASSKEY
+        value: 7eb17a031bdfd5b4251863a1ddb72c5b9cd14f3385aa6a258c1442a0116e8277
