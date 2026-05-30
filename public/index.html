@@ -563,17 +563,29 @@
 
     <script>
         // ============================================
-        // SINGLE SOURCE OF TRUTH - SUPABASE
+        // SINGLE SOURCE OF TRUTH - SUPABASE.JS
         // ALL DATA COMES FROM SUPABASE
         // NO FALLBACK DATA - SUPABASE IS THE ONLY SOURCE
         // ============================================
         
-        // Supabase configuration - REPLACE WITH YOUR ACTUAL KEYS
+        // Supabase configuration
         const SUPABASE_URL = 'https://qpqkmmkrzxlhcpccefjn.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBxcWttbWtyenhsaGNwY2NlZmpuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk1MjU0NzIsImV4cCI6MjA5NTEwMTQ3Mn0.Vw1hexN3NKoF_y9VFBFs_NUhJgFNNMwuyzDjImUcM6s';
         
-        // Initialize Supabase client
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        // Initialize Supabase client - SINGLE SOURCE
+        let supabase = null;
+        
+        try {
+            if (typeof window.supabase !== 'undefined' && window.supabase.createClient) {
+                supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+                console.log('✅ Supabase client initialized');
+            } else {
+                throw new Error('Supabase library not loaded');
+            }
+        } catch (error) {
+            console.error('❌ Failed to initialize Supabase:', error);
+            document.getElementById('coursesGrid').innerHTML = '<div class="error-container">❌ Failed to connect to Supabase. Please check your internet connection and refresh the page.</div>';
+        }
         
         // App state
         let currentUser = null;
@@ -582,7 +594,6 @@
         let selectedCourse = null;
         let courses = [];
         let quizQuestions = [];
-        let isLoading = true;
         
         function showToast(msg, isError) {
             const toast = document.getElementById('toast');
@@ -611,6 +622,8 @@
         // ============================================
         
         async function fetchCourses() {
+            if (!supabase) return false;
+            
             try {
                 const { data, error } = await supabase
                     .from('courses')
@@ -629,13 +642,14 @@
                 return true;
             } catch (error) {
                 console.error('❌ Error fetching courses:', error);
-                showToast(error.message, true);
-                document.getElementById('coursesGrid').innerHTML = `<div class="error-container">❌ ${error.message}<br><br>Please ensure your Supabase "courses" table has data and RLS is configured correctly.</div>`;
+                document.getElementById('coursesGrid').innerHTML = `<div class="error-container">❌ ${error.message}<br><br>Please ensure your Supabase "courses" table has data.</div>`;
                 return false;
             }
         }
         
         async function fetchQuizQuestions() {
+            if (!supabase) return false;
+            
             try {
                 const { data, error } = await supabase
                     .from('quiz_questions')
@@ -652,8 +666,10 @@
                         correct: { 'A':0, 'B':1, 'C':2, 'D':3 }[q.correct_option] || 0,
                         explanation: q.explanation || ''
                     }));
+                    console.log('✅ Quiz questions loaded:', quizQuestions.length);
+                } else {
+                    console.log('No quiz questions found in Supabase');
                 }
-                console.log('✅ Quiz questions loaded:', quizQuestions.length);
                 return true;
             } catch (error) {
                 console.error('❌ Error fetching quiz:', error);
@@ -662,6 +678,8 @@
         }
         
         async function fetchStudentCount() {
+            if (!supabase) return;
+            
             try {
                 const { count, error } = await supabase
                     .from('profiles')
@@ -676,7 +694,7 @@
         }
         
         async function loadUserEnrollments() {
-            if (!currentUser) return;
+            if (!currentUser || !supabase) return;
             
             try {
                 const { data, error } = await supabase
@@ -817,7 +835,7 @@
                         status: 'active',
                         payment_method: 'mpesa',
                         phone_number: phone,
-                        transaction_id: 'MPESA_' + Date.now(),
+                        transaction_id: 'MPESA_' + Date.now() + '_' + Math.random().toString(36).substr(2, 6),
                         enrolled_at: new Date().toISOString()
                     }]);
                 
@@ -866,7 +884,8 @@
         }
         
         // ============================================
-        // DASHBOARD FUNCTIONS        // ============================================
+        // DASHBOARD FUNCTIONS
+        // ============================================
         
         async function openDashboard() {
             if (!currentUser) {
@@ -939,6 +958,8 @@
         // ============================================
         
         async function syncAuth() {
+            if (!supabase) return;
+            
             const { data: { session } } = await supabase.auth.getSession();
             currentUser = session?.user || null;
             const container = document.getElementById('authContainer');
@@ -965,6 +986,8 @@
         }
         
         async function handleLogin(email, password) {
+            if (!supabase) throw new Error('Supabase not initialized');
+            
             const { error } = await supabase.auth.signInWithPassword({ email, password });
             if (error) throw error;
             await syncAuth();
@@ -973,6 +996,8 @@
         }
         
         async function handleRegister(email, password, fullName) {
+            if (!supabase) throw new Error('Supabase not initialized');
+            
             const { data, error } = await supabase.auth.signUp({ 
                 email, 
                 password, 
@@ -981,20 +1006,26 @@
             if (error) throw error;
             
             if (data.user) {
-                // Create profile
-                await supabase.from('profiles').insert([{
-                    id: data.user.id,
-                    email: email,
-                    full_name: fullName,
-                    role: 'learner',
-                    created_at: new Date().toISOString()
-                }]);
+                // Create profile in Supabase
+                try {
+                    await supabase.from('profiles').insert([{
+                        id: data.user.id,
+                        email: email,
+                        full_name: fullName,
+                        role: 'learner',
+                        created_at: new Date().toISOString()
+                    }]);
+                } catch (profileError) {
+                    console.warn('Profile creation warning:', profileError);
+                }
                 showToast('✅ Registration successful! Please check your email to confirm.');
                 openModal('login');
             }
         }
         
         async function logout() {
+            if (!supabase) return;
+            
             await supabase.auth.signOut();
             await syncAuth();
             showToast('Logged out successfully');
@@ -1046,6 +1077,7 @@
                     const fullName = document.getElementById('modalFullName').value;
                     await handleRegister(email, password, fullName);
                 }
+                closeModal();
             } catch (error) {
                 document.getElementById('modalError').innerHTML = error.message;
                 showToast(error.message, true);
@@ -1060,11 +1092,13 @@
         // ============================================
         
         async function init() {
+            if (!supabase) return;
+            
             // Show loading
             document.getElementById('coursesGrid').innerHTML = '<div class="loading-container"><i class="fas fa-spinner fa-spin"></i> Loading courses from Supabase...</div>';
             
             // Fetch all data from Supabase
-            const coursesLoaded = await fetchCourses();
+            await fetchCourses();
             await fetchQuizQuestions();
             await fetchStudentCount();
             await syncAuth();
@@ -1077,7 +1111,7 @@
             });
         }
         
-        // Make functions global
+        // Make functions global for onclick handlers
         window.scrollToSection = scrollToSection;
         window.openModal = openModal;
         window.closeModal = closeModal;
