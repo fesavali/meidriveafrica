@@ -49,7 +49,7 @@
         .hero h1 { font-size: 3.5rem; margin-bottom: 1rem; line-height: 1.2; }
         .hero h1 span { color: var(--primary); }
         .hero p { font-size: 1.2rem; opacity: 0.8; max-width: 600px; margin: 0 auto 2rem; }
-        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1.8rem; margin: 2rem 0; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 1.8rem; margin: 2rem 0; }
         .card { background: rgba(13,33,55,0.8); backdrop-filter: blur(10px); border: 1px solid var(--border); border-radius: 20px; padding: 1.8rem; transition: 0.2s; cursor: pointer; }
         .card:hover { border-color: var(--primary); transform: translateY(-3px); }
         .course-price { font-size: 1.3rem; font-weight: 800; color: var(--primary); margin: 0.5rem 0; }
@@ -69,30 +69,6 @@
         .mobile-menu { display: none; font-size: 1.5rem; cursor: pointer; color: var(--primary); }
         .badge { display: inline-block; background: rgba(0,255,136,0.2); color: var(--primary); font-size: 0.7rem; padding: 4px 10px; border-radius: 50px; margin-left: 10px; }
         .category-tag { display: inline-block; background: rgba(0,255,136,0.1); padding: 4px 12px; border-radius: 20px; font-size: 12px; margin: 5px 5px 0 0; }
-        
-        @media (max-width: 768px) { 
-            .hero h1 { font-size: 2rem; } 
-            .nav-links { display: none; width: 100%; flex-direction: column; padding: 1rem 0; } 
-            .nav-links.show { display: flex; } 
-            .mobile-menu { display: block; } 
-            .container { padding: 0 16px; }
-            .stats-bar { flex-direction: column; gap: 1rem; }
-            .grid { grid-template-columns: 1fr; }
-        }
-        
-        input { font-family: inherit; background: #0f1a2c; border: 1px solid var(--border); border-radius: 12px; padding: 12px; color: white; width: 100%; margin: 10px 0; }
-        input:focus { outline: none; border-color: var(--primary); }
-        .modal { 
-            position: fixed; top: 0; left: 0; right: 0; bottom: 0; 
-            background: rgba(0,0,0,0.8); backdrop-filter: blur(8px); 
-            z-index: 2000; display: flex; align-items: center; justify-content: center; 
-        }
-        .modal-content { background: #0d2137; border-radius: 28px; padding: 2rem; max-width: 450px; width: 90%; border: 1px solid var(--primary); }
-        .quiz-option { margin-bottom: 12px; cursor: pointer; padding: 14px 18px; background: #112240; border-radius: 12px; border: 1px solid var(--border); transition: 0.2s; }
-        .quiz-option:hover { border-color: var(--primary); background: rgba(0,255,136,0.08); }
-        .quiz-option.correct { background: rgba(0,255,136,0.2); border-color: var(--primary); }
-        .quiz-option.wrong { background: rgba(255,71,87,0.2); border-color: #ff4757; }
-        
         .bg-animation {
             position: fixed;
             top: 0;
@@ -114,7 +90,6 @@
             50% { transform: translateY(-40px) translateX(-10px); }
             75% { transform: translateY(-20px) translateX(20px); }
         }
-        
         .payment-modal {
             position: fixed;
             top: 0;
@@ -193,6 +168,29 @@
             font-size: 2rem;
             color: var(--primary);
         }
+        
+        @media (max-width: 768px) { 
+            .hero h1 { font-size: 2rem; } 
+            .nav-links { display: none; width: 100%; flex-direction: column; padding: 1rem 0; } 
+            .nav-links.show { display: flex; } 
+            .mobile-menu { display: block; } 
+            .container { padding: 0 16px; }
+            .stats-bar { flex-direction: column; gap: 1rem; }
+            .grid { grid-template-columns: 1fr; }
+        }
+        
+        input { font-family: inherit; background: #0f1a2c; border: 1px solid var(--border); border-radius: 12px; padding: 12px; color: white; width: 100%; margin: 10px 0; }
+        input:focus { outline: none; border-color: var(--primary); }
+        .modal { 
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0; 
+            background: rgba(0,0,0,0.8); backdrop-filter: blur(8px); 
+            z-index: 2000; display: flex; align-items: center; justify-content: center; 
+        }
+        .modal-content { background: #0d2137; border-radius: 28px; padding: 2rem; max-width: 450px; width: 90%; border: 1px solid var(--primary); }
+        .quiz-option { margin-bottom: 12px; cursor: pointer; padding: 14px 18px; background: #112240; border-radius: 12px; border: 1px solid var(--border); transition: 0.2s; }
+        .quiz-option:hover { border-color: var(--primary); background: rgba(0,255,136,0.08); }
+        .quiz-option.correct { background: rgba(0,255,136,0.2); border-color: var(--primary); }
+        .quiz-option.wrong { background: rgba(255,71,87,0.2); border-color: #ff4757; }
     </style>
 </head>
 <body>
@@ -214,7 +212,7 @@
             <div class="nav-links" id="navLinks">
                 <button id="navHome" onclick="navigateTo('home')"><i class="fas fa-home"></i> Home</button>
                 <button id="navCourses" onclick="navigateTo('courses')"><i class="fas fa-book"></i> Courses</button>
-                <button id="navQuiz" onclick="navigateTo('quiz')"><i class="fas fa-question-circle"></i> Quiz</button>
+                <button id="navQuiz" onclick="navigateTo('quiz')"><i class="fas fa-question-circle"></i> Quiz Bank</button>
                 <button id="navAdmin" onclick="navigateTo('admin')" style="display:none;"><i class="fas fa-user-shield"></i> Admin</button>
                 <div id="authButtons"></div>
             </div>
@@ -240,6 +238,100 @@
     let isAdmin = false;
     let pendingCourse = null;
     
+    // ============================================
+    // 8 PROFESSIONAL COURSES DEFINITION
+    // ============================================
+    const predefinedCourses = [
+        { 
+            id: 1, 
+            name: 'LEARNER HUB', 
+            description: 'Complete driver training for beginners covering fundamental rules, vehicle controls, observation, speed management, parking, and NTSA exam preparation.', 
+            price: 2999, 
+            duration: '8 weeks', 
+            icon: 'fa-car', 
+            lessons_count: 21,
+            category: 'learner',
+            units: ['Introduction to Driving', 'Fundamental Driving Rules', 'Model Town & Road Network', 'Human Factors in Traffic', 'Vehicle Constructions & Controls', 'Self-Inspection of Vehicle', 'Observation Skills', 'Vehicle Control', 'Communication on the Road', 'Speed Management', 'Space Management', 'Emergency Manoeuvres', 'Skid Control & Recovery', 'Adverse Driving Conditions', 'Preventive Maintenance', 'Conditions of Carriage', 'Hazardous Materials', 'Emergency Procedures', 'Work Planning', 'Customer Care', 'Examination Preparation']
+        },
+        { 
+            id: 2, 
+            name: 'PSV PROFESSIONAL COURSE', 
+            description: 'Public Service Vehicle certification with passenger management, customer care, safety protocols, NTSA compliance, and conductor professionalism.', 
+            price: 3999, 
+            duration: '8 weeks', 
+            icon: 'fa-bus', 
+            lessons_count: 16,
+            category: 'psv',
+            units: ['Introduction to PSV Operations', 'Categories of PSV Vehicles', 'Customer Service & Passenger Care', 'Hygiene & Public Health Management', 'Passenger Safety Management', 'Road Discipline & Defensive Driving', 'Digital Apps & Modern PSV Technology', 'Professional Conduct & Ethics', 'Special Needs & Vulnerable Passengers', 'PSV Security Awareness', 'Driver Health & Fatigue Management', 'PSV Laws & Regulations', 'Emergency Response & Incident Management', 'Daily PSV Vehicle Inspection', 'PSV Conductor Professional Training', 'Practical PSV Driver Training']
+        },
+        { 
+            id: 3, 
+            name: 'EV DRIVER & RIDER COURSE', 
+            description: 'Electric vehicle operations, charging safety, battery management, regenerative braking, and eco-driving techniques for EVs.', 
+            price: 1999, 
+            duration: '5 weeks', 
+            icon: 'fa-car-battery', 
+            lessons_count: 10,
+            category: 'ev',
+            units: ['Understanding EV Charging Systems', 'Types of EV Charging', 'Safe Charging Procedures', 'Basic EV Driving Skills', 'Regenerative Braking', 'Electric Motorcycle Riding Skills', 'Night Driving & Visibility', 'Wet Weather Operations', 'Daily Vehicle Inspection', 'Emergency Response for EVs']
+        },
+        { 
+            id: 4, 
+            name: 'DRIVER REFRESHER COURSE', 
+            description: 'Advanced defensive driving, skill enhancement, hazard perception, professional driver excellence, and breaking bad habits.', 
+            price: 1499, 
+            duration: '4 weeks', 
+            icon: 'fa-sync-alt', 
+            lessons_count: 8,
+            category: 'refresher',
+            units: ['Road Safety Awareness', 'Defensive Driving Techniques', 'Updated Traffic Laws & Regulations', 'Vehicle Inspection & Maintenance', 'Emergency Response Protocols', 'Customer Care & Professionalism', 'Special Driving Conditions', 'Environmental Responsibility']
+        },
+        { 
+            id: 5, 
+            name: 'BODA BODA SAFETY COURSE', 
+            description: 'Professional motorcycle rider training with PPE, defensive riding, passenger safety, road etiquette, and accident prevention.', 
+            price: 2499, 
+            duration: '6 weeks', 
+            icon: 'fa-motorcycle', 
+            lessons_count: 26,
+            category: 'boda',
+            units: ['Introduction to Boda Boda Safety', 'Motorcycle Parts & Controls', 'Personal Protective Equipment (PPE)', 'Pre-Ride Inspection', 'Starting & Moving Safely', 'Defensive Riding Techniques', 'Road Signs & Traffic Rules', 'Lane Discipline & Positioning', 'Safe Braking Techniques', 'Cornering & Turning', 'Overtaking Safely', 'Riding in Traffic', 'Riding at Night', 'Riding During Rain & Bad Weather', 'Passenger (Pillion) Safety', 'Know Your Passenger', 'Personal Hygiene & Professional Conduct', 'Motorcycle Maintenance Basics', 'Fuel & Lubrication Safety', 'Emergency Handling & First Aid', 'Common Causes of Accidents', 'Alcohol, Drugs & Fatigue', 'Customer Care & Communication', 'Digital Safety & Mobile Phone Use', 'Environmental Responsibility', 'Final Safety Guidelines']
+        },
+        { 
+            id: 6, 
+            name: 'SCHOOL BUS/VAN DRIVER COURSE', 
+            description: 'Specialized training for school transport drivers focusing on child safety, boarding/alighting procedures, and emergency response.', 
+            price: 2999, 
+            duration: '7 weeks', 
+            icon: 'fa-school', 
+            lessons_count: 7,
+            category: 'school',
+            units: ['Introduction to School Transport Safety', 'Child Safety Management', 'Safe Driving Practices', 'Vehicle Safety & Inspection', 'Emergency Response & Evacuation', 'Professional Conduct & Communication', 'Road Traffic Laws & School Regulations']
+        },
+        { 
+            id: 7, 
+            name: 'DEFENSIVE DRIVER COURSE', 
+            description: 'Master defensive driving techniques including hazard perception, risk management, space cushion driving, and collision avoidance.', 
+            price: 2499, 
+            duration: '6 weeks', 
+            icon: 'fa-shield-alt', 
+            lessons_count: 30,
+            category: 'defensive',
+            units: ['Introduction to Advanced Defensive Driving', 'Psychology of Driving & Human Behaviour', 'Risk Management & Hazard Perception', 'Advanced Vehicle Control Techniques', 'Speed Management & Safe Stopping Distances', 'Situational Awareness & Observation Skills', 'Advanced Urban Driving Techniques', 'Highway & Expressway Driving', 'Night Driving & Reduced Visibility', 'Wet Weather, Fog & Flood Driving', 'Mountain, Gravel & Off-Road Driving', 'Fatigue Management & Driver Wellness', 'Alcohol, Drugs & Impairment', 'Professional Driver Conduct & Ethics', 'Passenger & Customer Safety', 'Emergency Response & Crash Management', 'Vehicle Dynamics & Mechanical Systems', 'Tyre Safety & Management', 'Fuel Efficient & Eco-Safe Driving', 'Security & Anti-Carjacking', 'Fleet Safety & Commercial Operations', 'Journey Planning & Risk Assessment', 'Modern Vehicle Technologies & ADAS', 'Defensive Riding for Motorcycles', 'First Aid for Drivers', 'Incident Reporting', 'Daily Inspection & Maintenance', 'Case Studies & Crash Analysis', 'Practical Exercises', 'Final Driver Guidelines']
+        },
+        { 
+            id: 8, 
+            name: 'E-ROAD SAFETY LIBRARY & QUIZ BANK', 
+            description: '1000+ NTSA-style exam questions covering road signs, highway code, defensive driving, traffic rules, and professional conduct.', 
+            price: 999, 
+            duration: 'Self-paced', 
+            icon: 'fa-question-circle', 
+            lessons_count: 15,
+            category: 'quiz',
+            units: ['Road Signs Quiz (200 questions)', 'Highway Code Quiz (150 questions)', 'Defensive Driving Quiz (120 questions)', 'Traffic Rules & Regulations (120 questions)', 'Parking & Stopping Quiz (70 questions)', 'Roundabouts & Junctions Quiz (60 questions)', 'Vehicle Inspection Quiz (60 questions)', 'Emergency Handling Quiz (50 questions)', 'First Aid Quiz (40 questions)', 'Night Driving Quiz (40 questions)', 'Weather & Hazard Driving Quiz (40 questions)', 'Motorcycle/Boda Safety Quiz (50 questions)', 'PSV & Passenger Safety Quiz (40 questions)', 'Eco Driving & Fuel Economy Quiz (20 questions)', 'Professional Conduct Quiz (20 questions)']
+        }
+    ];
+    
     function showToast(msg, type = 'info') {
         const container = document.getElementById('toast-container');
         const toast = document.createElement('div');
@@ -253,8 +345,41 @@
     function toggleMobileMenu() { document.getElementById('navLinks')?.classList.toggle('show'); }
     
     async function loadAllData() {
-        courses = await MEI.getAllCourses();
+        // Use predefined courses as primary source
+        courses = [...predefinedCourses];
+        
+        // Try to fetch from Supabase and merge if available
+        try {
+            const dbCourses = await MEI.getAllCourses();
+            if (dbCourses && dbCourses.length > 0) {
+                // Merge prices and descriptions from DB if they exist
+                courses = courses.map(c => {
+                    const dbMatch = dbCourses.find(dbc => dbc.id === c.id);
+                    if (dbMatch) {
+                        return { ...c, price: dbMatch.price || c.price, description: dbMatch.description || c.description };
+                    }
+                    return c;
+                });
+            }
+        } catch (e) {
+            console.log('Using predefined courses');
+        }
+        
+        // Load quiz questions
         quizQuestions = await MEI.getAllQuizQuestions();
+        if (quizQuestions.length === 0) {
+            // Fallback quiz questions
+            quizQuestions = [
+                { id: 1, category: 'Road Signs', question: 'What does a STOP sign mean?', option_a: 'Slow down only', option_b: 'Continue carefully', option_c: 'Come to a complete stop', option_d: 'Overtake carefully', correct_option: 2, explanation: 'A STOP sign requires you to come to a complete stop.' },
+                { id: 2, category: 'Road Signs', question: 'A triangular road sign normally indicates:', option_a: 'Direction', option_b: 'Warning', option_c: 'Parking', option_d: 'Speed limit', correct_option: 1, explanation: 'Triangular signs are warning signs.' },
+                { id: 3, category: 'Highway Code', question: 'Seat belts are important because they:', option_a: 'Improve music quality', option_b: 'Prevent accidents', option_c: 'Reduce injury during accidents', option_d: 'Increase speed', correct_option: 2, explanation: 'Seat belts reduce the risk of serious injury.' },
+                { id: 4, category: 'Defensive Driving', question: 'Defensive driving means:', option_a: 'Aggressive driving', option_b: 'Anticipating and avoiding danger', option_c: 'Driving fast', option_d: 'Ignoring traffic rules', correct_option: 1, explanation: 'Defensive driving anticipates potential hazards.' },
+                { id: 5, category: 'Traffic Rules', question: 'Driving under the influence of alcohol is:', option_a: 'Safe at low speed', option_b: 'Acceptable at night', option_c: 'Dangerous and illegal', option_d: 'Recommended', correct_option: 2, explanation: 'Drunk driving is illegal and dangerous.' },
+                { id: 6, category: 'Emergency', question: 'If your brakes fail you should:', option_a: 'Panic', option_b: 'Stay calm and slow down safely', option_c: 'Jump out immediately', option_d: 'Close your eyes', correct_option: 1, explanation: 'Stay calm, pump brakes, use engine braking.' },
+                { id: 7, category: 'Motorcycle', question: 'A motorcycle passenger should:', option_a: 'Sit carelessly', option_b: 'Wear a helmet', option_c: 'Distract the rider', option_d: 'Stand while riding', correct_option: 1, explanation: 'All passengers must wear approved helmets.' },
+                { id: 8, category: 'PSV', question: 'A PSV driver should:', option_a: 'Abuse passengers', option_b: 'Respect passengers', option_c: 'Ignore traffic rules', option_d: 'Overspeed', correct_option: 1, explanation: 'Professional drivers must respect passengers.' }
+            ];
+        }
         
         currentUser = await MEI.getCurrentUser();
         if (currentUser) {
@@ -262,7 +387,6 @@
             userEnrollments = {};
             enrollments.forEach(e => { userEnrollments[e.course_id] = true; });
             
-            // Check if user is admin (can be set in database or by email)
             isAdmin = currentUser.email === 'admin@meidrive.com' || currentUser.email.includes('admin');
             
             if (isAdmin) {
@@ -346,7 +470,12 @@
     function isEnrolled(courseId) { return userEnrollments[courseId] === true; }
     
     function viewCourse(courseId) { 
-        window.location.href = `course.html?id=${courseId}`;
+        // Course 8 is Quiz Bank - redirect to quiz page
+        if (courseId === 8) {
+            navigateTo('quiz');
+        } else {
+            window.location.href = `course.html?id=${courseId}`;
+        }
     }
     
     function showPaymentModal(course) {
@@ -365,7 +494,7 @@
                         <input type="tel" id="mpesaPhone" placeholder="712345678" autocomplete="off">
                     </div>
                     <p style="font-size: 12px; opacity: 0.7;">Enter the M-Pesa number you want to pay from</p>
-                    <p style="font-size: 12px; opacity: 0.7; margin-top: 5px;">Paybill: <strong>${MEI.paybillNumber}</strong></p>
+                    <p style="font-size: 12px; opacity: 0.7; margin-top: 5px;">Paybill: <strong>4095377</strong></p>
                     <button class="btn btn-primary" style="width:100%; margin-top:1rem;" onclick="processPayment()">
                         <i class="fas fa-arrow-right"></i> Pay Now
                     </button>
@@ -428,7 +557,7 @@
         const course = courses.find(c => c.id === courseId);
         if (!course) return;
         
-        if (course.price > 0) {
+        if (course.price > 0 && courseId !== 8) {
             showPaymentModal(course);
         } else {
             const result = await MEI.createEnrollment(currentUser.id, courseId, 0);
@@ -518,21 +647,22 @@
     window.processPayment = processPayment;
     
     function renderHome() {
+        const totalModules = courses.reduce((sum, c) => sum + c.lessons_count, 0);
         document.getElementById('page-content').innerHTML = `
             <div class="hero">
                 <h1>Practice Daily.<br><span>Revise Smarter. Pass with Confidence.</span></h1>
-                <p>Professional driver training with comprehensive courses and exam preparation.</p>
+                <p>Professional driver training with 8 comprehensive courses and 1000+ exam questions.</p>
                 <button class="btn btn-primary" onclick="navigateTo('courses')">🚀 Explore Courses</button>
             </div>
             <div class="container">
                 <div class="stats-bar">
-                    <div class="stat-item"><h3>${courses.length}</h3><p>Courses</p></div>
-                    <div class="stat-item"><h3>${quizQuestions.length}+</h3><p>Questions</p></div>
-                    <div class="stat-item"><h3>NTSA</h3><p>Approved</p></div>
+                    <div class="stat-item"><h3>8</h3><p>Professional Courses</p></div>
+                    <div class="stat-item"><h3>1000+</h3><p>Quiz Questions</p></div>
+                    <div class="stat-item"><h3>${totalModules}</h3><p>Training Modules</p></div>
                 </div>
                 <h2 class="section-title">Our <span>Courses</span></h2>
                 <div class="grid">
-                    ${courses.slice(0, 3).map(c => `
+                    ${courses.slice(0, 4).map(c => `
                         <div class="card" onclick="viewCourse(${c.id})">
                             <i class="fas ${c.icon || 'fa-car'}" style="font-size: 2rem; color: var(--primary);"></i>
                             <h3>${escapeHtml(c.name)}${isEnrolled(c.id) ? '<span class="badge">Enrolled</span>' : ''}</h3>
@@ -548,7 +678,7 @@
     function renderCourses() {
         document.getElementById('page-content').innerHTML = `
             <div class="container" style="padding-top: 100px;">
-                <h1 class="section-title">All <span>Courses</span></h1>
+                <h1 class="section-title">All <span>Professional Courses</span></h1>
                 <div class="grid">
                     ${courses.map(c => `
                         <div class="card" onclick="viewCourse(${c.id})">
@@ -592,7 +722,7 @@
                                     <td>${p.created_at ? new Date(p.created_at).toLocaleDateString() : 'N/A'}</td>
                                 </tr>
                             `).join('')}
-                            ${payments.length === 0 ? '<tr><td colspan="4" style="text-align:center;">No payments yet</td></tr>' : ''}
+                            ${payments.length === 0 ? '<tr><td colspan="4" style="text-align:center;">No payments yet</td>' : ''}
                         </tbody>
                     </table>
                 </div>
@@ -610,7 +740,7 @@
                                     <td>${e.paid_at ? new Date(e.paid_at).toLocaleDateString() : 'N/A'}</td>
                                 </tr>
                             `).join('')}
-                            ${allEnrollments.length === 0 ? '<tr><td colspan="4" style="text-align:center;">No enrollments yet</td></tr>' : ''}
+                            ${allEnrollments.length === 0 ? '<tr><td colspan="4" style="text-align:center;">No enrollments yet</td>' : ''}
                         </tbody>
                     </table>
                 </div>
