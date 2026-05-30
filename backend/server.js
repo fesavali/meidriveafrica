@@ -2,7 +2,6 @@ import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import axios from 'axios';
-import crypto from 'crypto';
 
 dotenv.config();
 
@@ -175,6 +174,7 @@ app.post('/api/payments/mpesa/initiate', async (req, res) => {
         console.log(`   Phone: ${phoneNumber}`);
         console.log(`   Amount: KES ${amount}`);
         console.log(`   Course: ${courseId}`);
+        console.log(`   User: ${userId}`);
         console.log(`   ⚠️ REAL MONEY WILL BE DEDUCTED!`);
 
         const accessToken = await getMpesaAccessToken();
@@ -234,6 +234,8 @@ app.post('/api/payments/mpesa/status', async (req, res) => {
             });
         }
 
+        console.log(`🔍 Checking payment status for: ${checkoutRequestID}`);
+
         const accessToken = await getMpesaAccessToken();
         const timestamp = getTimestamp();
         const password = Buffer.from(`${MPESA_SHORTCODE}${MPESA_PASSKEY}${timestamp}`).toString('base64');
@@ -256,6 +258,8 @@ app.post('/api/payments/mpesa/status', async (req, res) => {
 
         const resultCode = response.data.ResultCode;
         const isCompleted = resultCode === '0';
+
+        console.log(`📊 Payment status: ${isCompleted ? 'COMPLETED' : 'PENDING'} - ${response.data.ResultDesc}`);
 
         res.json({
             success: true,
@@ -363,7 +367,7 @@ app.listen(PORT, '0.0.0.0', () => {
 ║     • Paybill: ${MPESA_SHORTCODE}                                          ║
 ║     • Real customer phone numbers only                            ║
 ║     • Real money will be deducted                                 ║
-║     • Minimum payment: 1 KES                                      ║
+║     • Minimum payment: 49 KES                                      ║
 ║                                                                   ║
 ╚═══════════════════════════════════════════════════════════════════╝
     `);
