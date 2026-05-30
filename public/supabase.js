@@ -1,139 +1,36 @@
-// public/supabase.js - Frontend Supabase Client
-// This file is served to the browser
+// ============================================
+// SINGLE SOURCE OF TRUTH: Supabase Client
+// ============================================
 
-const MEI_DRIVE_API = {
-    // Base URL for API calls
-    baseUrl: window.location.origin,
-    
-    // Helper function for API calls
-    async request(endpoint, options = {}) {
-        const token = localStorage.getItem('access_token');
-        
-        const headers = {
-            'Content-Type': 'application/json',
-            ...options.headers
-        };
-        
-        if (token) {
-            headers['Authorization'] = `Bearer ${token}`;
-        }
-        
-        const response = await fetch(`${this.baseUrl}${endpoint}`, {
-            ...options,
-            headers
-        });
-        
-        const data = await response.json();
-        
-        if (!response.ok) {
-            throw new Error(data.error || data.message || 'Request failed');
-        }
-        
-        return data;
-    },
-    
-    // Auth endpoints
-    async login(email, password) {
-        const result = await this.request('/api/auth/login', {
-            method: 'POST',
-            body: JSON.stringify({ email, password })
-        });
-        
-        if (result.session?.access_token) {
-            localStorage.setItem('access_token', result.session.access_token);
-            localStorage.setItem('user', JSON.stringify(result.user));
-        }
-        
-        return result;
-    },
-    
-    async register(email, password, fullName, phone) {
-        return this.request('/api/auth/register', {
-            method: 'POST',
-            body: JSON.stringify({ email, password, full_name: fullName, phone })
-        });
-    },
-    
-    async logout() {
-        await this.request('/api/auth/logout', { method: 'POST' });
-        localStorage.removeItem('access_token');
-        localStorage.removeItem('user');
-    },
-    
-    async getCurrentUser() {
-        try {
-            const result = await this.request('/api/auth/me');
-            return result.user;
-        } catch (error) {
-            return null;
-        }
-    },
-    
-    // Course endpoints
-    async getAllCourses() {
-        const result = await this.request('/api/courses');
-        return result.courses || [];
-    },
-    
-    async getCourseById(id) {
-        const result = await this.request(`/api/courses/${id}`);
-        return result.course;
-    },
-    
-    // Enrollment endpoints
-    async getMyEnrollments() {
-        const result = await this.request('/api/enrollments/my-enrollments');
-        return result.enrollments || [];
-    },
-    
-    async enrollInCourse(courseId) {
-        const result = await this.request('/api/enrollments', {
-            method: 'POST',
-            body: JSON.stringify({ course_id: courseId })
-        });
-        return result;
-    },
-    
-    async updateProgress(enrollmentId, unitId, status, quizScore) {
-        const result = await this.request(`/api/enrollments/${enrollmentId}/progress`, {
-            method: 'PUT',
-            body: JSON.stringify({ unit_id: unitId, status, quiz_score: quizScore })
-        });
-        return result;
-    },
-    
-    // Payment endpoints
-    async initiateMpesaPayment(phoneNumber, amount, courseId) {
-        const result = await this.request('/api/payments/mpesa/initiate', {
-            method: 'POST',
-            body: JSON.stringify({ phoneNumber, amount, course_id: courseId })
-        });
-        return result;
-    },
-    
-    async checkPaymentStatus(checkoutRequestId) {
-        const result = await this.request(`/api/payments/mpesa/status/${checkoutRequestId}`);
-        return result;
-    },
-    
-    async getMyPayments() {
-        const result = await this.request('/api/payments/my-payments');
-        return result.payments || [];
-    },
-    
-    // Get stored user
-    getStoredUser() {
-        const user = localStorage.getItem('user');
-        return user ? JSON.parse(user) : null;
-    },
-    
-    // Check if logged in
-    isLoggedIn() {
-        return !!localStorage.getItem('access_token');
+// Supabase credentials
+const SUPABASE_URL = 'https://qpqkmmkrzxlhcpccefjn.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBxcWttbWtyenhsaGNwY2NlZmpuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk1MjU0NzIsImV4cCI6MjA5NTEwMTQ3Mn0.Vw1hexN3NKoF_y9VFBFs_NUhJgFNNMwuyzDjImUcM6s';
+
+// Initialize Supabase client (single instance)
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+    auth: {
+        autoRefreshToken: true,
+        persistSession: true,
+        detectSessionInUrl: true
     }
-};
+});
 
-// Make available globally
-window.MEI_DRIVE_API = MEI_DRIVE_API;
+// Export for use in other modules
+window.supabaseClient = supabase;
 
-console.log('✅ MEI DRIVE API Client Ready');
+// Fallback data (only used when Supabase tables are EMPTY, not on auth errors)
+window.FALLBACK_COURSES = [
+    { id: 1, title: 'Boda Boda Safety Course', description: 'Comprehensive safety training for motorcycle taxi operators.', price: 3500, duration: '2 Weeks', units: 8, icon: 'fa-motorcycle', modules: ['Introduction', 'PPE', 'Defensive Riding', 'Passenger Safety', 'Traffic Rules', 'Night Riding', 'Emergency Response', 'Assessment'] },
+    { id: 2, title: 'PSV Operator Course', description: 'Professional training for matatu, bus, and taxi drivers.', price: 5000, duration: '4 Weeks', units: 12, icon: 'fa-bus', modules: ['PSV Operations', 'Customer Service', 'Passenger Safety', 'Defensive Driving', 'Vehicle Inspection', 'Emergency Response', 'Professional Ethics', 'Fleet Management', 'Route Planning', 'Stress Management', 'Legal Compliance', 'Final Exam'] },
+    { id: 3, title: 'School Transport Safety', description: 'Specialized training for school bus and van drivers.', price: 4500, duration: '3 Weeks', units: 7, icon: 'fa-school', modules: ['Child Safety', 'Safe Boarding', 'Student Management', 'Emergency Evacuation', 'Route Planning', 'Parent Communication', 'Assessment'] },
+    { id: 4, title: 'EV Driver and Rider', description: 'Electric vehicle operation and charging safety.', price: 4000, duration: '2 Weeks', units: 10, icon: 'fa-charging-station', modules: ['EV Basics', 'Charging Systems', 'Battery Safety', 'EV Driving', 'Regenerative Braking', 'Range Management', 'Emergency Response', 'Maintenance', 'Eco Driving', 'Final Exam'] },
+    { id: 5, title: 'Driver Refresher Course', description: 'Advanced defensive driving for experienced drivers.', price: 3000, duration: '1 Week', units: 8, icon: 'fa-redo-alt', modules: ['Defensive Driving Review', 'Traffic Law Updates', 'Hazard Perception', 'Emergency Maneuvers', 'Skid Control', 'Night Driving', 'Weather Driving', 'Assessment'] },
+    { id: 6, title: 'Learner Hub Complete', description: 'Complete beginner driver education.', price: 2500, duration: '6 Weeks', units: 21, icon: 'fa-graduation-cap', modules: ['Introduction', 'Fundamental Rules', 'Model Town', 'Human Factors', 'Vehicle Controls', 'Inspection', 'Observation', 'Control', 'Communication', 'Speed Management', 'Space Management', 'Emergency Manoeuvres', 'Skid Control', 'Adverse Conditions', 'Maintenance', 'Conditions of Carriage', 'Hazardous Materials', 'Emergency Procedures', 'Work Planning', 'Customer Care', 'Final Exam'] }
+];
+
+window.FALLBACK_QUIZ = [
+    { question_text: "What does a STOP sign mean?", option_a: "Slow down only", option_b: "Continue carefully", option_c: "Come to a complete stop", option_d: "Overtake carefully", correct_option: "C", explanation: "A STOP sign requires a complete stop at the stop line." },
+    { question_text: "Defensive driving means:", option_a: "Aggressive driving", option_b: "Anticipating and avoiding danger", option_c: "Driving fast", option_d: "Ignoring rules", correct_option: "B", explanation: "Defensive driving anticipates danger before it happens." }
+];
+
+console.log('✅ Supabase SSOT initialized');
