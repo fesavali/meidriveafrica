@@ -1,17 +1,25 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
-import paymentRoutes from './routes/payments.js';
+import axios from 'axios';
+import crypto from 'crypto';
 
 dotenv.config();
 
 const app = express();
 
-// Render.com uses PORT environment variable (defaults to 10000)
+// Use Render.com PORT or default to 10000
 const PORT = process.env.PORT || 10000;
 
-// Production Backend URL - CORRECT Render.com URL
-const BACKEND_URL = process.env.BACKEND_URL || 'https://meidriveafrica-backend.onrender.com';
+// CORRECT BACKEND URL - Using your live API URL
+const BACKEND_URL = process.env.BACKEND_URL || 'https://mei-drive-api.onrender.com';
+
+// M-Pesa Credentials - PRODUCTION (REAL MONEY)
+const MPESA_CONSUMER_KEY = process.env.MPESA_CONSUMER_KEY || 'LI2gcJZEheN8qCfXHEXV4gdYXvOBHVnv';
+const MPESA_CONSUMER_SECRET = process.env.MPESA_CONSUMER_SECRET || 'aGGo8AuPJVpsZLcs';
+const MPESA_PASSKEY = process.env.MPESA_PASSKEY || '7eb17a031bdfd5b4251863a1ddb72c5b9cd14f3385aa6a258c1442a0116e8277';
+const MPESA_SHORTCODE = process.env.MPESA_SHORTCODE || '4095377';
+const MPESA_CALLBACK_URL = process.env.MPESA_CALLBACK_URL || `${BACKEND_URL}/api/payments/mpesa/callback`;
 
 // CORS configuration - Allow frontend to access backend
 app.use(cors({
@@ -19,8 +27,10 @@ app.use(cors({
         'http://localhost:5500',
         'http://127.0.0.1:5500',
         'http://localhost:3000',
+        'http://localhost:8080',
         'https://meidriveafrica.com',
         'https://www.meidriveafrica.com',
+        'https://mei-drive-api.onrender.com',
         'https://meidriveafrica-backend.onrender.com'
     ],
     credentials: true,
@@ -28,25 +38,57 @@ app.use(cors({
     allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
 }));
 
-// Middleware to parse JSON requests
+// Middleware
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // ============================================
-// HEALTH CHECK ENDPOINT (For Render.com)
+// HELPER FUNCTIONS
 // ============================================
+
+function getTimestamp() {
+    const date = new Date();
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    const seconds = String(date.getSeconds()).padStart(2, '0');
+    return `${year}${month}${day}${hours}${minutes}${seconds}`;
+}
+
+async function getMpesaAccessToken() {
+    const auth = Buffer.from(`${MPESA_CONSUMER_KEY}:${MPESA_CONSUMER_SECRET}`).toString('base64');
+    try {
+        const response = await axios.get(
+            'https://api.safaricom.co.ke/oauth/v1/generate?grant_type=client_credentials',
+            {
+                headers: {
+                    Authorization: `Basic ${auth}`
+                }
+            }
+        );
+        return response.data.access_token;
+    } catch (error) {
+        console.error('Error getting M-Pesa token:', error.response?.data || error.message);
+        throw error;
+    }
+}
+
+// ============================================
+// HEALTH CHECK ENDPOINTS
+// ============================================
+
 app.get('/health', (req, res) => {
     res.status(200).json({
         status: 'healthy',
         timestamp: new Date().toISOString(),
         uptime: process.uptime(),
-        environment: 'production'
+        environment: 'production',
+        api_url: BACKEND_URL
     });
 });
 
-// ============================================
-// MAIN HEALTH CHECK ENDPOINT
-// ============================================
 app.get('/api/health', (req, res) => {
     res.json({
         success: true,
@@ -54,6 +96,7 @@ app.get('/api/health', (req, res) => {
         message: 'MEI DRIVE AFRICA API is running - PRODUCTION MODE',
         environment: 'PRODUCTION',
         mpesa: 'LIVE - REAL MONEY',
+        paybill: MPESA_SHORTCODE,
         backend_url: BACKEND_URL,
         port: PORT,
         timestamp: new Date().toISOString(),
@@ -68,19 +111,18 @@ app.get('/api/health', (req, res) => {
     });
 });
 
-// Simple test endpoint
 app.get('/api/test', (req, res) => {
     res.json({
         success: true,
         message: 'Backend is working in PRODUCTION mode!',
         environment: 'PRODUCTION',
         mpesa: 'LIVE - Real transactions will deduct money',
+        paybill: MPESA_SHORTCODE,
         backend_url: BACKEND_URL,
         timestamp: new Date().toISOString()
     });
 });
 
-// Root endpoint
 app.get('/', (req, res) => {
     res.json({
         success: true,
@@ -88,6 +130,7 @@ app.get('/', (req, res) => {
         version: '2.0.0',
         status: 'running',
         environment: 'production',
+        paybill: MPESA_SHORTCODE,
         endpoints: '/api/health, /api/payments/mpesa/test'
     });
 });
@@ -95,10 +138,170 @@ app.get('/', (req, res) => {
 // ============================================
 // M-PESA PAYMENT ROUTES (LIVE PRODUCTION)
 // ============================================
-app.use('/api/payments', paymentRoutes);
+
+// Test M-Pesa connection
+app.get('/api/payments/mpesa/test', async (req, res) => {
+    try {
+        const token = await getMpesaAccessToken();
+        res.json({
+            success: true,
+            message: 'M-Pesa API connection successful',
+            mode: 'PRODUCTION - REAL MONEY',
+            paybill: MPESA_SHORTCODE,
+            warning: '⚠️ Real money will be deducted from customers'
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            error: error.message,
+            message: 'M-Pesa connection failed'
+        });
+    }
+});
+
+// Initiate STK Push (REAL MONEY)
+app.post('/api/payments/mpesa/initiate', async (req, res) => {
+    try {
+        const { phoneNumber, amount, courseId, userId, email, accountReference, transactionDesc } = req.body;
+
+        if (!phoneNumber || !amount || amount < 1) {
+            return res.status(400).json({
+                success: false,
+                error: 'Valid phone number and amount (min 1 KES) required'
+            });
+        }
+
+        console.log(`💰 Initiating REAL M-Pesa payment:`);
+        console.log(`   Phone: ${phoneNumber}`);
+        console.log(`   Amount: KES ${amount}`);
+        console.log(`   Course: ${courseId}`);
+        console.log(`   ⚠️ REAL MONEY WILL BE DEDUCTED!`);
+
+        const accessToken = await getMpesaAccessToken();
+        const timestamp = getTimestamp();
+        const password = Buffer.from(`${MPESA_SHORTCODE}${MPESA_PASSKEY}${timestamp}`).toString('base64');
+
+        const response = await axios.post(
+            'https://api.safaricom.co.ke/mpesa/stkpush/v1/processrequest',
+            {
+                BusinessShortCode: MPESA_SHORTCODE,
+                Password: password,
+                Timestamp: timestamp,
+                TransactionType: 'CustomerPayBillOnline',
+                Amount: Math.round(amount),
+                PartyA: phoneNumber,
+                PartyB: MPESA_SHORTCODE,
+                PhoneNumber: phoneNumber,
+                CallBackURL: MPESA_CALLBACK_URL,
+                AccountReference: accountReference || `COURSE_${courseId}`,
+                TransactionDesc: transactionDesc || `MEI DRIVE Course - ${courseId}`
+            },
+            {
+                headers: {
+                    Authorization: `Bearer ${accessToken}`,
+                    'Content-Type': 'application/json'
+                }
+            }
+        );
+
+        console.log('✅ STK Push sent:', response.data.CheckoutRequestID);
+
+        res.json({
+            success: true,
+            checkoutRequestID: response.data.CheckoutRequestID,
+            message: 'STK push sent. Check your phone for M-Pesa prompt.',
+            warning: '⚠️ Real money will be deducted from your M-Pesa account'
+        });
+    } catch (error) {
+        console.error('❌ STK Push Error:', error.response?.data || error.message);
+        res.status(500).json({
+            success: false,
+            error: error.response?.data?.errorMessage || error.message,
+            message: 'Payment initiation failed'
+        });
+    }
+});
+
+// Check payment status
+app.post('/api/payments/mpesa/status', async (req, res) => {
+    try {
+        const { checkoutRequestID } = req.body;
+
+        if (!checkoutRequestID) {
+            return res.status(400).json({
+                success: false,
+                error: 'CheckoutRequestID required'
+            });
+        }
+
+        const accessToken = await getMpesaAccessToken();
+        const timestamp = getTimestamp();
+        const password = Buffer.from(`${MPESA_SHORTCODE}${MPESA_PASSKEY}${timestamp}`).toString('base64');
+
+        const response = await axios.post(
+            'https://api.safaricom.co.ke/mpesa/stkpushquery/v1/query',
+            {
+                BusinessShortCode: MPESA_SHORTCODE,
+                Password: password,
+                Timestamp: timestamp,
+                CheckoutRequestID: checkoutRequestID
+            },
+            {
+                headers: {
+                    Authorization: `Bearer ${accessToken}`,
+                    'Content-Type': 'application/json'
+                }
+            }
+        );
+
+        const resultCode = response.data.ResultCode;
+        const isCompleted = resultCode === '0';
+
+        res.json({
+            success: true,
+            status: isCompleted ? 'completed' : 'pending',
+            message: response.data.ResultDesc,
+            resultCode: resultCode,
+            checkoutRequestID: checkoutRequestID
+        });
+    } catch (error) {
+        console.error('Status check error:', error.response?.data || error.message);
+        res.status(500).json({
+            success: false,
+            status: 'failed',
+            error: error.response?.data?.errorMessage || error.message
+        });
+    }
+});
+
+// M-Pesa Callback endpoint
+app.post('/api/payments/mpesa/callback', async (req, res) => {
+    console.log('📞 M-Pesa Callback received:', JSON.stringify(req.body, null, 2));
+
+    const { Body } = req.body;
+    if (Body && Body.stkCallback) {
+        const { ResultCode, ResultDesc, CheckoutRequestID, CallbackMetadata } = Body.stkCallback;
+
+        if (ResultCode === 0) {
+            const items = CallbackMetadata?.Item || [];
+            const receiptNumber = items.find(item => item.Name === 'MpesaReceiptNumber')?.Value;
+            const amount = items.find(item => item.Name === 'Amount')?.Value;
+            const phoneNumber = items.find(item => item.Name === 'PhoneNumber')?.Value;
+
+            console.log(`✅ Payment successful: Receipt ${receiptNumber}, Amount KES ${amount}, Phone ${phoneNumber}`);
+            
+            // Here you would update your Supabase database
+            // await supabase.from('payments').insert({...})
+        } else {
+            console.log(`❌ Payment failed: ${ResultDesc}`);
+        }
+    }
+
+    res.json({ ResultCode: 0, ResultDesc: 'Success' });
+});
 
 // ============================================
-// 404 HANDLER - Route not found
+// 404 HANDLER
 // ============================================
 app.use((req, res) => {
     res.status(404).json({
@@ -131,7 +334,7 @@ app.use((err, req, res, next) => {
 });
 
 // ============================================
-// START SERVER - Bind to all interfaces for Render
+// START SERVER
 // ============================================
 app.listen(PORT, '0.0.0.0', () => {
     console.log(`
@@ -143,21 +346,24 @@ app.listen(PORT, '0.0.0.0', () => {
 ║     Port: ${PORT}                                                   ║
 ║     Environment: PRODUCTION                                       ║
 ║     M-Pesa Mode: LIVE - REAL MONEY                                ║
+║     Paybill Number: ${MPESA_SHORTCODE}                              ║
 ║     Backend URL: ${BACKEND_URL}                                     ║
 ║                                                                   ║
-║     ⚠️  WARNING: Real money will be deducted!                     ║
+║     ⚠️  WARNING: REAL MONEY WILL BE DEDUCTED!                     ║
 ║                                                                   ║
 ║     API Endpoints:                                                ║
 ║     • Health:      GET  ${BACKEND_URL}/api/health                   ║
 ║     • Test:        GET  ${BACKEND_URL}/api/test                     ║
 ║     • M-Pesa Test: GET  ${BACKEND_URL}/api/payments/mpesa/test      ║
 ║     • Initiate:    POST ${BACKEND_URL}/api/payments/mpesa/initiate  ║
+║     • Status:      POST ${BACKEND_URL}/api/payments/mpesa/status    ║
+║     • Callback:    POST ${BACKEND_URL}/api/payments/mpesa/callback  ║
 ║                                                                   ║
-║     Real M-Pesa Production:                                       ║
-║     • Paybill: 4095377                                            ║
+║     Real M-Pesa Production Settings:                              ║
+║     • Paybill: ${MPESA_SHORTCODE}                                          ║
 ║     • Real customer phone numbers only                            ║
 ║     • Real money will be deducted                                 ║
-║     • Minimum payment: 49 KES                                     ║
+║     • Minimum payment: 1 KES                                      ║
 ║                                                                   ║
 ╚═══════════════════════════════════════════════════════════════════╝
     `);
