@@ -10,7 +10,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <!-- Supabase JS -->
+    <!-- Supabase JS - Single Source of Truth -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     
     <style>
@@ -414,6 +414,12 @@
             color: #00FF88;
         }
         
+        .error-container {
+            text-align: center;
+            padding: 60px;
+            color: #ff6666;
+        }
+        
         .dashboard-stats {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -557,7 +563,9 @@
 
     <script>
         // ============================================
-        // SUPABASE REAL INTEGRATION
+        // SINGLE SOURCE OF TRUTH - SUPABASE
+        // ALL DATA COMES FROM SUPABASE
+        // NO FALLBACK DATA - SUPABASE IS THE ONLY SOURCE
         // ============================================
         
         // Supabase configuration - REPLACE WITH YOUR ACTUAL KEYS
@@ -565,30 +573,7 @@
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBxcWttbWtyenhsaGNwY2NlZmpuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk1MjU0NzIsImV4cCI6MjA5NTEwMTQ3Mn0.Vw1hexN3NKoF_y9VFBFs_NUhJgFNNMwuyzDjImUcM6s';
         
         // Initialize Supabase client
-        let supabase = null;
-        try {
-            if (typeof window.supabase !== 'undefined') {
-                supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-                console.log('Supabase client initialized');
-            }
-        } catch(e) {
-            console.warn('Supabase init failed:', e);
-        }
-        
-        // Demo data (fallback if Supabase fails)
-        const demoCourses = [
-            { id: 1, title: 'Boda Boda Safety Course', name: 'Boda Boda Safety Course', description: 'Comprehensive safety training for motorcycle taxi operators.', price: 3500, duration: '2 Weeks', units: 8, icon: 'fa-motorcycle', is_published: true, modules: ['Introduction', 'PPE', 'Defensive Riding', 'Passenger Safety', 'Traffic Rules', 'Night Riding', 'Emergency Response', 'Assessment'] },
-            { id: 2, title: 'PSV Operator Course', name: 'PSV Operator Course', description: 'Professional training for matatu, bus, and taxi drivers.', price: 5000, duration: '4 Weeks', units: 12, icon: 'fa-bus', is_published: true },
-            { id: 3, title: 'School Transport Safety', name: 'School Transport Safety', description: 'Specialized training for school bus and van drivers.', price: 4500, duration: '3 Weeks', units: 7, icon: 'fa-school', is_published: true },
-            { id: 4, title: 'EV Driver and Rider', name: 'EV Driver and Rider', description: 'Electric vehicle operation and charging safety.', price: 4000, duration: '2 Weeks', units: 10, icon: 'fa-charging-station', is_published: true },
-            { id: 5, title: 'Driver Refresher Course', name: 'Driver Refresher Course', description: 'Advanced defensive driving and skills update.', price: 3000, duration: '1 Week', units: 8, icon: 'fa-redo-alt', is_published: true },
-            { id: 6, title: 'Learner Hub Complete', name: 'Learner Hub Complete', description: 'Complete beginner driver education.', price: 2500, duration: '6 Weeks', units: 21, icon: 'fa-graduation-cap', is_published: true }
-        ];
-        
-        const demoQuiz = [
-            { question: "What does a STOP sign mean?", options: ["Slow down only", "Continue carefully", "Come to a complete stop", "Overtake carefully"], correct: 2, explanation: "A STOP sign requires a complete stop." },
-            { question: "Defensive driving means:", options: ["Aggressive driving", "Anticipating and avoiding danger", "Driving fast", "Ignoring rules"], correct: 1, explanation: "Defensive driving anticipates danger." }
-        ];
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         
         // App state
         let currentUser = null;
@@ -597,7 +582,7 @@
         let selectedCourse = null;
         let courses = [];
         let quizQuestions = [];
-        let usingSupabase = false;
+        let isLoading = true;
         
         function showToast(msg, isError) {
             const toast = document.getElementById('toast');
@@ -622,11 +607,10 @@
         }
         
         // ============================================
-        // FETCH FROM SUPABASE REAL DATA
+        // FETCH ALL DATA FROM SUPABASE
         // ============================================
-        async function fetchCoursesFromSupabase() {
-            if (!supabase) return null;
-            
+        
+        async function fetchCourses() {
             try {
                 const { data, error } = await supabase
                     .from('courses')
@@ -636,105 +620,89 @@
                 
                 if (error) throw error;
                 
-                if (data && data.length > 0) {
-                    console.log('✅ Courses fetched from Supabase:', data.length);
-                    return data;
+                if (!data || data.length === 0) {
+                    throw new Error('No courses found in Supabase. Please add courses to your database.');
                 }
-                return null;
+                
+                courses = data;
+                console.log('✅ Courses loaded from Supabase:', courses.length);
+                return true;
             } catch (error) {
-                console.warn('Supabase courses fetch error:', error.message);
-                return null;
+                console.error('❌ Error fetching courses:', error);
+                showToast(error.message, true);
+                document.getElementById('coursesGrid').innerHTML = `<div class="error-container">❌ ${error.message}<br><br>Please ensure your Supabase "courses" table has data and RLS is configured correctly.</div>`;
+                return false;
             }
         }
         
-        async function fetchQuizFromSupabase() {
-            if (!supabase) return null;
-            
+        async function fetchQuizQuestions() {
             try {
                 const { data, error } = await supabase
                     .from('quiz_questions')
                     .select('*')
-                    .limit(50);
+                    .limit(100);
                 
                 if (error) throw error;
                 
                 if (data && data.length > 0) {
-                    console.log('✅ Quiz fetched from Supabase:', data.length);
-                    return data.map(q => ({
+                    quizQuestions = data.map(q => ({
+                        id: q.id,
                         question: q.question_text,
                         options: [q.option_a, q.option_b, q.option_c, q.option_d].filter(opt => opt),
                         correct: { 'A':0, 'B':1, 'C':2, 'D':3 }[q.correct_option] || 0,
                         explanation: q.explanation || ''
                     }));
                 }
-                return null;
+                console.log('✅ Quiz questions loaded:', quizQuestions.length);
+                return true;
             } catch (error) {
-                console.warn('Supabase quiz fetch error:', error.message);
-                return null;
+                console.error('❌ Error fetching quiz:', error);
+                return false;
             }
         }
         
         async function fetchStudentCount() {
-            if (!supabase) return 1250;
-            
             try {
                 const { count, error } = await supabase
                     .from('profiles')
                     .select('*', { count: 'exact', head: true });
                 
-                if (!error && count) return count;
-                return 1250;
+                if (!error && count) {
+                    document.getElementById('studentsCount').innerHTML = count > 999 ? Math.floor(count/1000) + 'K+' : count;
+                }
             } catch(e) {
-                return 1250;
+                console.warn('Could not fetch student count');
+            }
+        }
+        
+        async function loadUserEnrollments() {
+            if (!currentUser) return;
+            
+            try {
+                const { data, error } = await supabase
+                    .from('enrollments')
+                    .select('course_id')
+                    .eq('user_id', currentUser.id)
+                    .eq('status', 'active');
+                
+                if (error) throw error;
+                
+                enrolledCourses = data ? data.map(e => e.course_id) : [];
+                console.log('✅ User enrollments loaded:', enrolledCourses.length);
+                renderCourses();
+            } catch (error) {
+                console.error('Error loading enrollments:', error);
             }
         }
         
         // ============================================
-        // LOAD DATA (Supabase first, fallback to demo)
+        // RENDER FUNCTIONS
         // ============================================
-        async function loadAllData() {
-            // Show loading
-            document.getElementById('coursesGrid').innerHTML = '<div class="loading-container"><i class="fas fa-spinner fa-spin"></i> Loading courses from Supabase...</div>';
-            
-            // Try Supabase first
-            const supabaseCourses = await fetchCoursesFromSupabase();
-            const supabaseQuiz = await fetchQuizFromSupabase();
-            
-            if (supabaseCourses && supabaseCourses.length > 0) {
-                courses = supabaseCourses;
-                usingSupabase = true;
-                console.log('Using Supabase data for courses');
-            } else {
-                courses = demoCourses;
-                console.log('Using demo data for courses');
-            }
-            
-            if (supabaseQuiz && supabaseQuiz.length > 0) {
-                quizQuestions = supabaseQuiz;
-            } else {
-                quizQuestions = demoQuiz;
-            }
-            
-            // Get student count
-            const studentCount = await fetchStudentCount();
-            document.getElementById('studentsCount').innerHTML = studentCount > 999 ? Math.floor(studentCount/1000) + 'K+' : studentCount;
-            
-            // Update stats
-            document.getElementById('coursesCount').innerHTML = courses.length;
-            document.getElementById('quizCount').innerHTML = quizQuestions.length;
-            
-            let totalUnits = 0;
-            courses.forEach(c => totalUnits += (c.units || 0));
-            document.getElementById('modulesCount').innerHTML = totalUnits;
-            
-            // Render courses
-            renderCourses();
-        }
         
         function renderCourses() {
             const grid = document.getElementById('coursesGrid');
             if (!courses.length) {
-                grid.innerHTML = '<div class="loading-container">No courses available</div>';
+                grid.innerHTML = '<div class="error-container">No courses available. Please add courses to your Supabase database.</div>';
                 return;
             }
             
@@ -772,6 +740,13 @@
                 `;
             }
             grid.innerHTML = html;
+            
+            // Update stats
+            document.getElementById('coursesCount').innerHTML = courses.length;
+            document.getElementById('quizCount').innerHTML = quizQuestions.length;
+            let totalUnits = 0;
+            courses.forEach(c => totalUnits += (c.units || 0));
+            document.getElementById('modulesCount').innerHTML = totalUnits;
         }
         
         function showCourseModules(courseId) {
@@ -793,6 +768,10 @@
             moduleText += `\n💰 Price: KES ${(course.price || 0).toLocaleString()}\n⏱️ Duration: ${course.duration || 'Flexible'}`;
             alert(moduleText);
         }
+        
+        // ============================================
+        // ENROLLMENT FUNCTIONS
+        // ============================================
         
         function enrollCourse(id, name, price) {
             if (!currentUser) {
@@ -826,30 +805,25 @@
             statusDiv.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing enrollment...';
             statusDiv.style.display = 'block';
             
-            // Simulate payment processing
-            setTimeout(async () => {
-                // Add to enrolled courses
+            try {
+                // Save enrollment to Supabase
+                const { error } = await supabase
+                    .from('enrollments')
+                    .insert([{
+                        user_id: currentUser.id,
+                        course_id: selectedCourse.id,
+                        course_name: selectedCourse.name,
+                        price: selectedCourse.price,
+                        status: 'active',
+                        payment_method: 'mpesa',
+                        phone_number: phone,
+                        transaction_id: 'MPESA_' + Date.now(),
+                        enrolled_at: new Date().toISOString()
+                    }]);
+                
+                if (error) throw error;
+                
                 enrolledCourses.push(selectedCourse.id);
-                
-                // Save to Supabase if logged in and Supabase available
-                if (currentUser && supabase) {
-                    try {
-                        await supabase.from('enrollments').insert([{
-                            user_id: currentUser.id,
-                            course_id: selectedCourse.id,
-                            course_name: selectedCourse.name,
-                            price: selectedCourse.price,
-                            status: 'active',
-                            payment_method: 'mpesa',
-                            phone_number: phone,
-                            enrolled_at: new Date().toISOString()
-                        }]);
-                        console.log('Enrollment saved to Supabase');
-                    } catch(e) {
-                        console.warn('Could not save enrollment to Supabase:', e);
-                    }
-                }
-                
                 renderCourses();
                 statusDiv.className = 'payment-status success';
                 statusDiv.innerHTML = '✅ Payment successful! Enrollment confirmed.';
@@ -858,12 +832,21 @@
                 setTimeout(() => {
                     closeMpesaModal();
                 }, 2000);
-            }, 1500);
+            } catch (error) {
+                console.error('Enrollment error:', error);
+                statusDiv.className = 'payment-status error';
+                statusDiv.innerHTML = `❌ ${error.message}`;
+                showToast(error.message, true);
+            }
         }
+        
+        // ============================================
+        // QUIZ FUNCTIONS
+        // ============================================
         
         function openQuizBank() {
             if (!quizQuestions.length) {
-                alert('No quiz questions available yet.');
+                showToast('No quiz questions available. Please add questions to Supabase.', true);
                 return;
             }
             
@@ -878,9 +861,12 @@
                 if (q.explanation) quizText += `   💡 ${q.explanation}\n`;
                 quizText += '\n';
             }
-            quizText += `\n📊 Total: ${quizQuestions.length} questions available.`;
+            quizText += `\n📊 Total: ${quizQuestions.length} questions available.\n💡 More questions coming soon!`;
             alert(quizText);
         }
+        
+        // ============================================
+        // DASHBOARD FUNCTIONS        // ============================================
         
         async function openDashboard() {
             if (!currentUser) {
@@ -889,69 +875,134 @@
                 return;
             }
             
-            let userEnrollments = enrolledCourses;
-            let userEmail = currentUser.email || currentUser;
-            
-            // Try to fetch from Supabase
-            if (supabase && currentUser.id) {
-                try {
-                    const { data } = await supabase
-                        .from('enrollments')
-                        .select('*')
-                        .eq('user_id', currentUser.id);
-                    if (data && data.length) {
-                        userEnrollments = data.map(e => e.course_id);
-                    }
-                } catch(e) {}
-            }
-            
-            const enrolledCount = userEnrollments.length;
-            const completedModules = enrolledCount * 3;
-            const progressPercent = enrolledCount > 0 ? Math.min(100, Math.floor((enrolledCount / 6) * 100)) : 0;
-            
-            let html = `
-                <div class="dashboard-stats">
-                    <div class="dashboard-stat-card">
-                        <div class="dashboard-stat-number">${enrolledCount}</div>
-                        <div>Courses Enrolled</div>
+            try {
+                // Fetch fresh enrollments from Supabase
+                const { data: enrollments, error } = await supabase
+                    .from('enrollments')
+                    .select('*')
+                    .eq('user_id', currentUser.id);
+                
+                if (error) throw error;
+                
+                const enrolledCount = enrollments?.length || 0;
+                const completedModules = enrolledCount * 3;
+                const progressPercent = enrolledCount > 0 ? Math.min(100, Math.floor((enrolledCount / 10) * 100)) : 0;
+                
+                let html = `
+                    <div class="dashboard-stats">
+                        <div class="dashboard-stat-card">
+                            <div class="dashboard-stat-number">${enrolledCount}</div>
+                            <div>Courses Enrolled</div>
+                        </div>
+                        <div class="dashboard-stat-card">
+                            <div class="dashboard-stat-number">${completedModules}</div>
+                            <div>Modules Completed</div>
+                        </div>
+                        <div class="dashboard-stat-card">
+                            <div class="dashboard-stat-number">${progressPercent}%</div>
+                            <div>Overall Progress</div>
+                        </div>
                     </div>
-                    <div class="dashboard-stat-card">
-                        <div class="dashboard-stat-number">${completedModules}</div>
-                        <div>Modules Completed</div>
-                    </div>
-                    <div class="dashboard-stat-card">
-                        <div class="dashboard-stat-number">${progressPercent}%</div>
-                        <div>Overall Progress</div>
-                    </div>
-                </div>
-                <h4 style="margin: 20px 0 15px 0;">📖 My Enrolled Courses</h4>
-            `;
-            
-            if (enrolledCount > 0) {
-                for (let i = 0; i < userEnrollments.length; i++) {
-                    const courseId = userEnrollments[i];
-                    const course = courses.find(c => c.id === courseId);
-                    if (course) {
+                    <h4 style="margin: 20px 0 15px 0;">📖 My Enrolled Courses</h4>
+                `;
+                
+                if (enrollments && enrollments.length) {
+                    for (const enc of enrollments) {
+                        const course = courses.find(c => c.id === enc.course_id);
+                        const courseName = enc.course_name || (course ? (course.title || course.name) : 'Course');
                         html += `
                             <div class="dashboard-course-item">
-                                <strong><i class="fas fa-book"></i> ${escapeHtml(course.title || course.name)}</strong>
+                                <strong><i class="fas fa-book"></i> ${escapeHtml(courseName)}</strong>
                                 <div style="margin-top: 8px; font-size: 13px; opacity: 0.7;">
-                                    <i class="fas fa-calendar-alt"></i> Enrolled: ${new Date().toLocaleDateString()}
+                                    <i class="fas fa-calendar-alt"></i> Enrolled: ${new Date(enc.enrolled_at).toLocaleDateString()}
                                 </div>
                                 <div style="margin-top: 5px; font-size: 13px; opacity: 0.7;">
-                                    <i class="fas fa-flag-checkered"></i> Status: Active
+                                    <i class="fas fa-flag-checkered"></i> Status: ${enc.status || 'Active'}
                                 </div>
                             </div>
                         `;
                     }
+                } else {
+                    html += '<p style="text-align:center; padding:40px;">📭 No courses enrolled yet. <a onclick="closeDashboardModal();scrollToSection(\'courses\')" style="color:#00FF88; cursor:pointer;">Browse courses →</a></p>';
                 }
-            } else {
-                html += '<p style="text-align:center; padding:40px;">📭 No courses enrolled yet. <a onclick="closeDashboardModal();scrollToSection(\'courses\')" style="color:#00FF88; cursor:pointer;">Browse courses →</a></p>';
+                
+                document.getElementById('dashboardContent').innerHTML = html;
+                document.getElementById('dashboardModal').classList.add('active');
+            } catch (error) {
+                console.error('Dashboard error:', error);
+                showToast('Error loading dashboard', true);
             }
-            
-            document.getElementById('dashboardContent').innerHTML = html;
-            document.getElementById('dashboardModal').classList.add('active');
         }
+        
+        // ============================================
+        // AUTH FUNCTIONS (Supabase)
+        // ============================================
+        
+        async function syncAuth() {
+            const { data: { session } } = await supabase.auth.getSession();
+            currentUser = session?.user || null;
+            const container = document.getElementById('authContainer');
+            
+            if (container) {
+                if (currentUser) {
+                    container.innerHTML = `
+                        <div class="user-info">
+                            <span class="user-email"><i class="fas fa-user-circle"></i> ${escapeHtml(currentUser.email.split('@')[0])}</span>
+                            <button class="btn-dashboard" onclick="openDashboard()"><i class="fas fa-tachometer-alt"></i> Dashboard</button>
+                            <button class="btn-logout" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</button>
+                        </div>
+                    `;
+                    await loadUserEnrollments();
+                } else {
+                    container.innerHTML = `
+                        <button class="btn-login" onclick="openModal('login')"><i class="fas fa-sign-in-alt"></i> Login</button>
+                        <button class="btn-register" onclick="openModal('register')"><i class="fas fa-user-plus"></i> Register</button>
+                    `;
+                    enrolledCourses = [];
+                    renderCourses();
+                }
+            }
+        }
+        
+        async function handleLogin(email, password) {
+            const { error } = await supabase.auth.signInWithPassword({ email, password });
+            if (error) throw error;
+            await syncAuth();
+            showToast('✅ Login successful!');
+            closeModal();
+        }
+        
+        async function handleRegister(email, password, fullName) {
+            const { data, error } = await supabase.auth.signUp({ 
+                email, 
+                password, 
+                options: { data: { full_name: fullName } } 
+            });
+            if (error) throw error;
+            
+            if (data.user) {
+                // Create profile
+                await supabase.from('profiles').insert([{
+                    id: data.user.id,
+                    email: email,
+                    full_name: fullName,
+                    role: 'learner',
+                    created_at: new Date().toISOString()
+                }]);
+                showToast('✅ Registration successful! Please check your email to confirm.');
+                openModal('login');
+            }
+        }
+        
+        async function logout() {
+            await supabase.auth.signOut();
+            await syncAuth();
+            showToast('Logged out successfully');
+        }
+        
+        // ============================================
+        // MODAL FUNCTIONS
+        // ============================================
         
         function openModal(mode) {
             isLoginMode = mode === 'login';
@@ -989,37 +1040,12 @@
             submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
             
             try {
-                if (supabase) {
-                    if (isLoginMode) {
-                        const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-                        if (error) throw error;
-                        currentUser = data.user;
-                    } else {
-                        const { data, error } = await supabase.auth.signUp({ 
-                            email, password, 
-                            options: { data: { full_name: document.getElementById('modalFullName').value } } 
-                        });
-                        if (error) throw error;
-                        currentUser = data.user;
-                        showToast('Registration successful! Please check your email to confirm.');
-                    }
+                if (isLoginMode) {
+                    await handleLogin(email, password);
                 } else {
-                    // Demo auth
-                    currentUser = { email: email, id: 'demo-user-' + Date.now() };
+                    const fullName = document.getElementById('modalFullName').value;
+                    await handleRegister(email, password, fullName);
                 }
-                
-                // Update UI
-                document.getElementById('authContainer').innerHTML = `
-                    <div class="user-info">
-                        <span class="user-email"><i class="fas fa-user-circle"></i> ${escapeHtml(email.split('@')[0])}</span>
-                        <button class="btn-dashboard" onclick="openDashboard()"><i class="fas fa-tachometer-alt"></i> Dashboard</button>
-                        <button class="btn-logout" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</button>
-                    </div>
-                `;
-                
-                closeModal();
-                showToast(isLoginMode ? 'Login successful!' : 'Registration successful!');
-                
             } catch (error) {
                 document.getElementById('modalError').innerHTML = error.message;
                 showToast(error.message, true);
@@ -1029,22 +1055,27 @@
             }
         }
         
-        async function logout() {
-            if (supabase) {
-                await supabase.auth.signOut();
-            }
-            currentUser = null;
-            enrolledCourses = [];
-            document.getElementById('authContainer').innerHTML = `
-                <button class="btn-login" onclick="openModal('login')">Login</button>
-                <button class="btn-register" onclick="openModal('register')">Register</button>
-            `;
-            renderCourses();
-            showToast('Logged out successfully');
-        }
+        // ============================================
+        // INITIALIZE - FETCH ALL FROM SUPABASE
+        // ============================================
         
-        // Initialize
-        loadAllData();
+        async function init() {
+            // Show loading
+            document.getElementById('coursesGrid').innerHTML = '<div class="loading-container"><i class="fas fa-spinner fa-spin"></i> Loading courses from Supabase...</div>';
+            
+            // Fetch all data from Supabase
+            const coursesLoaded = await fetchCourses();
+            await fetchQuizQuestions();
+            await fetchStudentCount();
+            await syncAuth();
+            
+            // Set up auth state listener
+            supabase.auth.onAuthStateChange(async (event, session) => {
+                if (event === 'SIGNED_IN' || event === 'SIGNED_OUT') {
+                    await syncAuth();
+                }
+            });
+        }
         
         // Make functions global
         window.scrollToSection = scrollToSection;
@@ -1059,6 +1090,9 @@
         window.logout = logout;
         window.handleAuthSubmit = handleAuthSubmit;
         window.processMpesaPayment = processMpesaPayment;
+        
+        // Start the app
+        init();
     </script>
 </body>
 </html>
