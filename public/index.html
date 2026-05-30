@@ -7,13 +7,13 @@
     <meta name="description" content="Professional driver training courses and exam preparation">
     <meta name="theme-color" content="#0a192f">
     
-    <!-- Favicon from lebal.png - MEI DRIVE AFRICA Logo -->
+    <!-- Favicon -->
     <link rel="icon" type="image/png" sizes="512x512" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAgAAAAIAAQMAAADOtka5AAAAA1BMVEUAAACnej3aAAAAAXRSTlMAQObYZgAAAAlwSFlzAAAOxAAADsQBlSsOGwAAAARnQU1BAACxjwv8YQUAAAB7SURBVHgB7dJBDQAACAMx6J/b6AxoCIaBbAUAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADg5gQ7/QABMpVFSAAAAABJRU5ErkJggg==">
-    <link rel="apple-touch-icon" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAgAAAAIAAQMAAADOtka5AAAAA1BMVEUAAACnej3aAAAAAXRSTlMAQObYZgAAAAlwSFlzAAAOxAAADsQBlSsOGwAAAARnQU1BAACxjwv8YQUAAAB7SURBVHgB7dJBDQAACAMx6J/b6AxoCIaBbAUAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADg5gQ7/QABMpVFSAAAAABJRU5ErkJggg==">
     
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.0/dist/umd/supabase.min.js"></script>
+    <script src="supabase.js"></script>
     
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -94,7 +94,6 @@
         .quiz-option.correct { background: rgba(0,255,136,0.2); border-color: var(--primary); }
         .quiz-option.wrong { background: rgba(255,71,87,0.2); border-color: #ff4757; }
         
-        /* Animated background */
         .bg-animation {
             position: fixed;
             top: 0;
@@ -115,6 +114,53 @@
             25% { transform: translateY(-20px) translateX(10px); }
             50% { transform: translateY(-40px) translateX(-10px); }
             75% { transform: translateY(-20px) translateX(20px); }
+        }
+        
+        .payment-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.9);
+            backdrop-filter: blur(8px);
+            z-index: 2000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .payment-card {
+            background: #0d2137;
+            border-radius: 28px;
+            padding: 2rem;
+            max-width: 450px;
+            width: 90%;
+            border: 1px solid var(--primary);
+            text-align: center;
+        }
+        .payment-card .mpesa-logo {
+            font-size: 3rem;
+            color: #00ff88;
+            margin-bottom: 1rem;
+        }
+        .phone-input {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            background: #0f1a2c;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 5px 15px;
+            margin: 15px 0;
+        }
+        .phone-input span {
+            color: var(--primary);
+            font-weight: bold;
+        }
+        .phone-input input {
+            border: none;
+            margin: 0;
+            padding: 12px 0;
         }
     </style>
 </head>
@@ -138,6 +184,7 @@
                 <button id="navHome" onclick="navigateTo('home')"><i class="fas fa-home"></i> Home</button>
                 <button id="navCourses" onclick="navigateTo('courses')"><i class="fas fa-book"></i> Courses</button>
                 <button id="navQuiz" onclick="navigateTo('quiz')"><i class="fas fa-question-circle"></i> Quiz</button>
+                <button id="navAdmin" onclick="navigateTo('admin')" style="display:none;"><i class="fas fa-user-shield"></i> Admin</button>
                 <div id="authButtons"></div>
             </div>
         </div>
@@ -148,35 +195,19 @@
 <div id="toast-container"></div>
 
 <script>
-    const SUPABASE_URL = 'https://qpqkmmkrzxlhcpccefjn.supabase.co';
-    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBwcWttbWtyenhsaGNwY2NlZmpuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk1MjU0NzIsImV4cCI6MjA5NTEwMTQ3Mn0.Vw1hexN3NKoF_y9VFBFs_NUhJgFNNMwuyzDjImUcM6s';
+    // Use the global MEIDrive object from supabase.js
+    const MEI = window.MEIDrive;
     
-    let supabase;
     let currentUser = null;
     let currentPage = 'home';
+    let courses = [];
+    let quizQuestions = [];
     let userEnrollments = {};
-    
-    // Course data
-    const courses = [
-        { id: 1, name: 'LEARNER HUB', description: 'Complete driver training for new drivers covering fundamentals, traffic rules, vehicle controls, and NTSA exam preparation.', price: 2999, duration: '8 weeks', icon: 'fa-car', lessons: 21 },
-        { id: 2, name: 'BODA BODA SAFETY', description: 'Professional motorcycle rider training with PPE, defensive riding, passenger safety, and accident prevention.', price: 2499, duration: '6 weeks', icon: 'fa-motorcycle', lessons: 26 },
-        { id: 3, name: 'PSV PROFESSIONAL COURSE', description: 'Public Service Vehicle certification with passenger management, customer care, and safety protocols.', price: 3999, duration: '8 weeks', icon: 'fa-bus', lessons: 12 },
-        { id: 4, name: 'EV DRIVER & RIDER', description: 'Electric vehicle operations, charging safety, battery management, and eco-driving techniques.', price: 1999, duration: '5 weeks', icon: 'fa-car-battery', lessons: 10 },
-        { id: 5, name: 'REFRESHER COURSE', description: 'Advanced defensive driving, skill enhancement, hazard perception, and professional driver excellence.', price: 1499, duration: '4 weeks', icon: 'fa-sync-alt', lessons: 8 },
-        { id: 6, name: 'QUIZ BANK', description: '1000+ NTSA-style exam questions covering road signs, highway code, defensive driving, and more.', price: 999, duration: 'Self-paced', icon: 'fa-question-circle', lessons: 15 }
-    ];
-    
-    // Quiz questions
-    const quizQuestions = [
-        { id: 1, category: 'Road Signs', question: 'What does a STOP sign mean?', options: ['Slow down only', 'Continue carefully', 'Come to a complete stop', 'Overtake carefully'], correct: 2, explanation: 'A STOP sign requires you to come to a complete stop, look both ways, and proceed only when safe.' },
-        { id: 2, category: 'Road Signs', question: 'A triangular road sign normally indicates:', options: ['Direction', 'Warning', 'Parking', 'Speed limit'], correct: 1, explanation: 'Triangular signs are warning signs that alert drivers to potential hazards ahead.' },
-        { id: 3, category: 'Highway Code', question: 'Seat belts are important because they:', options: ['Improve music quality', 'Prevent accidents', 'Reduce injury during accidents', 'Increase speed'], correct: 2, explanation: 'Seat belts reduce the risk of serious injury or death in a crash.' },
-        { id: 4, category: 'Defensive Driving', question: 'Defensive driving means:', options: ['Aggressive driving', 'Anticipating and avoiding danger', 'Driving fast', 'Ignoring traffic rules'], correct: 1, explanation: 'Defensive driving involves anticipating potential hazards and taking proactive measures.' },
-        { id: 5, category: 'Traffic Rules', question: 'Driving under the influence of alcohol is:', options: ['Safe at low speed', 'Acceptable at night', 'Dangerous and illegal', 'Recommended'], correct: 2, explanation: 'Drunk driving impairs judgment, reaction time, and is strictly prohibited by law.' },
-        { id: 6, category: 'Emergency', question: 'If your brakes fail you should:', options: ['Panic', 'Stay calm and slow down safely', 'Jump out immediately', 'Close your eyes'], correct: 1, explanation: 'Stay calm, pump brakes, use engine braking, and apply parking brake gradually.' },
-        { id: 7, category: 'Motorcycle', question: 'A motorcycle passenger should:', options: ['Sit carelessly', 'Wear a helmet', 'Distract the rider', 'Stand while riding'], correct: 1, explanation: 'All passengers must wear approved helmets for their safety.' },
-        { id: 8, category: 'PSV', question: 'A PSV driver should:', options: ['Abuse passengers', 'Respect passengers', 'Ignore traffic rules', 'Overspeed'], correct: 1, explanation: 'Professional PSV drivers must treat passengers with respect and courtesy.' }
-    ];
+    let userProgress = {};
+    let payments = [];
+    let users = [];
+    let isAdmin = false;
+    let pendingCourse = null;
     
     function showToast(msg, type = 'info') {
         const container = document.getElementById('toast-container');
@@ -184,25 +215,48 @@
         toast.className = 'toast';
         toast.innerHTML = `${type === 'success' ? '✅' : type === 'error' ? '❌' : 'ℹ️'} ${msg}`;
         container.appendChild(toast);
-        setTimeout(() => toast.remove(), 3000);
+        setTimeout(() => toast.remove(), 5000);
     }
     
     function escapeHtml(str) { if (!str) return ''; return str.replace(/[&<>]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[m])); }
     function toggleMobileMenu() { document.getElementById('navLinks')?.classList.toggle('show'); }
     
-    async function loadUserData() {
-        const { data: { session } } = await supabase.auth.getSession();
-        currentUser = session?.user || null;
+    async function loadAllData() {
+        // Load courses
+        courses = await MEI.getAllCourses();
+        if (courses.length === 0) {
+            courses = [
+                { id: 1, name: 'LEARNER HUB', description: 'Complete driver training for new drivers.', price: 2999, duration: '8 weeks', icon: 'fa-car', lessons_count: 21 },
+                { id: 2, name: 'BODA BODA SAFETY', description: 'Professional motorcycle rider training.', price: 2499, duration: '6 weeks', icon: 'fa-motorcycle', lessons_count: 26 },
+                { id: 3, name: 'PSV PROFESSIONAL COURSE', description: 'Public Service Vehicle certification.', price: 3999, duration: '8 weeks', icon: 'fa-bus', lessons_count: 12 },
+                { id: 4, name: 'EV DRIVER & RIDER', description: 'Electric vehicle operations.', price: 1999, duration: '5 weeks', icon: 'fa-car-battery', lessons_count: 10 },
+                { id: 5, name: 'REFRESHER COURSE', description: 'Advanced defensive driving.', price: 1499, duration: '4 weeks', icon: 'fa-sync-alt', lessons_count: 8 },
+                { id: 6, name: 'QUIZ BANK', description: '1000+ NTSA-style exam questions.', price: 999, duration: 'Self-paced', icon: 'fa-question-circle', lessons_count: 15 }
+            ];
+        }
         
+        // Load quiz questions
+        quizQuestions = await MEI.getAllQuizQuestions();
+        if (quizQuestions.length === 0) {
+            quizQuestions = [
+                { id: 1, category: 'Road Signs', question: 'What does a STOP sign mean?', option_a: 'Slow down only', option_b: 'Continue carefully', option_c: 'Come to a complete stop', option_d: 'Overtake carefully', correct_option: 2, explanation: 'A STOP sign requires you to come to a complete stop.' },
+                { id: 2, category: 'Road Signs', question: 'A triangular road sign normally indicates:', option_a: 'Direction', option_b: 'Warning', option_c: 'Parking', option_d: 'Speed limit', correct_option: 1, explanation: 'Triangular signs are warning signs.' }
+            ];
+        }
+        
+        // Load user data if logged in
+        currentUser = await MEI.getCurrentUser();
         if (currentUser) {
-            const { data: enrollments } = await supabase
-                .from('user_enrollments')
-                .select('course_id')
-                .eq('user_id', currentUser.id);
+            const enrollments = await MEI.getUserEnrollments(currentUser.id);
+            userEnrollments = {};
+            enrollments.forEach(e => { userEnrollments[e.course_id] = true; });
             
-            if (enrollments) {
-                userEnrollments = {};
-                enrollments.forEach(e => { userEnrollments[e.course_id] = true; });
+            isAdmin = currentUser.email === 'admin@meidrive.com' || currentUser.email.includes('admin');
+            
+            if (isAdmin) {
+                payments = await MEI.getAllPayments();
+                users = await MEI.getAllUsers();
+                document.getElementById('navAdmin').style.display = 'inline-block';
             }
         }
         updateAuthUI();
@@ -212,15 +266,16 @@
         const container = document.getElementById('authButtons');
         if (!container) return;
         if (currentUser) {
-            container.innerHTML = `<div class="user-badge"><i class="fas fa-user-check"></i> ${escapeHtml(currentUser.email.split('@')[0])}</div><button onclick="logout()" class="btn-outline btn-sm"><i class="fas fa-sign-out-alt"></i> Logout</button>`;
+            container.innerHTML = `<div class="user-badge"><i class="fas fa-user-check"></i> ${escapeHtml(currentUser.email.split('@')[0])}${isAdmin ? ' <span class="admin-badge" style="background:#ff4757; padding:2px 8px; border-radius:20px; font-size:10px;">Admin</span>' : ''}</div><button onclick="logout()" class="btn-outline btn-sm"><i class="fas fa-sign-out-alt"></i> Logout</button>`;
         } else {
             container.innerHTML = `<button onclick="showAuthModal('login')" class="btn-outline btn-sm"><i class="fas fa-key"></i> Login</button><button onclick="showAuthModal('signup')" class="btn-primary btn-sm"><i class="fas fa-user-plus"></i> Sign Up</button>`;
         }
     }
     
     async function logout() { 
-        await supabase.auth.signOut(); 
-        currentUser = null; 
+        await MEI.signOut();
+        currentUser = null;
+        isAdmin = false;
         userEnrollments = {};
         updateAuthUI(); 
         navigateTo('home'); 
@@ -232,6 +287,7 @@
             <div class="modal" style="display:flex;">
                 <div class="modal-content">
                     <h2 style="text-align:center;">${mode === 'login' ? '🔐 Welcome Back' : '📝 Create Account'}</h2>
+                    ${mode === 'signup' ? '<input type="text" id="signupName" placeholder="Full Name">' : ''}
                     <input type="email" id="authEmail" placeholder="Email address">
                     <input type="password" id="authPassword" placeholder="Password (min 6 characters)">
                     <button class="btn btn-primary" style="width:100%" onclick="handleAuth('${mode}')">${mode === 'login' ? 'Login' : 'Sign Up'}</button>
@@ -247,37 +303,30 @@
     async function handleAuth(mode) {
         const email = document.getElementById('authEmail')?.value.trim();
         const password = document.getElementById('authPassword')?.value;
+        const fullName = document.getElementById('signupName')?.value;
         
-        if (!email || !password) { 
-            showToast('Please enter both email and password', 'error'); 
-            return; 
-        }
-        if (password.length < 6) { 
-            showToast('Password must be at least 6 characters', 'error'); 
-            return; 
-        }
+        if (!email || !password) { showToast('Please enter both email and password', 'error'); return; }
+        if (password.length < 6) { showToast('Password must be at least 6 characters', 'error'); return; }
         
-        try {
-            if (mode === 'signup') {
-                const { data, error } = await supabase.auth.signUp({ 
-                    email, 
-                    password,
-                    options: { data: { full_name: email.split('@')[0] } }
-                });
-                if (error) throw error;
+        let result;
+        if (mode === 'signup') {
+            result = await MEI.signUp(email, password, fullName);
+            if (result.success) {
                 showToast('Account created! Please check your email to verify.', 'success');
-                showToast('You can now login with your credentials.', 'info');
                 showAuthModal('login');
             } else {
-                const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-                if (error) throw error;
-                currentUser = data.user;
-                showToast(`Welcome back, ${email.split('@')[0]}!`, 'success');
-                await loadUserData();
-                navigateTo('home');
+                showToast(result.error, 'error');
             }
-        } catch (err) {
-            showToast(err.message, 'error');
+        } else {
+            result = await MEI.signIn(email, password);
+            if (result.success) {
+                currentUser = result.user;
+                await loadAllData();
+                showToast(`Welcome back, ${email.split('@')[0]}!`, 'success');
+                navigateTo('home');
+            } else {
+                showToast(result.error, 'error');
+            }
         }
     }
     
@@ -287,33 +336,97 @@
         window.location.href = `course.html?id=${courseId}`;
     }
     
+    // Show payment modal
+    function showPaymentModal(course) {
+        pendingCourse = course;
+        document.getElementById('page-content').innerHTML = `
+            <div class="payment-modal" id="paymentModal">
+                <div class="payment-card">
+                    <div class="mpesa-logo">
+                        <i class="fas fa-money-bill-wave"></i>
+                    </div>
+                    <h2>M-Pesa Payment</h2>
+                    <p style="margin: 1rem 0;">Course: <strong>${escapeHtml(course.name)}</strong></p>
+                    <p style="font-size: 1.8rem; color: var(--primary);">KES ${course.price.toLocaleString()}</p>
+                    <div class="phone-input">
+                        <span>+254</span>
+                        <input type="tel" id="mpesaPhone" placeholder="712345678" autocomplete="off">
+                    </div>
+                    <p style="font-size: 12px; opacity: 0.7;">Enter the M-Pesa number you want to pay from</p>
+                    <button class="btn btn-primary" style="width:100%; margin-top:1rem;" onclick="processPayment()">
+                        <i class="fas fa-arrow-right"></i> Continue to Pay
+                    </button>
+                    <button class="btn btn-outline" style="width:100%; margin-top:0.5rem;" onclick="navigateTo('courses')">
+                        Cancel
+                    </button>
+                </div>
+            </div>
+        `;
+    }
+    
+    async function processPayment() {
+        const phone = document.getElementById('mpesaPhone')?.value.trim();
+        if (!phone) {
+            showToast('Please enter your M-Pesa phone number', 'error');
+            return;
+        }
+        
+        if (!pendingCourse) return;
+        
+        showToast(`Initiating payment of KES ${pendingCourse.price}...`, 'info');
+        
+        const result = await MEI.initiateMpesaPayment(
+            phone, 
+            pendingCourse.price, 
+            pendingCourse.id, 
+            currentUser.id
+        );
+        
+        if (result.success) {
+            showToast('Payment request sent! Check your phone for M-Pesa prompt.', 'success');
+            
+            // Poll for payment status
+            let attempts = 0;
+            const interval = setInterval(async () => {
+                attempts++;
+                const status = await MEI.checkPaymentStatus(result.checkoutRequestID);
+                if (status.success && status.status === 'completed') {
+                    clearInterval(interval);
+                    const enrollResult = await MEI.createEnrollment(currentUser.id, pendingCourse.id, pendingCourse.price);
+                    if (enrollResult.success) {
+                        userEnrollments[pendingCourse.id] = true;
+                        showToast('✅ Payment successful! Course unlocked.', 'success');
+                        navigateTo('courses');
+                    }
+                } else if (attempts > 20) {
+                    clearInterval(interval);
+                    showToast('Payment confirmation timeout. Please check your email.', 'warning');
+                }
+            }, 3000);
+            
+            setTimeout(() => clearInterval(interval), 60000);
+        } else {
+            showToast(result.error || 'Payment initiation failed', 'error');
+        }
+    }
+    
     async function enrollCourse(courseId) {
         if (!currentUser) { showAuthModal('login'); return; }
         const course = courses.find(c => c.id === courseId);
         if (!course) return;
         
-        const phone = prompt(`💰 Payment for ${course.name}\nAmount: KES ${course.price.toLocaleString()}\n\nEnter M-Pesa phone number (e.g., 0712345678):`);
-        if (!phone) { showToast('Payment cancelled', 'info'); return; }
-        
-        showToast(`Processing payment for KES ${course.price}...`, 'info');
-        
-        setTimeout(async () => {
-            const { error } = await supabase.from('user_enrollments').upsert({
-                user_id: currentUser.id,
-                course_id: courseId,
-                payment_status: 'completed',
-                amount_paid: course.price,
-                paid_at: new Date().toISOString()
-            });
-            
-            if (!error) {
+        if (course.price > 0) {
+            showPaymentModal(course);
+        } else {
+            const result = await MEI.createEnrollment(currentUser.id, courseId, 0);
+            if (result.success) {
                 userEnrollments[courseId] = true;
                 showToast(`✅ Successfully enrolled in ${course.name}!`, 'success');
                 renderCourses();
             } else {
-                showToast('Enrollment failed. Please try again.', 'error');
+                showToast('Enrollment failed', 'error');
             }
-        }, 1500);
+        }
     }
     
     // Quiz functionality
@@ -321,7 +434,14 @@
     
     function renderQuiz() {
         if (quizState.questions.length === 0) {
-            quizState.questions = [...quizQuestions];
+            quizState.questions = quizQuestions.map(q => ({
+                id: q.id,
+                category: q.category,
+                question: q.question,
+                options: [q.option_a, q.option_b, q.option_c, q.option_d],
+                correct: q.correct_option,
+                explanation: q.explanation
+            }));
         }
         
         if (quizState.currentIndex >= quizState.questions.length) {
@@ -330,13 +450,12 @@
                 <div class="container" style="padding-top: 100px; max-width: 800px;">
                     <div class="card" style="text-align:center;">
                         <h2>🎉 Quiz Complete!</h2>
-                        <div style="font-size: 4rem; margin: 1rem 0;">${percent >= 70 ? '🏆' : '📚'}</div>
-                        <p style="font-size: 1.2rem;">Your score: <strong>${quizState.score}</strong> / ${quizState.questions.length} (${percent}%)</p>
+                        <div style="font-size: 4rem;">${percent >= 70 ? '🏆' : '📚'}</div>
+                        <p>Score: <strong>${quizState.score}</strong> / ${quizState.questions.length} (${percent}%)</p>
                         <div class="progress-bar"><div class="progress-fill" style="width:${percent}%"></div></div>
-                        <p style="margin-top: 1rem;">${percent >= 70 ? 'Excellent! You\'re ready for the NTSA exam!' : 'Keep practicing to improve your score!'}</p>
-                        <div style="display: flex; gap: 1rem; justify-content: center; margin-top: 2rem;">
-                            <button class="btn btn-primary" onclick="resetQuiz()">🔄 Restart Quiz</button>
-                            <button class="btn btn-outline" onclick="navigateTo('home')">🏠 Back to Home</button>
+                        <div style="margin-top: 2rem;">
+                            <button class="btn btn-primary" onclick="resetQuiz()">Restart Quiz</button>
+                            <button class="btn btn-outline" onclick="navigateTo('home')">Back Home</button>
                         </div>
                     </div>
                 </div>`;
@@ -350,28 +469,25 @@
             <div class="container" style="padding-top: 100px; max-width: 800px;">
                 <div class="card">
                     <div style="display: flex; justify-content: space-between; margin-bottom: 1rem;">
-                        <span class="category-tag"><i class="fas fa-tag"></i> ${q.category}</span>
-                        <span style="background: var(--primary); color: #0a192f; padding: 4px 12px; border-radius: 50px; font-weight:bold;">Question ${quizState.currentIndex + 1}/${quizState.questions.length}</span>
+                        <span class="category-tag">${q.category}</span>
+                        <span style="background: var(--primary); color: #0a192f; padding: 4px 12px; border-radius: 50px;">${quizState.currentIndex + 1}/${quizState.questions.length}</span>
                     </div>
-                    <h3 style="margin-bottom: 1.5rem; font-size: 1.3rem;">${escapeHtml(q.question)}</h3>
+                    <h3>${escapeHtml(q.question)}</h3>
                     ${q.options.map((opt, idx) => {
-                        let additionalClass = '';
-                        if (hasAnswered && idx === q.correct) additionalClass = 'correct';
-                        if (hasAnswered && idx === quizState.userAnswers[quizState.currentIndex] && idx !== q.correct) additionalClass = 'wrong';
-                        return `<div class="quiz-option ${additionalClass}" onclick="${!hasAnswered ? `selectAnswer(${idx})` : ''}">
-                            <span style="font-weight:bold;">${String.fromCharCode(65+idx)}.</span> ${escapeHtml(opt)}
+                        let cls = 'quiz-option';
+                        if (hasAnswered && idx === q.correct) cls += ' correct';
+                        if (hasAnswered && idx === quizState.userAnswers[quizState.currentIndex] && idx !== q.correct) cls += ' wrong';
+                        return `<div class="${cls}" onclick="${!hasAnswered ? `selectAnswer(${idx})` : ''}">
+                            ${String.fromCharCode(65+idx)}. ${escapeHtml(opt)}
                         </div>`;
                     }).join('')}
                     ${hasAnswered ? `
                         <div style="margin-top: 1rem; padding: 1rem; background: rgba(0,255,136,0.1); border-radius: 12px;">
                             <strong>${quizState.userAnswers[quizState.currentIndex] === q.correct ? '✓ Correct!' : '✗ Incorrect'}</strong>
-                            <p style="margin-top: 0.5rem;">📖 ${escapeHtml(q.explanation)}</p>
-                            <button class="btn btn-primary" style="margin-top: 1rem;" onclick="nextQuestion()">Next Question →</button>
+                            <p>${escapeHtml(q.explanation || 'No explanation available.')}</p>
+                            <button class="btn btn-primary" onclick="nextQuestion()">Next →</button>
                         </div>
-                    ` : '<p style="margin-top: 1rem;"><i class="fas fa-info-circle"></i> Click on an option to answer</p>'}
-                </div>
-                <div style="text-align: center; margin-top: 1rem;">
-                    <p>📊 ${quizState.score} correct so far</p>
+                    ` : '<p style="margin-top: 1rem;">Click an option to answer</p>'}
                 </div>
             </div>`;
     }
@@ -385,31 +501,31 @@
     };
     
     window.nextQuestion = () => { quizState.currentIndex++; renderQuiz(); };
-    window.resetQuiz = () => { quizState = { currentIndex: 0, score: 0, userAnswers: [], questions: [...quizQuestions] }; renderQuiz(); };
+    window.resetQuiz = () => { quizState = { currentIndex: 0, score: 0, userAnswers: [], questions: [] }; renderQuiz(); };
+    window.processPayment = processPayment;
     
     function renderHome() {
         document.getElementById('page-content').innerHTML = `
             <div class="hero">
                 <h1>Practice Daily.<br><span>Revise Smarter. Pass with Confidence.</span></h1>
-                <p>Professional driver training with 6 comprehensive courses and 1000+ exam questions.</p>
+                <p>Professional driver training with comprehensive courses and exam preparation.</p>
                 <button class="btn btn-primary" onclick="navigateTo('courses')">🚀 Explore Courses</button>
             </div>
             <div class="container">
                 <div class="stats-bar">
-                    <div class="stat-item"><h3>6</h3><p>Professional Courses</p></div>
-                    <div class="stat-item"><h3>1000+</h3><p>Quiz Questions</p></div>
-                    <div class="stat-item"><h3>92</h3><p>Training Modules</p></div>
+                    <div class="stat-item"><h3>${courses.length}</h3><p>Courses</p></div>
+                    <div class="stat-item"><h3>${quizQuestions.length}+</h3><p>Questions</p></div>
+                    <div class="stat-item"><h3>NTSA</h3><p>Approved</p></div>
                 </div>
-                <h2 class="section-title">Our <span>Professional Courses</span></h2>
+                <h2 class="section-title">Our <span>Courses</span></h2>
                 <div class="grid">
-                    ${courses.map(c => `
+                    ${courses.slice(0, 3).map(c => `
                         <div class="card" onclick="viewCourse(${c.id})">
-                            <i class="fas ${c.icon}" style="font-size: 2rem; color: var(--primary);"></i>
-                            <h3>${escapeHtml(c.name)}${isEnrolled(c.id) ? ' <span class="badge"><i class="fas fa-check-circle"></i> Enrolled</span>' : ''}</h3>
+                            <i class="fas ${c.icon || 'fa-car'}" style="font-size: 2rem; color: var(--primary);"></i>
+                            <h3>${escapeHtml(c.name)}${isEnrolled(c.id) ? '<span class="badge">Enrolled</span>' : ''}</h3>
                             <p>${escapeHtml(c.description)}</p>
-                            <div><span class="category-tag"><i class="far fa-clock"></i> ${c.duration}</span><span class="category-tag"><i class="fas fa-book"></i> ${c.lessons} Modules</span></div>
-                            <div class="course-price">KES ${c.price.toLocaleString()}</div>
-                            <button class="btn btn-primary">${isEnrolled(c.id) ? 'Continue Learning' : 'Enroll Now'}</button>
+                            <div class="course-price">KES ${(c.price || 0).toLocaleString()}</div>
+                            <button class="btn btn-primary">${isEnrolled(c.id) ? 'Continue' : 'Enroll'}</button>
                         </div>
                     `).join('')}
                 </div>
@@ -419,18 +535,47 @@
     function renderCourses() {
         document.getElementById('page-content').innerHTML = `
             <div class="container" style="padding-top: 100px;">
-                <h1 class="section-title">All <span>Professional Courses</span></h1>
+                <h1 class="section-title">All <span>Courses</span></h1>
                 <div class="grid">
                     ${courses.map(c => `
                         <div class="card" onclick="viewCourse(${c.id})">
-                            <i class="fas ${c.icon}" style="font-size: 2rem; color: var(--primary);"></i>
-                            <h3>${escapeHtml(c.name)}${isEnrolled(c.id) ? ' <span class="badge"><i class="fas fa-check-circle"></i> Enrolled</span>' : ''}</h3>
+                            <i class="fas ${c.icon || 'fa-car'}" style="font-size: 2rem; color: var(--primary);"></i>
+                            <h3>${escapeHtml(c.name)}${isEnrolled(c.id) ? '<span class="badge">Enrolled</span>' : ''}</h3>
                             <p>${escapeHtml(c.description)}</p>
-                            <div><span class="category-tag"><i class="far fa-clock"></i> ${c.duration}</span><span class="category-tag"><i class="fas fa-book"></i> ${c.lessons} Modules</span></div>
-                            <div class="course-price">KES ${c.price.toLocaleString()}</div>
+                            <div><span class="category-tag">${c.duration || 'Self-paced'}</span><span class="category-tag">${c.lessons_count || 0} Modules</span></div>
+                            <div class="course-price">KES ${(c.price || 0).toLocaleString()}</div>
                             <button class="btn btn-primary" onclick="event.stopPropagation(); enrollCourse(${c.id})">${isEnrolled(c.id) ? 'Continue Learning' : 'Enroll Now'}</button>
                         </div>
                     `).join('')}
+                </div>
+            </div>`;
+    }
+    
+    function renderAdminDashboard() {
+        const totalRevenue = payments.reduce((sum, p) => sum + (p.amount || 0), 0);
+        document.getElementById('page-content').innerHTML = `
+            <div class="container" style="padding-top: 100px;">
+                <h1 class="section-title"><i class="fas fa-user-shield"></i> Admin <span>Dashboard</span></h1>
+                <div class="stats-bar">
+                    <div class="stat-item"><h3>${users.length}</h3><p>Users</p></div>
+                    <div class="stat-item"><h3>${payments.length}</h3><p>Payments</p></div>
+                    <div class="stat-item"><h3>KES ${totalRevenue.toLocaleString()}</h3><p>Revenue</p></div>
+                </div>
+                <div class="card">
+                    <h3>Recent Payments</h3>
+                    <table style="width:100%; border-collapse:collapse;">
+                        <thead><tr><th>Transaction</th><th>Amount</th><th>Status</th><th>Date</th></tr></thead>
+                        <tbody>
+                            ${payments.slice(0, 10).map(p => `
+                                <tr style="border-bottom:1px solid var(--border);">
+                                    <td style="padding:10px;">${escapeHtml(p.transaction_id || 'N/A')}</td>
+                                    <td>KES ${(p.amount || 0).toLocaleString()}</td>
+                                    <td>${p.status || 'pending'}</td>
+                                    <td>${p.created_at ? new Date(p.created_at).toLocaleDateString() : 'N/A'}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
                 </div>
             </div>`;
     }
@@ -440,6 +585,7 @@
         if (page === 'home') renderHome();
         else if (page === 'courses') renderCourses();
         else if (page === 'quiz') { resetQuiz(); renderQuiz(); }
+        else if (page === 'admin' && isAdmin) renderAdminDashboard();
         else renderHome();
         
         document.querySelectorAll('.nav-links button').forEach(btn => btn.classList.remove('active'));
@@ -451,14 +597,7 @@
     }
     
     async function init() {
-        supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-        
-        const { data: { session } } = await supabase.auth.getSession();
-        if (session) {
-            currentUser = session.user;
-            await loadUserData();
-        }
-        
+        await loadAllData();
         navigateTo('home');
     }
     
@@ -471,6 +610,7 @@
     window.selectAnswer = selectAnswer;
     window.nextQuestion = nextQuestion;
     window.resetQuiz = resetQuiz;
+    window.processPayment = processPayment;
     
     init();
 </script>
