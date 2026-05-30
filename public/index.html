@@ -10,7 +10,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <!-- Supabase.js - Single Source of Truth -->
+    <!-- Supabase.js - Single Source of Truth - Loaded ONCE -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     
     <style>
@@ -450,12 +450,13 @@
 
     <script>
         // ============================================
-        // SUPABASE CLIENT - SINGLE SOURCE OF TRUTH
+        // SINGLE SOURCE OF TRUTH - SUPABASE CLIENT
+        // Created ONCE - used everywhere
         // ============================================
         const SUPABASE_URL = 'https://qpqkmmkrzxlhcpccefjn.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFwcWttbWtyenhsaGNwY2NlZmpuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk1MjU0NzIsImV4cCI6MjA5NTEwMTQ3Mn0.Vw1hexN3NKoF_y9VFBFs_NUhJgFNNMwuyzDjImUcM6s';
         
-        // SINGLE Supabase client instance
+        // SINGLE Supabase client - ONE VARIABLE for everything
         const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         
         // App state
