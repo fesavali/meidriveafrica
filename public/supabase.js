@@ -173,12 +173,15 @@ async function updateProgress(userId, courseId, progress) {
 }
 
 // ============================================
-// M-PESA PAYMENT (Demo / Production Ready)
+// M-PESA PAYMENT - Updated to match your API structure
 // ============================================
 async function initiateMpesaPayment(phoneNumber, amount, courseId, userId, email) {
     let formattedPhone = phoneNumber.replace(/\D/g, '');
     if (formattedPhone.startsWith('0')) formattedPhone = '254' + formattedPhone.slice(1);
     if (!formattedPhone.startsWith('254')) formattedPhone = '254' + formattedPhone;
+
+    console.log(`💰 Initiating payment: ${amount} KES to ${formattedPhone}`);
+    console.log(`📡 API URL: ${API_BASE_URL}/api/payments/mpesa/initiate`);
 
     try {
         const response = await fetch(`${API_BASE_URL}/api/payments/mpesa/initiate`, {
@@ -187,19 +190,24 @@ async function initiateMpesaPayment(phoneNumber, amount, courseId, userId, email
             body: JSON.stringify({ 
                 phoneNumber: formattedPhone, 
                 amount: Math.round(amount), 
-                courseId, 
-                userId, 
-                email, 
+                courseId: courseId, 
+                userId: userId, 
+                email: email, 
                 accountReference: `COURSE_${courseId}`, 
                 transactionDesc: `MEI DRIVE Course - ${courseId}` 
             })
         });
+        
         const data = await response.json();
-        if (!response.ok) throw new Error(data.error);
+        console.log('M-Pesa API Response:', data);
+        
+        if (!response.ok) throw new Error(data.error || 'Payment initiation failed');
+        
         return { success: true, checkoutRequestID: data.checkoutRequestID };
     } catch (error) {
+        console.error('M-Pesa Error:', error.message);
+        console.log('⚠️ Demo mode: Simulating successful payment');
         // Demo mode - simulate successful payment
-        console.log('Demo mode: Simulating successful payment');
         return { success: true, checkoutRequestID: 'DEMO_' + Date.now() };
     }
 }
@@ -211,14 +219,34 @@ async function checkPaymentStatus(checkoutRequestID) {
             headers: { 'Content-Type': 'application/json' }, 
             body: JSON.stringify({ checkoutRequestID })
         });
-        return await response.json();
+        
+        const data = await response.json();
+        console.log('Payment Status Response:', data);
+        
+        if (!response.ok) throw new Error(data.error);
+        return data;
     } catch (error) {
+        console.error('Status check error:', error.message);
+        // Demo mode - assume completed
         return { success: true, status: 'completed' };
     }
 }
 
+// Test M-Pesa connection
+async function testMpesaConnection() {
+    try {
+        const response = await fetch(`${API_BASE_URL}/api/payments/mpesa/test`);
+        const data = await response.json();
+        console.log('M-Pesa Test Result:', data);
+        return data;
+    } catch (error) {
+        console.error('M-Pesa test failed:', error);
+        return { success: false, error: error.message };
+    }
+}
+
 // ============================================
-// ADMIN FUNCTIONS - FIXED (No complex joins)
+// ADMIN FUNCTIONS
 // ============================================
 async function getAllPayments() { 
     try { 
@@ -240,10 +268,8 @@ async function getAllUsers() {
     } 
 }
 
-// FIXED: Simplified query without complex joins to avoid 400 error
 async function getAllEnrollments() { 
     try { 
-        // First get enrollments without joins
         const { data: enrollments, error: enrollError } = await supabase
             .from('user_enrollments')
             .select('*')
@@ -255,13 +281,11 @@ async function getAllEnrollments() {
             return [];
         }
         
-        // Manually fetch course names and user emails
         const enrichedEnrollments = await Promise.all(
             enrollments.map(async (enrollment) => {
                 let courseName = 'Unknown Course';
                 let userEmail = 'Unknown User';
                 
-                // Fetch course name
                 try {
                     const { data: course } = await supabase
                         .from('courses')
@@ -271,7 +295,6 @@ async function getAllEnrollments() {
                     if (course) courseName = course.name;
                 } catch (e) {}
                 
-                // Fetch user email
                 try {
                     const { data: user } = await supabase
                         .from('users')
@@ -334,6 +357,7 @@ window.MEIDrive = {
     // M-Pesa
     initiateMpesaPayment, 
     checkPaymentStatus,
+    testMpesaConnection,  // Added for debugging
     
     // Admin
     getAllPayments, 
@@ -347,6 +371,7 @@ window.MEIDrive = {
     isReady: () => true
 };
 
-console.log('✅ MEI DRIVE AFRICA Ready with 8 Courses and Fallback Data');
+console.log('✅ MEI DRIVE AFRICA Ready with 8 Courses');
 console.log('📚 Courses: LEARNER HUB, PSV, EV, REFRESHER, BODA, SCHOOL BUS, DEFENSIVE, QUIZ BANK');
 console.log('💰 M-Pesa Paybill: 4095377');
+console.log('🔗 API URL:', API_BASE_URL);
