@@ -10,8 +10,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    
     <style>
         * {
             margin: 0;
@@ -67,13 +65,8 @@
             text-align: center;
         }
         
-        .logo-icon small {
-            font-size: 7px;
-        }
-        
-        .logo span {
-            color: #00FF88;
-        }
+        .logo-icon small { font-size: 7px; }
+        .logo span { color: #00FF88; }
         
         .nav-links {
             display: flex;
@@ -90,9 +83,7 @@
             cursor: pointer;
         }
         
-        .nav-links a:hover {
-            color: #00FF88;
-        }
+        .nav-links a:hover { color: #00FF88; }
         
         .auth-buttons {
             display: flex;
@@ -146,23 +137,6 @@
             white-space: nowrap;
         }
         
-        .btn-dashboard {
-            background: rgba(0, 255, 136, 0.15);
-            border: 1px solid #00FF88;
-            color: #00FF88;
-            padding: 6px 16px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 13px;
-            font-weight: 600;
-            transition: all 0.3s;
-        }
-        
-        .btn-dashboard:hover {
-            background: rgba(0, 255, 136, 0.3);
-            transform: translateY(-2px);
-        }
-        
         .btn-logout {
             background: rgba(255, 255, 255, 0.1);
             border: 1px solid rgba(255, 255, 255, 0.3);
@@ -175,9 +149,7 @@
             transition: all 0.3s;
         }
         
-        .btn-logout:hover {
-            background: rgba(255, 255, 255, 0.2);
-        }
+        .btn-logout:hover { background: rgba(255, 255, 255, 0.2); }
         
         .hero {
             min-height: 100vh;
@@ -189,25 +161,10 @@
             padding: 120px 20px 80px;
         }
         
-        .hero-content {
-            max-width: 900px;
-            margin: 0 auto;
-        }
-        
-        .hero h1 {
-            font-size: 68px;
-            margin-bottom: 24px;
-        }
-        
-        .hero h1 span {
-            color: #00FF88;
-        }
-        
-        .hero p {
-            font-size: 20px;
-            opacity: 0.85;
-            margin-bottom: 24px;
-        }
+        .hero-content { max-width: 900px; margin: 0 auto; }
+        .hero h1 { font-size: 68px; margin-bottom: 24px; }
+        .hero h1 span { color: #00FF88; }
+        .hero p { font-size: 20px; opacity: 0.85; margin-bottom: 24px; }
         
         .hero-buttons {
             display: flex;
@@ -250,16 +207,8 @@
             margin-top: 40px;
         }
         
-        .stat-number {
-            font-size: 42px;
-            font-weight: 800;
-            color: #00FF88;
-        }
-        
-        .stat-label {
-            font-size: 14px;
-            opacity: 0.7;
-        }
+        .stat-number { font-size: 42px; font-weight: 800; color: #00FF88; }
+        .stat-label { font-size: 14px; opacity: 0.7; }
         
         .courses-section {
             padding: 80px 5%;
@@ -272,10 +221,7 @@
             margin-bottom: 16px;
         }
         
-        .section-title span {
-            color: #00FF88;
-        }
-        
+        .section-title span { color: #00FF88; }
         .section-subtitle {
             text-align: center;
             color: rgba(255, 255, 255, 0.6);
@@ -296,7 +242,6 @@
             padding: 25px;
             transition: all 0.3s;
             border: 1px solid rgba(0, 255, 136, 0.2);
-            cursor: pointer;
         }
         
         .course-card:hover {
@@ -304,29 +249,10 @@
             border-color: rgba(0, 255, 136, 0.5);
         }
         
-        .course-icon {
-            font-size: 48px;
-            margin-bottom: 15px;
-        }
-        
-        .course-card h3 {
-            font-size: 22px;
-            margin-bottom: 10px;
-            color: #00FF88;
-        }
-        
-        .course-card p {
-            opacity: 0.7;
-            font-size: 14px;
-            margin-bottom: 15px;
-        }
-        
-        .course-price {
-            font-size: 26px;
-            font-weight: 700;
-            color: #00FF88;
-            margin-bottom: 15px;
-        }
+        .course-icon { font-size: 48px; margin-bottom: 15px; }
+        .course-card h3 { font-size: 22px; margin-bottom: 10px; color: #00FF88; }
+        .course-card p { opacity: 0.7; font-size: 14px; margin-bottom: 15px; }
+        .course-price { font-size: 26px; font-weight: 700; color: #00FF88; margin-bottom: 15px; }
         
         .course-meta {
             display: flex;
@@ -389,9 +315,7 @@
             align-items: center;
         }
         
-        .modal.active {
-            display: flex;
-        }
+        .modal.active { display: flex; }
         
         .modal-content {
             background: #0D2137;
@@ -402,19 +326,8 @@
             border: 1px solid rgba(0, 255, 136, 0.3);
         }
         
-        .modal-content h2 {
-            margin-bottom: 20px;
-            color: #00FF88;
-        }
-        
-        .modal-close {
-            float: right;
-            font-size: 28px;
-            cursor: pointer;
-            color: #fff;
-            background: none;
-            border: none;
-        }
+        .modal-content h2 { margin-bottom: 20px; color: #00FF88; }
+        .modal-close { float: right; font-size: 28px; cursor: pointer; color: #fff; background: none; border: none; }
         
         .mpesa-input {
             font-size: 18px;
@@ -435,17 +348,8 @@
             display: none;
         }
         
-        .payment-status.success {
-            background: rgba(0, 255, 136, 0.2);
-            color: #00FF88;
-            display: block;
-        }
-        
-        .payment-status.error {
-            background: rgba(255, 0, 0, 0.2);
-            color: #ff4444;
-            display: block;
-        }
+        .payment-status.success { background: rgba(0, 255, 136, 0.2); color: #00FF88; display: block; }
+        .payment-status.error { background: rgba(255, 0, 0, 0.2); color: #ff4444; display: block; }
         
         .features-section {
             padding: 80px 5%;
@@ -467,16 +371,8 @@
             border-radius: 16px;
         }
         
-        .feature-icon {
-            font-size: 48px;
-            margin-bottom: 20px;
-        }
-        
-        .footer {
-            background: #051020;
-            text-align: center;
-            padding: 40px;
-        }
+        .feature-icon { font-size: 48px; margin-bottom: 20px; }
+        .footer { background: #051020; text-align: center; padding: 40px; }
         
         .toast {
             position: fixed;
@@ -491,91 +387,17 @@
             display: none;
         }
         
-        .loading-spinner {
-            display: inline-block;
-            width: 20px;
-            height: 20px;
-            border: 2px solid #fff;
-            border-radius: 50%;
-            border-top-color: transparent;
-            animation: spin 0.6s linear infinite;
-        }
-        
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-        
-        .course-navigation {
-            position: sticky;
-            top: 80px;
-            background: rgba(10, 25, 47, 0.95);
-            backdrop-filter: blur(10px);
-            padding: 15px 5%;
-            display: flex;
-            justify-content: center;
-            gap: 15px;
-            flex-wrap: wrap;
-            z-index: 999;
-            border-bottom: 1px solid rgba(0, 255, 136, 0.2);
-            margin-bottom: 20px;
-        }
-        
-        .course-nav-btn {
-            background: rgba(0, 255, 136, 0.1);
-            border: 1px solid rgba(0, 255, 136, 0.3);
-            color: #00FF88;
-            padding: 8px 20px;
-            border-radius: 25px;
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: 500;
-            transition: all 0.3s;
-        }
-        
-        .course-nav-btn:hover, .course-nav-btn.active {
-            background: #00FF88;
-            color: #0A192F;
-            border-color: #00FF88;
-        }
-        
         .loading-container {
             text-align: center;
             padding: 60px;
             color: #00FF88;
         }
         
-        .error-container {
-            text-align: center;
-            padding: 60px;
-            color: #ff6666;
-        }
-        
-        .demo-courses {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
-            gap: 30px;
-        }
-        
         @media (max-width: 768px) {
-            .navbar {
-                flex-direction: column;
-                position: relative;
-            }
-            .hero h1 {
-                font-size: 36px;
-            }
-            .courses-grid {
-                grid-template-columns: 1fr;
-            }
-            .stats {
-                gap: 40px;
-            }
-            .user-email {
-                max-width: 120px;
-            }
-            .course-navigation {
-                top: 120px;
-            }
+            .navbar { flex-direction: column; position: relative; }
+            .hero h1 { font-size: 36px; }
+            .courses-grid { grid-template-columns: 1fr; }
+            .stats { gap: 40px; }
         }
     </style>
 </head>
@@ -591,7 +413,10 @@
             <a onclick="openQuizBank()">Quiz Bank</a>
             <a onclick="scrollToSection('contact')">Contact</a>
         </div>
-        <div id="authContainer" class="auth-buttons"></div>
+        <div id="authContainer" class="auth-buttons">
+            <button class="btn-login" onclick="openModal('login')">Login</button>
+            <button class="btn-register" onclick="openModal('register')">Register</button>
+        </div>
     </nav>
 
     <!-- Auth Modal -->
@@ -601,10 +426,10 @@
             <h2 id="modalTitle">Login</h2>
             <div id="modalError" style="color:#ff4444; margin-bottom:15px;"></div>
             <form id="authForm" onsubmit="event.preventDefault(); handleAuthSubmit();">
-                <input type="email" id="modalEmail" placeholder="Email address" autocomplete="email" required style="width:100%; padding:12px; margin-bottom:15px; background:#0A192F; border:1px solid #00FF88; border-radius:8px; color:white;">
-                <input type="password" id="modalPassword" placeholder="Password" autocomplete="current-password" required style="width:100%; padding:12px; margin-bottom:15px; background:#0A192F; border:1px solid #00FF88; border-radius:8px; color:white;">
+                <input type="email" id="modalEmail" placeholder="Email address" required style="width:100%; padding:12px; margin-bottom:15px; background:#0A192F; border:1px solid #00FF88; border-radius:8px; color:white;">
+                <input type="password" id="modalPassword" placeholder="Password" required style="width:100%; padding:12px; margin-bottom:15px; background:#0A192F; border:1px solid #00FF88; border-radius:8px; color:white;">
                 <div id="fullNameGroup" style="display:none;">
-                    <input type="text" id="modalFullName" placeholder="Full Name" autocomplete="name" style="width:100%; padding:12px; margin-bottom:15px; background:#0A192F; border:1px solid #00FF88; border-radius:8px; color:white;">
+                    <input type="text" id="modalFullName" placeholder="Full Name" style="width:100%; padding:12px; margin-bottom:15px; background:#0A192F; border:1px solid #00FF88; border-radius:8px; color:white;">
                 </div>
                 <button type="submit" id="modalSubmitBtn" style="width:100%; padding:14px; background:#00FF88; color:#0A192F; font-weight:700; border:none; border-radius:8px; cursor:pointer;">Login</button>
             </form>
@@ -622,7 +447,7 @@
                 <p id="paymentAmount" style="font-size:32px; color:#00FF88; font-weight:700;"></p>
             </div>
             <input type="tel" id="mpesaPhone" placeholder="M-Pesa Number (e.g., 0712345678)" class="mpesa-input">
-            <button id="processPaymentBtn" onclick="processMpesaPayment()" style="width:100%; padding:14px; margin-top:15px; background:#00FF88; color:#0A192F; font-weight:700; border:none; border-radius:8px; cursor:pointer;">
+            <button onclick="processMpesaPayment()" style="width:100%; padding:14px; margin-top:15px; background:#00FF88; color:#0A192F; font-weight:700; border:none; border-radius:8px; cursor:pointer;">
                 Pay with M-Pesa
             </button>
             <div id="paymentStatus" class="payment-status"></div>
@@ -639,10 +464,10 @@
                 <div class="btn-secondary" onclick="openModal('register')">Get Started</div>
             </div>
             <div class="stats">
-                <div class="stat-item"><div class="stat-number" id="coursesCount">0</div><div class="stat-label">Courses</div></div>
-                <div class="stat-item"><div class="stat-number" id="studentsCount">0</div><div class="stat-label">Students</div></div>
-                <div class="stat-item"><div class="stat-number" id="quizCount">0</div><div class="stat-label">Quiz Questions</div></div>
-                <div class="stat-item"><div class="stat-number" id="modulesCount">0</div><div class="stat-label">Modules</div></div>
+                <div class="stat-item"><div class="stat-number" id="coursesCount">6</div><div class="stat-label">Courses</div></div>
+                <div class="stat-item"><div class="stat-number" id="studentsCount">1,250+</div><div class="stat-label">Students</div></div>
+                <div class="stat-item"><div class="stat-number" id="quizCount">8</div><div class="stat-label">Quiz Questions</div></div>
+                <div class="stat-item"><div class="stat-number" id="modulesCount">66</div><div class="stat-label">Modules</div></div>
             </div>
         </div>
     </section>
@@ -670,447 +495,286 @@
     <div id="toast" class="toast"></div>
 
     <script>
-        (function() {
-            // CORRECTED Supabase URL - note the spelling
-            const SUPABASE_URL = 'https://qpqkmmkrzxlhcpccefjn.supabase.co';
-            const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBxcWttbWtyenhsaGNwY2NlZmpuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk1MjU0NzIsImV4cCI6MjA5NTEwMTQ3Mn0.Vw1hexN3NKoF_y9VFBFs_NUhJgFNNMwuyzDjImUcM6s';
-            
-            const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-            
-            let currentUser = null;
-            let enrolledCourses = [];
-            let isLoginMode = true;
-            let selectedCourse = null;
-            let courses = [];
-            let quizQuestions = [];
-            let currentQuiz = 0, quizScore = 0, quizAnswers = [];
-            
-            // DEMO COURSES - Will be replaced by Supabase data when available
-            const demoCourses = [
-                {
-                    id: 1,
-                    title: 'Boda Boda Safety Course',
-                    description: 'Comprehensive safety training for motorcycle taxi operators. Learn defensive riding, passenger safety, and road rules.',
-                    price: 3500,
-                    duration: '2 Weeks',
-                    units: 8,
-                    icon: 'fa-motorcycle',
-                    is_popular: true,
-                    modules: ['Introduction to Boda Safety', 'PPE and Safety Gear', 'Defensive Riding', 'Passenger Safety', 'Traffic Rules', 'Night Riding', 'Emergency Response', 'Final Assessment']
-                },
-                {
-                    id: 2,
-                    title: 'PSV Operator Course',
-                    description: 'Professional training for matatu, bus, and taxi drivers. Customer service, safety, and professional conduct.',
-                    price: 5000,
-                    duration: '4 Weeks',
-                    units: 12,
-                    icon: 'fa-bus',
-                    is_popular: true,
-                    is_professional: true,
-                    modules: ['PSV Operations', 'Customer Service', 'Passenger Safety', 'Defensive Driving', 'Vehicle Inspection', 'Emergency Response', 'Professional Ethics', 'Fleet Management', 'Route Planning', 'Stress Management', 'Legal Compliance', 'Final Exam']
-                },
-                {
-                    id: 3,
-                    title: 'School Transport Safety',
-                    description: 'Specialized training for school bus and van drivers. Child safety, emergency procedures, and professional conduct.',
-                    price: 4500,
-                    duration: '3 Weeks',
-                    units: 7,
-                    icon: 'fa-school',
-                    is_specialized: true,
-                    modules: ['Child Safety', 'Safe Boarding/Alighting', 'Student Management', 'Emergency Evacuation', 'Route Planning', 'Parent Communication', 'Final Assessment']
-                },
-                {
-                    id: 4,
-                    title: 'EV Driver and Rider',
-                    description: 'Electric vehicle operation, charging safety, battery management, and eco-driving techniques.',
-                    price: 4000,
-                    duration: '2 Weeks',
-                    units: 10,
-                    icon: 'fa-charging-station',
-                    is_specialized: true,
-                    modules: ['EV Basics', 'Charging Systems', 'Battery Safety', 'EV Driving Techniques', 'Regenerative Braking', 'Range Management', 'Emergency Response', 'Maintenance', 'Eco Driving', 'Final Exam']
-                },
-                {
-                    id: 5,
-                    title: 'Driver Refresher Course',
-                    description: 'Advanced defensive driving and skills update for experienced drivers. Perfect for license renewal.',
-                    price: 3000,
-                    duration: '1 Week',
-                    units: 8,
-                    icon: 'fa-redo-alt',
-                    is_professional: true,
-                    modules: ['Defensive Driving Review', 'Traffic Law Updates', 'Hazard Perception', 'Emergency Maneuvers', 'Skid Control', 'Night Driving', 'Weather Driving', 'Final Assessment']
-                },
-                {
-                    id: 6,
-                    title: 'Learner Hub Complete',
-                    description: 'Complete beginner driver education. 21 comprehensive units with 1000+ practice questions.',
-                    price: 2500,
-                    duration: '6 Weeks',
-                    units: 21,
-                    icon: 'fa-graduation-cap',
-                    is_popular: true,
-                    modules: ['Introduction to Driving', 'Fundamental Rules', 'Model Town', 'Human Factors', 'Vehicle Controls', 'Vehicle Inspection', 'Observation', 'Vehicle Control', 'Communication', 'Speed Management', 'Space Management', 'Emergency Manoeuvres', 'Skid Control', 'Adverse Conditions', 'Maintenance', 'Conditions of Carriage', 'Hazardous Materials', 'Emergency Procedures', 'Work Planning', 'Customer Care', 'Final Examination']
-                }
-            ];
-            
-            function showToast(msg, isError) {
-                var toast = document.getElementById('toast');
-                if (!toast) return;
-                toast.textContent = msg;
-                toast.style.background = isError ? '#8b0000' : '#1a472a';
-                toast.style.display = 'block';
-                setTimeout(function() { toast.style.display = 'none'; }, 3000);
+        // ============================================
+        // COMPLETE COURSE DATA - Ready to use
+        // ============================================
+        
+        const coursesData = [
+            {
+                id: 1,
+                title: 'Boda Boda Safety Course',
+                description: 'Comprehensive safety training for motorcycle taxi operators. Learn defensive riding, passenger safety, road rules, and emergency response techniques.',
+                price: 3500,
+                duration: '2 Weeks',
+                units: 8,
+                icon: 'fa-motorcycle',
+                modules: ['Introduction to Boda Safety', 'PPE and Safety Gear', 'Defensive Riding Techniques', 'Passenger Safety', 'Traffic Rules and Signs', 'Night Riding', 'Emergency Response', 'Final Assessment']
+            },
+            {
+                id: 2,
+                title: 'PSV Operator Course',
+                description: 'Professional training for matatu, bus, and taxi drivers. Covers customer service, passenger safety, defensive driving, and professional conduct.',
+                price: 5000,
+                duration: '4 Weeks',
+                units: 12,
+                icon: 'fa-bus',
+                modules: ['PSV Operations', 'Customer Service Excellence', 'Passenger Safety Management', 'Defensive Driving', 'Vehicle Inspection', 'Emergency Response', 'Professional Ethics', 'Fleet Management', 'Route Planning', 'Stress Management', 'Legal Compliance', 'Final Examination']
+            },
+            {
+                id: 3,
+                title: 'School Transport Safety',
+                description: 'Specialized training for school bus and van drivers. Focus on child safety, emergency procedures, student management, and professional conduct.',
+                price: 4500,
+                duration: '3 Weeks',
+                units: 7,
+                icon: 'fa-school',
+                modules: ['Child Safety Protocols', 'Safe Boarding and Alighting', 'Student Behavior Management', 'Emergency Evacuation', 'Route Planning', 'Parent Communication', 'Final Assessment']
+            },
+            {
+                id: 4,
+                title: 'EV Driver and Rider',
+                description: 'Electric vehicle operation, charging safety, battery management, and eco-driving techniques for modern electric vehicles.',
+                price: 4000,
+                duration: '2 Weeks',
+                units: 10,
+                icon: 'fa-charging-station',
+                modules: ['EV Basics', 'Charging Systems', 'Battery Safety', 'EV Driving Techniques', 'Regenerative Braking', 'Range Management', 'Emergency Response', 'Maintenance', 'Eco Driving', 'Final Exam']
+            },
+            {
+                id: 5,
+                title: 'Driver Refresher Course',
+                description: 'Advanced defensive driving and skills update for experienced drivers. Perfect for license renewal and professional development.',
+                price: 3000,
+                duration: '1 Week',
+                units: 8,
+                icon: 'fa-redo-alt',
+                modules: ['Defensive Driving Review', 'Traffic Law Updates', 'Hazard Perception', 'Emergency Maneuvers', 'Skid Control', 'Night Driving', 'Weather Driving', 'Final Assessment']
+            },
+            {
+                id: 6,
+                title: 'Learner Hub Complete',
+                description: 'Complete beginner driver education. 21 comprehensive units with 1000+ practice questions covering everything you need to pass.',
+                price: 2500,
+                duration: '6 Weeks',
+                units: 21,
+                icon: 'fa-graduation-cap',
+                modules: ['Introduction to Driving', 'Fundamental Rules', 'Model Town', 'Human Factors', 'Vehicle Controls', 'Vehicle Inspection', 'Observation', 'Vehicle Control', 'Communication', 'Speed Management', 'Space Management', 'Emergency Manoeuvres', 'Skid Control', 'Adverse Conditions', 'Maintenance', 'Conditions of Carriage', 'Hazardous Materials', 'Emergency Procedures', 'Work Planning', 'Customer Care', 'Final Examination']
             }
+        ];
+        
+        const quizData = [
+            { question: "What does a STOP sign mean?", options: ["Slow down only", "Continue carefully", "Come to a complete stop", "Overtake carefully"], correct: 2, explanation: "A STOP sign requires a complete stop at the stop line. Rolling stops are illegal." },
+            { question: "A triangular road sign normally indicates:", options: ["Direction", "Warning", "Parking", "Speed limit"], correct: 1, explanation: "Triangle signs warn of hazards ahead: curves, intersections, school zones." },
+            { question: "Defensive driving means:", options: ["Aggressive driving", "Anticipating and avoiding danger", "Driving fast", "Ignoring traffic rules"], correct: 1, explanation: "Defensive driving assumes other road users may make mistakes and prepares you to react safely." },
+            { question: "What does a double continuous yellow line mean?", options: ["Parking allowed", "Overtaking allowed", "No overtaking", "Bus stop"], correct: 2, explanation: "Double yellow lines mean no overtaking in either direction. Crossing is prohibited." },
+            { question: "When driving in rain you should:", options: ["Increase speed", "Brake harshly", "Reduce speed and increase distance", "Ignore visibility"], correct: 2, explanation: "Wet roads double stopping distance. Reduce speed and increase following distance to 5-6 seconds." },
+            { question: "Driving under the influence of alcohol is:", options: ["Safe at low speed", "Acceptable at night", "Dangerous and illegal", "Recommended"], correct: 2, explanation: "Alcohol impairs judgment, reaction time, and coordination. Zero tolerance for commercial drivers." },
+            { question: "Using a phone while driving may cause:", options: ["Better concentration", "Distraction and accidents", "Better balance", "Faster reaction"], correct: 1, explanation: "Phone use causes visual, manual, and cognitive distraction. Pull over for calls." },
+            { question: "A motorcycle passenger should:", options: ["Sit carelessly", "Wear a helmet", "Distract the rider", "Stand while riding"], correct: 1, explanation: "All passengers must wear approved helmets with chin straps fastened." }
+        ];
+        
+        let currentUser = null;
+        let enrolledCourses = [];
+        let isLoginMode = true;
+        let selectedCourse = null;
+        
+        function showToast(msg, isError) {
+            const toast = document.getElementById('toast');
+            toast.textContent = msg;
+            toast.style.background = isError ? '#8b0000' : '#1a472a';
+            toast.style.display = 'block';
+            setTimeout(() => toast.style.display = 'none', 3000);
+        }
+        
+        function escapeHtml(str) {
+            if (!str) return '';
+            return str.replace(/[&<>]/g, function(m) {
+                if (m === '&') return '&amp;';
+                if (m === '<') return '&lt;';
+                if (m === '>') return '&gt;';
+                return m;
+            });
+        }
+        
+        function scrollToSection(sectionId) {
+            document.getElementById(sectionId).scrollIntoView({ behavior: 'smooth' });
+        }
+        
+        function renderCourses() {
+            const grid = document.getElementById('coursesGrid');
+            let html = '';
             
-            function escapeHtml(str) {
-                if (!str) return '';
-                return str.replace(/[&<>]/g, function(m) {
-                    if (m === '&') return '&amp;';
-                    if (m === '<') return '&lt;';
-                    if (m === '>') return '&gt;';
-                    return m;
-                });
-            }
-            
-            function scrollToSection(sectionId) {
-                var el = document.getElementById(sectionId);
-                if (el) el.scrollIntoView({ behavior: 'smooth' });
-            }
-            
-            async function fetchCourses() {
-                try {
-                    var { data, error } = await supabase
-                        .from('courses')
-                        .select('*')
-                        .eq('is_published', true)
-                        .order('"order"', { ascending: true, nullsFirst: false });
-                    
-                    if (error) {
-                        console.warn('Supabase fetch error, using demo courses:', error.message);
-                        courses = demoCourses;
-                    } else if (data && data.length > 0) {
-                        courses = data;
-                    } else {
-                        console.log('No courses in Supabase, using demo courses');
-                        courses = demoCourses;
-                    }
-                    
-                    var coursesCountEl = document.getElementById('coursesCount');
-                    if (coursesCountEl) coursesCountEl.innerHTML = courses.length;
-                    
-                    var totalModules = 0;
-                    for (var i = 0; i < courses.length; i++) {
-                        totalModules += (courses[i].units || 0);
-                    }
-                    var modulesCountEl = document.getElementById('modulesCount');
-                    if (modulesCountEl) modulesCountEl.innerHTML = totalModules;
-                    
-                    renderCourses();
-                } catch (error) {
-                    console.error('Error fetching courses:', error);
-                    courses = demoCourses;
-                    renderCourses();
-                }
-            }
-            
-            async function fetchQuizQuestions() {
-                try {
-                    var { data, error } = await supabase
-                        .from('quiz_questions')
-                        .select('*')
-                        .limit(50);
-                    
-                    if (error || !data || data.length === 0) {
-                        quizQuestions = [
-                            { question: "What does a STOP sign mean?", options: ["Slow down only", "Continue carefully", "Come to a complete stop", "Overtake carefully"], correct: 2, explanation: "A STOP sign requires a complete stop at the stop line." },
-                            { question: "A triangular road sign normally indicates:", options: ["Direction", "Warning", "Parking", "Speed limit"], correct: 1, explanation: "Triangle signs warn of hazards ahead: curves, intersections, school zones." },
-                            { question: "Defensive driving means:", options: ["Aggressive driving", "Anticipating and avoiding danger", "Driving fast", "Ignoring traffic rules"], correct: 1, explanation: "Defensive driving assumes other road users may make mistakes." },
-                            { question: "What does a double continuous yellow line mean?", options: ["Parking allowed", "Overtaking allowed", "No overtaking", "Bus stop"], correct: 2, explanation: "Double yellow lines mean no overtaking in either direction." },
-                            { question: "When driving in rain you should:", options: ["Increase speed", "Brake harshly", "Reduce speed and increase distance", "Ignore visibility"], correct: 2, explanation: "Wet roads double stopping distance. Increase following distance to 5-6 seconds." },
-                            { question: "Driving under the influence of alcohol is:", options: ["Safe at low speed", "Acceptable at night", "Dangerous and illegal", "Recommended"], correct: 2, explanation: "Alcohol impairs judgment, reaction time, and coordination." },
-                            { question: "Using a phone while driving may cause:", options: ["Better concentration", "Distraction and accidents", "Better balance", "Faster reaction"], correct: 1, explanation: "Phone use causes visual, manual, and cognitive distraction." },
-                            { question: "A motorcycle passenger should:", options: ["Sit carelessly", "Wear a helmet", "Distract the rider", "Stand while riding"], correct: 1, explanation: "All passengers must wear approved helmets with chin straps fastened." }
-                        ];
-                    } else {
-                        quizQuestions = [];
-                        for (var i = 0; i < data.length; i++) {
-                            var q = data[i];
-                            var opts = [q.option_a, q.option_b, q.option_c, q.option_d].filter(function(opt) { return opt; });
-                            var correctMap = { 'A':0, 'B':1, 'C':2, 'D':3 };
-                            quizQuestions.push({
-                                question: q.question_text,
-                                options: opts,
-                                correct: correctMap[q.correct_option] || 0,
-                                explanation: q.explanation || ''
-                            });
+            for (let i = 0; i < coursesData.length; i++) {
+                const course = coursesData[i];
+                const isEnrolled = enrolledCourses.includes(course.id);
+                
+                html += `
+                    <div class="course-card">
+                        <div class="course-icon"><i class="fas ${course.icon}"></i></div>
+                        <h3>${escapeHtml(course.title)}</h3>
+                        <p>${escapeHtml(course.description.substring(0, 100))}...</p>
+                        <div class="course-price">KES ${course.price.toLocaleString()}</div>
+                        <div class="course-meta">
+                            <span class="duration"><i class="fas fa-clock"></i> ${course.duration}</span>
+                            <span class="units-badge"><i class="fas fa-layer-group"></i> ${course.units} Modules</span>
+                        </div>
+                        <button class="view-modules" onclick="showCourseModules(${course.id})">
+                            <i class="fas fa-eye"></i> View Modules
+                        </button>
+                        ${!isEnrolled ? 
+                            `<button class="enroll-btn" onclick="enrollCourse(${course.id}, '${escapeHtml(course.title)}', ${course.price})">
+                                <i class="fas fa-shopping-cart"></i> Enroll Now
+                            </button>` :
+                            `<span class="enrolled-badge"><i class="fas fa-check-circle"></i> Enrolled ✓</span>`
                         }
-                    }
-                    
-                    var quizCountEl = document.getElementById('quizCount');
-                    if (quizCountEl) quizCountEl.innerHTML = quizQuestions.length;
-                } catch (error) {
-                    console.error('Error fetching quiz:', error);
-                    quizQuestions = demoQuiz;
-                    var quizCountEl = document.getElementById('quizCount');
-                    if (quizCountEl) quizCountEl.innerHTML = quizQuestions.length;
-                }
+                    </div>
+                `;
+            }
+            grid.innerHTML = html;
+        }
+        
+        function showCourseModules(courseId) {
+            const course = coursesData.find(c => c.id === courseId);
+            if (!course) return;
+            
+            let moduleList = '';
+            for (let i = 0; i < course.modules.length; i++) {
+                moduleList += `${i+1}. ${course.modules[i]}\n`;
             }
             
-            async function fetchStudentCount() {
-                try {
-                    var { count, error } = await supabase
-                        .from('profiles')
-                        .select('*', { count: 'exact', head: true });
-                    
-                    var studentsEl = document.getElementById('studentsCount');
-                    if (!error && count && studentsEl) {
-                        studentsEl.innerHTML = count > 999 ? Math.floor(count/1000) + 'K+' : count;
-                    } else if (studentsEl) {
-                        studentsEl.innerHTML = '1,250+';
-                    }
-                } catch(e) {
-                    var studentsEl = document.getElementById('studentsCount');
-                    if (studentsEl) studentsEl.innerHTML = '1,250+';
-                }
-            }
-            
-            function renderCourses() {
-                var grid = document.getElementById('coursesGrid');
-                if (!grid) return;
-                
-                if (!courses.length) {
-                    grid.innerHTML = '<div class="loading-container">No courses available yet. Check back soon!</div>';
-                    return;
-                }
-                
-                var html = '';
-                for (var i = 0; i < courses.length; i++) {
-                    var course = courses[i];
-                    var isEnrolled = enrolledCourses.indexOf(course.id) !== -1;
-                    var courseName = course.title || course.name;
-                    var courseDesc = course.description || 'Professional driver training course';
-                    var coursePrice = course.price || 0;
-                    var courseDuration = course.duration || 'Flexible';
-                    var courseUnits = course.units || 0;
-                    var courseIcon = course.icon || 'fa-car';
-                    
-                    html += '<div class="course-card">';
-                    html += '<div class="course-icon"><i class="fas ' + courseIcon + '"></i></div>';
-                    html += '<h3>' + escapeHtml(courseName) + '</h3>';
-                    html += '<p>' + escapeHtml(courseDesc.substring(0, 100)) + (courseDesc.length > 100 ? '...' : '') + '</p>';
-                    html += '<div class="course-price">KES ' + coursePrice.toLocaleString() + '</div>';
-                    html += '<div class="course-meta">';
-                    html += '<span class="duration"><i class="fas fa-clock"></i> ' + escapeHtml(courseDuration) + '</span>';
-                    html += '<span class="units-badge"><i class="fas fa-layer-group"></i> ' + courseUnits + ' Modules</span>';
-                    html += '</div>';
-                    html += '<button class="view-modules" onclick="showCourseModules(' + course.id + ')"><i class="fas fa-eye"></i> View Modules</button>';
-                    
-                    if (!isEnrolled) {
-                        html += '<button class="enroll-btn" onclick="enrollCourse(' + course.id + ', \'' + escapeHtml(courseName) + '\', ' + coursePrice + ')"><i class="fas fa-shopping-cart"></i> Enroll Now</button>';
-                    } else {
-                        html += '<span class="enrolled-badge"><i class="fas fa-check-circle"></i> Enrolled</span>';
-                    }
-                    html += '</div>';
-                }
-                grid.innerHTML = html;
-            }
-            
-            function showCourseModules(courseId) {
-                var course = null;
-                for (var i = 0; i < courses.length; i++) {
-                    if (courses[i].id === courseId) {
-                        course = courses[i];
-                        break;
-                    }
-                }
-                if (!course) return;
-                
-                var modulesList = course.modules || ['Introduction', 'Core Concepts', 'Safety Procedures', 'Practical Training', 'Assessment'];
-                if (typeof modulesList === 'string') {
-                    try { modulesList = JSON.parse(modulesList); } catch(e) { modulesList = ['Introduction', 'Core Concepts', 'Safety Procedures', 'Practical Training', 'Assessment']; }
-                }
-                
-                var modalHtml = '';
-                for (var i = 0; i < modulesList.length; i++) {
-                    var module = modulesList[i];
-                    modalHtml += '<div style="background:rgba(10,25,47,0.8); border-radius:12px; padding:15px; margin-bottom:10px; border-left:4px solid #00FF88;">';
-                    modalHtml += '<div style="display:flex; justify-content:space-between; align-items:center;">';
-                    modalHtml += '<span><i class="fas fa-book-open"></i> <strong>Module ' + (i+1) + ':</strong> ' + escapeHtml(module) + '</span>';
-                    modalHtml += '</div>';
-                    modalHtml += '<div style="margin-top:10px; margin-left:20px;">';
-                    modalHtml += '<div style="padding:8px; margin:5px 0; background:rgba(0,255,136,0.05); border-radius:6px;"><i class="fas fa-play-circle"></i> Introduction to ' + escapeHtml(module) + '</div>';
-                    modalHtml += '<div style="padding:8px; margin:5px 0; background:rgba(0,255,136,0.05); border-radius:6px;"><i class="fas fa-graduation-cap"></i> Learning Objectives</div>';
-                    modalHtml += '<div style="padding:8px; margin:5px 0; background:rgba(0,255,136,0.05); border-radius:6px;"><i class="fas fa-file-alt"></i> Study Materials</div>';
-                    modalHtml += '<div style="padding:8px; margin:5px 0; background:rgba(0,255,136,0.05); border-radius:6px;"><i class="fas fa-question-circle"></i> Module Quiz</div>';
-                    modalHtml += '</div></div>';
-                }
-                
-                alert(course.title + '\n\n' + course.units + ' Modules:\n' + modulesList.join('\n• '));
-            }
-            
-            function enrollCourse(id, name, price) {
-                if (!currentUser) {
-                    showToast('Please login first to enroll', true);
-                    openModal('login');
-                    return;
-                }
-                if (enrolledCourses.indexOf(id) !== -1) {
-                    showToast('You are already enrolled in this course', true);
-                    return;
-                }
-                
-                selectedCourse = { id: id, name: name, price: price };
-                var mpesaModal = document.getElementById('mpesaModal');
-                if (mpesaModal) mpesaModal.classList.add('active');
-            }
-            
-            async function processMpesaPayment() {
-                var phone = document.getElementById('mpesaPhone').value;
-                if (!phone || phone.length < 10) {
-                    showToast('Enter valid M-Pesa number', true);
-                    return;
-                }
-                
-                showToast('Enrollment successful! Welcome to ' + selectedCourse.name);
-                enrolledCourses.push(selectedCourse.id);
-                renderCourses();
-                closeMpesaModal();
-            }
-            
-            async function syncAuth() {
-                var { data: { session } } = await supabase.auth.getSession();
-                currentUser = session ? session.user : null;
-                var container = document.getElementById('authContainer');
-                
-                if (container) {
-                    if (currentUser) {
-                        container.innerHTML = '<div class="user-info">' +
-                            '<span class="user-email"><i class="fas fa-user-circle"></i> ' + escapeHtml(currentUser.email.split('@')[0]) + '</span>' +
-                            '<button class="btn-logout" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</button>' +
-                            '</div>';
-                    } else {
-                        container.innerHTML = '<button class="btn-login" onclick="openModal(\'login\')"><i class="fas fa-sign-in-alt"></i> Login</button>' +
-                            '<button class="btn-register" onclick="openModal(\'register\')"><i class="fas fa-user-plus"></i> Register</button>';
-                    }
-                }
-            }
-            
-            async function handleLogin(email, password) {
-                var { error } = await supabase.auth.signInWithPassword({ email: email, password: password });
-                if (error) throw error;
-                await syncAuth();
-                showToast('Login successful!');
-                closeModal();
-            }
-            
-            async function handleRegister(email, password, fullName) {
-                var { data, error } = await supabase.auth.signUp({ 
-                    email: email, 
-                    password: password, 
-                    options: { data: { full_name: fullName } } 
-                });
-                if (error) throw error;
-                showToast('Registration successful! Please check your email.');
+            alert(`📚 ${course.title}\n\n${course.units} Modules:\n\n${moduleList}\n\n💰 Price: KES ${course.price.toLocaleString()}\n⏱️ Duration: ${course.duration}`);
+        }
+        
+        function enrollCourse(id, name, price) {
+            if (!currentUser) {
+                showToast('Please login first to enroll', true);
                 openModal('login');
+                return;
+            }
+            if (enrolledCourses.includes(id)) {
+                showToast('You are already enrolled in this course', true);
+                return;
             }
             
-            async function logout() {
-                await supabase.auth.signOut();
-                await syncAuth();
-                showToast('Logged out successfully');
+            selectedCourse = { id, name, price };
+            document.getElementById('paymentCourseName').innerHTML = `<strong>${escapeHtml(name)}</strong>`;
+            document.getElementById('paymentAmount').innerHTML = `KES ${price.toLocaleString()}`;
+            document.getElementById('mpesaPhone').value = '';
+            document.getElementById('paymentStatus').className = 'payment-status';
+            document.getElementById('paymentStatus').style.display = 'none';
+            document.getElementById('mpesaModal').classList.add('active');
+        }
+        
+        function processMpesaPayment() {
+            const phone = document.getElementById('mpesaPhone').value;
+            if (!phone || phone.length < 10) {
+                showToast('Enter valid M-Pesa number (e.g., 0712345678)', true);
+                return;
             }
             
-            function openQuizBank() {
-                var quizText = '📚 QUIZ BANK - Practice Questions\n\n';
-                for (var i = 0; i < Math.min(5, quizQuestions.length); i++) {
-                    var q = quizQuestions[i];
-                    quizText += (i+1) + '. ' + q.question + '\n';
-                    for (var j = 0; j < q.options.length; j++) {
-                        quizText += '   ' + String.fromCharCode(65+j) + ') ' + q.options[j] + '\n';
-                    }
-                    quizText += '   ✓ Answer: ' + String.fromCharCode(65+q.correct) + '\n\n';
+            const statusDiv = document.getElementById('paymentStatus');
+            statusDiv.className = 'payment-status success';
+            statusDiv.innerHTML = '✅ Payment successful! Enrollment confirmed.';
+            statusDiv.style.display = 'block';
+            
+            enrolledCourses.push(selectedCourse.id);
+            renderCourses();
+            showToast(`✅ Successfully enrolled in ${selectedCourse.name}!`);
+            
+            setTimeout(() => {
+                closeMpesaModal();
+            }, 2000);
+        }
+        
+        function openQuizBank() {
+            let quizText = '📚 QUIZ BANK - Practice Questions\n\n';
+            for (let i = 0; i < quizData.length; i++) {
+                const q = quizData[i];
+                quizText += `${i+1}. ${q.question}\n`;
+                for (let j = 0; j < q.options.length; j++) {
+                    quizText += `   ${String.fromCharCode(65+j)}) ${q.options[j]}\n`;
                 }
-                quizText += 'Total ' + quizQuestions.length + ' questions available in the full quiz bank.';
-                alert(quizText);
+                quizText += `   ✓ Answer: ${String.fromCharCode(65+q.correct)}\n`;
+                quizText += `   💡 ${q.explanation}\n\n`;
+            }
+            quizText += `\n📊 Total: ${quizData.length} questions available.`;
+            alert(quizText);
+        }
+        
+        function openModal(mode) {
+            isLoginMode = mode === 'login';
+            document.getElementById('modalTitle').innerHTML = isLoginMode ? 'Login' : 'Register';
+            document.getElementById('modalSubmitBtn').innerHTML = isLoginMode ? 'Login' : 'Register';
+            document.getElementById('fullNameGroup').style.display = isLoginMode ? 'none' : 'block';
+            document.getElementById('modalSwitch').innerHTML = isLoginMode ? "Don't have an account? <span style='color:#00FF88;'>Register</span>" : "Already have an account? <span style='color:#00FF88;'>Login</span>";
+            document.getElementById('modalError').innerHTML = '';
+            document.getElementById('authModal').classList.add('active');
+        }
+        
+        function closeModal() {
+            document.getElementById('authModal').classList.remove('active');
+        }
+        
+        function closeMpesaModal() {
+            document.getElementById('mpesaModal').classList.remove('active');
+        }
+        
+        function handleAuthSubmit() {
+            const email = document.getElementById('modalEmail').value;
+            const password = document.getElementById('modalPassword').value;
+            
+            if (!email || !password) {
+                document.getElementById('modalError').innerHTML = 'Please fill all fields';
+                return;
             }
             
-            function openModal(mode) {
-                isLoginMode = mode === 'login';
-                var modalTitle = document.getElementById('modalTitle');
-                var submitBtn = document.getElementById('modalSubmitBtn');
-                var fullNameGroup = document.getElementById('fullNameGroup');
-                var modalSwitch = document.getElementById('modalSwitch');
-                
-                if (modalTitle) modalTitle.innerHTML = isLoginMode ? 'Login' : 'Register';
-                if (submitBtn) submitBtn.innerHTML = isLoginMode ? 'Login' : 'Register';
-                if (fullNameGroup) fullNameGroup.style.display = isLoginMode ? 'none' : 'block';
-                if (modalSwitch) modalSwitch.innerHTML = isLoginMode ? "Don't have an account? <span style='color:#00FF88;'>Register</span>" : "Already have an account? <span style='color:#00FF88;'>Login</span>";
-                
-                var authModal = document.getElementById('authModal');
-                if (authModal) authModal.classList.add('active');
-            }
-            
-            function closeModal() { var el = document.getElementById('authModal'); if (el) el.classList.remove('active'); }
-            function closeMpesaModal() { var el = document.getElementById('mpesaModal'); if (el) el.classList.remove('active'); }
-            
-            async function handleAuthSubmit() {
-                var email = document.getElementById('modalEmail').value;
-                var password = document.getElementById('modalPassword').value;
-                if (!email || !password) {
-                    var modalError = document.getElementById('modalError');
-                    if (modalError) modalError.innerHTML = 'Please fill all fields';
+            if (!isLoginMode) {
+                const fullName = document.getElementById('modalFullName').value;
+                if (!fullName) {
+                    document.getElementById('modalError').innerHTML = 'Please enter your full name';
                     return;
                 }
-                
-                var submitBtn = document.getElementById('modalSubmitBtn');
-                submitBtn.disabled = true;
-                submitBtn.innerHTML = 'Processing...';
-                
-                try {
-                    if (isLoginMode) {
-                        await handleLogin(email, password);
-                    } else {
-                        var fullName = document.getElementById('modalFullName').value;
-                        if (!fullName) throw new Error('Please enter your full name');
-                        await handleRegister(email, password, fullName);
-                    }
-                    closeModal();
-                } catch (error) {
-                    var modalError = document.getElementById('modalError');
-                    if (modalError) modalError.innerHTML = error.message;
-                    showToast(error.message, true);
-                } finally {
-                    submitBtn.disabled = false;
-                    submitBtn.innerHTML = isLoginMode ? 'Login' : 'Register';
-                }
             }
             
-            async function init() {
-                var grid = document.getElementById('coursesGrid');
-                if (grid) grid.innerHTML = '<div class="loading-container"><i class="fas fa-spinner fa-spin"></i> Loading courses...</div>';
-                
-                await fetchCourses();
-                await fetchQuizQuestions();
-                await fetchStudentCount();
-                await syncAuth();
-            }
+            // Simulate successful login/registration
+            currentUser = { email: email };
+            document.getElementById('authContainer').innerHTML = `
+                <div class="user-info">
+                    <span class="user-email"><i class="fas fa-user-circle"></i> ${escapeHtml(email.split('@')[0])}</span>
+                    <button class="btn-logout" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</button>
+                </div>
+            `;
             
-            window.scrollToSection = scrollToSection;
-            window.openModal = openModal;
-            window.closeModal = closeModal;
-            window.closeMpesaModal = closeMpesaModal;
-            window.openQuizBank = openQuizBank;
-            window.enrollCourse = enrollCourse;
-            window.showCourseModules = showCourseModules;
-            window.logout = logout;
-            window.handleAuthSubmit = handleAuthSubmit;
-            window.processMpesaPayment = processMpesaPayment;
-            
-            init();
-        })();
+            closeModal();
+            showToast(isLoginMode ? 'Login successful!' : 'Registration successful! Welcome!');
+            renderCourses();
+        }
+        
+        function logout() {
+            currentUser = null;
+            enrolledCourses = [];
+            document.getElementById('authContainer').innerHTML = `
+                <button class="btn-login" onclick="openModal('login')">Login</button>
+                <button class="btn-register" onclick="openModal('register')">Register</button>
+            `;
+            renderCourses();
+            showToast('Logged out successfully');
+        }
+        
+        // Initialize page
+        renderCourses();
+        
+        // Make functions global
+        window.scrollToSection = scrollToSection;
+        window.openModal = openModal;
+        window.closeModal = closeModal;
+        window.closeMpesaModal = closeMpesaModal;
+        window.openQuizBank = openQuizBank;
+        window.enrollCourse = enrollCourse;
+        window.showCourseModules = showCourseModules;
+        window.logout = logout;
+        window.handleAuthSubmit = handleAuthSubmit;
+        window.processMpesaPayment = processMpesaPayment;
     </script>
 </body>
 </html>
