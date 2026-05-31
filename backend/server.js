@@ -9,14 +9,14 @@ const app = express();
 const PORT = process.env.PORT || 10000;
 const BACKEND_URL = process.env.BACKEND_URL || 'https://meidriveafrica-backend.onrender.com';
 
-// M-Pesa Credentials - PRODUCTION (REAL MONEY)
+// M-Pesa Credentials - PRODUCTION (REAL MONEY) - CORRECTED
 const MPESA_CONSUMER_KEY = process.env.MPESA_CONSUMER_KEY || 'LI2gcJZEheN8qCfXHEXV4gdYXvOBHVnv';
 const MPESA_CONSUMER_SECRET = process.env.MPESA_CONSUMER_SECRET || 'aGGo8AuPJVpsZLcs';
 const MPESA_PASSKEY = process.env.MPESA_PASSKEY || '7eb17a031bdfd5b4251863a1ddb72c5b9cd14f3385aa6a258c1442a0116e8277';
 const MPESA_SHORTCODE = process.env.MPESA_SHORTCODE || '4095377';
 const MPESA_CALLBACK_URL = `${BACKEND_URL}/api/payments/mpesa/callback`;
 
-// CORS configuration - Allow all origins for production
+// CORS configuration
 app.use(cors({
     origin: '*',
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
@@ -42,18 +42,30 @@ function getTimestamp() {
 
 async function getMpesaAccessToken() {
     const auth = Buffer.from(`${MPESA_CONSUMER_KEY}:${MPESA_CONSUMER_SECRET}`).toString('base64');
+    console.log('🔑 Attempting to get M-Pesa token...');
+    console.log('Consumer Key (first 10 chars):', MPESA_CONSUMER_KEY.substring(0, 10) + '...');
+    
     try {
         const response = await axios.get(
             'https://api.safaricom.co.ke/oauth/v1/generate?grant_type=client_credentials',
-            { headers: { Authorization: `Basic ${auth}` }, timeout: 30000 }
+            { 
+                headers: { Authorization: `Basic ${auth}` }, 
+                timeout: 30000 
+            }
         );
+        
         if (!response.data.access_token) {
-            throw new Error('No access token received');
+            throw new Error('No access token received from Safaricom');
         }
+        
+        console.log('✅ M-Pesa access token obtained successfully');
         return response.data.access_token;
     } catch (error) {
-        console.error('❌ Error getting M-Pesa token:', error.response?.data || error.message);
-        throw new Error(`Failed to get access token: ${error.response?.data?.errorMessage || error.message}`);
+        console.error('❌ Error getting M-Pesa token:');
+        console.error('Status:', error.response?.status);
+        console.error('Data:', JSON.stringify(error.response?.data, null, 2));
+        console.error('Message:', error.message);
+        throw new Error(`Failed to get M-Pesa token: ${error.response?.data?.errorMessage || error.message}`);
     }
 }
 
@@ -67,7 +79,6 @@ function formatPhoneNumber(phoneNumber) {
     } else if (cleaned.length === 9) {
         cleaned = '254' + cleaned;
     } else if (cleaned.length === 10 && cleaned.startsWith('254')) {
-        // Already correct format
         cleaned = cleaned;
     } else {
         cleaned = '254' + cleaned;
@@ -90,7 +101,9 @@ app.get('/api/health', (req, res) => {
         status: 'ok', 
         timestamp: new Date().toISOString(),
         message: 'MEI DRIVE AFRICA API is running',
-        environment: process.env.NODE_ENV || 'production'
+        environment: process.env.NODE_ENV || 'production',
+        mpesa_configured: true,
+        paybill: MPESA_SHORTCODE
     });
 });
 
@@ -115,7 +128,7 @@ app.get('/api/payments/mpesa/test', async (req, res) => {
 });
 
 // ============================================
-// STK PUSH INITIATE - REAL MONEY (NO DEMO)
+// STK PUSH INITIATE - REAL MONEY
 // ============================================
 app.post('/api/payments/mpesa/initiate', async (req, res) => {
     try {
@@ -174,6 +187,7 @@ app.post('/api/payments/mpesa/initiate', async (req, res) => {
         const timestamp = getTimestamp();
         const password = Buffer.from(`${MPESA_SHORTCODE}${MPESA_PASSKEY}${timestamp}`).toString('base64');
         console.log('Timestamp:', timestamp);
+        console.log('Password generated');
 
         // Prepare STK Push request
         const stkRequest = {
@@ -334,12 +348,11 @@ app.post('/api/payments/mpesa/callback', (req, res) => {
         }
     }
 
-    // Always respond with success to Safaricom
     res.json({ ResultCode: 0, ResultDesc: 'Success' });
 });
 
 // ============================================
-// ADDITIONAL M-PESA ENDPOINTS (Required by Safaricom)
+// ADDITIONAL M-PESA ENDPOINTS
 // ============================================
 app.post('/api/payments/mpesa/timeout', (req, res) => {
     console.log('⏰ M-Pesa Timeout received:', JSON.stringify(req.body, null, 2));
@@ -362,6 +375,20 @@ app.post('/api/payments/mpesa/validation', (req, res) => {
 });
 
 // ============================================
+// DEBUG ENDPOINT - Check credentials format
+// ============================================
+app.get('/api/debug/credentials', (req, res) => {
+    res.json({
+        consumer_key_length: MPESA_CONSUMER_KEY.length,
+        consumer_secret_length: MPESA_CONSUMER_SECRET.length,
+        passkey_length: MPESA_PASSKEY.length,
+        shortcode: MPESA_SHORTCODE,
+        callback_url: MPESA_CALLBACK_URL,
+        warning: 'Credentials are configured but may need verification with Safaricom'
+    });
+});
+
+// ============================================
 // ROOT ENDPOINTS
 // ============================================
 app.get('/', (req, res) => {
@@ -376,13 +403,10 @@ app.get('/', (req, res) => {
             'GET  /',
             'GET  /api/health',
             'GET  /api/payments/mpesa/test',
+            'GET  /api/debug/credentials',
             'POST /api/payments/mpesa/initiate',
             'POST /api/payments/mpesa/status',
-            'POST /api/payments/mpesa/callback',
-            'POST /api/payments/mpesa/timeout',
-            'POST /api/payments/mpesa/result',
-            'POST /api/payments/mpesa/confirmation',
-            'POST /api/payments/mpesa/validation'
+            'POST /api/payments/mpesa/callback'
         ]
     });
 });
@@ -413,13 +437,8 @@ app.listen(PORT, '0.0.0.0', () => {
 ║                                                                   ║
 ║     ⚠️  WARNING: REAL MONEY WILL BE DEDUCTED!                     ║
 ║                                                                   ║
-║     Endpoints:                                                    ║
-║     • GET  /                                                      ║
-║     • GET  /api/health                                            ║
-║     • GET  /api/payments/mpesa/test                               ║
-║     • POST /api/payments/mpesa/initiate                           ║
-║     • POST /api/payments/mpesa/status                             ║
-║     • POST /api/payments/mpesa/callback                           ║
+║     Test M-Pesa Connection:                                       ║
+║     GET ${BACKEND_URL}/api/payments/mpesa/test                     ║
 ║                                                                   ║
 ╚═══════════════════════════════════════════════════════════════════╝
     `);
