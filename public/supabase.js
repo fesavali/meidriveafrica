@@ -47,7 +47,7 @@ async function signUp(email, password, fullName) {
         });
         if (error) throw error;
         
-        // Create profile entry with error logging
+        // Create profile entry
         const { error: profileError } = await supabase.from('user_profiles').insert({
             id: data.user.id,
             full_name: fullName || email.split('@')[0],
@@ -57,7 +57,6 @@ async function signUp(email, password, fullName) {
         
         if (profileError) {
             console.error('Profile creation failed:', profileError);
-            // Don't fail the signup - user can still log in
         }
         
         return { success: true, user: data.user };
@@ -91,7 +90,7 @@ async function getCurrentUser() {
         const { data: { session } } = await supabase.auth.getSession();
         if (!session?.user) return null;
         
-        // Use maybeSingle() instead of single() to avoid errors if profile missing
+        // Use maybeSingle() to avoid errors if profile missing
         const { data: profile } = await supabase
             .from('user_profiles')
             .select('is_admin, full_name')
@@ -226,20 +225,32 @@ async function updateProgress(userId, courseId, progress) {
 // M-PESA PAYMENT - REAL PRODUCTION (NO DEMO)
 // ============================================
 async function initiateMpesaPayment(phoneNumber, amount, courseId, userId, email, courseName) {
-    // Format phone number correctly
+    // Format phone number correctly for M-Pesa (254XXXXXXXXX)
     let formattedPhone = phoneNumber.replace(/\D/g, '');
-    if (formattedPhone.startsWith('0')) formattedPhone = '254' + formattedPhone.slice(1);
-    if (!formattedPhone.startsWith('254')) formattedPhone = '254' + formattedPhone;
-    if (formattedPhone.length === 12) formattedPhone = '254' + formattedPhone.slice(-9);
+    if (formattedPhone.startsWith('0')) {
+        formattedPhone = '254' + formattedPhone.slice(1);
+    } else if (formattedPhone.startsWith('+254')) {
+        formattedPhone = formattedPhone.substring(1);
+    } else if (!formattedPhone.startsWith('254')) {
+        formattedPhone = '254' + formattedPhone;
+    }
+    
+    // Final validation
+    if (!formattedPhone.startsWith('254') || formattedPhone.length !== 12) {
+        return { 
+            success: false, 
+            error: 'Invalid phone number. Please use format: 0712345678 or 254712345678'
+        };
+    }
 
     console.log('========================================');
     console.log('💰 REAL M-PESA PAYMENT INITIATION');
     console.log('========================================');
     console.log('📞 Phone:', formattedPhone);
-    console.log('💰 Amount:', amount);
+    console.log('💰 Amount: KES', amount);
     console.log('📚 Course:', courseId, courseName);
     console.log('👤 User:', userId, email);
-    console.log('📡 API URL:', `${API_BASE_URL}/api/payments/mpesa/initiate`);
+    console.log('📡 Endpoint:', `${API_BASE_URL}/api/payments/mpesa/initiate`);
     console.log('========================================');
 
     try {
@@ -260,20 +271,47 @@ async function initiateMpesaPayment(phoneNumber, amount, courseId, userId, email
         const data = await response.json();
         console.log('📡 API Response:', data);
         
-        if (!response.ok || !data.success) {
+        if (!response.ok) {
+            console.error('❌ HTTP Error:', response.status, response.statusText);
+            throw new Error(data.error || `HTTP ${response.status}: Payment initiation failed`);
+        }
+        
+        if (!data.success) {
             throw new Error(data.error || 'Payment initiation failed');
         }
         
         console.log('✅ STK Push sent successfully!');
-        console.log('⚠️ REAL MONEY will be deducted from your M-Pesa account');
-        return { success: true, checkoutRequestID: data.checkoutRequestID };
+        console.log('⚠️ REAL MONEY will be deducted from M-Pesa account');
+        console.log('📋 Checkout Request ID:', data.checkoutRequestID);
+        
+        return { 
+            success: true, 
+            checkoutRequestID: data.checkoutRequestID,
+            message: 'STK Push sent. Check your phone for M-Pesa prompt.'
+        };
+        
     } catch (error) {
         console.error('❌ M-Pesa Error:', error.message);
-        return { success: false, error: error.message };
+        
+        return { 
+            success: false, 
+            error: error.message || 'Payment initiation failed. Please try again.',
+            code: 'MPESA_ERROR'
+        };
     }
 }
 
 async function checkPaymentStatus(checkoutRequestID) {
+    if (!checkoutRequestID) {
+        return { 
+            success: false, 
+            error: 'Checkout Request ID is required',
+            status: 'error'
+        };
+    }
+
+    console.log(`🔍 Checking payment status for: ${checkoutRequestID}`);
+
     try {
         const response = await fetch(`${API_BASE_URL}/api/payments/mpesa/status`, {
             method: 'POST', 
@@ -282,16 +320,25 @@ async function checkPaymentStatus(checkoutRequestID) {
         });
         
         const data = await response.json();
+        console.log('📡 Status Response:', data);
         
-        if (!response.ok) throw new Error(data.error);
+        if (!response.ok) {
+            throw new Error(data.error || 'Status check failed');
+        }
+        
         return data;
     } catch (error) {
-        console.error('Status check error:', error.message);
-        return { success: false, status: 'error', error: error.message };
+        console.error('❌ Status check error:', error.message);
+        return { 
+            success: false, 
+            status: 'error', 
+            error: error.message,
+            code: 'STATUS_CHECK_ERROR'
+        };
     }
 }
 
-// Test backend connection
+// Test backend connection (for debugging)
 async function testMpesaConnection() {
     try {
         const response = await fetch(`${API_BASE_URL}/api/health`);
