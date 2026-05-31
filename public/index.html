@@ -186,6 +186,7 @@
     let userEnrollments = {};
     let isAdmin = false;
     let pendingCourse = null;
+    let unsubscribeCourses = null;
     
     // ============================================
     // 8 PROFESSIONAL COURSES - COMPLETE DEFINITION
@@ -309,25 +310,29 @@
     function escapeHtml(str) { if (!str) return ''; return str.replace(/[&<>]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[m])); }
     function toggleMobileMenu() { document.getElementById('navLinks')?.classList.toggle('show'); }
     
+    // ============================================
+    // MAIN LOAD FUNCTION WITH REAL-TIME SUBSCRIPTION
+    // ============================================
     async function loadAllData() {
-        courses = [...predefinedCourses];
-        
-        try {
-            const dbCourses = await MEI.getAllCourses();
-            if (dbCourses && dbCourses.length > 0) {
-                courses = courses.map(c => {
-                    const dbMatch = dbCourses.find(dbc => dbc.id === c.id);
-                    if (dbMatch) {
-                        return { ...c, price: dbMatch.price || c.price, description: dbMatch.description || c.description };
-                    }
-                    return c;
-                });
+        // Subscribe to real-time course updates
+        if (unsubscribeCourses) unsubscribeCourses();
+        unsubscribeCourses = MEIDrive.subscribeToCourses(async (updatedCourses) => {
+            courses = updatedCourses;
+            // Re-render current page if on courses or home
+            if (currentPage === 'home' || currentPage === 'courses') {
+                if (currentPage === 'home') renderHome();
+                else if (currentPage === 'courses') renderCourses();
             }
-        } catch (e) {
-            console.log('Using predefined courses');
+            showToast('📚 Courses updated in real-time!', 'success');
+        });
+        
+        // Initial load
+        courses = await MEIDrive.getAllCourses();
+        if (courses.length === 0) {
+            courses = [...predefinedCourses];
         }
         
-        quizQuestions = await MEI.getAllQuizQuestions();
+        quizQuestions = await MEIDrive.getAllQuizQuestions();
         if (quizQuestions.length === 0) {
             quizQuestions = [
                 { id: 1, category: 'Road Signs', question: 'What does a STOP sign mean?', option_a: 'Slow down only', option_b: 'Continue carefully', option_c: 'Come to a complete stop', option_d: 'Overtake carefully', correct_option: 2, explanation: 'A STOP sign requires you to come to a complete stop, check for traffic, and proceed only when safe.' },
