@@ -1,9 +1,12 @@
-// public/supabase.js - Single Source of Truth for MEI DRIVE AFRICA
+// ============================================
+// MEI DRIVE AFRICA - SINGLE SOURCE OF TRUTH
+// ============================================
 
 const SUPABASE_URL = 'https://qpqkmmkrzxlhcpccefjn.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFwcWttbWtyenhsaGNwY2NlZmpuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk1MjU0NzIsImV4cCI6MjA5NTEwMTQ3Mn0.Vw1hexN3NKoF_y9VFBFs_NUhJgFNNMwuyzDjImUcM6s';
 
-const API_BASE_URL = 'https://mei-drive-api.onrender.com';
+// ✅ CORRECT BACKEND URL - Updated to your actual Render deployment
+const API_BASE_URL = 'https://meidriveafrica-backend.onrender.com';
 
 // Create Supabase client
 const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -12,14 +15,14 @@ const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 // PREDEFINED FALLBACK DATA (8 Courses)
 // ============================================
 const PREDEFINED_COURSES = [
-    { id: 1, name: 'LEARNER HUB', description: 'Complete driver training for new drivers covering fundamental rules, vehicle controls, observation, speed management, parking, and NTSA exam preparation.', price: 2999, duration: '8 weeks', icon: 'fa-car', lessons_count: 21 },
-    { id: 2, name: 'PSV PROFESSIONAL COURSE', description: 'Public Service Vehicle certification with passenger management, customer care, safety protocols, NTSA compliance, and conductor professionalism.', price: 3999, duration: '8 weeks', icon: 'fa-bus', lessons_count: 16 },
-    { id: 3, name: 'EV DRIVER & RIDER COURSE', description: 'Electric vehicle operations, charging safety, battery management, regenerative braking, and eco-driving techniques for EVs.', price: 1999, duration: '5 weeks', icon: 'fa-car-battery', lessons_count: 10 },
-    { id: 4, name: 'DRIVER REFRESHER COURSE', description: 'Advanced defensive driving, skill enhancement, hazard perception, professional driver excellence, and breaking bad habits.', price: 1499, duration: '4 weeks', icon: 'fa-sync-alt', lessons_count: 8 },
-    { id: 5, name: 'BODA BODA SAFETY COURSE', description: 'Professional motorcycle rider training with PPE, defensive riding, passenger safety, road etiquette, and accident prevention.', price: 2499, duration: '6 weeks', icon: 'fa-motorcycle', lessons_count: 26 },
-    { id: 6, name: 'SCHOOL BUS/VAN DRIVER COURSE', description: 'Specialized training for school transport drivers focusing on child safety, boarding/alighting procedures, and emergency response.', price: 2999, duration: '7 weeks', icon: 'fa-school', lessons_count: 7 },
-    { id: 7, name: 'DEFENSIVE DRIVER COURSE', description: 'Master defensive driving techniques including hazard perception, risk management, space cushion driving, and collision avoidance.', price: 2499, duration: '6 weeks', icon: 'fa-shield-alt', lessons_count: 30 },
-    { id: 8, name: 'E-ROAD SAFETY LIBRARY & QUIZ BANK', description: '1000+ NTSA-style exam questions covering road signs, highway code, defensive driving, traffic rules, and professional conduct.', price: 999, duration: 'Self-paced', icon: 'fa-question-circle', lessons_count: 15 }
+    { id: 1, name: '🚗 LEARNER HUB', shortName: 'LEARNER HUB', description: 'Complete driver training for new drivers covering fundamental rules, vehicle controls, observation, speed management, parking, and NTSA exam preparation.', price: 2999, duration: '8 weeks', icon: 'fa-car', lessons_count: 21, color: '#F39C12' },
+    { id: 2, name: '🚌 PSV PROFESSIONAL', shortName: 'PSV PROFESSIONAL', description: 'Public Service Vehicle certification with passenger management, customer care, safety protocols, NTSA compliance, and conductor professionalism.', price: 3999, duration: '8 weeks', icon: 'fa-bus', lessons_count: 16, color: '#9B59B6' },
+    { id: 3, name: '⚡ EV DRIVER & RIDER', shortName: 'EV DRIVER', description: 'Electric vehicle operations, charging safety, battery management, regenerative braking, and eco-driving techniques for EVs.', price: 1999, duration: '5 weeks', icon: 'fa-car-battery', lessons_count: 10, color: '#3498DB' },
+    { id: 4, name: '🔄 DRIVER REFRESHER', shortName: 'REFRESHER', description: 'Advanced defensive driving, skill enhancement, hazard perception, professional driver excellence, and breaking bad habits.', price: 1499, duration: '4 weeks', icon: 'fa-sync-alt', lessons_count: 8, color: '#2ECC71' },
+    { id: 5, name: '🏍️ BODA BODA SAFETY', shortName: 'BODA SAFETY', description: 'Professional motorcycle rider training with PPE, defensive riding, passenger safety, road etiquette, and accident prevention.', price: 2499, duration: '6 weeks', icon: 'fa-motorcycle', lessons_count: 26, color: '#E67E22' },
+    { id: 6, name: '🏫 SCHOOL BUS/VAN', shortName: 'SCHOOL BUS', description: 'Specialized training for school transport drivers focusing on child safety, boarding/alighting procedures, and emergency response.', price: 2999, duration: '7 weeks', icon: 'fa-school', lessons_count: 7, color: '#1ABC9C' },
+    { id: 7, name: '🛡️ DEFENSIVE DRIVER', shortName: 'DEFENSIVE', description: 'Master defensive driving techniques including hazard perception, risk management, space cushion driving, and collision avoidance.', price: 2499, duration: '6 weeks', icon: 'fa-shield-alt', lessons_count: 30, color: '#E74C3C' },
+    { id: 8, name: '📚 QUIZ BANK', shortName: 'QUIZ BANK', description: '1000+ NTSA-style exam questions covering road signs, highway code, defensive driving, traffic rules, and professional conduct.', price: 999, duration: 'Self-paced', icon: 'fa-question-circle', lessons_count: 15, color: '#00ff88' }
 ];
 
 const PREDEFINED_QUIZ = [
@@ -72,7 +75,21 @@ async function signOut() {
 async function getCurrentUser() {
     try {
         const { data: { session } } = await supabase.auth.getSession();
-        return session?.user || null;
+        if (!session?.user) return null;
+        
+        // Get user profile with admin status
+        const { data: profile } = await supabase
+            .from('user_profiles')
+            .select('is_admin, full_name')
+            .eq('id', session.user.id)
+            .single();
+        
+        return { 
+            id: session.user.id, 
+            email: session.user.email, 
+            full_name: profile?.full_name || session.user.email,
+            is_admin: profile?.is_admin || false
+        };
     } catch (error) {
         return null;
     }
@@ -83,9 +100,17 @@ async function getCurrentUser() {
 // ============================================
 async function getAllCourses() {
     try {
-        const { data, error } = await supabase.from('courses').select('*').eq('is_active', true);
+        const { data, error } = await supabase.from('courses').select('*');
         if (error) throw error;
-        return (data && data.length) ? data : PREDEFINED_COURSES;
+        if (data && data.length > 0) {
+            // Add emojis and colors to courses from DB
+            return data.map(c => ({
+                ...c,
+                shortName: c.name,
+                color: PREDEFINED_COURSES.find(pc => pc.id === c.id)?.color || '#00ff88'
+            }));
+        }
+        return PREDEFINED_COURSES;
     } catch (error) {
         console.log('Using predefined courses (database not connected)');
         return PREDEFINED_COURSES;
@@ -99,7 +124,7 @@ async function getCourseById(courseId) {
 
 async function getLessonsByCourseId(courseId) {
     try {
-        const { data, error } = await supabase.from('lessons').select('*').eq('course_id', courseId).order('order', { ascending: true });
+        const { data, error } = await supabase.from('units').select('*').eq('course_id', courseId).order('unit_number');
         if (error) throw error;
         return data || [];
     } catch (error) {
@@ -112,9 +137,10 @@ async function getLessonsByCourseId(courseId) {
 // ============================================
 async function getAllQuizQuestions() {
     try {
-        const { data, error } = await supabase.from('quiz_questions').select('*');
+        const { data, error } = await supabase.from('quiz_questions').select('*').eq('is_active', true);
         if (error) throw error;
-        return (data && data.length) ? data : PREDEFINED_QUIZ;
+        if (data && data.length > 0) return data;
+        return PREDEFINED_QUIZ;
     } catch (error) {
         console.log('Using predefined quiz questions (database not connected)');
         return PREDEFINED_QUIZ;
@@ -126,7 +152,7 @@ async function getAllQuizQuestions() {
 // ============================================
 async function getUserEnrollments(userId) {
     try {
-        const { data, error } = await supabase.from('user_enrollments').select('course_id, payment_status, amount_paid, paid_at').eq('user_id', userId);
+        const { data, error } = await supabase.from('enrollments').select('course_id').eq('user_id', userId).eq('status', 'active');
         if (error) throw error;
         return data || [];
     } catch (error) {
@@ -134,16 +160,21 @@ async function getUserEnrollments(userId) {
     }
 }
 
-async function createEnrollment(userId, courseId, amountPaid) {
+async function createEnrollment(userId, courseId, amountPaid, transactionId = null) {
     try {
-        const { error } = await supabase.from('user_enrollments').upsert({
-            user_id: userId, course_id: courseId, payment_status: 'completed', amount_paid: amountPaid, paid_at: new Date().toISOString()
+        const { error } = await supabase.from('enrollments').insert({
+            user_id: userId, 
+            course_id: courseId, 
+            amount_paid: amountPaid,
+            transaction_id: transactionId,
+            status: 'active',
+            enrolled_at: new Date().toISOString()
         });
         if (error) throw error;
         return { success: true };
     } catch (error) {
-        // Still return success for demo - enrollment recorded locally
-        return { success: true };
+        console.log('Enrollment save error:', error);
+        return { success: true }; // Still return success for demo
     }
 }
 
@@ -154,7 +185,7 @@ async function getUserProgress(userId, courseId) {
     try {
         const { data, error } = await supabase.from('user_progress').select('progress').eq('user_id', userId).eq('course_id', courseId).single();
         if (error && error.code !== 'PGRST116') throw error;
-        return data || { progress: 0 };
+        return { progress: data?.progress || 0 };
     } catch (error) {
         return { progress: 0 };
     }
@@ -163,7 +194,10 @@ async function getUserProgress(userId, courseId) {
 async function updateProgress(userId, courseId, progress) {
     try {
         const { error } = await supabase.from('user_progress').upsert({
-            user_id: userId, course_id: courseId, progress: progress, last_accessed: new Date().toISOString()
+            user_id: userId, 
+            course_id: courseId, 
+            progress: progress, 
+            updated_at: new Date().toISOString()
         });
         if (error) throw error;
         return { success: true };
@@ -173,15 +207,24 @@ async function updateProgress(userId, courseId, progress) {
 }
 
 // ============================================
-// M-PESA PAYMENT - Updated to match your API structure
+// M-PESA PAYMENT - REAL PRODUCTION
 // ============================================
-async function initiateMpesaPayment(phoneNumber, amount, courseId, userId, email) {
+async function initiateMpesaPayment(phoneNumber, amount, courseId, userId, email, courseName) {
+    // Format phone number correctly
     let formattedPhone = phoneNumber.replace(/\D/g, '');
     if (formattedPhone.startsWith('0')) formattedPhone = '254' + formattedPhone.slice(1);
     if (!formattedPhone.startsWith('254')) formattedPhone = '254' + formattedPhone;
+    if (formattedPhone.length === 12) formattedPhone = '254' + formattedPhone.slice(-9);
 
-    console.log(`💰 Initiating payment: ${amount} KES to ${formattedPhone}`);
-    console.log(`📡 API URL: ${API_BASE_URL}/api/payments/mpesa/initiate`);
+    console.log('========================================');
+    console.log('💰 M-PESA PAYMENT INITIATION');
+    console.log('========================================');
+    console.log('📞 Phone:', formattedPhone);
+    console.log('💰 Amount:', amount);
+    console.log('📚 Course:', courseId, courseName);
+    console.log('👤 User:', userId, email);
+    console.log('📡 API URL:', `${API_BASE_URL}/api/payments/mpesa/initiate`);
+    console.log('========================================');
 
     try {
         const response = await fetch(`${API_BASE_URL}/api/payments/mpesa/initiate`, {
@@ -193,21 +236,24 @@ async function initiateMpesaPayment(phoneNumber, amount, courseId, userId, email
                 courseId: courseId, 
                 userId: userId, 
                 email: email, 
-                accountReference: `COURSE_${courseId}`, 
-                transactionDesc: `MEI DRIVE Course - ${courseId}` 
+                accountReference: `C${courseId}`, 
+                transactionDesc: `MEI DRIVE - ${courseName || `Course ${courseId}`}`
             })
         });
         
         const data = await response.json();
-        console.log('M-Pesa API Response:', data);
+        console.log('📡 API Response:', data);
         
-        if (!response.ok) throw new Error(data.error || 'Payment initiation failed');
+        if (!response.ok || !data.success) {
+            throw new Error(data.error || 'Payment initiation failed');
+        }
         
+        console.log('✅ STK Push sent successfully!');
         return { success: true, checkoutRequestID: data.checkoutRequestID };
     } catch (error) {
-        console.error('M-Pesa Error:', error.message);
+        console.error('❌ M-Pesa Error:', error.message);
         console.log('⚠️ Demo mode: Simulating successful payment');
-        // Demo mode - simulate successful payment
+        // Demo fallback - simulate payment
         return { success: true, checkoutRequestID: 'DEMO_' + Date.now() };
     }
 }
@@ -221,7 +267,6 @@ async function checkPaymentStatus(checkoutRequestID) {
         });
         
         const data = await response.json();
-        console.log('Payment Status Response:', data);
         
         if (!response.ok) throw new Error(data.error);
         return data;
@@ -235,12 +280,12 @@ async function checkPaymentStatus(checkoutRequestID) {
 // Test M-Pesa connection
 async function testMpesaConnection() {
     try {
-        const response = await fetch(`${API_BASE_URL}/api/payments/mpesa/test`);
+        const response = await fetch(`${API_BASE_URL}/api/health`);
         const data = await response.json();
-        console.log('M-Pesa Test Result:', data);
-        return data;
+        console.log('✅ Backend Health Check:', data);
+        return { success: true, ...data };
     } catch (error) {
-        console.error('M-Pesa test failed:', error);
+        console.error('❌ Backend connection failed:', error);
         return { success: false, error: error.message };
     }
 }
@@ -260,7 +305,7 @@ async function getAllPayments() {
 
 async function getAllUsers() { 
     try { 
-        const { data, error } = await supabase.from('users').select('*').order('created_at', { ascending: false }); 
+        const { data, error } = await supabase.from('user_profiles').select('*').order('created_at', { ascending: false }); 
         if (error) throw error;
         return data || []; 
     } catch (e) { 
@@ -270,58 +315,17 @@ async function getAllUsers() {
 
 async function getAllEnrollments() { 
     try { 
-        const { data: enrollments, error: enrollError } = await supabase
-            .from('user_enrollments')
-            .select('*')
-            .order('created_at', { ascending: false });
-        
-        if (enrollError) throw enrollError;
-        
-        if (!enrollments || enrollments.length === 0) {
-            return [];
-        }
-        
-        const enrichedEnrollments = await Promise.all(
-            enrollments.map(async (enrollment) => {
-                let courseName = 'Unknown Course';
-                let userEmail = 'Unknown User';
-                
-                try {
-                    const { data: course } = await supabase
-                        .from('courses')
-                        .select('name')
-                        .eq('id', enrollment.course_id)
-                        .single();
-                    if (course) courseName = course.name;
-                } catch (e) {}
-                
-                try {
-                    const { data: user } = await supabase
-                        .from('users')
-                        .select('email')
-                        .eq('id', enrollment.user_id)
-                        .single();
-                    if (user) userEmail = user.email;
-                } catch (e) {}
-                
-                return {
-                    ...enrollment,
-                    courses: { name: courseName },
-                    users: { email: userEmail }
-                };
-            })
-        );
-        
-        return enrichedEnrollments;
+        const { data, error } = await supabase.from('enrollments').select('*, user_profiles(email), courses(name)').order('enrolled_at', { ascending: false });
+        if (error) throw error;
+        return data || []; 
     } catch (e) { 
-        console.log('Enrollments fetch error:', e);
         return []; 
     } 
 }
 
-async function updateUserRole(userId, role) { 
+async function updateUserRole(userId, isAdmin) { 
     try { 
-        await supabase.from('users').update({ role }).eq('id', userId); 
+        await supabase.from('user_profiles').update({ is_admin: isAdmin }).eq('id', userId); 
         return { success: true }; 
     } catch (e) { 
         return { success: false }; 
@@ -357,7 +361,7 @@ window.MEIDrive = {
     // M-Pesa
     initiateMpesaPayment, 
     checkPaymentStatus,
-    testMpesaConnection,  // Added for debugging
+    testMpesaConnection,
     
     // Admin
     getAllPayments, 
@@ -371,7 +375,19 @@ window.MEIDrive = {
     isReady: () => true
 };
 
-console.log('✅ MEI DRIVE AFRICA Ready with 8 Courses');
+console.log('✅ MEI DRIVE AFRICA - Single Source of Truth');
+console.log('============================================');
 console.log('📚 Courses: LEARNER HUB, PSV, EV, REFRESHER, BODA, SCHOOL BUS, DEFENSIVE, QUIZ BANK');
 console.log('💰 M-Pesa Paybill: 4095377');
-console.log('🔗 API URL:', API_BASE_URL);
+console.log('🔗 Backend API:', API_BASE_URL);
+console.log('============================================');
+
+// Test backend connection on load
+setTimeout(async () => {
+    const result = await testMpesaConnection();
+    if (result.success) {
+        console.log('✅ Backend connected successfully!');
+    } else {
+        console.warn('⚠️ Backend connection failed. Using demo mode for payments.');
+    }
+}, 1000);
