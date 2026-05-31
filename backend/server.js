@@ -10,8 +10,8 @@ const PORT = process.env.PORT || 10000;
 const BACKEND_URL = process.env.BACKEND_URL || 'https://meidriveafrica-backend.onrender.com';
 
 // M-Pesa Credentials - PRODUCTION (REAL MONEY)
-const MPESA_CONSUMER_KEY = process.env.MPESA_CONSUMER_KEY || 'LI2gcJZEheN8qCfXHEXV4gdYxVOBHVNv';
-const MPESA_CONSUMER_SECRET = process.env.MPESA_CONSUMER_SECRET || 'aGG0s8AuPJVpsZLcs';
+const MPESA_CONSUMER_KEY = process.env.MPESA_CONSUMER_KEY || 'LI2gcJZEheN8qCfXHEXV4gdYXvOBHVnv';
+const MPESA_CONSUMER_SECRET = process.env.MPESA_CONSUMER_SECRET || 'aGGo8AuPJVpsZLcs';
 const MPESA_PASSKEY = process.env.MPESA_PASSKEY || '7eb17a031bdfd5b4251863a1ddb72c5b9cd14f3385aa6a258c1442a0116e8277';
 const MPESA_SHORTCODE = process.env.MPESA_SHORTCODE || '4095377';
 const MPESA_CALLBACK_URL = `${BACKEND_URL}/api/payments/mpesa/callback`;
