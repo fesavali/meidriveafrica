@@ -7,7 +7,7 @@
     <meta name="description" content="Professional driver training courses and exam preparation">
     <meta name="theme-color" content="#0a192f">
     
-    <!-- Favicon - Multiple formats for all devices -->
+    <!-- Favicon -->
     <link rel="icon" type="image/png" sizes="512x512" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAgAAAAIAAQMAAADOtka5AAAAA1BMVEUAAACnej3aAAAAAXRSTlMAQObYZgAAAAlwSFlzAAAOxAAADsQBlSsOGwAAAARnQU1BAACxjwv8YQUAAAB7SURBVHgB7dJBDQAACAMx6J/b6AxoCIaBbAUAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADg5gQ7/QABMpVFSAAAAABJRU5ErkJggg==">
     <link rel="apple-touch-icon" sizes="180x180" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAgAAAAIAAQMAAADOtka5AAAAA1BMVEUAAACnej3aAAAAAXRSTlMAQObYZgAAAAlwSFlzAAAOxAAADsQBlSsOGwAAAARnQU1BAACxjwv8YQUAAAB7SURBVHgB7dJBDQAACAMx6J/b6AxoCIaBbAUAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADg5gQ7/QABMpVFSAAAAABJRU5ErkJggg==">
     <link rel="shortcut icon" type="image/png" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAgAAAAIAAQMAAADOtka5AAAAA1BMVEUAAACnej3aAAAAAXRSTlMAQObYZgAAAAlwSFlzAAAOxAAADsQBlSsOGwAAAARnQU1BAACxjwv8YQUAAAB7SURBVHgB7dJBDQAACAMx6J/b6AxoCIaBbAUAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADg5gQ7/QABMpVFSAAAAABJRU5ErkJggg==">
@@ -256,19 +256,11 @@
     let isAdmin = false;
     let pendingCourse = null;
     
-    // ============================================
-    // 8 PROFESSIONAL COURSES DEFINITION
-    // ============================================
-    const predefinedCourses = [
-        { id: 1, name: 'LEARNER HUB', description: 'Complete driver training for beginners covering fundamental rules, vehicle controls, observation, speed management, parking, and NTSA exam preparation.', price: 2999, duration: '8 weeks', icon: 'fa-car', lessons_count: 21, category: 'learner', color: '#F39C12' },
-        { id: 2, name: 'PSV PROFESSIONAL COURSE', description: 'Public Service Vehicle certification with passenger management, customer care, safety protocols, NTSA compliance, and conductor professionalism.', price: 3999, duration: '8 weeks', icon: 'fa-bus', lessons_count: 16, category: 'psv', color: '#9B59B6' },
-        { id: 3, name: 'EV DRIVER & RIDER COURSE', description: 'Electric vehicle operations, charging safety, battery management, regenerative braking, and eco-driving techniques for EVs.', price: 1999, duration: '5 weeks', icon: 'fa-car-battery', lessons_count: 10, category: 'ev', color: '#3498DB' },
-        { id: 4, name: 'DRIVER REFRESHER COURSE', description: 'Advanced defensive driving, skill enhancement, hazard perception, professional driver excellence, and breaking bad habits.', price: 1499, duration: '4 weeks', icon: 'fa-sync-alt', lessons_count: 8, category: 'refresher', color: '#2ECC71' },
-        { id: 5, name: 'BODA BODA SAFETY COURSE', description: 'Professional motorcycle rider training with PPE, defensive riding, passenger safety, road etiquette, and accident prevention.', price: 2499, duration: '6 weeks', icon: 'fa-motorcycle', lessons_count: 26, category: 'boda', color: '#E67E22' },
-        { id: 6, name: 'SCHOOL BUS/VAN DRIVER COURSE', description: 'Specialized training for school transport drivers focusing on child safety, boarding/alighting procedures, and emergency response.', price: 2999, duration: '7 weeks', icon: 'fa-school', lessons_count: 7, category: 'school', color: '#1ABC9C' },
-        { id: 7, name: 'DEFENSIVE DRIVER COURSE', description: 'Master defensive driving techniques including hazard perception, risk management, space cushion driving, and collision avoidance.', price: 2499, duration: '6 weeks', icon: 'fa-shield-alt', lessons_count: 30, category: 'defensive', color: '#E74C3C' },
-        { id: 8, name: 'E-ROAD SAFETY LIBRARY & QUIZ BANK', description: '1000+ NTSA-style exam questions covering road signs, highway code, defensive driving, traffic rules, and professional conduct.', price: 999, duration: 'Self-paced', icon: 'fa-question-circle', lessons_count: 15, category: 'quiz', color: '#00ff88' }
-    ];
+    // Course color mapping
+    const courseColors = {
+        1: '#F39C12', 2: '#9B59B6', 3: '#3498DB', 4: '#2ECC71',
+        5: '#E67E22', 6: '#1ABC9C', 7: '#E74C3C', 8: '#00ff88'
+    };
     
     function showToast(msg, type = 'info') {
         const container = document.getElementById('toast-container');
@@ -283,34 +275,32 @@
     function toggleMobileMenu() { document.getElementById('navLinks')?.classList.toggle('show'); }
     
     async function loadAllData() {
-        courses = [...predefinedCourses];
-        
+        // Fetch courses from Supabase
         try {
             const dbCourses = await MEI.getAllCourses();
             if (dbCourses && dbCourses.length > 0) {
-                courses = courses.map(c => {
-                    const dbMatch = dbCourses.find(dbc => dbc.id === c.id);
-                    if (dbMatch) {
-                        return { ...c, price: dbMatch.price || c.price, description: dbMatch.description || c.description };
-                    }
-                    return c;
-                });
+                courses = dbCourses;
+            } else {
+                // Fallback courses if database empty
+                courses = [
+                    { id: 1, name: 'LEARNER HUB', description: 'Complete driver training for beginners.', price: 2999, duration: '8 weeks', icon: 'fa-car', lessons_count: 21 },
+                    { id: 2, name: 'PSV PROFESSIONAL', description: 'Public Service Vehicle certification.', price: 3999, duration: '8 weeks', icon: 'fa-bus', lessons_count: 16 },
+                    { id: 3, name: 'EV DRIVER & RIDER', description: 'Electric vehicle operations.', price: 1999, duration: '5 weeks', icon: 'fa-car-battery', lessons_count: 10 },
+                    { id: 4, name: 'DRIVER REFRESHER', description: 'Advanced defensive driving.', price: 1499, duration: '4 weeks', icon: 'fa-sync-alt', lessons_count: 8 },
+                    { id: 5, name: 'BODA BODA SAFETY', description: 'Motorcycle rider training.', price: 2499, duration: '6 weeks', icon: 'fa-motorcycle', lessons_count: 26 },
+                    { id: 6, name: 'SCHOOL BUS/VAN', description: 'School transport driver training.', price: 2999, duration: '7 weeks', icon: 'fa-school', lessons_count: 7 },
+                    { id: 7, name: 'DEFENSIVE DRIVER', description: 'Master defensive driving techniques.', price: 2499, duration: '6 weeks', icon: 'fa-shield-alt', lessons_count: 30 },
+                    { id: 8, name: 'QUIZ BANK', description: '1000+ NTSA exam questions.', price: 999, duration: 'Self-paced', icon: 'fa-question-circle', lessons_count: 15 }
+                ];
             }
         } catch (e) {
-            console.log('Using predefined courses');
+            console.log('Error loading courses:', e);
         }
         
+        // Fetch quiz questions from Supabase
         quizQuestions = await MEI.getAllQuizQuestions();
-        if (quizQuestions.length === 0) {
-            quizQuestions = [
-                { id: 1, category: 'Road Signs', question: 'What does a STOP sign mean?', option_a: 'Slow down only', option_b: 'Continue carefully', option_c: 'Come to a complete stop', option_d: 'Overtake carefully', correct_option: 2, explanation: 'A STOP sign requires you to come to a complete stop.' },
-                { id: 2, category: 'Road Signs', question: 'A triangular road sign normally indicates:', option_a: 'Direction', option_b: 'Warning', option_c: 'Parking', option_d: 'Speed limit', correct_option: 1, explanation: 'Triangular signs are warning signs.' },
-                { id: 3, category: 'Highway Code', question: 'Seat belts are important because they:', option_a: 'Improve music quality', option_b: 'Prevent accidents', option_c: 'Reduce injury during accidents', option_d: 'Increase speed', correct_option: 2, explanation: 'Seat belts reduce the risk of serious injury.' },
-                { id: 4, category: 'Defensive Driving', question: 'Defensive driving means:', option_a: 'Aggressive driving', option_b: 'Anticipating and avoiding danger', option_c: 'Driving fast', option_d: 'Ignoring traffic rules', correct_option: 1, explanation: 'Defensive driving anticipates potential hazards.' },
-                { id: 5, category: 'Traffic Rules', question: 'Driving under the influence of alcohol is:', option_a: 'Safe at low speed', option_b: 'Acceptable at night', option_c: 'Dangerous and illegal', option_d: 'Recommended', correct_option: 2, explanation: 'Drunk driving is illegal and dangerous.' }
-            ];
-        }
         
+        // Get current user and their enrollments
         currentUser = await MEI.getCurrentUser();
         if (currentUser) {
             const enrollments = await MEI.getUserEnrollments(currentUser.id);
@@ -499,11 +489,13 @@
         }
     }
     
-    // Quiz functionality with Next Navigation Button
+    // ============================================
+    // QUIZ FUNCTIONALITY WITH NAVIGATION BUTTONS
+    // ============================================
     let quizState = { currentIndex: 0, score: 0, userAnswers: [], questions: [] };
     
     function renderQuiz() {
-        if (quizState.questions.length === 0) {
+        if (quizState.questions.length === 0 && quizQuestions.length > 0) {
             quizState.questions = quizQuestions.map(q => ({
                 id: q.id,
                 category: q.category,
@@ -512,6 +504,19 @@
                 correct: q.correct_option,
                 explanation: q.explanation
             }));
+        }
+        
+        if (quizState.questions.length === 0) {
+            document.getElementById('page-content').innerHTML = `
+                <div class="container" style="padding-top: 100px; max-width: 800px;">
+                    <div class="card" style="text-align:center;">
+                        <i class="fas fa-database" style="font-size: 3rem; color: var(--primary);"></i>
+                        <h2>No Quiz Questions Available</h2>
+                        <p>Please check back later for quiz content.</p>
+                        <button class="btn btn-primary" onclick="navigateTo('home')">Back to Home</button>
+                    </div>
+                </div>`;
+            return;
         }
         
         if (quizState.currentIndex >= quizState.questions.length) {
@@ -534,30 +539,38 @@
         
         const q = quizState.questions[quizState.currentIndex];
         const hasAnswered = quizState.userAnswers[quizState.currentIndex] !== undefined;
+        const isFirstQuestion = quizState.currentIndex === 0;
         const isLastQuestion = quizState.currentIndex === quizState.questions.length - 1;
         
         document.getElementById('page-content').innerHTML = `
             <div class="container" style="padding-top: 100px; max-width: 800px;">
                 <div class="card">
-                    <div style="display: flex; justify-content: space-between; margin-bottom: 1rem;">
-                        <span class="category-tag">${q.category}</span>
-                        <span style="background: var(--primary); color: #0a192f; padding: 4px 12px; border-radius: 50px;">${quizState.currentIndex + 1}/${quizState.questions.length}</span>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 10px;">
+                        <span class="category-tag"><i class="fas fa-tag"></i> ${q.category || 'General'}</span>
+                        <span style="background: var(--primary); color: #0a192f; padding: 4px 12px; border-radius: 50px;">
+                            <i class="fas fa-question-circle"></i> ${quizState.currentIndex + 1}/${quizState.questions.length}
+                        </span>
                     </div>
-                    <h3>${escapeHtml(q.question)}</h3>
-                    ${q.options.map((opt, idx) => {
-                        let cls = 'quiz-option';
-                        if (hasAnswered && idx === q.correct) cls += ' correct';
-                        if (hasAnswered && idx === quizState.userAnswers[quizState.currentIndex] && idx !== q.correct) cls += ' wrong';
-                        return `<div class="${cls}" onclick="${!hasAnswered ? `selectAnswer(${idx})` : ''}">
-                            ${String.fromCharCode(65+idx)}. ${escapeHtml(opt)}
-                        </div>`;
-                    }).join('')}
+                    <h3 style="margin: 1rem 0; line-height: 1.4;">${escapeHtml(q.question)}</h3>
+                    <div class="quiz-options">
+                        ${q.options.map((opt, idx) => {
+                            let cls = 'quiz-option';
+                            if (hasAnswered && idx === q.correct) cls += ' correct';
+                            if (hasAnswered && idx === quizState.userAnswers[quizState.currentIndex] && idx !== q.correct) cls += ' wrong';
+                            return `<div class="${cls}" onclick="${!hasAnswered ? `selectAnswer(${idx})` : ''}">
+                                <span style="font-weight: 600;">${String.fromCharCode(65+idx)}.</span> ${escapeHtml(opt)}
+                            </div>`;
+                        }).join('')}
+                    </div>
                     ${hasAnswered ? `
-                        <div style="margin-top: 1rem; padding: 1rem; background: rgba(0,255,136,0.1); border-radius: 12px;">
-                            <strong>${quizState.userAnswers[quizState.currentIndex] === q.correct ? '✓ Correct!' : '✗ Incorrect'}</strong>
-                            <p>${escapeHtml(q.explanation || 'No explanation available.')}</p>
+                        <div style="margin-top: 1.5rem; padding: 1rem; background: rgba(0,255,136,0.1); border-radius: 12px;">
+                            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+                                <i class="fas ${quizState.userAnswers[quizState.currentIndex] === q.correct ? 'fa-check-circle' : 'fa-times-circle'}" style="color: ${quizState.userAnswers[quizState.currentIndex] === q.correct ? '#00ff88' : '#ff4757'}; font-size: 1.2rem;"></i>
+                                <strong>${quizState.userAnswers[quizState.currentIndex] === q.correct ? '✓ Correct!' : '✗ Incorrect'}</strong>
+                            </div>
+                            <p style="opacity: 0.9;">${escapeHtml(q.explanation || 'No explanation available.')}</p>
                             <div class="quiz-nav-buttons">
-                                <button class="btn btn-outline" onclick="previousQuestion()" ${quizState.currentIndex === 0 ? 'disabled' : ''}>
+                                <button class="btn btn-outline" onclick="previousQuestion()" ${isFirstQuestion ? 'disabled' : ''}>
                                     <i class="fas fa-arrow-left"></i> Previous
                                 </button>
                                 <button class="btn btn-primary" onclick="nextQuestion()">
@@ -565,9 +578,17 @@
                                 </button>
                             </div>
                         </div>
-                    ` : '<p style="margin-top: 1rem;">Click an option to answer</p>'}
+                    ` : '<p style="margin-top: 1rem; text-align: center; opacity: 0.7;"><i class="fas fa-hand-pointer"></i> Click on an option to answer</p>'}
                 </div>
             </div>`;
+    }
+    
+    function selectAnswer(idx) {
+        if (quizState.userAnswers[quizState.currentIndex] !== undefined) return;
+        const q = quizState.questions[quizState.currentIndex];
+        quizState.userAnswers[quizState.currentIndex] = idx;
+        if (idx === q.correct) quizState.score++;
+        renderQuiz();
     }
     
     function previousQuestion() {
@@ -578,28 +599,24 @@
     }
     
     function nextQuestion() {
+        if (quizState.userAnswers[quizState.currentIndex] === undefined) {
+            showToast('Please answer the current question first', 'warning');
+            return;
+        }
+        
         if (quizState.currentIndex < quizState.questions.length - 1) {
             quizState.currentIndex++;
             renderQuiz();
         } else if (quizState.currentIndex === quizState.questions.length - 1) {
-            // Finish quiz - move to results
             quizState.currentIndex++;
             renderQuiz();
         }
     }
     
-    window.selectAnswer = (idx) => {
-        if (quizState.userAnswers[quizState.currentIndex] !== undefined) return;
-        const q = quizState.questions[quizState.currentIndex];
-        quizState.userAnswers[quizState.currentIndex] = idx;
-        if (idx === q.correct) quizState.score++;
+    function resetQuiz() {
+        quizState = { currentIndex: 0, score: 0, userAnswers: [], questions: [] };
         renderQuiz();
-    };
-    
-    window.previousQuestion = previousQuestion;
-    window.nextQuestion = nextQuestion;
-    window.resetQuiz = () => { quizState = { currentIndex: 0, score: 0, userAnswers: [], questions: [] }; renderQuiz(); };
-    window.processPayment = processPayment;
+    }
     
     // Dashboard
     async function renderDashboard() {
@@ -618,7 +635,7 @@
                         <div class="stat-item"><h3>KES ${totalSpent.toLocaleString()}</h3><p>Invested</p></div>
                     </div>
                     <div><h2><i class="fas fa-book-open"></i> My Courses</h2><div class="grid">
-                        ${myCourses.map(c => `<div class="card" onclick="viewCourse(${c.id})"><i class="fas ${c.icon}" style="font-size:2rem;color:${c.color}"></i><h3>${escapeHtml(c.name)} <span class="badge">Enrolled</span></h3><p>${escapeHtml(c.description)}</p><div><span class="category-tag">${c.duration}</span><span class="category-tag">${c.lessons_count} Modules</span></div><button class="btn btn-primary" style="margin-top:1rem;">Continue →</button></div>`).join('')}
+                        ${myCourses.map(c => `<div class="card" onclick="viewCourse(${c.id})"><i class="fas ${c.icon}" style="font-size:2rem;color:${courseColors[c.id] || '#00ff88'}"></i><h3>${escapeHtml(c.name)} <span class="badge">Enrolled</span></h3><p>${escapeHtml(c.description)}</p><div><span class="category-tag">${c.duration}</span><span class="category-tag">${c.lessons_count} Modules</span></div><button class="btn btn-primary" style="margin-top:1rem;">Continue →</button></div>`).join('')}
                         ${myCourses.length === 0 ? `<div class="card" style="text-align:center;"><i class="fas fa-shopping-cart" style="font-size:3rem;color:var(--primary);"></i><h3>No Courses Yet</h3><p>Start your learning journey today!</p><button class="btn btn-primary" onclick="navigateTo('courses')">Browse Courses</button></div>` : ''}
                     </div></div>
                 </div>
@@ -626,7 +643,7 @@
     }
     
     function renderHome() {
-        const totalModules = courses.reduce((sum, c) => sum + c.lessons_count, 0);
+        const totalModules = courses.reduce((sum, c) => sum + (c.lessons_count || 0), 0);
         document.getElementById('page-content').innerHTML = `
             <div class="hero">
                 <h1>Practice Daily.<br><span>Revise Smarter. Pass with Confidence.</span></h1>
@@ -635,15 +652,15 @@
             </div>
             <div class="container">
                 <div class="stats-bar">
-                    <div class="stat-item"><h3>8</h3><p>Professional Courses</p></div>
-                    <div class="stat-item"><h3>1000+</h3><p>Quiz Questions</p></div>
+                    <div class="stat-item"><h3>${courses.length}</h3><p>Professional Courses</p></div>
+                    <div class="stat-item"><h3>${quizQuestions.length}</h3><p>Quiz Questions</p></div>
                     <div class="stat-item"><h3>${totalModules}</h3><p>Training Modules</p></div>
                 </div>
                 <h2 class="section-title">Popular <span>Courses</span></h2>
                 <div class="grid">
                     ${courses.slice(0, 4).map(c => `
                         <div class="card" onclick="viewCourse(${c.id})">
-                            <i class="fas ${c.icon}" style="font-size: 2rem; color: ${c.color};"></i>
+                            <i class="fas ${c.icon || 'fa-car'}" style="font-size: 2rem; color: ${courseColors[c.id] || '#00ff88'};"></i>
                             <h3>${escapeHtml(c.name)}${isEnrolled(c.id) ? '<span class="badge">Enrolled</span>' : ''}</h3>
                             <p>${escapeHtml(c.description)}</p>
                             <div class="course-price">KES ${(c.price || 0).toLocaleString()}</div>
@@ -661,7 +678,7 @@
                 <div class="grid">
                     ${courses.map(c => `
                         <div class="card" onclick="viewCourse(${c.id})">
-                            <i class="fas ${c.icon}" style="font-size: 2rem; color: ${c.color};"></i>
+                            <i class="fas ${c.icon || 'fa-car'}" style="font-size: 2rem; color: ${courseColors[c.id] || '#00ff88'};"></i>
                             <h3>${escapeHtml(c.name)}${isEnrolled(c.id) ? '<span class="badge">Enrolled</span>' : ''}</h3>
                             <p>${escapeHtml(c.description)}</p>
                             <div><span class="category-tag">${c.duration || 'Self-paced'}</span><span class="category-tag">${c.lessons_count || 0} Modules</span></div>
@@ -695,6 +712,7 @@
         navigateTo('home');
     }
     
+    // Make functions globally available
     window.viewCourse = viewCourse;
     window.enrollCourse = enrollCourse;
     window.navigateTo = navigateTo;
