@@ -1,5 +1,6 @@
 // middleware/validation.js
 // REAL PRODUCTION - MEI DRIVE AFRICA
+// Complete validation middleware for all endpoints
 
 import { body, param, query, validationResult } from 'express-validator';
 
@@ -23,12 +24,37 @@ export const handleValidationErrors = (req, res, next) => {
 };
 
 // =====================================================
-// PHONE NUMBER VALIDATION (Kenyan M-Pesa)
+// PHONE NUMBER VALIDATION (Kenyan M-Pesa - Production)
 // =====================================================
 export const validatePhoneNumber = (phone) => {
+    if (!phone) return false;
     // Kenyan phone formats: 07XXXXXXXX, 01XXXXXXXX, 2547XXXXXXXX, +2547XXXXXXXX
     const phoneRegex = /^(?:07|01|\+?254)[0-9]{8}$/;
-    return phoneRegex.test(phone);
+    const isValid = phoneRegex.test(phone);
+    
+    if (!isValid) {
+        console.log(`❌ Invalid phone number format: ${phone}`);
+    }
+    
+    return isValid;
+};
+
+// Format phone number for M-Pesa (254XXXXXXXXX)
+export const formatPhoneForMpesa = (phone) => {
+    let cleaned = phone.toString().replace(/\D/g, '');
+    if (cleaned.startsWith('0')) {
+        cleaned = '254' + cleaned.substring(1);
+    } else if (cleaned.startsWith('+')) {
+        cleaned = cleaned.substring(1);
+    } else if (cleaned.length === 9) {
+        cleaned = '254' + cleaned;
+    }
+    
+    if (!cleaned.startsWith('254') || cleaned.length !== 12) {
+        throw new Error('Invalid phone number format after formatting');
+    }
+    
+    return cleaned;
 };
 
 // =====================================================
@@ -43,7 +69,7 @@ export const validateCourse = [
     body('description')
         .optional()
         .trim()
-        .isLength({ max: 1000 }).withMessage('Description cannot exceed 1000 characters'),
+        .isLength({ max: 2000 }).withMessage('Description cannot exceed 2000 characters'),
     
     body('price')
         .isFloat({ min: 49, max: 500000 }).withMessage('Price must be between 49 and 500,000 KES'),
@@ -58,13 +84,14 @@ export const validateCourse = [
         .trim()
         .isLength({ max: 50 }).withMessage('Duration cannot exceed 50 characters'),
     
-    body('units')
+    body('lessons_count')
         .optional()
-        .isInt({ min: 1, max: 100 }).withMessage('Units must be between 1 and 100'),
+        .isInt({ min: 1, max: 100 }).withMessage('Lessons count must be between 1 and 100')
+        .toInt(),
     
-    body('modules')
+    body('color')
         .optional()
-        .isArray().withMessage('Modules must be an array'),
+        .matches(/^#[0-9A-Fa-f]{6}$/).withMessage('Color must be a valid hex code (e.g., #F39C12)'),
     
     handleValidationErrors
 ];
@@ -74,7 +101,7 @@ export const validateCourse = [
 // =====================================================
 export const validateCourseId = [
     param('id')
-        .isInt({ min: 1 }).withMessage('Valid course ID is required')
+        .isInt({ min: 1, max: 8 }).withMessage('Course ID must be between 1 and 8')
         .toInt(),
     handleValidationErrors
 ];
@@ -84,7 +111,7 @@ export const validateCourseId = [
 // =====================================================
 export const validateEnrollment = [
     body('course_id')
-        .isInt({ min: 1 }).withMessage('Valid course ID is required')
+        .isInt({ min: 1, max: 8 }).withMessage('Valid course ID is required (1-8)')
         .toInt(),
     
     body('mpesa_code')
@@ -92,32 +119,42 @@ export const validateEnrollment = [
         .trim()
         .isLength({ min: 10, max: 50 }).withMessage('Invalid M-Pesa receipt code'),
     
-    body('amount')
+    body('amount_paid')
         .optional()
-        .isFloat({ min: 49 }).withMessage('Amount must be at least 49 KES'),
+        .isFloat({ min: 0 }).withMessage('Amount must be 0 or positive'),
     
     handleValidationErrors
 ];
 
 // =====================================================
-// PAYMENT VALIDATION (M-PESA)
+// PAYMENT VALIDATION (M-PESA - PRODUCTION)
 // =====================================================
 export const validatePayment = [
     body('phoneNumber')
         .notEmpty().withMessage('Phone number is required')
         .custom(value => {
             if (!validatePhoneNumber(value)) {
-                throw new Error('Invalid Kenyan phone number format. Use 07XXXXXXXX or 2547XXXXXXXX');
+                throw new Error('Invalid Kenyan phone number. Use 07XXXXXXXX, 01XXXXXXXX, or 2547XXXXXXXX');
             }
             return true;
         }),
     
     body('amount')
-        .isFloat({ min: 49, max: 500000 }).withMessage(`Amount must be between 49 and 500,000 KES`),
+        .isFloat({ min: 49, max: 500000 }).withMessage(`Amount must be between 49 and 500,000 KES`)
+        .toFloat(),
     
     body('courseId')
-        .isInt({ min: 1 }).withMessage('Valid course ID is required')
+        .isInt({ min: 1, max: 8 }).withMessage('Course ID must be between 1 and 8')
         .toInt(),
+    
+    body('userId')
+        .notEmpty().withMessage('User ID is required')
+        .isUUID().withMessage('Invalid user ID format'),
+    
+    body('email')
+        .optional()
+        .isEmail().withMessage('Valid email address is required')
+        .normalizeEmail(),
     
     body('courseName')
         .optional()
@@ -183,16 +220,19 @@ export const validatePagination = [
     query('page')
         .optional()
         .isInt({ min: 1 }).withMessage('Page must be a positive integer')
-        .toInt(),
+        .toInt()
+        .default(1),
     
     query('limit')
         .optional()
         .isInt({ min: 1, max: 100 }).withMessage('Limit must be between 1 and 100')
-        .toInt(),
+        .toInt()
+        .default(20),
     
     query('sort')
         .optional()
-        .isIn(['asc', 'desc']).withMessage('Sort must be asc or desc'),
+        .isIn(['asc', 'desc']).withMessage('Sort must be asc or desc')
+        .default('desc'),
     
     handleValidationErrors
 ];
@@ -201,9 +241,9 @@ export const validatePagination = [
 // ADMIN USER ROLE VALIDATION
 // =====================================================
 export const validateUserRole = [
-    body('role')
-        .notEmpty().withMessage('Role is required')
-        .isIn(['user', 'admin', 'instructor', 'moderator']).withMessage('Invalid role. Must be user, admin, instructor, or moderator'),
+    body('is_admin')
+        .isBoolean().withMessage('is_admin must be true or false')
+        .toBoolean(),
     
     handleValidationErrors
 ];
@@ -241,7 +281,6 @@ export const validateProgress = [
         .toInt(),
     
     body('progress')
-        .optional()
         .isInt({ min: 0, max: 100 }).withMessage('Progress must be between 0 and 100')
         .toInt(),
     
@@ -252,6 +291,9 @@ export const validateProgress = [
 // PASSWORD RESET VALIDATION
 // =====================================================
 export const validatePasswordReset = [
+    body('token')
+        .notEmpty().withMessage('Reset token is required'),
+    
     body('password')
         .notEmpty().withMessage('Password is required')
         .isLength({ min: 6 }).withMessage('Password must be at least 6 characters')
@@ -309,6 +351,77 @@ export const validateContactForm = [
 ];
 
 // =====================================================
+// UNIT/LESSON VALIDATION
+// =====================================================
+export const validateUnit = [
+    body('course_id')
+        .isInt({ min: 1, max: 8 }).withMessage('Course ID must be between 1 and 8')
+        .toInt(),
+    
+    body('unit_number')
+        .isInt({ min: 1 }).withMessage('Unit number must be a positive integer')
+        .toInt(),
+    
+    body('title')
+        .notEmpty().withMessage('Unit title is required')
+        .trim()
+        .isLength({ min: 3, max: 200 }).withMessage('Unit title must be between 3 and 200 characters'),
+    
+    body('content')
+        .optional()
+        .trim(),
+    
+    body('estimated_minutes')
+        .optional()
+        .isInt({ min: 5, max: 180 }).withMessage('Estimated minutes must be between 5 and 180')
+        .toInt(),
+    
+    handleValidationErrors
+];
+
+// =====================================================
+// QUIZ QUESTION VALIDATION
+// =====================================================
+export const validateQuizQuestion = [
+    body('category')
+        .notEmpty().withMessage('Category is required')
+        .isIn(['Road Signs', 'Highway Code', 'Defensive Driving', 'Traffic Rules', 'Emergency', 'Motorcycle', 'PSV', 'General'])
+        .withMessage('Invalid category'),
+    
+    body('question')
+        .notEmpty().withMessage('Question is required')
+        .trim()
+        .isLength({ min: 5, max: 500 }).withMessage('Question must be between 5 and 500 characters'),
+    
+    body('option_a')
+        .notEmpty().withMessage('Option A is required')
+        .trim(),
+    
+    body('option_b')
+        .notEmpty().withMessage('Option B is required')
+        .trim(),
+    
+    body('option_c')
+        .notEmpty().withMessage('Option C is required')
+        .trim(),
+    
+    body('option_d')
+        .optional()
+        .trim(),
+    
+    body('correct_option')
+        .isInt({ min: 0, max: 3 }).withMessage('Correct option must be 0, 1, 2, or 3')
+        .toInt(),
+    
+    body('explanation')
+        .optional()
+        .trim()
+        .isLength({ max: 500 }).withMessage('Explanation cannot exceed 500 characters'),
+    
+    handleValidationErrors
+];
+
+// =====================================================
 // EXPORT ALL VALIDATION RULES
 // =====================================================
 export default {
@@ -327,5 +440,8 @@ export default {
     validatePasswordReset,
     validateForgotPassword,
     validateContactForm,
-    validatePhoneNumber
+    validateUnit,
+    validateQuizQuestion,
+    validatePhoneNumber,
+    formatPhoneForMpesa
 };
