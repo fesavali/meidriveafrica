@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>MEI DRIVE AFRICA | Professional Driver Training</title>
-    <meta name="description" content="Professional driver training courses and exam preparation">
+    <meta name="description" content="Professional driver training courses and exam preparation - LEARNER HUB, PSV, EV Driver, Boda Boda Safety, Defensive Driving, School Bus, Refresher Course & Quiz Bank">
     <meta name="theme-color" content="#0a192f">
     
     <!-- Favicon -->
@@ -52,7 +52,7 @@
         .hero h1 { font-size: 3.5rem; margin-bottom: 1rem; line-height: 1.2; }
         .hero h1 span { color: var(--primary); }
         .hero p { font-size: 1.2rem; opacity: 0.8; max-width: 600px; margin: 0 auto 2rem; }
-        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 1.8rem; margin: 2rem 0; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(360px, 1fr)); gap: 1.8rem; margin: 2rem 0; }
         .card { background: rgba(13,33,55,0.8); backdrop-filter: blur(10px); border: 1px solid var(--border); border-radius: 20px; padding: 1.8rem; transition: 0.2s; cursor: pointer; }
         .card:hover { border-color: var(--primary); transform: translateY(-3px); }
         .course-price { font-size: 1.3rem; font-weight: 800; color: var(--primary); margin: 0.5rem 0; }
@@ -115,79 +115,14 @@
             border: 1px solid var(--primary);
             text-align: center;
         }
-        .payment-card .mpesa-logo {
-            font-size: 3rem;
-            color: #00ff88;
-            margin-bottom: 1rem;
-        }
-        .phone-input {
-            display: flex;
-            gap: 10px;
-            align-items: center;
-            background: #0f1a2c;
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 5px 15px;
-            margin: 15px 0;
-        }
-        .phone-input span {
-            color: var(--primary);
-            font-weight: bold;
-        }
-        .phone-input input {
-            border: none;
-            margin: 0;
-            padding: 12px 0;
-            background: transparent;
-            color: white;
-            width: 100%;
-        }
+        .payment-card .mpesa-logo { font-size: 3rem; color: #00ff88; margin-bottom: 1rem; }
+        .phone-input { display: flex; gap: 10px; align-items: center; background: #0f1a2c; border: 1px solid var(--border); border-radius: 12px; padding: 5px 15px; margin: 15px 0; }
+        .phone-input span { color: var(--primary); font-weight: bold; }
+        .phone-input input { border: none; margin: 0; padding: 12px 0; background: transparent; color: white; width: 100%; }
         .phone-input input:focus { outline: none; }
         
-        .admin-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 1rem;
-        }
-        .admin-table th, .admin-table td {
-            padding: 12px;
-            text-align: left;
-            border-bottom: 1px solid var(--border);
-        }
-        .admin-table th {
-            color: var(--primary);
-            font-weight: 600;
-        }
-        .admin-stats {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 1rem;
-            margin-bottom: 2rem;
-        }
-        .stat-card {
-            background: rgba(13,33,55,0.8);
-            border-radius: 16px;
-            padding: 1.2rem;
-            text-align: center;
-            border: 1px solid var(--border);
-        }
-        .stat-card h2 {
-            font-size: 2rem;
-            color: var(--primary);
-        }
-        
-        /* Quiz Navigation Buttons */
-        .quiz-nav-buttons {
-            display: flex;
-            justify-content: space-between;
-            gap: 1rem;
-            margin-top: 1.5rem;
-            flex-wrap: wrap;
-        }
-        .quiz-nav-buttons button {
-            flex: 1;
-            min-width: 120px;
-        }
+        .quiz-nav-buttons { display: flex; justify-content: space-between; gap: 1rem; margin-top: 1.5rem; flex-wrap: wrap; }
+        .quiz-nav-buttons button { flex: 1; min-width: 120px; }
         
         @media (max-width: 768px) { 
             .hero h1 { font-size: 2rem; } 
@@ -202,11 +137,7 @@
         
         input { font-family: inherit; background: #0f1a2c; border: 1px solid var(--border); border-radius: 12px; padding: 12px; color: white; width: 100%; margin: 10px 0; }
         input:focus { outline: none; border-color: var(--primary); }
-        .modal { 
-            position: fixed; top: 0; left: 0; right: 0; bottom: 0; 
-            background: rgba(0,0,0,0.8); backdrop-filter: blur(8px); 
-            z-index: 2000; display: flex; align-items: center; justify-content: center; 
-        }
+        .modal { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(8px); z-index: 2000; display: flex; align-items: center; justify-content: center; }
         .modal-content { background: #0d2137; border-radius: 28px; padding: 2rem; max-width: 450px; width: 90%; border: 1px solid var(--primary); }
         .quiz-option { margin-bottom: 12px; cursor: pointer; padding: 14px 18px; background: #112240; border-radius: 12px; border: 1px solid var(--border); transition: 0.2s; }
         .quiz-option:hover { border-color: var(--primary); background: rgba(0,255,136,0.08); }
@@ -256,11 +187,116 @@
     let isAdmin = false;
     let pendingCourse = null;
     
-    // Course color mapping
-    const courseColors = {
-        1: '#F39C12', 2: '#9B59B6', 3: '#3498DB', 4: '#2ECC71',
-        5: '#E67E22', 6: '#1ABC9C', 7: '#E74C3C', 8: '#00ff88'
-    };
+    // ============================================
+    // 8 PROFESSIONAL COURSES - COMPLETE DEFINITION
+    // Based on all training documents provided
+    // ============================================
+    const predefinedCourses = [
+        { 
+            id: 1, 
+            name: '🚗 LEARNER HUB', 
+            shortName: 'LEARNER HUB',
+            description: 'Complete driver training for beginners covering fundamental rules, vehicle controls, observation, speed management, parking, model town, and NTSA exam preparation. 21 comprehensive modules with practical exercises.', 
+            price: 2999, 
+            duration: '8 weeks', 
+            icon: 'fa-car', 
+            lessons_count: 21,
+            category: 'learner',
+            color: '#F39C12',
+            features: ['NTSA Exam Prep', 'Model Town Training', '21 Modules', 'Practical Exercises']
+        },
+        { 
+            id: 2, 
+            name: '🚌 PSV PROFESSIONAL', 
+            shortName: 'PSV PROFESSIONAL',
+            description: 'Public Service Vehicle certification with passenger management, customer care, safety protocols, NTSA compliance, conductor professionalism, and stage management. For matatu, bus, taxi, and ride-hailing drivers.', 
+            price: 3999, 
+            duration: '8 weeks', 
+            icon: 'fa-bus', 
+            lessons_count: 16,
+            category: 'psv',
+            color: '#9B59B6',
+            features: ['PSV License Prep', 'Customer Care', 'Conductor Training', 'Stage Management']
+        },
+        { 
+            id: 3, 
+            name: '⚡ EV DRIVER & RIDER', 
+            shortName: 'EV DRIVER',
+            description: 'Electric vehicle operations, charging safety, battery management, regenerative braking, EV maintenance, and eco-driving techniques for electric cars and motorcycles.', 
+            price: 1999, 
+            duration: '5 weeks', 
+            icon: 'fa-car-battery', 
+            lessons_count: 10,
+            category: 'ev',
+            color: '#3498DB',
+            features: ['Charging Systems', 'Battery Management', 'Regenerative Braking', 'EV Maintenance']
+        },
+        { 
+            id: 4, 
+            name: '🔄 DRIVER REFRESHER', 
+            shortName: 'REFRESHER',
+            description: 'Advanced defensive driving, skill enhancement, hazard perception, breaking bad habits, professional driver excellence, and updated traffic laws. Perfect for experienced drivers.', 
+            price: 1499, 
+            duration: '4 weeks', 
+            icon: 'fa-sync-alt', 
+            lessons_count: 8,
+            category: 'refresher',
+            color: '#2ECC71',
+            features: ['Defensive Driving', 'Hazard Perception', 'Updated Laws', 'Skill Enhancement']
+        },
+        { 
+            id: 5, 
+            name: '🏍️ BODA BODA SAFETY', 
+            shortName: 'BODA SAFETY',
+            description: 'Professional motorcycle rider training with PPE, defensive riding, passenger safety, road etiquette, accident prevention, and first aid. Essential for commercial boda boda operators.', 
+            price: 2499, 
+            duration: '6 weeks', 
+            icon: 'fa-motorcycle', 
+            lessons_count: 26,
+            category: 'boda',
+            color: '#E67E22',
+            features: ['PPE Training', 'Defensive Riding', 'Passenger Safety', 'First Aid']
+        },
+        { 
+            id: 6, 
+            name: '🏫 SCHOOL BUS/VAN', 
+            shortName: 'SCHOOL BUS',
+            description: 'Specialized training for school transport drivers focusing on child safety, boarding/alighting procedures, emergency response, and school route management.', 
+            price: 2999, 
+            duration: '7 weeks', 
+            icon: 'fa-school', 
+            lessons_count: 7,
+            category: 'school',
+            color: '#1ABC9C',
+            features: ['Child Safety', 'Boarding Procedures', 'Emergency Response', 'Route Management']
+        },
+        { 
+            id: 7, 
+            name: '🛡️ DEFENSIVE DRIVER', 
+            shortName: 'DEFENSIVE',
+            description: 'Master advanced defensive driving techniques including hazard perception, risk management, space cushion driving, skid control, and collision avoidance strategies.', 
+            price: 2499, 
+            duration: '6 weeks', 
+            icon: 'fa-shield-alt', 
+            lessons_count: 30,
+            category: 'defensive',
+            color: '#E74C3C',
+            features: ['Hazard Perception', 'Skid Control', 'Risk Management', 'Collision Avoidance']
+        },
+        { 
+            id: 8, 
+            name: '📚 QUIZ BANK', 
+            shortName: 'QUIZ BANK',
+            description: '1000+ NTSA-style exam questions covering road signs, highway code, defensive driving, traffic rules, parking, roundabouts, vehicle inspection, emergency handling, first aid, night driving, weather hazards, motorcycle safety, PSV regulations, eco driving, and professional conduct.', 
+            price: 999, 
+            duration: 'Self-paced', 
+            icon: 'fa-question-circle', 
+            lessons_count: 15,
+            category: 'quiz',
+            color: '#00ff88',
+            features: ['1000+ Questions', 'NTSA Style', 'Instant Feedback', 'Progress Tracking']
+        }
+    ];
     
     function showToast(msg, type = 'info') {
         const container = document.getElementById('toast-container');
@@ -275,32 +311,37 @@
     function toggleMobileMenu() { document.getElementById('navLinks')?.classList.toggle('show'); }
     
     async function loadAllData() {
-        // Fetch courses from Supabase
+        courses = [...predefinedCourses];
+        
         try {
             const dbCourses = await MEI.getAllCourses();
             if (dbCourses && dbCourses.length > 0) {
-                courses = dbCourses;
-            } else {
-                // Fallback courses if database empty
-                courses = [
-                    { id: 1, name: 'LEARNER HUB', description: 'Complete driver training for beginners.', price: 2999, duration: '8 weeks', icon: 'fa-car', lessons_count: 21 },
-                    { id: 2, name: 'PSV PROFESSIONAL', description: 'Public Service Vehicle certification.', price: 3999, duration: '8 weeks', icon: 'fa-bus', lessons_count: 16 },
-                    { id: 3, name: 'EV DRIVER & RIDER', description: 'Electric vehicle operations.', price: 1999, duration: '5 weeks', icon: 'fa-car-battery', lessons_count: 10 },
-                    { id: 4, name: 'DRIVER REFRESHER', description: 'Advanced defensive driving.', price: 1499, duration: '4 weeks', icon: 'fa-sync-alt', lessons_count: 8 },
-                    { id: 5, name: 'BODA BODA SAFETY', description: 'Motorcycle rider training.', price: 2499, duration: '6 weeks', icon: 'fa-motorcycle', lessons_count: 26 },
-                    { id: 6, name: 'SCHOOL BUS/VAN', description: 'School transport driver training.', price: 2999, duration: '7 weeks', icon: 'fa-school', lessons_count: 7 },
-                    { id: 7, name: 'DEFENSIVE DRIVER', description: 'Master defensive driving techniques.', price: 2499, duration: '6 weeks', icon: 'fa-shield-alt', lessons_count: 30 },
-                    { id: 8, name: 'QUIZ BANK', description: '1000+ NTSA exam questions.', price: 999, duration: 'Self-paced', icon: 'fa-question-circle', lessons_count: 15 }
-                ];
+                courses = courses.map(c => {
+                    const dbMatch = dbCourses.find(dbc => dbc.id === c.id);
+                    if (dbMatch) {
+                        return { ...c, price: dbMatch.price || c.price, description: dbMatch.description || c.description };
+                    }
+                    return c;
+                });
             }
         } catch (e) {
-            console.log('Error loading courses:', e);
+            console.log('Using predefined courses');
         }
         
-        // Fetch quiz questions from Supabase
         quizQuestions = await MEI.getAllQuizQuestions();
+        if (quizQuestions.length === 0) {
+            quizQuestions = [
+                { id: 1, category: 'Road Signs', question: 'What does a STOP sign mean?', option_a: 'Slow down only', option_b: 'Continue carefully', option_c: 'Come to a complete stop', option_d: 'Overtake carefully', correct_option: 2, explanation: 'A STOP sign requires you to come to a complete stop, check for traffic, and proceed only when safe.' },
+                { id: 2, category: 'Road Signs', question: 'A triangular road sign normally indicates:', option_a: 'Direction', option_b: 'Warning', option_c: 'Parking', option_d: 'Speed limit', correct_option: 1, explanation: 'Triangular signs are warning signs that alert drivers to potential hazards ahead.' },
+                { id: 3, category: 'Highway Code', question: 'Seat belts are important because they:', option_a: 'Improve music quality', option_b: 'Prevent accidents', option_c: 'Reduce injury during accidents', option_d: 'Increase speed', correct_option: 2, explanation: 'Seat belts reduce the risk of serious injury or death during a collision.' },
+                { id: 4, category: 'Defensive Driving', question: 'Defensive driving means:', option_a: 'Aggressive driving', option_b: 'Anticipating and avoiding danger', option_c: 'Driving fast', option_d: 'Ignoring traffic rules', correct_option: 1, explanation: 'Defensive driving means anticipating potential hazards and taking action to avoid them.' },
+                { id: 5, category: 'Traffic Rules', question: 'Driving under the influence of alcohol is:', option_a: 'Safe at low speed', option_b: 'Acceptable at night', option_c: 'Dangerous and illegal', option_d: 'Recommended', correct_option: 2, explanation: 'Driving under the influence of alcohol is dangerous, illegal, and impairs judgment and reaction time.' },
+                { id: 6, category: 'Emergency', question: 'If your brakes fail you should:', option_a: 'Panic', option_b: 'Stay calm and slow down safely', option_c: 'Jump out immediately', option_d: 'Close your eyes', correct_option: 1, explanation: 'Stay calm, pump the brakes, use engine braking, and apply handbrake gently.' },
+                { id: 7, category: 'Motorcycle', question: 'A motorcycle passenger should:', option_a: 'Sit carelessly', option_b: 'Wear a helmet', option_c: 'Distract the rider', option_d: 'Stand while riding', correct_option: 1, explanation: 'All passengers must wear approved helmets for safety.' },
+                { id: 8, category: 'PSV', question: 'A PSV driver should:', option_a: 'Abuse passengers', option_b: 'Respect passengers', option_c: 'Ignore traffic rules', option_d: 'Overspeed', correct_option: 1, explanation: 'Professional drivers must respect passengers and treat them with dignity.' }
+            ];
+        }
         
-        // Get current user and their enrollments
         currentUser = await MEI.getCurrentUser();
         if (currentUser) {
             const enrollments = await MEI.getUserEnrollments(currentUser.id);
@@ -401,9 +442,7 @@
         document.getElementById('page-content').innerHTML = `
             <div class="payment-modal" id="paymentModal">
                 <div class="payment-card">
-                    <div class="mpesa-logo">
-                        <i class="fas fa-money-bill-wave"></i>
-                    </div>
+                    <div class="mpesa-logo"><i class="fas fa-money-bill-wave"></i></div>
                     <h2>M-Pesa Payment</h2>
                     <p style="margin: 1rem 0;">Course: <strong>${escapeHtml(course.name)}</strong></p>
                     <p style="font-size: 1.8rem; color: var(--primary);">KES ${course.price.toLocaleString()}</p>
@@ -412,40 +451,25 @@
                         <input type="tel" id="mpesaPhone" placeholder="712345678" autocomplete="off">
                     </div>
                     <p style="font-size: 12px; opacity: 0.7;">Enter your M-Pesa number</p>
-                    <button class="btn btn-primary" style="width:100%; margin-top:1rem;" onclick="processPayment()">
-                        <i class="fas fa-arrow-right"></i> Pay Now
-                    </button>
-                    <button class="btn btn-outline" style="width:100%; margin-top:0.5rem;" onclick="navigateTo('courses')">
-                        Cancel
-                    </button>
+                    <button class="btn btn-primary" style="width:100%; margin-top:1rem;" onclick="processPayment()"><i class="fas fa-arrow-right"></i> Pay Now</button>
+                    <button class="btn btn-outline" style="width:100%; margin-top:0.5rem;" onclick="navigateTo('courses')">Cancel</button>
                 </div>
-            </div>
-        `;
+            </div>`;
     }
     
     async function processPayment() {
         const phone = document.getElementById('mpesaPhone')?.value.trim();
-        if (!phone) {
-            showToast('Please enter your M-Pesa phone number', 'error');
-            return;
-        }
-        
+        if (!phone) { showToast('Please enter your M-Pesa phone number', 'error'); return; }
         if (!pendingCourse) return;
         
         showToast(`Initiating payment of KES ${pendingCourse.price}...`, 'info');
         
         const result = await MEI.initiateMpesaPayment(
-            phone, 
-            pendingCourse.price, 
-            pendingCourse.id, 
-            currentUser.id,
-            currentUser.email,
-            pendingCourse.name
+            phone, pendingCourse.price, pendingCourse.id, currentUser.id, currentUser.email, pendingCourse.name
         );
         
         if (result.success) {
             showToast('Payment request sent! Check your phone for M-Pesa prompt.', 'success');
-            
             let attempts = 0;
             const interval = setInterval(async () => {
                 attempts++;
@@ -463,7 +487,6 @@
                     showToast('Payment confirmation timeout. Please check your M-Pesa messages.', 'warning');
                 }
             }, 3000);
-            
             setTimeout(() => clearInterval(interval), 60000);
         } else {
             showToast(result.error || 'Payment initiation failed', 'error');
@@ -489,51 +512,26 @@
         }
     }
     
-    // ============================================
-    // QUIZ FUNCTIONALITY WITH NAVIGATION BUTTONS
-    // ============================================
+    // Quiz functionality
     let quizState = { currentIndex: 0, score: 0, userAnswers: [], questions: [] };
     
     function renderQuiz() {
         if (quizState.questions.length === 0 && quizQuestions.length > 0) {
             quizState.questions = quizQuestions.map(q => ({
-                id: q.id,
-                category: q.category,
-                question: q.question,
+                id: q.id, category: q.category, question: q.question,
                 options: [q.option_a, q.option_b, q.option_c, q.option_d],
-                correct: q.correct_option,
-                explanation: q.explanation
+                correct: q.correct_option, explanation: q.explanation
             }));
         }
         
         if (quizState.questions.length === 0) {
-            document.getElementById('page-content').innerHTML = `
-                <div class="container" style="padding-top: 100px; max-width: 800px;">
-                    <div class="card" style="text-align:center;">
-                        <i class="fas fa-database" style="font-size: 3rem; color: var(--primary);"></i>
-                        <h2>No Quiz Questions Available</h2>
-                        <p>Please check back later for quiz content.</p>
-                        <button class="btn btn-primary" onclick="navigateTo('home')">Back to Home</button>
-                    </div>
-                </div>`;
+            document.getElementById('page-content').innerHTML = `<div class="container" style="padding-top:100px;max-width:800px;"><div class="card" style="text-align:center;"><i class="fas fa-database" style="font-size:3rem;color:var(--primary);"></i><h2>No Quiz Questions Available</h2><p>Please check back later for quiz content.</p><button class="btn btn-primary" onclick="navigateTo('home')">Back to Home</button></div></div>`;
             return;
         }
         
         if (quizState.currentIndex >= quizState.questions.length) {
             const percent = Math.round((quizState.score / quizState.questions.length) * 100);
-            document.getElementById('page-content').innerHTML = `
-                <div class="container" style="padding-top: 100px; max-width: 800px;">
-                    <div class="card" style="text-align:center;">
-                        <h2>🎉 Quiz Complete!</h2>
-                        <div style="font-size: 4rem;">${percent >= 70 ? '🏆' : '📚'}</div>
-                        <p>Score: <strong>${quizState.score}</strong> / ${quizState.questions.length} (${percent}%)</p>
-                        <div class="progress-bar"><div class="progress-fill" style="width:${percent}%"></div></div>
-                        <div style="margin-top: 2rem;">
-                            <button class="btn btn-primary" onclick="resetQuiz()">Restart Quiz</button>
-                            <button class="btn btn-outline" onclick="navigateTo('home')">Back Home</button>
-                        </div>
-                    </div>
-                </div>`;
+            document.getElementById('page-content').innerHTML = `<div class="container" style="padding-top:100px;max-width:800px;"><div class="card" style="text-align:center;"><h2>🎉 Quiz Complete!</h2><div style="font-size:4rem;">${percent>=70?'🏆':'📚'}</div><p>Score: <strong>${quizState.score}</strong> / ${quizState.questions.length} (${percent}%)</p><div class="progress-bar"><div class="progress-fill" style="width:${percent}%"></div></div><div style="margin-top:2rem;"><button class="btn btn-primary" onclick="resetQuiz()">Restart Quiz</button><button class="btn btn-outline" onclick="navigateTo('home')">Back Home</button></div></div></div>`;
             return;
         }
         
@@ -542,45 +540,7 @@
         const isFirstQuestion = quizState.currentIndex === 0;
         const isLastQuestion = quizState.currentIndex === quizState.questions.length - 1;
         
-        document.getElementById('page-content').innerHTML = `
-            <div class="container" style="padding-top: 100px; max-width: 800px;">
-                <div class="card">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 10px;">
-                        <span class="category-tag"><i class="fas fa-tag"></i> ${q.category || 'General'}</span>
-                        <span style="background: var(--primary); color: #0a192f; padding: 4px 12px; border-radius: 50px;">
-                            <i class="fas fa-question-circle"></i> ${quizState.currentIndex + 1}/${quizState.questions.length}
-                        </span>
-                    </div>
-                    <h3 style="margin: 1rem 0; line-height: 1.4;">${escapeHtml(q.question)}</h3>
-                    <div class="quiz-options">
-                        ${q.options.map((opt, idx) => {
-                            let cls = 'quiz-option';
-                            if (hasAnswered && idx === q.correct) cls += ' correct';
-                            if (hasAnswered && idx === quizState.userAnswers[quizState.currentIndex] && idx !== q.correct) cls += ' wrong';
-                            return `<div class="${cls}" onclick="${!hasAnswered ? `selectAnswer(${idx})` : ''}">
-                                <span style="font-weight: 600;">${String.fromCharCode(65+idx)}.</span> ${escapeHtml(opt)}
-                            </div>`;
-                        }).join('')}
-                    </div>
-                    ${hasAnswered ? `
-                        <div style="margin-top: 1.5rem; padding: 1rem; background: rgba(0,255,136,0.1); border-radius: 12px;">
-                            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
-                                <i class="fas ${quizState.userAnswers[quizState.currentIndex] === q.correct ? 'fa-check-circle' : 'fa-times-circle'}" style="color: ${quizState.userAnswers[quizState.currentIndex] === q.correct ? '#00ff88' : '#ff4757'}; font-size: 1.2rem;"></i>
-                                <strong>${quizState.userAnswers[quizState.currentIndex] === q.correct ? '✓ Correct!' : '✗ Incorrect'}</strong>
-                            </div>
-                            <p style="opacity: 0.9;">${escapeHtml(q.explanation || 'No explanation available.')}</p>
-                            <div class="quiz-nav-buttons">
-                                <button class="btn btn-outline" onclick="previousQuestion()" ${isFirstQuestion ? 'disabled' : ''}>
-                                    <i class="fas fa-arrow-left"></i> Previous
-                                </button>
-                                <button class="btn btn-primary" onclick="nextQuestion()">
-                                    ${isLastQuestion ? 'Finish Quiz' : 'Next Question'} <i class="fas fa-arrow-right"></i>
-                                </button>
-                            </div>
-                        </div>
-                    ` : '<p style="margin-top: 1rem; text-align: center; opacity: 0.7;"><i class="fas fa-hand-pointer"></i> Click on an option to answer</p>'}
-                </div>
-            </div>`;
+        document.getElementById('page-content').innerHTML = `<div class="container" style="padding-top:100px;max-width:800px;"><div class="card"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;flex-wrap:wrap;gap:10px;"><span class="category-tag"><i class="fas fa-tag"></i> ${q.category || 'General'}</span><span style="background:var(--primary);color:#0a192f;padding:4px 12px;border-radius:50px;"><i class="fas fa-question-circle"></i> ${quizState.currentIndex+1}/${quizState.questions.length}</span></div><h3 style="margin:1rem 0;line-height:1.4;">${escapeHtml(q.question)}</h3><div class="quiz-options">${q.options.map((opt,idx)=>{let cls='quiz-option';if(hasAnswered&&idx===q.correct)cls+=' correct';if(hasAnswered&&idx===quizState.userAnswers[quizState.currentIndex]&&idx!==q.correct)cls+=' wrong';return `<div class="${cls}" onclick="${!hasAnswered?`selectAnswer(${idx})`:''}"><span style="font-weight:600;">${String.fromCharCode(65+idx)}.</span> ${escapeHtml(opt)}</div>`;}).join('')}</div>${hasAnswered?`<div style="margin-top:1.5rem;padding:1rem;background:rgba(0,255,136,0.1);border-radius:12px;"><div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;"><i class="fas ${quizState.userAnswers[quizState.currentIndex]===q.correct?'fa-check-circle':'fa-times-circle'}" style="color:${quizState.userAnswers[quizState.currentIndex]===q.correct?'#00ff88':'#ff4757'};font-size:1.2rem;"></i><strong>${quizState.userAnswers[quizState.currentIndex]===q.correct?'✓ Correct!':'✗ Incorrect'}</strong></div><p style="opacity:0.9;">${escapeHtml(q.explanation||'No explanation available.')}</p><div class="quiz-nav-buttons"><button class="btn btn-outline" onclick="previousQuestion()" ${isFirstQuestion?'disabled':''}><i class="fas fa-arrow-left"></i> Previous</button><button class="btn btn-primary" onclick="nextQuestion()">${isLastQuestion?'Finish Quiz':'Next Question'} <i class="fas fa-arrow-right"></i></button></div></div>`:'<p style="margin-top:1rem;text-align:center;opacity:0.7;"><i class="fas fa-hand-pointer"></i> Click on an option to answer</p>'}</div></div>`;
     }
     
     function selectAnswer(idx) {
@@ -591,103 +551,30 @@
         renderQuiz();
     }
     
-    function previousQuestion() {
-        if (quizState.currentIndex > 0) {
-            quizState.currentIndex--;
-            renderQuiz();
-        }
+    function previousQuestion() { if (quizState.currentIndex > 0) { quizState.currentIndex--; renderQuiz(); } }
+    function nextQuestion() { 
+        if (quizState.userAnswers[quizState.currentIndex] === undefined) { showToast('Please answer the current question first', 'warning'); return; }
+        if (quizState.currentIndex < quizState.questions.length - 1) { quizState.currentIndex++; renderQuiz(); }
+        else if (quizState.currentIndex === quizState.questions.length - 1) { quizState.currentIndex++; renderQuiz(); }
     }
-    
-    function nextQuestion() {
-        if (quizState.userAnswers[quizState.currentIndex] === undefined) {
-            showToast('Please answer the current question first', 'warning');
-            return;
-        }
-        
-        if (quizState.currentIndex < quizState.questions.length - 1) {
-            quizState.currentIndex++;
-            renderQuiz();
-        } else if (quizState.currentIndex === quizState.questions.length - 1) {
-            quizState.currentIndex++;
-            renderQuiz();
-        }
-    }
-    
-    function resetQuiz() {
-        quizState = { currentIndex: 0, score: 0, userAnswers: [], questions: [] };
-        renderQuiz();
-    }
+    function resetQuiz() { quizState = { currentIndex: 0, score: 0, userAnswers: [], questions: [] }; renderQuiz(); }
     
     // Dashboard
     async function renderDashboard() {
         if (!currentUser) { navigateTo('home'); return; }
-        
         const myCourses = courses.filter(c => isEnrolled(c.id));
         const totalSpent = myCourses.reduce((sum, c) => sum + (c.price || 0), 0);
         
-        document.getElementById('page-content').innerHTML = `
-            <div style="padding-top: 100px;">
-                <div class="container">
-                    <h1 class="section-title">My <span>Dashboard</span></h1>
-                    <div class="stats-bar" style="justify-content: center;">
-                        <div class="stat-item"><h3>${myCourses.length}</h3><p>Enrolled Courses</p></div>
-                        <div class="stat-item"><h3>${quizQuestions.length}</h3><p>Quiz Questions</p></div>
-                        <div class="stat-item"><h3>KES ${totalSpent.toLocaleString()}</h3><p>Invested</p></div>
-                    </div>
-                    <div><h2><i class="fas fa-book-open"></i> My Courses</h2><div class="grid">
-                        ${myCourses.map(c => `<div class="card" onclick="viewCourse(${c.id})"><i class="fas ${c.icon}" style="font-size:2rem;color:${courseColors[c.id] || '#00ff88'}"></i><h3>${escapeHtml(c.name)} <span class="badge">Enrolled</span></h3><p>${escapeHtml(c.description)}</p><div><span class="category-tag">${c.duration}</span><span class="category-tag">${c.lessons_count} Modules</span></div><button class="btn btn-primary" style="margin-top:1rem;">Continue →</button></div>`).join('')}
-                        ${myCourses.length === 0 ? `<div class="card" style="text-align:center;"><i class="fas fa-shopping-cart" style="font-size:3rem;color:var(--primary);"></i><h3>No Courses Yet</h3><p>Start your learning journey today!</p><button class="btn btn-primary" onclick="navigateTo('courses')">Browse Courses</button></div>` : ''}
-                    </div></div>
-                </div>
-            </div>`;
+        document.getElementById('page-content').innerHTML = `<div style="padding-top:100px;"><div class="container"><h1 class="section-title">My <span>Dashboard</span></h1><div class="stats-bar" style="justify-content:center;"><div class="stat-item"><h3>${myCourses.length}</h3><p>Enrolled Courses</p></div><div class="stat-item"><h3>${quizQuestions.length}</h3><p>Quiz Questions</p></div><div class="stat-item"><h3>KES ${totalSpent.toLocaleString()}</h3><p>Invested</p></div></div><div><h2><i class="fas fa-book-open"></i> My Courses</h2><div class="grid">${myCourses.map(c => `<div class="card" onclick="viewCourse(${c.id})"><i class="fas ${c.icon}" style="font-size:2rem;color:${c.color}"></i><h3>${escapeHtml(c.shortName)} <span class="badge">Enrolled</span></h3><p>${escapeHtml(c.description.substring(0,100))}...</p><div><span class="category-tag">${c.duration}</span><span class="category-tag">${c.lessons_count} Modules</span></div><button class="btn btn-primary" style="margin-top:1rem;">Continue →</button></div>`).join('')}${myCourses.length===0?`<div class="card" style="text-align:center;"><i class="fas fa-shopping-cart" style="font-size:3rem;color:var(--primary);"></i><h3>No Courses Yet</h3><p>Start your learning journey today!</p><button class="btn btn-primary" onclick="navigateTo('courses')">Browse Courses</button></div>`:''}</div></div></div></div>`;
     }
     
     function renderHome() {
-        const totalModules = courses.reduce((sum, c) => sum + (c.lessons_count || 0), 0);
-        document.getElementById('page-content').innerHTML = `
-            <div class="hero">
-                <h1>Practice Daily.<br><span>Revise Smarter. Pass with Confidence.</span></h1>
-                <p>Professional driver training with 8 comprehensive courses and 1000+ exam questions.</p>
-                <button class="btn btn-primary" onclick="navigateTo('courses')">🚀 Explore Courses</button>
-            </div>
-            <div class="container">
-                <div class="stats-bar">
-                    <div class="stat-item"><h3>${courses.length}</h3><p>Professional Courses</p></div>
-                    <div class="stat-item"><h3>${quizQuestions.length}</h3><p>Quiz Questions</p></div>
-                    <div class="stat-item"><h3>${totalModules}</h3><p>Training Modules</p></div>
-                </div>
-                <h2 class="section-title">Popular <span>Courses</span></h2>
-                <div class="grid">
-                    ${courses.slice(0, 4).map(c => `
-                        <div class="card" onclick="viewCourse(${c.id})">
-                            <i class="fas ${c.icon || 'fa-car'}" style="font-size: 2rem; color: ${courseColors[c.id] || '#00ff88'};"></i>
-                            <h3>${escapeHtml(c.name)}${isEnrolled(c.id) ? '<span class="badge">Enrolled</span>' : ''}</h3>
-                            <p>${escapeHtml(c.description)}</p>
-                            <div class="course-price">KES ${(c.price || 0).toLocaleString()}</div>
-                            <button class="btn btn-primary" onclick="event.stopPropagation(); enrollCourse(${c.id})">${isEnrolled(c.id) ? 'Continue' : 'Enroll Now'}</button>
-                        </div>
-                    `).join('')}
-                </div>
-            </div>`;
+        const totalModules = courses.reduce((sum, c) => sum + c.lessons_count, 0);
+        document.getElementById('page-content').innerHTML = `<div class="hero"><h1>Practice Daily.<br><span>Revise Smarter. Pass with Confidence.</span></h1><p>Professional driver training with 8 comprehensive courses and 1000+ exam questions.</p><button class="btn btn-primary" onclick="navigateTo('courses')">🚀 Explore Courses</button></div><div class="container"><div class="stats-bar"><div class="stat-item"><h3>8</h3><p>Professional Courses</p></div><div class="stat-item"><h3>1000+</h3><p>Quiz Questions</p></div><div class="stat-item"><h3>${totalModules}</h3><p>Training Modules</p></div></div><h2 class="section-title">Our <span>Courses</span></h2><div class="grid">${courses.slice(0,4).map(c => `<div class="card" onclick="viewCourse(${c.id})"><i class="fas ${c.icon}" style="font-size:2rem;color:${c.color}"></i><h3>${escapeHtml(c.shortName)}${isEnrolled(c.id)?'<span class="badge">Enrolled</span>':''}</h3><p>${escapeHtml(c.description.substring(0,120))}...</p><div><span class="category-tag">${c.duration}</span><span class="category-tag">${c.lessons_count} Modules</span></div><div class="course-price">KES ${c.price.toLocaleString()}</div><button class="btn btn-primary" onclick="event.stopPropagation(); enrollCourse(${c.id})">${isEnrolled(c.id)?'Continue':'Enroll Now'}</button></div>`).join('')}</div></div>`;
     }
     
     function renderCourses() {
-        document.getElementById('page-content').innerHTML = `
-            <div class="container" style="padding-top: 100px;">
-                <h1 class="section-title">All <span>Professional Courses</span></h1>
-                <div class="grid">
-                    ${courses.map(c => `
-                        <div class="card" onclick="viewCourse(${c.id})">
-                            <i class="fas ${c.icon || 'fa-car'}" style="font-size: 2rem; color: ${courseColors[c.id] || '#00ff88'};"></i>
-                            <h3>${escapeHtml(c.name)}${isEnrolled(c.id) ? '<span class="badge">Enrolled</span>' : ''}</h3>
-                            <p>${escapeHtml(c.description)}</p>
-                            <div><span class="category-tag">${c.duration || 'Self-paced'}</span><span class="category-tag">${c.lessons_count || 0} Modules</span></div>
-                            <div class="course-price">KES ${(c.price || 0).toLocaleString()}</div>
-                            <button class="btn btn-primary" onclick="event.stopPropagation(); enrollCourse(${c.id})">${isEnrolled(c.id) ? 'Continue Learning' : 'Enroll Now'}</button>
-                        </div>
-                    `).join('')}
-                </div>
-            </div>`;
+        document.getElementById('page-content').innerHTML = `<div class="container" style="padding-top:100px;"><h1 class="section-title">All <span>Professional Courses</span></h1><div class="grid">${courses.map(c => `<div class="card" onclick="viewCourse(${c.id})"><i class="fas ${c.icon}" style="font-size:2rem;color:${c.color}"></i><h3>${escapeHtml(c.shortName)}${isEnrolled(c.id)?'<span class="badge">Enrolled</span>':''}</h3><p>${escapeHtml(c.description)}</p><div><span class="category-tag">${c.duration}</span><span class="category-tag">${c.lessons_count} Modules</span></div><div class="course-price">KES ${c.price.toLocaleString()}</div><button class="btn btn-primary" onclick="event.stopPropagation(); enrollCourse(${c.id})">${isEnrolled(c.id)?'Continue Learning':'Enroll Now'}</button></div>`).join('')}</div></div>`;
     }
     
     async function navigateTo(page) {
@@ -707,12 +594,8 @@
         window.scrollTo({ top: 0 });
     }
     
-    async function init() {
-        await loadAllData();
-        navigateTo('home');
-    }
+    async function init() { await loadAllData(); navigateTo('home'); }
     
-    // Make functions globally available
     window.viewCourse = viewCourse;
     window.enrollCourse = enrollCourse;
     window.navigateTo = navigateTo;
