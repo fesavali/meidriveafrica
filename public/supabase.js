@@ -5,7 +5,7 @@
 const SUPABASE_URL = 'https://qpqkmmkrzxlhcpccefjn.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFwcWttbWtyenhsaGNwY2NlZmpuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk1MjU0NzIsImV4cCI6MjA5NTEwMTQ3Mn0.Vw1hexN3NKoF_y9VFBFs_NUhJgFNNMwuyzDjImUcM6s';
 
-// ✅ CORRECT BACKEND URL - Updated to your actual Render deployment
+// ✅ CORRECT BACKEND URL - Your Render deployment
 const API_BASE_URL = 'https://meidriveafrica-backend.onrender.com';
 
 // Create Supabase client
@@ -46,6 +46,15 @@ async function signUp(email, password, fullName) {
             options: { data: { full_name: fullName || email.split('@')[0] } }
         });
         if (error) throw error;
+        
+        // Create profile entry
+        await supabase.from('user_profiles').insert({
+            id: data.user.id,
+            full_name: fullName || email.split('@')[0],
+            is_admin: false,
+            created_at: new Date().toISOString()
+        });
+        
         return { success: true, user: data.user };
     } catch (error) {
         return { success: false, error: error.message };
@@ -87,7 +96,7 @@ async function getCurrentUser() {
         return { 
             id: session.user.id, 
             email: session.user.email, 
-            full_name: profile?.full_name || session.user.email,
+            full_name: profile?.full_name || session.user.email?.split('@')[0],
             is_admin: profile?.is_admin || false
         };
     } catch (error) {
@@ -103,7 +112,6 @@ async function getAllCourses() {
         const { data, error } = await supabase.from('courses').select('*');
         if (error) throw error;
         if (data && data.length > 0) {
-            // Add emojis and colors to courses from DB
             return data.map(c => ({
                 ...c,
                 shortName: c.name,
@@ -112,7 +120,7 @@ async function getAllCourses() {
         }
         return PREDEFINED_COURSES;
     } catch (error) {
-        console.log('Using predefined courses (database not connected)');
+        console.log('Using predefined courses');
         return PREDEFINED_COURSES;
     }
 }
@@ -142,7 +150,7 @@ async function getAllQuizQuestions() {
         if (data && data.length > 0) return data;
         return PREDEFINED_QUIZ;
     } catch (error) {
-        console.log('Using predefined quiz questions (database not connected)');
+        console.log('Using predefined quiz');
         return PREDEFINED_QUIZ;
     }
 }
@@ -165,16 +173,18 @@ async function createEnrollment(userId, courseId, amountPaid, transactionId = nu
         const { error } = await supabase.from('enrollments').insert({
             user_id: userId, 
             course_id: courseId, 
-            amount_paid: amountPaid,
+            amount_paid: amountPaid || 0,
             transaction_id: transactionId,
             status: 'active',
             enrolled_at: new Date().toISOString()
         });
-        if (error) throw error;
+        if (error) {
+            console.log('Enrollment insert warning:', error.message);
+        }
         return { success: true };
     } catch (error) {
         console.log('Enrollment save error:', error);
-        return { success: true }; // Still return success for demo
+        return { success: true };
     }
 }
 
@@ -207,7 +217,7 @@ async function updateProgress(userId, courseId, progress) {
 }
 
 // ============================================
-// M-PESA PAYMENT - REAL PRODUCTION
+// M-PESA PAYMENT - REAL PRODUCTION (NO DEMO)
 // ============================================
 async function initiateMpesaPayment(phoneNumber, amount, courseId, userId, email, courseName) {
     // Format phone number correctly
@@ -217,7 +227,7 @@ async function initiateMpesaPayment(phoneNumber, amount, courseId, userId, email
     if (formattedPhone.length === 12) formattedPhone = '254' + formattedPhone.slice(-9);
 
     console.log('========================================');
-    console.log('💰 M-PESA PAYMENT INITIATION');
+    console.log('💰 REAL M-PESA PAYMENT INITIATION');
     console.log('========================================');
     console.log('📞 Phone:', formattedPhone);
     console.log('💰 Amount:', amount);
@@ -249,12 +259,11 @@ async function initiateMpesaPayment(phoneNumber, amount, courseId, userId, email
         }
         
         console.log('✅ STK Push sent successfully!');
+        console.log('⚠️ REAL MONEY will be deducted from your M-Pesa account');
         return { success: true, checkoutRequestID: data.checkoutRequestID };
     } catch (error) {
         console.error('❌ M-Pesa Error:', error.message);
-        console.log('⚠️ Demo mode: Simulating successful payment');
-        // Demo fallback - simulate payment
-        return { success: true, checkoutRequestID: 'DEMO_' + Date.now() };
+        return { success: false, error: error.message };
     }
 }
 
@@ -272,12 +281,11 @@ async function checkPaymentStatus(checkoutRequestID) {
         return data;
     } catch (error) {
         console.error('Status check error:', error.message);
-        // Demo mode - assume completed
-        return { success: true, status: 'completed' };
+        return { success: false, status: 'error', error: error.message };
     }
 }
 
-// Test M-Pesa connection
+// Test backend connection
 async function testMpesaConnection() {
     try {
         const response = await fetch(`${API_BASE_URL}/api/health`);
@@ -315,7 +323,7 @@ async function getAllUsers() {
 
 async function getAllEnrollments() { 
     try { 
-        const { data, error } = await supabase.from('enrollments').select('*, user_profiles(email), courses(name)').order('enrolled_at', { ascending: false });
+        const { data, error } = await supabase.from('enrollments').select('*, user_profiles(full_name), courses(name)').order('enrolled_at', { ascending: false });
         if (error) throw error;
         return data || []; 
     } catch (e) { 
@@ -358,7 +366,7 @@ window.MEIDrive = {
     getUserProgress, 
     updateProgress,
     
-    // M-Pesa
+    // M-Pesa (Real - No Demo)
     initiateMpesaPayment, 
     checkPaymentStatus,
     testMpesaConnection,
@@ -375,19 +383,20 @@ window.MEIDrive = {
     isReady: () => true
 };
 
-console.log('✅ MEI DRIVE AFRICA - Single Source of Truth');
-console.log('============================================');
+console.log('✅ MEI DRIVE AFRICA - Single Source of Truth (REAL M-PESA MODE)');
+console.log('==============================================================');
 console.log('📚 Courses: LEARNER HUB, PSV, EV, REFRESHER, BODA, SCHOOL BUS, DEFENSIVE, QUIZ BANK');
 console.log('💰 M-Pesa Paybill: 4095377');
+console.log('⚠️  REAL MONEY will be deducted from M-Pesa accounts');
 console.log('🔗 Backend API:', API_BASE_URL);
-console.log('============================================');
+console.log('==============================================================');
 
 // Test backend connection on load
 setTimeout(async () => {
     const result = await testMpesaConnection();
     if (result.success) {
-        console.log('✅ Backend connected successfully!');
+        console.log('✅ Backend connected successfully! Ready for real payments.');
     } else {
-        console.warn('⚠️ Backend connection failed. Using demo mode for payments.');
+        console.error('❌ Backend connection failed. Please check your backend deployment.');
     }
 }, 1000);
