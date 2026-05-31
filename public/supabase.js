@@ -47,13 +47,18 @@ async function signUp(email, password, fullName) {
         });
         if (error) throw error;
         
-        // Create profile entry
-        await supabase.from('user_profiles').insert({
+        // Create profile entry with error logging
+        const { error: profileError } = await supabase.from('user_profiles').insert({
             id: data.user.id,
             full_name: fullName || email.split('@')[0],
             is_admin: false,
             created_at: new Date().toISOString()
         });
+        
+        if (profileError) {
+            console.error('Profile creation failed:', profileError);
+            // Don't fail the signup - user can still log in
+        }
         
         return { success: true, user: data.user };
     } catch (error) {
@@ -86,20 +91,21 @@ async function getCurrentUser() {
         const { data: { session } } = await supabase.auth.getSession();
         if (!session?.user) return null;
         
-        // Get user profile with admin status
+        // Use maybeSingle() instead of single() to avoid errors if profile missing
         const { data: profile } = await supabase
             .from('user_profiles')
             .select('is_admin, full_name')
             .eq('id', session.user.id)
-            .single();
+            .maybeSingle();
         
         return { 
             id: session.user.id, 
             email: session.user.email, 
-            full_name: profile?.full_name || session.user.email?.split('@')[0],
+            full_name: profile?.full_name || session.user.email?.split('@')[0] || 'User',
             is_admin: profile?.is_admin || false
         };
     } catch (error) {
+        console.error('Get current user error:', error);
         return null;
     }
 }
@@ -193,7 +199,7 @@ async function createEnrollment(userId, courseId, amountPaid, transactionId = nu
 // ============================================
 async function getUserProgress(userId, courseId) {
     try {
-        const { data, error } = await supabase.from('user_progress').select('progress').eq('user_id', userId).eq('course_id', courseId).single();
+        const { data, error } = await supabase.from('user_progress').select('progress').eq('user_id', userId).eq('course_id', courseId).maybeSingle();
         if (error && error.code !== 'PGRST116') throw error;
         return { progress: data?.progress || 0 };
     } catch (error) {
