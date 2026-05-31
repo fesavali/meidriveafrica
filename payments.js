@@ -4,7 +4,7 @@
 // =====================================================
 
 // Backend API URL - Your Render.com backend address
-const API_URL = 'https://mei-drive-api.onrender.com';
+const API_URL = 'https://meidriveafrica-backend.onrender.com';
 
 // Payment state
 let currentPayment = {
