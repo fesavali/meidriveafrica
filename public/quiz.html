@@ -73,6 +73,7 @@
         .filter-btn { background: rgba(13, 33, 55, 0.8); border: 1px solid rgba(0, 255, 136, 0.2); padding: 10px 22px; border-radius: 8px; color: white; cursor: pointer; transition: all 0.3s; font-weight: 500; }
         .filter-btn.active, .filter-btn:hover { background: #00FF88; color: #0A192F; border-color: #00FF88; }
         .quiz-item { background: rgba(13, 33, 55, 0.6); border-radius: 16px; padding: 25px; margin-bottom: 20px; border: 1px solid rgba(0, 255, 136, 0.1); }
+        .quiz-image { max-width: 100%; border-radius: 12px; margin-bottom: 18px; border: 1px solid rgba(0, 255, 136, 0.2); object-fit: cover; max-height: 250px; width: auto; }
         .quiz-question { font-size: 18px; font-weight: 600; margin-bottom: 20px; line-height: 1.5; }
         .quiz-options { display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px; }
         .quiz-option { display: flex; align-items: center; gap: 12px; padding: 12px 16px; background: rgba(10, 25, 47, 0.6); border-radius: 10px; cursor: pointer; transition: all 0.3s; }
@@ -203,7 +204,22 @@
                 container.innerHTML = `
                     <div class="stats"><div class="stat-card"><div class="stat-number">${STATE.allQuestions.length}</div><div class="stat-label">Total Questions</div></div><div class="stat-card"><div class="stat-number">${STATE.categories.length - 1}</div><div class="stat-label">Categories</div></div><div class="stat-card"><div class="stat-number">${filtered.length}</div><div class="stat-label">Showing</div></div></div>
                     <div class="category-filter">${STATE.categories.map(cat => `<button class="filter-btn ${cat === STATE.currentCategory ? 'active' : ''}" onclick="window.actions.setCategory('${cat.replace(/'/g, "\\'")}')">${escapeHtml(cat)}</button>`).join('')}</div>
-                    ${filtered.map((q, idx) => `<div class="quiz-item" id="quiz-${q.id}"><div class="quiz-question">${idx + 1}. ${escapeHtml(q.question)}</div><div class="quiz-options"><label class="quiz-option"><input type="radio" name="q${q.id}" value="1"> A. ${escapeHtml(q.option_a || '')}</label><label class="quiz-option"><input type="radio" name="q${q.id}" value="2"> B. ${escapeHtml(q.option_b || '')}</label><label class="quiz-option"><input type="radio" name="q${q.id}" value="3"> C. ${escapeHtml(q.option_c || '')}</label><label class="quiz-option"><input type="radio" name="q${q.id}" value="4"> D. ${escapeHtml(q.option_d || '')}</label></div><button class="check-btn" onclick="window.actions.checkAnswer(${q.id}, ${q.correct_answer}, '${escapeHtml(q.explanation || '').replace(/'/g, "\\'")}')">Check Answer</button><div class="feedback" id="feedback-${q.id}"></div></div>`).join('')}
+                    ${filtered.map((q, idx) => {
+                        // Add image if image_url exists
+                        const imageHtml = q.image_url ? `<img class="quiz-image" src="${escapeHtml(q.image_url)}" alt="Quiz illustration" loading="lazy">` : '';
+                        return `<div class="quiz-item" id="quiz-${q.id}">
+                                    ${imageHtml}
+                                    <div class="quiz-question">${idx + 1}. ${escapeHtml(q.question)}</div>
+                                    <div class="quiz-options">
+                                        <label class="quiz-option"><input type="radio" name="q${q.id}" value="1"> A. ${escapeHtml(q.option_a || '')}</label>
+                                        <label class="quiz-option"><input type="radio" name="q${q.id}" value="2"> B. ${escapeHtml(q.option_b || '')}</label>
+                                        <label class="quiz-option"><input type="radio" name="q${q.id}" value="3"> C. ${escapeHtml(q.option_c || '')}</label>
+                                        <label class="quiz-option"><input type="radio" name="q${q.id}" value="4"> D. ${escapeHtml(q.option_d || '')}</label>
+                                    </div>
+                                    <button class="check-btn" onclick="window.actions.checkAnswer(${q.id}, ${q.correct_answer}, '${escapeHtml(q.explanation || '').replace(/'/g, "\\'")}')">Check Answer</button>
+                                    <div class="feedback" id="feedback-${q.id}"></div>
+                                </div>`;
+                    }).join('')}
                 `;
             }
             
