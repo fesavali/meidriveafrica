@@ -9,7 +9,7 @@ const app = express();
 const PORT = process.env.PORT || 10000;
 const BACKEND_URL = process.env.BACKEND_URL || 'https://meidriveafrica-backend.onrender.com';
 
-// M-Pesa Credentials - PRODUCTION (REAL MONEY) - CORRECTED
+// M-Pesa Credentials - PRODUCTION (REAL MONEY)
 const MPESA_CONSUMER_KEY = process.env.MPESA_CONSUMER_KEY || 'LI2gcJZEheN8qCfXHEXV4gdYXvOBHVnv';
 const MPESA_CONSUMER_SECRET = process.env.MPESA_CONSUMER_SECRET || 'aGGo8AuPJVpsZLcs';
 const MPESA_PASSKEY = process.env.MPESA_PASSKEY || '7eb17a031bdfd5b4251863a1ddb72c5b9cd14f3385aa6a258c1442a0116e8277';
@@ -23,10 +23,41 @@ app.use(cors({
     allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
-app.use(express.json());
+app.use(express.json({ limit: '10mb' }));
 
 // ============================================
-// HELPER FUNCTIONS
+// TIMEOUT HANDLING FIXES - CRITICAL FOR RENDER
+// ============================================
+
+// Increase server timeout
+app.use((req, res, next) => {
+    req.setTimeout(120000); // 2 minutes
+    res.setTimeout(120000);
+    next();
+});
+
+// Health check with response time tracking
+app.get('/api/health', (req, res) => {
+    const startTime = Date.now();
+    res.json({ 
+        status: 'ok', 
+        timestamp: new Date().toISOString(),
+        uptime: process.uptime(),
+        responseTime: Date.now() - startTime,
+        message: 'MEI DRIVE AFRICA API is running',
+        environment: process.env.NODE_ENV || 'production',
+        mpesa_configured: true,
+        paybill: MPESA_SHORTCODE
+    });
+});
+
+// Simple root health check for Render
+app.get('/health', (req, res) => {
+    res.status(200).send('OK');
+});
+
+// ============================================
+// HELPER FUNCTIONS WITH BETTER ERROR HANDLING
 // ============================================
 
 function getTimestamp() {
@@ -43,7 +74,6 @@ function getTimestamp() {
 async function getMpesaAccessToken() {
     const auth = Buffer.from(`${MPESA_CONSUMER_KEY}:${MPESA_CONSUMER_SECRET}`).toString('base64');
     console.log('🔑 Attempting to get M-Pesa token...');
-    console.log('Consumer Key (first 10 chars):', MPESA_CONSUMER_KEY.substring(0, 10) + '...');
     
     try {
         const response = await axios.get(
@@ -63,13 +93,17 @@ async function getMpesaAccessToken() {
     } catch (error) {
         console.error('❌ Error getting M-Pesa token:');
         console.error('Status:', error.response?.status);
-        console.error('Data:', JSON.stringify(error.response?.data, null, 2));
         console.error('Message:', error.message);
+        
+        // Don't throw for network errors - return null and let caller handle
+        if (error.code === 'ECONNABORTED' || error.code === 'ENOTFOUND') {
+            throw new Error('Network error connecting to Safaricom. Please check your internet connection.');
+        }
+        
         throw new Error(`Failed to get M-Pesa token: ${error.response?.data?.errorMessage || error.message}`);
     }
 }
 
-// Format phone number for Safaricom (254XXXXXXXXX format)
 function formatPhoneNumber(phoneNumber) {
     let cleaned = phoneNumber.replace(/\D/g, '');
     if (cleaned.startsWith('0')) {
@@ -80,34 +114,23 @@ function formatPhoneNumber(phoneNumber) {
         cleaned = '254' + cleaned;
     } else if (cleaned.length === 10 && cleaned.startsWith('254')) {
         cleaned = cleaned;
-    } else {
+    } else if (!cleaned.startsWith('254')) {
         cleaned = '254' + cleaned;
     }
     
-    // Final validation
     if (!cleaned.startsWith('254') || cleaned.length !== 12) {
-        throw new Error('Invalid phone number. Must be 12 digits starting with 254');
+        throw new Error('Invalid phone number. Please enter a valid 10-digit Safaricom number (e.g., 0712345678)');
     }
     
     return cleaned;
 }
 
 // ============================================
-// HEALTH CHECK ENDPOINTS
+// M-PESA TEST ENDPOINT
 // ============================================
 
-app.get('/api/health', (req, res) => {
-    res.json({ 
-        status: 'ok', 
-        timestamp: new Date().toISOString(),
-        message: 'MEI DRIVE AFRICA API is running',
-        environment: process.env.NODE_ENV || 'production',
-        mpesa_configured: true,
-        paybill: MPESA_SHORTCODE
-    });
-});
-
 app.get('/api/payments/mpesa/test', async (req, res) => {
+    const startTime = Date.now();
     try {
         const token = await getMpesaAccessToken();
         res.json({ 
@@ -115,151 +138,146 @@ app.get('/api/payments/mpesa/test', async (req, res) => {
             message: 'M-Pesa API connection successful',
             paybill: MPESA_SHORTCODE,
             mode: 'PRODUCTION - REAL MONEY',
+            responseTime: `${Date.now() - startTime}ms`,
             warning: '⚠️ Real money will be deducted from customer accounts'
         });
     } catch (error) {
+        console.error('Test endpoint error:', error.message);
         res.status(500).json({ 
             success: false, 
             error: error.message,
             mode: 'PRODUCTION',
-            paybill: MPESA_SHORTCODE
+            paybill: MPESA_SHORTCODE,
+            responseTime: `${Date.now() - startTime}ms`
         });
     }
 });
 
 // ============================================
-// STK PUSH INITIATE - REAL MONEY
+// STK PUSH INITIATE - WITH RETRY LOGIC
 // ============================================
+
 app.post('/api/payments/mpesa/initiate', async (req, res) => {
-    try {
-        let { phoneNumber, amount, courseId, userId, email, accountReference, transactionDesc } = req.body;
-
-        console.log('========================================');
-        console.log('📱 STK PUSH INITIATION - REAL MONEY');
-        console.log('========================================');
-        console.log('Raw Phone:', phoneNumber);
-        console.log('Amount:', amount);
-        console.log('Course ID:', courseId);
-        console.log('User ID:', userId);
-        console.log('Email:', email);
-        console.log('========================================');
-
-        // Validate inputs
-        if (!phoneNumber) {
-            return res.status(400).json({
-                success: false,
-                error: 'Phone number is required'
-            });
-        }
-
-        if (!amount || amount < 1) {
-            return res.status(400).json({
-                success: false,
-                error: 'Valid amount (min 1 KES) is required'
-            });
-        }
-
-        if (amount > 150000) {
-            return res.status(400).json({
-                success: false,
-                error: 'Amount cannot exceed 150,000 KES'
-            });
-        }
-
-        // Format phone number correctly
-        let formattedPhone;
+    const requestStartTime = Date.now();
+    let retryCount = 0;
+    const maxRetries = 2;
+    
+    const attemptPayment = async () => {
         try {
-            formattedPhone = formatPhoneNumber(phoneNumber);
-        } catch (error) {
-            return res.status(400).json({
-                success: false,
-                error: error.message
-            });
-        }
-        console.log('Formatted Phone:', formattedPhone);
+            let { phoneNumber, amount, courseId, userId, email, accountReference, transactionDesc } = req.body;
 
-        // Get Access Token
-        console.log('🔑 Getting access token...');
-        const accessToken = await getMpesaAccessToken();
-        console.log('✅ Access token obtained');
+            console.log('========================================');
+            console.log(`📱 STK PUSH INITIATION - Attempt ${retryCount + 1}`);
+            console.log('========================================');
+            console.log('Raw Phone:', phoneNumber);
+            console.log('Amount:', amount);
+            console.log('Course ID:', courseId);
+            console.log('========================================');
 
-        // Generate timestamp and password
-        const timestamp = getTimestamp();
-        const password = Buffer.from(`${MPESA_SHORTCODE}${MPESA_PASSKEY}${timestamp}`).toString('base64');
-        console.log('Timestamp:', timestamp);
-        console.log('Password generated');
-
-        // Prepare STK Push request
-        const stkRequest = {
-            BusinessShortCode: MPESA_SHORTCODE,
-            Password: password,
-            Timestamp: timestamp,
-            TransactionType: 'CustomerPayBillOnline',
-            Amount: Math.round(amount),
-            PartyA: formattedPhone,
-            PartyB: MPESA_SHORTCODE,
-            PhoneNumber: formattedPhone,
-            CallBackURL: MPESA_CALLBACK_URL,
-            AccountReference: accountReference || `C${courseId}`,
-            TransactionDesc: transactionDesc || 'MEI DRIVE COURSE'
-        };
-
-        console.log('📤 Sending STK Push to Safaricom...');
-        console.log('Request:', JSON.stringify(stkRequest, null, 2));
-
-        // Send STK Push
-        const stkResponse = await axios.post(
-            'https://api.safaricom.co.ke/mpesa/stkpush/v1/processrequest',
-            stkRequest,
-            {
-                headers: {
-                    Authorization: `Bearer ${accessToken}`,
-                    'Content-Type': 'application/json'
-                },
-                timeout: 30000
+            if (!phoneNumber) {
+                throw new Error('Phone number is required');
             }
-        );
 
-        console.log('✅ STK Push Response:', stkResponse.data);
-        console.log('========================================');
+            if (!amount || amount < 1) {
+                throw new Error('Valid amount (min 1 KES) is required');
+            }
 
-        // Check if STK Push was successful
-        if (stkResponse.data.ResponseCode !== '0') {
-            return res.status(400).json({
-                success: false,
-                error: stkResponse.data.ResponseDescription || 'STK Push failed',
-                responseCode: stkResponse.data.ResponseCode
-            });
+            if (amount > 150000) {
+                throw new Error('Amount cannot exceed 150,000 KES');
+            }
+
+            let formattedPhone;
+            try {
+                formattedPhone = formatPhoneNumber(phoneNumber);
+            } catch (error) {
+                throw new Error(error.message);
+            }
+            console.log('Formatted Phone:', formattedPhone);
+
+            // Get Access Token with timeout
+            console.log('🔑 Getting access token...');
+            const accessToken = await getMpesaAccessToken();
+            console.log('✅ Access token obtained');
+
+            const timestamp = getTimestamp();
+            const password = Buffer.from(`${MPESA_SHORTCODE}${MPESA_PASSKEY}${timestamp}`).toString('base64');
+
+            const stkRequest = {
+                BusinessShortCode: MPESA_SHORTCODE,
+                Password: password,
+                Timestamp: timestamp,
+                TransactionType: 'CustomerPayBillOnline',
+                Amount: Math.round(amount),
+                PartyA: formattedPhone,
+                PartyB: MPESA_SHORTCODE,
+                PhoneNumber: formattedPhone,
+                CallBackURL: MPESA_CALLBACK_URL,
+                AccountReference: accountReference || `C${courseId || '0'}`,
+                TransactionDesc: transactionDesc || 'MEI DRIVE COURSE'
+            };
+
+            console.log('📤 Sending STK Push to Safaricom...');
+
+            const stkResponse = await axios.post(
+                'https://api.safaricom.co.ke/mpesa/stkpush/v1/processrequest',
+                stkRequest,
+                {
+                    headers: {
+                        Authorization: `Bearer ${accessToken}`,
+                        'Content-Type': 'application/json'
+                    },
+                    timeout: 35000
+                }
+            );
+
+            console.log('✅ STK Push Response:', stkResponse.data);
+
+            if (stkResponse.data.ResponseCode !== '0') {
+                throw new Error(stkResponse.data.ResponseDescription || 'STK Push failed');
+            }
+
+            return {
+                success: true,
+                checkoutRequestID: stkResponse.data.CheckoutRequestID,
+                merchantRequestID: stkResponse.data.MerchantRequestID,
+                message: 'STK push sent. Check your phone for M-Pesa prompt.',
+                warning: '⚠️ REAL MONEY will be deducted from your M-Pesa account',
+                paybill: MPESA_SHORTCODE,
+                responseTime: `${Date.now() - requestStartTime}ms`
+            };
+
+        } catch (error) {
+            console.error(`❌ Attempt ${retryCount + 1} failed:`, error.message);
+            throw error;
         }
-
-        res.json({
-            success: true,
-            checkoutRequestID: stkResponse.data.CheckoutRequestID,
-            merchantRequestID: stkResponse.data.MerchantRequestID,
-            message: 'STK push sent. Check your phone for M-Pesa prompt.',
-            warning: '⚠️ REAL MONEY will be deducted from your M-Pesa account',
-            paybill: MPESA_SHORTCODE
-        });
-
-    } catch (error) {
-        console.error('❌ STK PUSH ERROR:');
-        console.error('Error message:', error.message);
-        console.error('Response data:', error.response?.data);
-        console.error('Response status:', error.response?.status);
-        console.error('========================================');
-
-        res.status(500).json({
-            success: false,
-            error: error.response?.data?.errorMessage || error.message,
-            details: error.response?.data,
-            message: 'Payment initiation failed. Please try again.'
-        });
+    };
+    
+    // Execute with retry logic
+    while (retryCount < maxRetries) {
+        try {
+            const result = await attemptPayment();
+            return res.json(result);
+        } catch (error) {
+            retryCount++;
+            if (retryCount === maxRetries) {
+                console.error('❌ All payment attempts failed');
+                return res.status(500).json({
+                    success: false,
+                    error: error.message || 'Payment initiation failed after multiple attempts',
+                    responseTime: `${Date.now() - requestStartTime}ms`,
+                    message: 'Please try again or contact support if issue persists.'
+                });
+            }
+            console.log(`🔄 Retrying payment (${retryCount}/${maxRetries})...`);
+            await new Promise(resolve => setTimeout(resolve, 1000));
+        }
     }
 });
 
 // ============================================
 // CHECK PAYMENT STATUS
 // ============================================
+
 app.post('/api/payments/mpesa/status', async (req, res) => {
     try {
         const { checkoutRequestID } = req.body;
@@ -273,7 +291,6 @@ app.post('/api/payments/mpesa/status', async (req, res) => {
 
         console.log(`🔍 Checking payment status for: ${checkoutRequestID}`);
 
-        // Get access token
         const accessToken = await getMpesaAccessToken();
         const timestamp = getTimestamp();
         const password = Buffer.from(`${MPESA_SHORTCODE}${MPESA_PASSKEY}${timestamp}`).toString('base64');
@@ -322,8 +339,9 @@ app.post('/api/payments/mpesa/status', async (req, res) => {
 // ============================================
 // M-PESA CALLBACK (Webhook)
 // ============================================
+
 app.post('/api/payments/mpesa/callback', (req, res) => {
-    console.log('📞 M-Pesa Callback received:', JSON.stringify(req.body, null, 2));
+    console.log('📞 M-Pesa Callback received at:', new Date().toISOString());
     
     const { Body } = req.body;
     if (Body && Body.stkCallback) {
@@ -340,12 +358,13 @@ app.post('/api/payments/mpesa/callback', (req, res) => {
             console.log(`   Amount: KES ${amount}`);
             console.log(`   Phone: ${phoneNumber}`);
             console.log(`   CheckoutID: ${CheckoutRequestID}`);
-            console.log(`   Result Description: ${ResultDesc}`);
         } else {
             console.log(`❌ PAYMENT FAILED: ${ResultDesc}`);
             console.log(`   Result Code: ${ResultCode}`);
             console.log(`   CheckoutID: ${CheckoutRequestID}`);
         }
+    } else {
+        console.log('⚠️ No stkCallback in webhook body');
     }
 
     res.json({ ResultCode: 0, ResultDesc: 'Success' });
@@ -354,6 +373,7 @@ app.post('/api/payments/mpesa/callback', (req, res) => {
 // ============================================
 // ADDITIONAL M-PESA ENDPOINTS
 // ============================================
+
 app.post('/api/payments/mpesa/timeout', (req, res) => {
     console.log('⏰ M-Pesa Timeout received:', JSON.stringify(req.body, null, 2));
     res.json({ ResultCode: 0, ResultDesc: 'Success' });
@@ -375,8 +395,9 @@ app.post('/api/payments/mpesa/validation', (req, res) => {
 });
 
 // ============================================
-// DEBUG ENDPOINT - Check credentials format
+// DEBUG ENDPOINT
 // ============================================
+
 app.get('/api/debug/credentials', (req, res) => {
     res.json({
         consumer_key_length: MPESA_CONSUMER_KEY.length,
@@ -384,6 +405,8 @@ app.get('/api/debug/credentials', (req, res) => {
         passkey_length: MPESA_PASSKEY.length,
         shortcode: MPESA_SHORTCODE,
         callback_url: MPESA_CALLBACK_URL,
+        backend_url: BACKEND_URL,
+        port: PORT,
         warning: 'Credentials are configured but may need verification with Safaricom'
     });
 });
@@ -391,16 +414,18 @@ app.get('/api/debug/credentials', (req, res) => {
 // ============================================
 // ROOT ENDPOINTS
 // ============================================
+
 app.get('/', (req, res) => {
     res.json({
         success: true,
         message: 'MEI DRIVE AFRICA API',
-        version: '2.0.0',
+        version: '2.1.0',
         status: 'running',
         paybill: MPESA_SHORTCODE,
         environment: process.env.NODE_ENV || 'production',
         endpoints: [
             'GET  /',
+            'GET  /health',
             'GET  /api/health',
             'GET  /api/payments/mpesa/test',
             'GET  /api/debug/credentials',
@@ -420,14 +445,25 @@ app.use((req, res) => {
     });
 });
 
+// Global error handler
+app.use((err, req, res, next) => {
+    console.error('Global error handler:', err);
+    res.status(500).json({
+        success: false,
+        error: err.message || 'Internal server error'
+    });
+});
+
 // ============================================
-// START SERVER
+// START SERVER WITH PROPER HANDLING
 // ============================================
-app.listen(PORT, '0.0.0.0', () => {
+
+const server = app.listen(PORT, '0.0.0.0', () => {
     console.log(`
 ╔═══════════════════════════════════════════════════════════════════╗
 ║                                                                   ║
 ║     🚗 MEI DRIVE AFRICA - M-PESA API SERVER                       ║
+║     🟢 Version: 2.1.0                                            ║
 ║                                                                   ║
 ║     Status: ✅ RUNNING                                            ║
 ║     Port: ${PORT}                                                   ║
@@ -437,11 +473,22 @@ app.listen(PORT, '0.0.0.0', () => {
 ║                                                                   ║
 ║     ⚠️  WARNING: REAL MONEY WILL BE DEDUCTED!                     ║
 ║                                                                   ║
+║     Health Check:                                                 ║
+║     GET ${BACKEND_URL}/health                                       ║
+║                                                                   ║
 ║     Test M-Pesa Connection:                                       ║
 ║     GET ${BACKEND_URL}/api/payments/mpesa/test                     ║
 ║                                                                   ║
 ╚═══════════════════════════════════════════════════════════════════╝
     `);
+});
+
+// Graceful shutdown
+process.on('SIGTERM', () => {
+    console.log('SIGTERM signal received: closing HTTP server');
+    server.close(() => {
+        console.log('HTTP server closed');
+    });
 });
 
 export default app;
