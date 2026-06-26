@@ -15,14 +15,14 @@ const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 // PREDEFINED FALLBACK DATA (8 Courses)
 // ============================================
 const PREDEFINED_COURSES = [
-    { id: 1, name: '🚗 LEARNER HUB', shortName: 'LEARNER HUB', description: 'Complete driver training for new drivers covering fundamental rules, vehicle controls, observation, speed management, parking, and NTSA exam preparation.', price: 2999, duration: '8 weeks', icon: 'fa-car', lessons_count: 21, color: '#F39C12' },
-    { id: 2, name: '🚌 PSV PROFESSIONAL', shortName: 'PSV PROFESSIONAL', description: 'Public Service Vehicle certification with passenger management, customer care, safety protocols, NTSA compliance, and conductor professionalism.', price: 3999, duration: '8 weeks', icon: 'fa-bus', lessons_count: 16, color: '#9B59B6' },
-    { id: 3, name: '⚡ EV DRIVER & RIDER', shortName: 'EV DRIVER', description: 'Electric vehicle operations, charging safety, battery management, regenerative braking, and eco-driving techniques for EVs.', price: 1999, duration: '5 weeks', icon: 'fa-car-battery', lessons_count: 10, color: '#3498DB' },
-    { id: 4, name: '🔄 DRIVER REFRESHER', shortName: 'REFRESHER', description: 'Advanced defensive driving, skill enhancement, hazard perception, professional driver excellence, and breaking bad habits.', price: 1499, duration: '4 weeks', icon: 'fa-sync-alt', lessons_count: 8, color: '#2ECC71' },
-    { id: 5, name: '🏍️ BODA BODA SAFETY', shortName: 'BODA SAFETY', description: 'Professional motorcycle rider training with PPE, defensive riding, passenger safety, road etiquette, and accident prevention.', price: 2499, duration: '6 weeks', icon: 'fa-motorcycle', lessons_count: 26, color: '#E67E22' },
-    { id: 6, name: '🏫 SCHOOL BUS/VAN', shortName: 'SCHOOL BUS', description: 'Specialized training for school transport drivers focusing on child safety, boarding/alighting procedures, and emergency response.', price: 2999, duration: '7 weeks', icon: 'fa-school', lessons_count: 7, color: '#1ABC9C' },
-    { id: 7, name: '🛡️ DEFENSIVE DRIVER', shortName: 'DEFENSIVE', description: 'Master defensive driving techniques including hazard perception, risk management, space cushion driving, and collision avoidance.', price: 2499, duration: '6 weeks', icon: 'fa-shield-alt', lessons_count: 30, color: '#E74C3C' },
-    { id: 8, name: '📚 QUIZ BANK', shortName: 'QUIZ BANK', description: '1000+ NTSA-style exam questions covering road signs, highway code, defensive driving, traffic rules, and professional conduct.', price: 999, duration: 'Self-paced', icon: 'fa-question-circle', lessons_count: 15, color: '#00ff88' }
+    { id: 1, name: '🚗 LEARNER HUB', short_name: 'LEARNER HUB', description: 'Complete driver training for new drivers covering fundamental rules, vehicle controls, observation, speed management, parking, and NTSA exam preparation.', price: 2999, duration: '8 weeks', icon: 'fa-car', lessons_count: 21, color: '#F39C12' },
+    { id: 2, name: '🚌 PSV PROFESSIONAL', short_name: 'PSV PROFESSIONAL', description: 'Public Service Vehicle certification with passenger management, customer care, safety protocols, NTSA compliance, and conductor professionalism.', price: 3999, duration: '8 weeks', icon: 'fa-bus', lessons_count: 16, color: '#9B59B6' },
+    { id: 3, name: '⚡ EV DRIVER & RIDER', short_name: 'EV DRIVER', description: 'Electric vehicle operations, charging safety, battery management, regenerative braking, and eco-driving techniques for EVs.', price: 1999, duration: '5 weeks', icon: 'fa-car-battery', lessons_count: 10, color: '#3498DB' },
+    { id: 4, name: '🔄 DRIVER REFRESHER', short_name: 'REFRESHER', description: 'Advanced defensive driving, skill enhancement, hazard perception, professional driver excellence, and breaking bad habits.', price: 1499, duration: '4 weeks', icon: 'fa-sync-alt', lessons_count: 8, color: '#2ECC71' },
+    { id: 5, name: '🏍️ BODA BODA SAFETY', short_name: 'BODA SAFETY', description: 'Professional motorcycle rider training with PPE, defensive riding, passenger safety, road etiquette, and accident prevention.', price: 2499, duration: '6 weeks', icon: 'fa-motorcycle', lessons_count: 26, color: '#E67E22' },
+    { id: 6, name: '🏫 SCHOOL BUS/VAN', short_name: 'SCHOOL BUS', description: 'Specialized training for school transport drivers focusing on child safety, boarding/alighting procedures, and emergency response.', price: 2999, duration: '7 weeks', icon: 'fa-school', lessons_count: 7, color: '#1ABC9C' },
+    { id: 7, name: '🛡️ DEFENSIVE DRIVER', short_name: 'DEFENSIVE', description: 'Master defensive driving techniques including hazard perception, risk management, space cushion driving, and collision avoidance.', price: 2499, duration: '6 weeks', icon: 'fa-shield-alt', lessons_count: 30, color: '#E74C3C' },
+    { id: 8, name: '📚 QUIZ BANK', short_name: 'QUIZ BANK', description: '1000+ NTSA-style exam questions covering road signs, highway code, defensive driving, traffic rules, and professional conduct.', price: 999, duration: 'Self-paced', icon: 'fa-question-circle', lessons_count: 15, color: '#00ff88' }
 ];
 
 const PREDEFINED_QUIZ = [
@@ -85,6 +85,33 @@ async function signOut() {
     }
 }
 
+// Sends a password-reset email. The link in that email lands the user
+// back on update-password.html with a recovery token in the URL, which
+// the Supabase client auto-detects (detectSessionInUrl defaults to true).
+async function resetPassword(email) {
+    try {
+        const redirectTo = `${window.location.origin}/update-password.html`;
+        const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo });
+        if (error) throw error;
+        return { success: true };
+    } catch (error) {
+        return { success: false, error: error.message };
+    }
+}
+
+// Must be called from update-password.html after following a reset-password
+// email link — relies on the recovery session Supabase establishes from the
+// token in the URL, not on the user being already logged in normally.
+async function updatePassword(newPassword) {
+    try {
+        const { error } = await supabase.auth.updateUser({ password: newPassword });
+        if (error) throw error;
+        return { success: true };
+    } catch (error) {
+        return { success: false, error: error.message };
+    }
+}
+
 async function getCurrentUser() {
     try {
         const { data: { session } } = await supabase.auth.getSession();
@@ -114,14 +141,19 @@ async function getCurrentUser() {
 // ============================================
 async function getAllCourses() {
     try {
-        const { data, error } = await supabase.from('courses').select('*');
+        const { data, error } = await supabase.from('courses').select('*').order('id');
         if (error) throw error;
         if (data && data.length > 0) {
-            return data.map(c => ({
-                ...c,
-                shortName: c.name,
-                color: PREDEFINED_COURSES.find(pc => pc.id === c.id)?.color || '#00ff88'
-            }));
+            return data.map(c => {
+                const predefined = PREDEFINED_COURSES.find(pc => pc.id === c.id);
+                return {
+                    ...c,
+                    short_name: c.short_name || predefined?.short_name || c.name,
+                    icon: c.icon || predefined?.icon || 'fa-car',
+                    color: c.color || predefined?.color || '#00ff88',
+                    lessons_count: c.lessons_count ?? predefined?.lessons_count ?? 0
+                };
+            });
         }
         return PREDEFINED_COURSES;
     } catch (error) {
@@ -142,6 +174,56 @@ async function getLessonsByCourseId(courseId) {
         return data || [];
     } catch (error) {
         return [];
+    }
+}
+
+// ============================================
+// COURSE IMAGES (Supabase Storage)
+// ============================================
+const COURSE_IMAGE_BUCKET = 'course-images';
+const MAX_COURSE_IMAGE_BYTES = 5 * 1024 * 1024; // 5MB, must match the bucket's file_size_limit
+const ALLOWED_COURSE_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+
+// Client-side check for fast feedback. The real enforcement is the
+// bucket's file_size_limit/allowed_mime_types and the Storage RLS
+// policy from migration 0002_course_images.sql — this is just UX.
+function validateCourseImageFile(file) {
+    if (!ALLOWED_COURSE_IMAGE_TYPES.includes(file.type)) {
+        return { valid: false, error: 'Only JPEG, PNG, WEBP or GIF images are allowed' };
+    }
+    if (file.size > MAX_COURSE_IMAGE_BYTES) {
+        return { valid: false, error: 'Image must be smaller than 5MB' };
+    }
+    return { valid: true };
+}
+
+async function uploadCourseImage(file) {
+    if (!file) return null;
+
+    const check = validateCourseImageFile(file);
+    if (!check.valid) throw new Error(check.error);
+
+    const ext = (file.name.split('.').pop() || 'jpg').toLowerCase();
+    const path = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+
+    const { error } = await supabase.storage
+        .from(COURSE_IMAGE_BUCKET)
+        .upload(path, file, { contentType: file.type, upsert: false });
+
+    if (error) throw error;
+
+    const { data } = supabase.storage.from(COURSE_IMAGE_BUCKET).getPublicUrl(path);
+    return { url: data.publicUrl, path };
+}
+
+// Best-effort cleanup — never throws, since a failed delete shouldn't
+// block whatever course operation triggered it.
+async function deleteCourseImage(path) {
+    if (!path) return;
+    try {
+        await supabase.storage.from(COURSE_IMAGE_BUCKET).remove([path]);
+    } catch (error) {
+        console.error('Failed to delete course image:', error.message);
     }
 }
 
@@ -219,6 +301,126 @@ async function updateProgress(userId, courseId, progress) {
     } catch (error) {
         return { success: true };
     }
+}
+
+// ============================================
+// ADMIN: COURSE CRUD (with image support)
+// ============================================
+async function addCourse(courseData, imageFile = null) {
+    try {
+        let image_url = null;
+        let image_path = null;
+
+        if (imageFile) {
+            const uploaded = await uploadCourseImage(imageFile);
+            image_url = uploaded.url;
+            image_path = uploaded.path;
+        }
+
+        const { data, error } = await supabase
+            .from('courses')
+            .insert({ ...courseData, image_url, image_path })
+            .select()
+            .single();
+
+        if (error) {
+            // Don't leave an orphaned file in storage if the insert failed
+            if (image_path) await deleteCourseImage(image_path);
+            throw error;
+        }
+
+        return { success: true, course: data };
+    } catch (error) {
+        console.error('addCourse error:', error.message);
+        return { success: false, error: error.message };
+    }
+}
+
+async function updateCourse(id, courseData, imageFile = null) {
+    try {
+        const updates = { ...courseData };
+        let oldImagePath = null;
+
+        if (imageFile) {
+            const { data: existing } = await supabase
+                .from('courses')
+                .select('image_path')
+                .eq('id', id)
+                .maybeSingle();
+            oldImagePath = existing?.image_path || null;
+
+            const uploaded = await uploadCourseImage(imageFile);
+            updates.image_url = uploaded.url;
+            updates.image_path = uploaded.path;
+        }
+
+        const { data, error } = await supabase
+            .from('courses')
+            .update(updates)
+            .eq('id', id)
+            .select()
+            .single();
+
+        if (error) throw error;
+
+        // Only clean up the old image after the row update succeeded
+        if (imageFile && oldImagePath) {
+            await deleteCourseImage(oldImagePath);
+        }
+
+        return { success: true, course: data };
+    } catch (error) {
+        console.error('updateCourse error:', error.message);
+        return { success: false, error: error.message };
+    }
+}
+
+async function updateCoursePrice(id, price) {
+    try {
+        const { error } = await supabase.from('courses').update({ price }).eq('id', id);
+        if (error) throw error;
+        return { success: true };
+    } catch (error) {
+        console.error('updateCoursePrice error:', error.message);
+        return { success: false, error: error.message };
+    }
+}
+
+async function deleteCourse(id) {
+    try {
+        const { data: existing } = await supabase
+            .from('courses')
+            .select('image_path')
+            .eq('id', id)
+            .maybeSingle();
+
+        const { error } = await supabase.from('courses').delete().eq('id', id);
+        if (error) throw error;
+
+        if (existing?.image_path) await deleteCourseImage(existing.image_path);
+
+        return { success: true };
+    } catch (error) {
+        console.error('deleteCourse error:', error.message);
+        return { success: false, error: error.message };
+    }
+}
+
+// ============================================
+// REAL-TIME COURSE SUBSCRIPTION
+// Returns an unsubscribe function — call it on page teardown to
+// avoid leaking a Supabase realtime channel per page load.
+// ============================================
+function subscribeToCourses(callback) {
+    const channel = supabase
+        .channel('courses-changes')
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'courses' }, async () => {
+            const courses = await getAllCourses();
+            callback(courses);
+        })
+        .subscribe();
+
+    return () => supabase.removeChannel(channel);
 }
 
 // ============================================
@@ -401,12 +603,24 @@ window.MEIDrive = {
     signUp, 
     signIn, 
     signOut, 
+    resetPassword,
+    updatePassword,
     getCurrentUser,
     
     // Courses
     getAllCourses, 
     getCourseById, 
     getLessonsByCourseId,
+    addCourse,
+    updateCourse,
+    updateCoursePrice,
+    deleteCourse,
+    subscribeToCourses,
+
+    // Course images
+    uploadCourseImage,
+    deleteCourseImage,
+    validateCourseImageFile,
     
     // Quiz
     getAllQuizQuestions,

@@ -13,6 +13,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.0/dist/umd/supabase.min.js"></script>
+    <script src="supabase.js"></script>
     
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -111,12 +112,11 @@
 
 <script>
     // ============================================
-    // SUPABASE CONFIGURATION - SINGLE SOURCE OF TRUTH
+    // SINGLE SOURCE OF TRUTH: window.MEIDrive (supabase.js)
+    // No client, no auth, no course/quiz data is created here —
+    // all of it lives in supabase.js so every page stays consistent.
     // ============================================
-    const SUPABASE_URL = "https://qpqkmmkrzxlhcpccefjn.supabase.co";
-    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFwcWttbWtyenhsaGNwY2NlZmpuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk1MjU0NzIsImV4cCI6MjA5NTEwMTQ3Mn0.Vw1hexN3NKoF_y9VFBFs_NUhJgFNNMwuyzDjImUcM6s";
-    
-    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    const MEI = window.MEIDrive;
     
     // ============================================
     // GLOBAL STATE
@@ -126,33 +126,9 @@
     let courses = [];
     let quizQuestions = [];
     let userEnrollments = {};
-    let isAdmin = false;
     let pendingCourse = null;
+    let pendingCheckoutInterval = null;
     let quizState = { currentIndex: 0, score: 0, userAnswers: [], questions: [] };
-    let coursesChannel = null;
-    let quizChannel = null;
-    
-    // ============================================
-    // FALLBACK DATA (WORKS IMMEDIATELY WITHOUT TABLES)
-    // ============================================
-    const FALLBACK_COURSES = [
-        { id: 1, name: '🚗 LEARNER HUB', short_name: 'LEARNER HUB', description: 'Complete driver training for beginners covering fundamental rules, vehicle controls, observation, speed management, parking, model town, and NTSA exam preparation.', price: 2999, duration: '8 weeks', icon: 'fa-car', lessons_count: 21, category: 'learner', color: '#F39C12' },
-        { id: 2, name: '🚌 PSV PROFESSIONAL', short_name: 'PSV PROFESSIONAL', description: 'Public Service Vehicle certification with passenger management, customer care, safety protocols, NTSA compliance.', price: 3999, duration: '8 weeks', icon: 'fa-bus', lessons_count: 16, category: 'psv', color: '#9B59B6' },
-        { id: 3, name: '⚡ EV DRIVER & RIDER', short_name: 'EV DRIVER', description: 'Electric vehicle operations, charging safety, battery management, regenerative braking, EV maintenance.', price: 1999, duration: '5 weeks', icon: 'fa-car-battery', lessons_count: 10, category: 'ev', color: '#3498DB' },
-        { id: 4, name: '🔄 DRIVER REFRESHER', short_name: 'REFRESHER', description: 'Advanced defensive driving, skill enhancement, hazard perception, breaking bad habits, updated traffic laws.', price: 1499, duration: '4 weeks', icon: 'fa-sync-alt', lessons_count: 8, category: 'refresher', color: '#2ECC71' },
-        { id: 5, name: '🏍️ BODA BODA SAFETY', short_name: 'BODA SAFETY', description: 'Professional motorcycle rider training with PPE, defensive riding, passenger safety, road etiquette.', price: 2499, duration: '6 weeks', icon: 'fa-motorcycle', lessons_count: 26, category: 'boda', color: '#E67E22' },
-        { id: 6, name: '🏫 SCHOOL BUS/VAN', short_name: 'SCHOOL BUS', description: 'Specialized training for school transport drivers focusing on child safety, boarding/alighting procedures.', price: 2999, duration: '7 weeks', icon: 'fa-school', lessons_count: 7, category: 'school', color: '#1ABC9C' },
-        { id: 7, name: '🛡️ DEFENSIVE DRIVER', short_name: 'DEFENSIVE', description: 'Master advanced defensive driving techniques including hazard perception, risk management, space cushion driving.', price: 2499, duration: '6 weeks', icon: 'fa-shield-alt', lessons_count: 30, category: 'defensive', color: '#E74C3C' },
-        { id: 8, name: '📚 QUIZ BANK', short_name: 'QUIZ BANK', description: '1000+ NTSA-style exam questions covering road signs, highway code, defensive driving, traffic rules.', price: 999, duration: 'Self-paced', icon: 'fa-question-circle', lessons_count: 15, category: 'quiz', color: '#00ff88' }
-    ];
-    
-    const FALLBACK_QUIZ = [
-        { id: 1, category: 'Road Signs', question: 'What does a STOP sign mean?', option_a: 'Slow down only', option_b: 'Continue carefully', option_c: 'Come to a complete stop', option_d: 'Overtake carefully', correct_option: 2, explanation: 'A STOP sign requires you to come to a complete stop, check for traffic, and proceed only when safe.' },
-        { id: 2, category: 'Highway Code', question: 'Seat belts are important because they:', option_a: 'Improve music quality', option_b: 'Prevent accidents', option_c: 'Reduce injury during accidents', option_d: 'Increase speed', correct_option: 2, explanation: 'Seat belts reduce the risk of serious injury or death during a collision.' },
-        { id: 3, category: 'Defensive Driving', question: 'Defensive driving means:', option_a: 'Aggressive driving', option_b: 'Anticipating and avoiding danger', option_c: 'Driving fast', option_d: 'Ignoring traffic rules', correct_option: 1, explanation: 'Defensive driving means anticipating potential hazards and taking action to avoid them.' },
-        { id: 4, category: 'Traffic Rules', question: 'Driving under the influence of alcohol is:', option_a: 'Safe at low speed', option_b: 'Acceptable at night', option_c: 'Dangerous and illegal', option_d: 'Recommended', correct_option: 2, explanation: 'Driving under the influence is dangerous, illegal, and impairs judgment.' },
-        { id: 5, category: 'Motorcycle', question: 'A motorcycle passenger should:', option_a: 'Sit carelessly', option_b: 'Wear a helmet', option_c: 'Distract the rider', option_d: 'Stand while riding', correct_option: 1, explanation: 'All passengers must wear approved helmets for safety.' }
-    ];
     
     // ============================================
     // HELPER FUNCTIONS
@@ -170,60 +146,23 @@
     function escapeHtml(str) { if (!str) return ''; return str.replace(/[&<>]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[m])); }
     
     // ============================================
-    // DATA FETCHING FROM SUPABASE (with fallback)
+    // DATA FETCHING (delegated to supabase.js, which already
+    // has its own fallback data if the tables are empty)
     // ============================================
-    async function fetchCourses() {
-        try {
-            const { data, error } = await supabase.from('courses').select('*').order('id');
-            if (error) throw error;
-            courses = data?.length ? data : FALLBACK_COURSES;
-        } catch (e) {
-            console.warn('Using fallback courses:', e.message);
-            courses = FALLBACK_COURSES;
-        }
-    }
-    
-    async function fetchQuizQuestions() {
-        try {
-            const { data, error } = await supabase.from('quiz_questions').select('*');
-            if (error) throw error;
-            quizQuestions = data?.length ? data : FALLBACK_QUIZ;
-        } catch (e) {
-            console.warn('Using fallback quiz:', e.message);
-            quizQuestions = FALLBACK_QUIZ;
-        }
-    }
-    
     async function fetchUserEnrollments() {
-        if (!currentUser) return;
-        try {
-            const { data, error } = await supabase.from('enrollments').select('course_id').eq('user_id', currentUser.id);
-            if (error) throw error;
-            userEnrollments = {};
-            (data || []).forEach(e => { userEnrollments[e.course_id] = true; });
-        } catch (e) {
-            console.warn('Using empty enrollments:', e.message);
-            userEnrollments = {};
-        }
+        if (!currentUser) { userEnrollments = {}; return; }
+        const enrollments = await MEI.getUserEnrollments(currentUser.id);
+        userEnrollments = {};
+        enrollments.forEach(e => { userEnrollments[e.course_id] = true; });
     }
     
     async function loadData() {
-        await Promise.all([fetchCourses(), fetchQuizQuestions()]);
+        const [coursesData, quizData] = await Promise.all([MEI.getAllCourses(), MEI.getAllQuizQuestions()]);
+        courses = coursesData;
+        quizQuestions = quizData;
         
-        try {
-            const { data: { user } } = await supabase.auth.getUser();
-            if (user) {
-                currentUser = { id: user.id, email: user.email, is_admin: false };
-                await fetchUserEnrollments();
-                
-                try {
-                    const { data: profile } = await supabase.from('profiles').select('is_admin').eq('id', user.id).maybeSingle();
-                    if (profile) isAdmin = profile.is_admin;
-                } catch(e) {}
-            }
-        } catch (e) {
-            console.warn('Auth error:', e.message);
-        }
+        currentUser = await MEI.getCurrentUser();
+        if (currentUser) await fetchUserEnrollments();
         
         updateAuthUI();
     }
@@ -244,10 +183,9 @@
     }
     
     async function logout() { 
-        await supabase.auth.signOut(); 
+        await MEI.signOut(); 
         currentUser = null; 
         userEnrollments = {}; 
-        isAdmin = false;
         updateAuthUI(); 
         navigateTo('home'); 
         showToast('Logged out successfully', 'info'); 
@@ -266,26 +204,27 @@
         if (password.length < 6) { showToast('Password must be at least 6 characters', 'error'); return; }
         
         if (mode === 'signup') {
-            const result = await supabase.auth.signUp({ email, password });
-            if (!result.error) {
-                try {
-                    await supabase.from('profiles').upsert({ id: result.data.user.id, email, full_name: fullName, is_admin: false, created_at: new Date() });
-                } catch(e) { console.warn('Profile creation skipped:', e.message); }
+            const result = await MEI.signUp(email, password, fullName);
+            if (result.success) {
                 showToast('Account created! Please check your email to verify.', 'success');
                 showAuthModal('login');
-            } else { showToast(result.error.message, 'error'); }
+            } else {
+                showToast(result.error, 'error');
+            }
         } else {
-            const result = await supabase.auth.signInWithPassword({ email, password });
-            if (!result.error) {
+            const result = await MEI.signIn(email, password);
+            if (result.success) {
                 await loadData();
                 showToast(`Welcome back, ${email.split('@')[0]}!`, 'success');
                 navigateTo('home');
-            } else { showToast(result.error.message, 'error'); }
+            } else {
+                showToast(result.error, 'error');
+            }
         }
     }
     
     // ============================================
-    // COURSE ENROLLMENT
+    // COURSE ENROLLMENT (real M-Pesa flow, same as course-detail.html)
     // ============================================
     function isEnrolled(courseId) { return userEnrollments[courseId] === true; }
     
@@ -298,31 +237,20 @@
             pendingCourse = course;
             showPaymentModal(course);
         } else {
-            try {
-                const { error } = await supabase.from('enrollments').upsert({ 
-                    user_id: currentUser.id, 
-                    course_id: courseId, 
-                    amount_paid: 0, 
-                    enrolled_at: new Date() 
-                });
-                if (!error) { 
-                    userEnrollments[courseId] = true; 
-                    showToast(`✅ Successfully enrolled in ${course.name}!`, 'success'); 
-                    if (currentPage === 'courses') renderCourses();
-                    else if (currentPage === 'home') renderHome();
-                } else { showToast('Enrollment failed', 'error'); }
-            } catch(e) {
-                // Fallback for demo
+            const result = await MEI.createEnrollment(currentUser.id, courseId, 0);
+            if (result.success) {
                 userEnrollments[courseId] = true;
-                showToast(`✅ Demo: Enrolled in ${course.name}!`, 'success');
+                showToast(`✅ Successfully enrolled in ${course.name}!`, 'success');
                 if (currentPage === 'courses') renderCourses();
                 else if (currentPage === 'home') renderHome();
+            } else {
+                showToast('Enrollment failed. Please try again.', 'error');
             }
         }
     }
     
     function showPaymentModal(course) {
-        document.getElementById('page-content').innerHTML = `<div class="payment-modal" id="paymentModal"><div class="payment-card"><div class="mpesa-logo"><i class="fas fa-money-bill-wave"></i></div><h2>M-Pesa Payment</h2><p style="margin:1rem 0;">Course: <strong>${escapeHtml(course.name)}</strong></p><p style="font-size:1.8rem;color:var(--primary);">KES ${course.price.toLocaleString()}</p><div class="phone-input"><span>+254</span><input type="tel" id="mpesaPhone" placeholder="712345678" autocomplete="off"></div><p style="font-size:12px;opacity:0.7;">Enter your M-Pesa number to receive payment prompt</p><button class="btn btn-primary" style="width:100%;margin-top:1rem;" onclick="processPayment()"><i class="fas fa-arrow-right"></i> Pay Now</button><button class="btn btn-outline" style="width:100%;margin-top:0.5rem;" onclick="navigateTo('courses')">Cancel</button></div></div>`;
+        document.getElementById('page-content').innerHTML = `<div class="payment-modal" id="paymentModal"><div class="payment-card"><div class="mpesa-logo"><i class="fas fa-money-bill-wave"></i></div><h2>M-Pesa Payment</h2><p style="margin:1rem 0;">Course: <strong>${escapeHtml(course.name)}</strong></p><p style="font-size:1.8rem;color:var(--primary);">KES ${course.price.toLocaleString()}</p><div class="phone-input"><span>+254</span><input type="tel" id="mpesaPhone" placeholder="712345678" autocomplete="off"></div><p style="font-size:12px;opacity:0.7;">Enter your M-Pesa number to receive payment prompt</p><button class="btn btn-primary" id="payNowBtn" style="width:100%;margin-top:1rem;" onclick="processPayment()"><i class="fas fa-arrow-right"></i> Pay Now</button><button class="btn btn-outline" style="width:100%;margin-top:0.5rem;" onclick="navigateTo('courses')">Cancel</button></div></div>`;
     }
     
     async function processPayment() {
@@ -330,32 +258,56 @@
         if (!phone) { showToast('Please enter your M-Pesa phone number', 'error'); return; }
         if (!pendingCourse || !currentUser) return;
         
-        showToast(`Initiating payment of KES ${pendingCourse.price}...`, 'info');
+        const payBtn = document.getElementById('payNowBtn');
+        if (payBtn) { payBtn.disabled = true; payBtn.innerHTML = 'Sending request...'; }
         
-        setTimeout(async () => {
-            try {
-                const { error } = await supabase.from('enrollments').upsert({ 
-                    user_id: currentUser.id, 
-                    course_id: pendingCourse.id, 
-                    amount_paid: pendingCourse.price, 
-                    transaction_id: 'MPESA_' + Date.now(),
-                    enrolled_at: new Date() 
-                });
-                if (!error) { 
-                    userEnrollments[pendingCourse.id] = true; 
-                    showToast('✅ Payment successful! Course unlocked.', 'success'); 
-                    navigateTo('courses'); 
-                } else { showToast('Payment failed. Please try again.', 'error'); }
-            } catch(e) {
-                userEnrollments[pendingCourse.id] = true;
-                showToast('✅ Demo: Course unlocked!', 'success');
-                navigateTo('courses');
+        const result = await MEI.initiateMpesaPayment(
+            phone,
+            pendingCourse.price,
+            pendingCourse.id,
+            currentUser.id,
+            currentUser.email,
+            pendingCourse.name
+        );
+        
+        if (!result.success) {
+            showToast(result.error || 'Payment initiation failed', 'error');
+            if (payBtn) { payBtn.disabled = false; payBtn.innerHTML = '<i class="fas fa-arrow-right"></i> Pay Now'; }
+            return;
+        }
+        
+        showToast('Payment request sent! Check your phone for the M-Pesa prompt.', 'success');
+        if (payBtn) payBtn.innerHTML = 'Waiting for confirmation...';
+        
+        let attempts = 0;
+        pendingCheckoutInterval = setInterval(async () => {
+            attempts++;
+            const status = await MEI.checkPaymentStatus(result.checkoutRequestID);
+            
+            if (status.success && status.status === 'completed') {
+                clearInterval(pendingCheckoutInterval);
+                const enrollResult = await MEI.createEnrollment(currentUser.id, pendingCourse.id, pendingCourse.price, status.transaction_id);
+                if (enrollResult.success) {
+                    userEnrollments[pendingCourse.id] = true;
+                    showToast('✅ Payment successful! Course unlocked.', 'success');
+                    navigateTo('courses');
+                }
+            } else if (status.status === 'failed' || attempts > 20) {
+                clearInterval(pendingCheckoutInterval);
+                showToast(
+                    attempts > 20
+                        ? 'Payment confirmation timed out. Check your M-Pesa messages — if you were charged, contact support.'
+                        : 'Payment was not completed. Please try again.',
+                    'warning'
+                );
+                if (payBtn) { payBtn.disabled = false; payBtn.innerHTML = '<i class="fas fa-arrow-right"></i> Pay Now'; }
             }
-        }, 2000);
+        }, 3000);
     }
     
     // ============================================
     // QUIZ FUNCTIONS
+    // quiz_questions.correct_option is 0-indexed (0=A, 1=B, 2=C, 3=D)
     // ============================================
     function renderQuiz() {
         if (quizState.questions.length === 0 && quizQuestions.length) {
@@ -380,7 +332,7 @@
         const q = quizState.questions[quizState.currentIndex];
         const hasAnswered = quizState.userAnswers[quizState.currentIndex] !== undefined;
         
-        document.getElementById('page-content').innerHTML = `<div class="container" style="padding-top:100px;max-width:800px;"><div class="card"><div style="display:flex;justify-content:space-between;"><span class="category-tag">${q.category}</span><span>${quizState.currentIndex+1}/${quizState.questions.length}</span></div><h3 style="margin:1rem 0;">${escapeHtml(q.question)}</h3><div>${q.options.map((opt, idx) => `<div class="quiz-option ${hasAnswered && idx === q.correct ? 'correct' : ''} ${hasAnswered && idx === quizState.userAnswers[quizState.currentIndex] && idx !== q.correct ? 'wrong' : ''}" onclick="${!hasAnswered ? `selectAnswer(${idx})` : ''}"><span style="font-weight:600;">${String.fromCharCode(65+idx)}.</span> ${escapeHtml(opt)}</div>`).join('')}</div>${hasAnswered ? `<div style="margin-top:1rem;padding:1rem;background:rgba(0,255,136,0.1);border-radius:12px;"><i class="fas ${quizState.userAnswers[quizState.currentIndex] === q.correct ? 'fa-check-circle' : 'fa-times-circle'}"></i> <strong>${quizState.userAnswers[quizState.currentIndex] === q.correct ? 'Correct!' : 'Incorrect'}</strong><p>${escapeHtml(q.explanation)}</p><div class="quiz-nav-buttons"><button class="btn btn-outline" onclick="previousQuestion()">Previous</button><button class="btn btn-primary" onclick="nextQuestion()">Next</button></div></div>` : '<p style="margin-top:1rem;text-align:center;"><i class="fas fa-hand-pointer"></i> Click on an option to answer</p>'}</div></div>`;
+        document.getElementById('page-content').innerHTML = `<div class="container" style="padding-top:100px;max-width:800px;"><div class="card"><div style="display:flex;justify-content:space-between;"><span class="category-tag">${escapeHtml(q.category || '')}</span><span>${quizState.currentIndex+1}/${quizState.questions.length}</span></div><h3 style="margin:1rem 0;">${escapeHtml(q.question)}</h3><div>${q.options.map((opt, idx) => `<div class="quiz-option ${hasAnswered && idx === q.correct ? 'correct' : ''} ${hasAnswered && idx === quizState.userAnswers[quizState.currentIndex] && idx !== q.correct ? 'wrong' : ''}" onclick="${!hasAnswered ? `selectAnswer(${idx})` : ''}"><span style="font-weight:600;">${String.fromCharCode(65+idx)}.</span> ${escapeHtml(opt)}</div>`).join('')}</div>${hasAnswered ? `<div style="margin-top:1rem;padding:1rem;background:rgba(0,255,136,0.1);border-radius:12px;"><i class="fas ${quizState.userAnswers[quizState.currentIndex] === q.correct ? 'fa-check-circle' : 'fa-times-circle'}"></i> <strong>${quizState.userAnswers[quizState.currentIndex] === q.correct ? 'Correct!' : 'Incorrect'}</strong><p>${escapeHtml(q.explanation)}</p><div class="quiz-nav-buttons"><button class="btn btn-outline" onclick="previousQuestion()">Previous</button><button class="btn btn-primary" onclick="nextQuestion()">Next</button></div></div>` : '<p style="margin-top:1rem;text-align:center;"><i class="fas fa-hand-pointer"></i> Click on an option to answer</p>'}</div></div>`;
     }
     
     function selectAnswer(idx) { 
@@ -394,8 +346,8 @@
     function previousQuestion() { if (quizState.currentIndex > 0) { quizState.currentIndex--; renderQuiz(); } }
     function nextQuestion() { 
         if (quizState.userAnswers[quizState.currentIndex] === undefined) { showToast('Please answer the current question first', 'warning'); return; } 
-        if (quizState.currentIndex < quizState.questions.length - 1) { quizState.currentIndex++; renderQuiz(); } 
-        else { quizState.currentIndex++; renderQuiz(); } 
+        quizState.currentIndex++; 
+        renderQuiz(); 
     }
     function resetQuiz() { quizState = { currentIndex: 0, score: 0, userAnswers: [], questions: [] }; renderQuiz(); }
     
@@ -406,23 +358,22 @@
         if (!currentUser) { navigateTo('home'); return; }
         const myCourses = courses.filter(c => isEnrolled(c.id));
         const totalSpent = myCourses.reduce((sum, c) => sum + (c.price || 0), 0);
-        document.getElementById('page-content').innerHTML = `<div style="padding-top:100px;"><div class="container"><h1 class="section-title">My <span>Dashboard</span></h1><div class="stats-bar"><div class="stat-item"><h3>${myCourses.length}</h3><p>Enrolled Courses</p></div><div class="stat-item"><h3>${quizQuestions.length}</h3><p>Quiz Questions</p></div><div class="stat-item"><h3>KES ${totalSpent.toLocaleString()}</h3><p>Invested</p></div></div><h2><i class="fas fa-book-open"></i> My Courses</h2><div class="grid">${myCourses.map(c => `<div class="card" onclick="viewCourse(${c.id})"><i class="fas ${c.icon}" style="font-size:2rem;color:${c.color}"></i><h3>${escapeHtml(c.short_name)} <span class="badge">Enrolled</span></h3><p>${escapeHtml(c.description.substring(0, 100))}...</p><button class="btn btn-primary" style="margin-top:1rem;">Continue →</button></div>`).join('')}${myCourses.length === 0 ? `<div class="card" style="text-align:center;"><i class="fas fa-shopping-cart" style="font-size:3rem;color:var(--primary);"></i><h3>No Courses Yet</h3><button class="btn btn-primary" onclick="navigateTo('courses')">Browse Courses</button></div>` : ''}</div></div></div>`;
+        document.getElementById('page-content').innerHTML = `<div style="padding-top:100px;"><div class="container"><h1 class="section-title">My <span>Dashboard</span></h1><div class="stats-bar"><div class="stat-item"><h3>${myCourses.length}</h3><p>Enrolled Courses</p></div><div class="stat-item"><h3>${quizQuestions.length}</h3><p>Quiz Questions</p></div><div class="stat-item"><h3>KES ${totalSpent.toLocaleString()}</h3><p>Invested</p></div></div><h2><i class="fas fa-book-open"></i> My Courses</h2><div class="grid">${myCourses.map(c => `<div class="card" onclick="viewCourse(${c.id})"><i class="fas ${c.icon}" style="font-size:2rem;color:${c.color}"></i><h3>${escapeHtml(c.short_name)} <span class="badge">Enrolled</span></h3><p>${escapeHtml((c.description || '').substring(0, 100))}...</p><button class="btn btn-primary" style="margin-top:1rem;">Continue →</button></div>`).join('')}${myCourses.length === 0 ? `<div class="card" style="text-align:center;"><i class="fas fa-shopping-cart" style="font-size:3rem;color:var(--primary);"></i><h3>No Courses Yet</h3><button class="btn btn-primary" onclick="navigateTo('courses')">Browse Courses</button></div>` : ''}</div></div></div>`;
     }
     
     function renderHome() {
-        const totalModules = courses.reduce((sum, c) => sum + c.lessons_count, 0);
-        document.getElementById('page-content').innerHTML = `<div class="hero"><h1>Practice Daily.<br><span>Revise Smarter. Pass with Confidence.</span></h1><p>Professional driver training with 8 comprehensive courses and 1000+ exam questions.</p><button class="btn btn-primary" onclick="navigateTo('courses')">🚀 Explore Courses</button></div><div class="container"><div class="stats-bar"><div class="stat-item"><h3>8</h3><p>Professional Courses</p></div><div class="stat-item"><h3>${quizQuestions.length}+</h3><p>Quiz Questions</p></div><div class="stat-item"><h3>${totalModules}</h3><p>Training Modules</p></div></div><h2 class="section-title">Our <span>Courses</span></h2><div class="grid">${courses.slice(0, 4).map(c => `<div class="card" onclick="viewCourse(${c.id})"><i class="fas ${c.icon}" style="font-size:2rem;color:${c.color}"></i><h3>${escapeHtml(c.short_name)}${isEnrolled(c.id) ? '<span class="badge">Enrolled</span>' : ''}</h3><p>${escapeHtml(c.description.substring(0, 120))}...</p><div class="course-price">KES ${c.price.toLocaleString()}</div><button class="btn btn-primary" onclick="event.stopPropagation(); enrollCourse(${c.id})">${isEnrolled(c.id) ? 'Continue' : 'Enroll Now'}</button></div>`).join('')}</div></div>`;
+        const totalModules = courses.reduce((sum, c) => sum + (c.lessons_count || 0), 0);
+        document.getElementById('page-content').innerHTML = `<div class="hero"><h1>Practice Daily.<br><span>Revise Smarter. Pass with Confidence.</span></h1><p>Professional driver training with 8 comprehensive courses and 1000+ exam questions.</p><button class="btn btn-primary" onclick="navigateTo('courses')">🚀 Explore Courses</button></div><div class="container"><div class="stats-bar"><div class="stat-item"><h3>${courses.length}</h3><p>Professional Courses</p></div><div class="stat-item"><h3>${quizQuestions.length}+</h3><p>Quiz Questions</p></div><div class="stat-item"><h3>${totalModules}</h3><p>Training Modules</p></div></div><h2 class="section-title">Our <span>Courses</span></h2><div class="grid">${courses.slice(0, 4).map(c => `<div class="card" onclick="viewCourse(${c.id})"><i class="fas ${c.icon}" style="font-size:2rem;color:${c.color}"></i><h3>${escapeHtml(c.short_name)}${isEnrolled(c.id) ? '<span class="badge">Enrolled</span>' : ''}</h3><p>${escapeHtml((c.description || '').substring(0, 120))}...</p><div class="course-price">KES ${c.price.toLocaleString()}</div><button class="btn btn-primary" onclick="event.stopPropagation(); enrollCourse(${c.id})">${isEnrolled(c.id) ? 'Continue' : 'Enroll Now'}</button></div>`).join('')}</div></div>`;
     }
     
     function renderCourses() {
-        document.getElementById('page-content').innerHTML = `<div class="container" style="padding-top:100px;"><h1 class="section-title">All <span>Professional Courses</span></h1><div class="grid">${courses.map(c => `<div class="card" onclick="viewCourse(${c.id})"><i class="fas ${c.icon}" style="font-size:2rem;color:${c.color}"></i><h3>${escapeHtml(c.short_name)}${isEnrolled(c.id) ? '<span class="badge">Enrolled</span>' : ''}</h3><p>${escapeHtml(c.description)}</p><div class="course-price">KES ${c.price.toLocaleString()}</div><button class="btn btn-primary" onclick="event.stopPropagation(); enrollCourse(${c.id})">${isEnrolled(c.id) ? 'Continue Learning' : 'Enroll Now'}</button></div>`).join('')}</div></div>`;
+        document.getElementById('page-content').innerHTML = `<div class="container" style="padding-top:100px;"><h1 class="section-title">All <span>Professional Courses</span></h1><div class="grid">${courses.map(c => `<div class="card" onclick="viewCourse(${c.id})"><i class="fas ${c.icon}" style="font-size:2rem;color:${c.color}"></i><h3>${escapeHtml(c.short_name)}${isEnrolled(c.id) ? '<span class="badge">Enrolled</span>' : ''}</h3><p>${escapeHtml(c.description || '')}</p><div class="course-price">KES ${c.price.toLocaleString()}</div><button class="btn btn-primary" onclick="event.stopPropagation(); enrollCourse(${c.id})">${isEnrolled(c.id) ? 'Continue Learning' : 'Enroll Now'}</button></div>`).join('')}</div></div>`;
     }
     
     function viewCourse(courseId) { 
         if (courseId === 8) navigateTo('quiz'); 
-        else if (isEnrolled(courseId)) {
-            showToast(`📚 Access ${courses.find(c=>c.id===courseId)?.name} content. Full course player coming soon!`, 'info');
-        } else enrollCourse(courseId); 
+        else if (isEnrolled(courseId)) window.location.href = `course-detail.html?id=${courseId}`;
+        else enrollCourse(courseId); 
     }
     
     async function navigateTo(page) {

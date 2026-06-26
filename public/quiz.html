@@ -4,7 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Quiz Bank - MEI DRIVE AFRICA</title>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.0/dist/umd/supabase.min.js"></script>
+    <script src="supabase.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Segoe UI', 'Inter', system-ui, sans-serif; background: #0A192F; color: #fff; }
@@ -171,12 +172,7 @@
 
     <script>
         (function() {
-            if (!window.__MEI_SUPABASE__) {
-                const SUPABASE_URL = 'https://qpqkmmkrzxlhcpccefjn.supabase.co';
-                const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFwcWttbWtyenhsaGNwY2NlZmpuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk1MjU0NzIsImV4cCI6MjA5NTEwMTQ3Mn0.Vw1hexN3NKoF_y9VFBFs_NUhJgFNNMwuyzDjImUcM6s';
-                window.__MEI_SUPABASE__ = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-            }
-            const supabase = window.__MEI_SUPABASE__;
+            const MEI = window.MEIDrive;
             
             const STATE = { user: null, authModalOpen: false, authMode: 'login', authError: null, authSuccess: null, allQuestions: [], categories: ['All'], currentCategory: 'All', loading: true };
             
@@ -211,12 +207,12 @@
                                     ${imageHtml}
                                     <div class="quiz-question">${idx + 1}. ${escapeHtml(q.question)}</div>
                                     <div class="quiz-options">
-                                        <label class="quiz-option"><input type="radio" name="q${q.id}" value="1"> A. ${escapeHtml(q.option_a || '')}</label>
-                                        <label class="quiz-option"><input type="radio" name="q${q.id}" value="2"> B. ${escapeHtml(q.option_b || '')}</label>
-                                        <label class="quiz-option"><input type="radio" name="q${q.id}" value="3"> C. ${escapeHtml(q.option_c || '')}</label>
-                                        <label class="quiz-option"><input type="radio" name="q${q.id}" value="4"> D. ${escapeHtml(q.option_d || '')}</label>
+                                        <label class="quiz-option"><input type="radio" name="q${q.id}" value="0"> A. ${escapeHtml(q.option_a || '')}</label>
+                                        <label class="quiz-option"><input type="radio" name="q${q.id}" value="1"> B. ${escapeHtml(q.option_b || '')}</label>
+                                        <label class="quiz-option"><input type="radio" name="q${q.id}" value="2"> C. ${escapeHtml(q.option_c || '')}</label>
+                                        <label class="quiz-option"><input type="radio" name="q${q.id}" value="3"> D. ${escapeHtml(q.option_d || '')}</label>
                                     </div>
-                                    <button class="check-btn" onclick="window.actions.checkAnswer(${q.id}, ${q.correct_answer}, '${escapeHtml(q.explanation || '').replace(/'/g, "\\'")}')">Check Answer</button>
+                                    <button class="check-btn" onclick="window.actions.checkAnswer(${q.id}, ${q.correct_option}, '${escapeHtml(q.explanation || '').replace(/'/g, "\\'")}')">Check Answer</button>
                                     <div class="feedback" id="feedback-${q.id}"></div>
                                 </div>`;
                     }).join('')}
@@ -226,19 +222,19 @@
             const actions = {
                 async login(email, password) {
                     STATE.authError = null; STATE.authSuccess = null; renderUI();
-                    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-                    if (error) STATE.authError = error.message;
-                    else { STATE.user = data.user; STATE.authSuccess = 'Login successful!'; STATE.authModalOpen = false; setTimeout(() => { STATE.authSuccess = null; renderUI(); }, 2000); }
+                    const result = await MEI.signIn(email, password);
+                    if (!result.success) STATE.authError = result.error;
+                    else { STATE.user = result.user; STATE.authSuccess = 'Login successful!'; STATE.authModalOpen = false; setTimeout(() => { STATE.authSuccess = null; renderUI(); }, 2000); }
                     renderUI();
                 },
                 async register(email, password) {
                     STATE.authError = null; STATE.authSuccess = null; renderUI();
-                    const { error } = await supabase.auth.signUp({ email, password });
-                    if (error) STATE.authError = error.message;
+                    const result = await MEI.signUp(email, password);
+                    if (!result.success) STATE.authError = result.error;
                     else { STATE.authSuccess = 'Registration successful! You can now login.'; setTimeout(() => { STATE.authMode = 'login'; STATE.authSuccess = null; renderUI(); }, 2000); }
                     renderUI();
                 },
-                async logout() { await supabase.auth.signOut(); STATE.user = null; renderUI(); window.location.href = 'index.html'; },
+                async logout() { await MEI.signOut(); STATE.user = null; renderUI(); window.location.href = 'index.html'; },
                 openModal(mode) { STATE.authMode = mode; STATE.authModalOpen = true; STATE.authError = null; STATE.authSuccess = null; document.getElementById('modalEmail').value = ''; document.getElementById('modalPassword').value = ''; renderUI(); },
                 closeModal() { STATE.authModalOpen = false; renderUI(); },
                 async handleAuthSubmit() {
@@ -255,19 +251,18 @@
                     if (!selected) { feedback.innerHTML = "⚠️ Please select an answer"; feedback.className = "feedback wrong"; return; }
                     const letters = ['A', 'B', 'C', 'D'];
                     if (parseInt(selected.value) === correct) { feedback.innerHTML = `✅ Correct! ${explanation || 'Great job!'}`; feedback.className = "feedback correct"; }
-                    else { feedback.innerHTML = `❌ Incorrect. The correct answer is ${letters[correct - 1]}. ${explanation || 'Review and try again!'}`; feedback.className = "feedback wrong"; }
+                    else { feedback.innerHTML = `❌ Incorrect. The correct answer is ${letters[correct]}. ${explanation || 'Review and try again!'}`; feedback.className = "feedback wrong"; }
                 },
                 async loadQuestions() {
                     STATE.loading = true; renderUI();
                     try {
-                        const { data } = await supabase.from('quiz_questions').select('*');
-                        STATE.allQuestions = data || [];
+                        STATE.allQuestions = await MEI.getAllQuizQuestions();
                         const uniqueCats = [...new Set(STATE.allQuestions.map(q => q.category))];
                         STATE.categories = ['All', ...uniqueCats];
                     } catch(e) { console.error(e); }
                     finally { STATE.loading = false; renderUI(); }
                 },
-                async syncAuth() { const { data: { session } } = await supabase.auth.getSession(); STATE.user = session?.user || null; renderUI(); }
+                async syncAuth() { STATE.user = await MEI.getCurrentUser(); renderUI(); }
             };
             
             window.actions = actions;

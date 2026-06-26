@@ -9,10 +9,27 @@ const app = express();
 const PORT = process.env.PORT || 10000;
 const BACKEND_URL = process.env.BACKEND_URL || 'https://meidriveafrica-backend.onrender.com';
 
+// ============================================
 // M-Pesa Credentials - PRODUCTION (REAL MONEY)
-const MPESA_CONSUMER_KEY = process.env.MPESA_CONSUMER_KEY || 'LI2gcJZEheN8qCfXHEXV4gdYXvOBHVnv';
-const MPESA_CONSUMER_SECRET = process.env.MPESA_CONSUMER_SECRET || 'aGGo8AuPJVpsZLcs';
-const MPESA_PASSKEY = process.env.MPESA_PASSKEY || '7eb17a031bdfd5b4251863a1ddb72c5b9cd14f3385aa6a258c1442a0116e8277';
+// REQUIRED from environment only. No hardcoded fallback values —
+// if one of these is missing, the app must fail loudly at startup
+// rather than silently falling back to a secret baked into source.
+// Set these in the Render dashboard (render.yaml already marks
+// them `sync: false`, which means "set manually, don't commit").
+// ============================================
+const REQUIRED_ENV_VARS = ['MPESA_CONSUMER_KEY', 'MPESA_CONSUMER_SECRET', 'MPESA_PASSKEY'];
+const missingVars = REQUIRED_ENV_VARS.filter((key) => !process.env[key]);
+
+if (missingVars.length > 0) {
+    console.error(`❌ Missing required environment variables: ${missingVars.join(', ')}`);
+    console.error('Set these in the Render dashboard (Environment tab) before starting the server.');
+    process.exit(1);
+}
+
+const MPESA_CONSUMER_KEY = process.env.MPESA_CONSUMER_KEY;
+const MPESA_CONSUMER_SECRET = process.env.MPESA_CONSUMER_SECRET;
+const MPESA_PASSKEY = process.env.MPESA_PASSKEY;
+// Shortcode is the public paybill number, not a secret — safe to default.
 const MPESA_SHORTCODE = process.env.MPESA_SHORTCODE || '4095377';
 const MPESA_CALLBACK_URL = `${BACKEND_URL}/api/payments/mpesa/callback`;
 
@@ -395,23 +412,6 @@ app.post('/api/payments/mpesa/validation', (req, res) => {
 });
 
 // ============================================
-// DEBUG ENDPOINT
-// ============================================
-
-app.get('/api/debug/credentials', (req, res) => {
-    res.json({
-        consumer_key_length: MPESA_CONSUMER_KEY.length,
-        consumer_secret_length: MPESA_CONSUMER_SECRET.length,
-        passkey_length: MPESA_PASSKEY.length,
-        shortcode: MPESA_SHORTCODE,
-        callback_url: MPESA_CALLBACK_URL,
-        backend_url: BACKEND_URL,
-        port: PORT,
-        warning: 'Credentials are configured but may need verification with Safaricom'
-    });
-});
-
-// ============================================
 // ROOT ENDPOINTS
 // ============================================
 
@@ -428,7 +428,6 @@ app.get('/', (req, res) => {
             'GET  /health',
             'GET  /api/health',
             'GET  /api/payments/mpesa/test',
-            'GET  /api/debug/credentials',
             'POST /api/payments/mpesa/initiate',
             'POST /api/payments/mpesa/status',
             'POST /api/payments/mpesa/callback'
