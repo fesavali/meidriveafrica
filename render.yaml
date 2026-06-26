@@ -1,0 +1,27 @@
+services:
+  - type: web
+    name: meidriveafrica-backend
+    runtime: node
+    repo: https://github.com/meidriveafrica/backend
+    plan: free
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: BACKEND_URL
+        value: https://meidriveafrica-backend.onrender.com
+      - key: MPESA_CONSUMER_KEY
+        sync: false
+      - key: MPESA_CONSUMER_SECRET
+        sync: false
+      - key: MPESA_PASSKEY
+        sync: false
+      - key: MPESA_SHORTCODE
+        value: 4095377
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /health
+    numInstances: 1
+    domains:
+      - meidriveafrica-backend.onrender.com

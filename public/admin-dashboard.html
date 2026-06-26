@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard | MEI DRIVE AFRICA</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.0/dist/umd/supabase.min.js"></script>
+    <script src="supabase.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; background: #0a192f; color: #ffffff; line-height: 1.5; }
+        :root { --primary: #00ff88; --primary-dark: #00cc66; --gradient-green: linear-gradient(135deg, #00ff88 0%, #00cc66 100%); --border: rgba(0, 255, 136, 0.25); --text-muted: #a0b3d9; }
+        .admin-container { display: flex; min-height: 100vh; }
+        .sidebar { width: 280px; background: #0d2137; border-right: 1px solid var(--border); position: fixed; height: 100vh; overflow-y: auto; }
+        .main-content { flex: 1; margin-left: 280px; padding: 20px; }
+        .sidebar-header { padding: 24px; border-bottom: 1px solid var(--border); }
+        .sidebar-header .logo { font-size: 1.3rem; font-weight: 800; background: var(--gradient-green); -webkit-background-clip: text; background-clip: text; color: transparent; display: flex; align-items: center; gap: 8px; cursor: pointer; }
+        .nav-item { padding: 12px 24px; display: flex; align-items: center; gap: 12px; cursor: pointer; transition: 0.2s; color: var(--text-muted); }
+        .nav-item:hover, .nav-item.active { background: rgba(0, 255, 136, 0.1); color: var(--primary); border-left: 3px solid var(--primary); }
+        .nav-item i { width: 24px; }
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 20px; margin-bottom: 30px; }
+        .stat-card { background: #0d2137; border: 1px solid var(--border); border-radius: 20px; padding: 20px; transition: 0.3s; }
+        .stat-card:hover { transform: translateY(-2px); border-color: var(--primary); }
+        .stat-title { color: var(--text-muted); font-size: 14px; margin-bottom: 8px; }
+        .stat-value { font-size: 28px; font-weight: 800; color: var(--primary); }
+        .card { background: #0d2137; border: 1px solid var(--border); border-radius: 20px; padding: 24px; margin-bottom: 24px; }
+        .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 12px; }
+        .card-header h2 { font-size: 1.3rem; color: var(--primary); }
+        .data-table { width: 100%; overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid var(--border); }
+        th { color: var(--primary); font-weight: 600; }
+        .btn { padding: 8px 16px; border-radius: 8px; font-weight: 600; cursor: pointer; border: none; font-size: 0.85rem; transition: 0.2s; }
+        .btn-primary { background: var(--gradient-green); color: #0a192f; }
+        .btn-danger { background: #ff4757; color: white; }
+        .btn-warning { background: #ffa502; color: #0a192f; }
+        .btn-outline { background: transparent; border: 1px solid var(--primary); color: var(--primary); }
+        .btn-sm { padding: 4px 12px; font-size: 0.75rem; }
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.96); backdrop-filter: blur(12px); z-index: 2000; justify-content: center; align-items: center; }
+        .modal.active { display: flex; }
+        .modal-content { background: #0d2137; border: 1px solid var(--primary); border-radius: 24px; width: 90%; max-width: 600px; padding: 2rem; max-height: 85vh; overflow-y: auto; }
+        .modal-content input, .modal-content textarea, .modal-content select { background: #0f1a2c; border: 1px solid var(--border); padding: 10px; border-radius: 8px; color: white; width: 100%; margin: 8px 0; }
+        .modal-content label { font-size: 0.85rem; color: var(--text-muted); margin-top: 10px; display: block; }
+        .toast-container { position: fixed; bottom: 20px; right: 20px; z-index: 2100; }
+        .toast { background: #0d2137; border-left: 4px solid var(--primary); padding: 12px 20px; border-radius: 12px; margin-top: 8px; animation: slideIn 0.3s ease; }
+        @keyframes slideIn { from { opacity: 0; transform: translateX(30px); } to { opacity: 1; transform: translateX(0); } }
+        .loading-spinner { width: 40px; height: 40px; border: 3px solid #1e2a3a; border-top-color: var(--primary); border-radius: 50%; animation: spin 1s linear infinite; margin: 40px auto; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .badge { display: inline-block; padding: 4px 8px; border-radius: 20px; font-size: 11px; font-weight: 600; }
+        .badge-success { background: #00cc6633; color: #00ff88; border: 1px solid #00ff88; }
+        .price-edit { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+        .price-edit input { width: 100px; margin: 0; padding: 6px; }
+        .real-time-badge { background: #00ff8822; border: 1px solid #00ff88; border-radius: 20px; padding: 4px 12px; font-size: 11px; color: #00ff88; }
+        @media (max-width: 768px) { .sidebar { width: 70px; } .sidebar .nav-text { display: none; } .main-content { margin-left: 70px; } }
+    </style>
+</head>
+<body>
+<div class="admin-container">
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <div class="logo" onclick="window.location.href='index.html'">
+                <i class="fas fa-car"></i>
+                <span class="nav-text">MEI DRIVE</span>
+            </div>
+        </div>
+        <nav>
+            <div class="nav-item active" onclick="setTab('courses')">
+                <i class="fas fa-book"></i><span class="nav-text">Courses</span>
+            </div>
+            <div class="nav-item" onclick="setTab('stats')">
+                <i class="fas fa-chart-line"></i><span class="nav-text">Statistics</span>
+            </div>
+            <div class="nav-item" onclick="logout()">
+                <i class="fas fa-sign-out-alt"></i><span class="nav-text">Logout</span>
+            </div>
+        </nav>
+    </div>
+    <div class="main-content">
+        <div style="display: flex; justify-content: flex-end; margin-bottom: 20px;">
+            <span class="real-time-badge"><i class="fas fa-sync-alt"></i> Real-time Updates Active</span>
+        </div>
+        <div id="adminContent"><div class="loading-spinner"></div></div>
+    </div>
+</div>
+<div id="toast-container" class="toast-container"></div>
+
+<script>
+    let currentUser = null;
+    let unsubscribeCourses = null;
+    let currentCourses = [];
+
+    function showToast(msg, type = 'success') {
+        const container = document.getElementById('toast-container');
+        const toast = document.createElement('div');
+        toast.className = 'toast';
+        toast.innerHTML = `${msg} <button onclick="this.parentElement.remove()" style="background:none; border:none; color:#00ff88; cursor:pointer; margin-left:10px;">×</button>`;
+        container.appendChild(toast);
+        setTimeout(() => toast.remove(), 5000);
+    }
+    
+    function escapeHtml(str) { if (!str) return ''; return String(str).replace(/[&<>]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[m])); }
+    
+    async function init() {
+        currentUser = await MEIDrive.getCurrentUser();
+        
+        if (!currentUser) {
+            showLoginModal();
+            return;
+        }
+        
+        if (!currentUser.is_admin) {
+            document.getElementById('adminContent').innerHTML = `
+                <div class="card"><h2>⛔ Access Denied</h2><p>You don't have admin privileges.</p><button class="btn btn-primary" onclick="window.location.href='index.html'">Back to Home</button></div>
+            `;
+            return;
+        }
+        
+        // Subscribe to real-time course updates
+        unsubscribeCourses = MEIDrive.subscribeToCourses((updatedCourses) => {
+            currentCourses = updatedCourses;
+            renderCoursesList();
+            showToast('Courses updated in real-time!', 'success');
+        });
+        
+        renderCoursesList();
+    }
+    
+    async function renderCoursesList() {
+        let courses = currentCourses;
+        if (courses.length === 0) {
+            courses = await MEIDrive.getAllCourses();
+            currentCourses = courses;
+        }
+        
+        document.getElementById('adminContent').innerHTML = `
+            <div class="card">
+                <div class="card-header">
+                    <h2><i class="fas fa-book"></i> Courses Management <span class="real-time-badge" style="margin-left: 10px;"><i class="fas fa-bolt"></i> Live Sync</span></h2>
+                    <button class="btn btn-primary" onclick="showAddCourseModal()">+ Add New Course</button>
+                </div>
+                <div class="data-table">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>ID</th><th>Name</th><th>Description</th><th>Price (KES)</th><th>Duration</th><th>Modules</th><th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${courses?.map(c => `
+                                <tr>
+                                    <td>${c.id}</td>
+                                    <td><strong>${escapeHtml(c.name)}</strong></td>
+                                    <td><small>${escapeHtml(c.description?.substring(0, 80))}${c.description?.length > 80 ? '...' : ''}</small></td>
+                                    <td>
+                                        <div class="price-edit">
+                                            <span id="priceDisplay_${c.id}">KES ${c.price.toLocaleString()}</span>
+                                            <input type="number" id="priceInput_${c.id}" value="${c.price}" style="display:none;" min="0" step="100">
+                                            <button class="btn btn-warning btn-sm" id="editPriceBtn_${c.id}" onclick="togglePriceEdit(${c.id})">Edit Price</button>
+                                            <button class="btn btn-success btn-sm" id="savePriceBtn_${c.id}" onclick="updateCoursePrice(${c.id})" style="display:none;">Save</button>
+                                            <button class="btn btn-outline btn-sm" id="cancelPriceBtn_${c.id}" onclick="cancelPriceEdit(${c.id})" style="display:none;">Cancel</button>
+                                        </div>
+                                    </td>
+                                    <td>${escapeHtml(c.duration || 'N/A')}</td>
+                                    <td>${c.lessons_count || 0}</td>
+                                    <td>
+                                        <button class="btn btn-warning btn-sm" onclick="editCourse(${c.id})">Edit</button>
+                                        <button class="btn btn-danger btn-sm" onclick="deleteCourse(${c.id})">Delete</button>
+                                    </td>
+                                </tr>
+                            `).join('') || '<tr><td colspan="7">No courses found</td></tr>'}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-header">
+                    <h2><i class="fas fa-info-circle"></i> Real-Time Sync Info</h2>
+                </div>
+                <p>✅ Any changes made here (Add/Edit/Delete/Price Update) will automatically sync to the main website (<strong>index.html</strong>) in real-time via Supabase.</p>
+                <p>📡 Users will see updated courses without refreshing the page.</p>
+            </div>
+        `;
+    }
+    
+    async function renderStatsContent() {
+        const [usersRes, coursesRes, enrollmentsRes, paymentsRes] = await Promise.all([
+            MEIDrive.getAllUsers(),
+            MEIDrive.getAllCourses(),
+            MEIDrive.getAllEnrollments(),
+            MEIDrive.getAllPayments()
+        ]);
+        
+        const totalRevenue = paymentsRes?.reduce((sum, p) => sum + (p.amount || 0), 0) || 0;
+        
+        document.getElementById('adminContent').innerHTML = `
+            <div class="stats-grid">
+                <div class="stat-card"><div class="stat-title">Total Users</div><div class="stat-value">${usersRes.length}</div></div>
+                <div class="stat-card"><div class="stat-title">Courses</div><div class="stat-value">${coursesRes.length}</div></div>
+                <div class="stat-card"><div class="stat-title">Enrollments</div><div class="stat-value">${enrollmentsRes.length}</div></div>
+                <div class="stat-card"><div class="stat-title">Total Revenue</div><div class="stat-value">KES ${totalRevenue.toLocaleString()}</div></div>
+            </div>
+            <div class="card">
+                <h2><i class="fas fa-chart-line"></i> System Status</h2>
+                <p>✅ Real-time sync enabled - changes appear instantly on main site</p>
+                <p>✅ Supabase Single Source of Truth active</p>
+                <p>✅ M-Pesa integration ready for production</p>
+            </div>
+        `;
+    }
+    
+    // Price Edit Functions
+    window.togglePriceEdit = (courseId) => {
+        const priceSpan = document.getElementById(`priceDisplay_${courseId}`);
+        const priceInput = document.getElementById(`priceInput_${courseId}`);
+        const editBtn = document.getElementById(`editPriceBtn_${courseId}`);
+        const saveBtn = document.getElementById(`savePriceBtn_${courseId}`);
+        const cancelBtn = document.getElementById(`cancelPriceBtn_${courseId}`);
+        
+        if (priceSpan && priceInput) {
+            priceSpan.style.display = 'none';
+            priceInput.style.display = 'inline-block';
+            editBtn.style.display = 'none';
+            saveBtn.style.display = 'inline-block';
+            cancelBtn.style.display = 'inline-block';
+        }
+    };
+    
+    window.cancelPriceEdit = (courseId) => {
+        const priceSpan = document.getElementById(`priceDisplay_${courseId}`);
+        const priceInput = document.getElementById(`priceInput_${courseId}`);
+        const editBtn = document.getElementById(`editPriceBtn_${courseId}`);
+        const saveBtn = document.getElementById(`savePriceBtn_${courseId}`);
+        const cancelBtn = document.getElementById(`cancelPriceBtn_${courseId}`);
+        
+        if (priceSpan && priceInput) {
+            const originalPrice = priceSpan.innerText.replace('KES ', '').replace(/,/g, '');
+            priceInput.value = originalPrice;
+            priceSpan.style.display = 'inline-block';
+            priceInput.style.display = 'none';
+            editBtn.style.display = 'inline-block';
+            saveBtn.style.display = 'none';
+            cancelBtn.style.display = 'none';
+        }
+    };
+    
+    window.updateCoursePrice = async (courseId) => {
+        const priceInput = document.getElementById(`priceInput_${courseId}`);
+        const newPrice = parseInt(priceInput.value);
+        
+        if (isNaN(newPrice) || newPrice < 0) {
+            showToast('Please enter a valid price', 'error');
+            return;
+        }
+        
+        const result = await MEIDrive.updateCoursePrice(courseId, newPrice);
+        if (result.success) {
+            showToast('✅ Price updated! Changes will appear on main site instantly.', 'success');
+        } else {
+            showToast('Error updating price', 'error');
+        }
+    };
+    
+    window.showAddCourseModal = () => {
+        const modalHtml = `
+            <div class="modal active" id="editModal">
+                <div class="modal-content">
+                    <h2>➕ Add New Course</h2>
+                    <label>Course Name *</label>
+                    <input type="text" id="courseName" placeholder="e.g., Advanced Defensive Driving">
+                    <label>Description</label>
+                    <textarea id="courseDesc" rows="3" placeholder="Course description..."></textarea>
+                    <label>Price (KES)</label>
+                    <input type="number" id="coursePrice" placeholder="2999" min="0" step="100">
+                    <label>Duration</label>
+                    <input type="text" id="courseDuration" placeholder="e.g., 6 weeks">
+                    <label>Icon (Font Awesome class)</label>
+                    <input type="text" id="courseIcon" placeholder="fa-car" value="fa-car">
+                    <label>Number of Modules/Lessons</label>
+                    <input type="number" id="courseLessons" placeholder="10" min="1">
+                    <div style="display: flex; gap: 10px; margin-top: 20px;">
+                        <button class="btn btn-primary" onclick="saveNewCourse()">Save Course</button>
+                        <button class="btn btn-outline" onclick="closeModal()">Cancel</button>
+                    </div>
+                </div>
+            </div>
+        `;
+        document.body.insertAdjacentHTML('beforeend', modalHtml);
+    };
+    
+    window.saveNewCourse = async () => {
+        const name = document.getElementById('courseName').value;
+        const description = document.getElementById('courseDesc').value;
+        const price = parseInt(document.getElementById('coursePrice').value) || 0;
+        const duration = document.getElementById('courseDuration').value;
+        const icon = document.getElementById('courseIcon').value || 'fa-car';
+        const lessons_count = parseInt(document.getElementById('courseLessons').value) || 0;
+        
+        if (!name) {
+            showToast('Course name is required', 'error');
+            return;
+        }
+        
+        const result = await MEIDrive.addCourse({ name, description, price, duration, icon, lessons_count });
+        if (result.success) {
+            closeModal();
+            showToast('✅ Course added! Changes will appear on main site instantly.', 'success');
+        } else {
+            showToast('Error adding course', 'error');
+        }
+    };
+    
+    window.editCourse = async (id) => {
+        const course = currentCourses.find(c => c.id === id);
+        
+        const modalHtml = `
+            <div class="modal active" id="editModal">
+                <div class="modal-content">
+                    <h2>✏️ Edit Course: ${escapeHtml(course.name)}</h2>
+                    <label>Course Name</label>
+                    <input type="text" id="courseName" value="${escapeHtml(course.name || '')}">
+                    <label>Description</label>
+                    <textarea id="courseDesc" rows="3">${escapeHtml(course.description || '')}</textarea>
+                    <label>Price (KES)</label>
+                    <input type="number" id="coursePrice" value="${course.price || 0}" min="0" step="100">
+                    <label>Duration</label>
+                    <input type="text" id="courseDuration" value="${escapeHtml(course.duration || '')}">
+                    <label>Icon (Font Awesome class)</label>
+                    <input type="text" id="courseIcon" value="${escapeHtml(course.icon || 'fa-car')}">
+                    <label>Number of Modules/Lessons</label>
+                    <input type="number" id="courseLessons" value="${course.lessons_count || 0}" min="0">
+                    <div style="display: flex; gap: 10px; margin-top: 20px;">
+                        <button class="btn btn-primary" onclick="saveEditedCourse(${id})">Save Changes</button>
+                        <button class="btn btn-outline" onclick="closeModal()">Cancel</button>
+                    </div>
+                </div>
+            </div>
+        `;
+        document.body.insertAdjacentHTML('beforeend', modalHtml);
+    };
+    
+    window.saveEditedCourse = async (id) => {
+        const name = document.getElementById('courseName').value;
+        const description = document.getElementById('courseDesc').value;
+        const price = parseInt(document.getElementById('coursePrice').value) || 0;
+        const duration = document.getElementById('courseDuration').value;
+        const icon = document.getElementById('courseIcon').value || 'fa-car';
+        const lessons_count = parseInt(document.getElementById('courseLessons').value) || 0;
+        
+        const result = await MEIDrive.updateCourse(id, { name, description, price, duration, icon, lessons_count });
+        if (result.success) {
+            closeModal();
+            showToast('✅ Course updated! Changes will appear on main site instantly.', 'success');
+        } else {
+            showToast('Error updating course', 'error');
+        }
+    };
+    
+    window.deleteCourse = async (id) => {
+        if (confirm('⚠️ Are you sure you want to delete this course? This action cannot be undone.')) {
+            const result = await MEIDrive.deleteCourse(id);
+            if (result.success) {
+                showToast('✅ Course deleted! Changes will appear on main site instantly.', 'success');
+            } else {
+                showToast('Error deleting course', 'error');
+            }
+        }
+    };
+    
+    window.setTab = async (tab) => {
+        document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+        event.currentTarget.classList.add('active');
+        
+        if (tab === 'courses') {
+            renderCoursesList();
+        } else if (tab === 'stats') {
+            renderStatsContent();
+        }
+    };
+    
+    window.closeModal = () => { document.getElementById('editModal')?.remove(); };
+    
+    function showLoginModal() {
+        const modalHtml = `<div class="modal active" id="loginModal"><div class="modal-content"><h2>Admin Login Required</h2><p>Please sign in with your admin account</p><input type="email" id="adminEmail" placeholder="Email"><input type="password" id="adminPassword" placeholder="Password"><button class="btn btn-primary" onclick="adminLogin()">Login</button><button class="btn btn-outline" onclick="window.location.href='index.html'">Back to Site</button></div></div>`;
+        document.body.insertAdjacentHTML('beforeend', modalHtml);
+    }
+    
+    window.adminLogin = async () => { 
+        const email = document.getElementById('adminEmail').value; 
+        const password = document.getElementById('adminPassword').value; 
+        const result = await MEIDrive.signIn(email, password);
+        if (result.success) { 
+            window.location.reload(); 
+        } else { 
+            showToast(result.error, 'error'); 
+        } 
+    };
+    
+    window.logout = async () => { 
+        await MEIDrive.signOut(); 
+        window.location.href = 'index.html'; 
+    };
+    
+    init();
+</script>
+</body>
+</html>
