@@ -171,109 +171,245 @@
     </div>
 
     <script>
-        (function() {
-            const MEI = window.MEIDrive;
-            
-            const STATE = { user: null, authModalOpen: false, authMode: 'login', authError: null, authSuccess: null, allQuestions: [], categories: ['All'], currentCategory: 'All', loading: true };
-            
-            function escapeHtml(str) { if (!str) return ''; return str.replace(/[&<>]/g, m => m === '&' ? '&amp;' : m === '<' ? '&lt;' : m === '>' ? '&gt;' : m); }
-            
-            function renderUI() {
-                const authContainer = document.getElementById('authContainer');
-                if (STATE.user) authContainer.innerHTML = `<div class="user-info"><span class="user-email">${escapeHtml(STATE.user.email)}</span><button class="btn-logout" onclick="window.actions.logout()">Logout</button></div>`;
-                else authContainer.innerHTML = `<button class="btn-login" onclick="window.actions.openModal('login')">Login</button><button class="btn-register" onclick="window.actions.openModal('register')">Register</button>`;
-                
-                const modal = document.getElementById('authModal');
-                if (STATE.authModalOpen) {
-                    modal.classList.add('active');
-                    document.getElementById('modalTitle').textContent = STATE.authMode === 'login' ? 'Login' : 'Register';
-                    document.getElementById('modalSubmitBtn').textContent = STATE.authMode === 'login' ? 'Login' : 'Register';
-                    document.getElementById('modalSwitch').innerHTML = STATE.authMode === 'login' ? 'Don\'t have an account? <span>Register</span>' : 'Already have an account? <span>Login</span>';
-                    document.getElementById('modalError').textContent = STATE.authError || '';
-                    document.getElementById('modalSuccess').textContent = STATE.authSuccess || '';
-                } else modal.classList.remove('active');
-                
-                const container = document.getElementById('quizContainer');
-                if (STATE.loading) { container.innerHTML = '<div class="loading"><div class="spinner"></div>Loading questions...</div>'; return; }
-                
-                const filtered = STATE.currentCategory === 'All' ? STATE.allQuestions : STATE.allQuestions.filter(q => q.category === STATE.currentCategory);
-                container.innerHTML = `
-                    <div class="stats"><div class="stat-card"><div class="stat-number">${STATE.allQuestions.length}</div><div class="stat-label">Total Questions</div></div><div class="stat-card"><div class="stat-number">${STATE.categories.length - 1}</div><div class="stat-label">Categories</div></div><div class="stat-card"><div class="stat-number">${filtered.length}</div><div class="stat-label">Showing</div></div></div>
-                    <div class="category-filter">${STATE.categories.map(cat => `<button class="filter-btn ${cat === STATE.currentCategory ? 'active' : ''}" onclick="window.actions.setCategory('${cat.replace(/'/g, "\\'")}')">${escapeHtml(cat)}</button>`).join('')}</div>
-                    ${filtered.map((q, idx) => {
-                        // Add image if image_url exists
-                        const imageHtml = q.image_url ? `<img class="quiz-image" src="${escapeHtml(q.image_url)}" alt="Quiz illustration" loading="lazy">` : '';
-                        return `<div class="quiz-item" id="quiz-${q.id}">
-                                    ${imageHtml}
-                                    <div class="quiz-question">${idx + 1}. ${escapeHtml(q.question)}</div>
-                                    <div class="quiz-options">
-                                        <label class="quiz-option"><input type="radio" name="q${q.id}" value="0"> A. ${escapeHtml(q.option_a || '')}</label>
-                                        <label class="quiz-option"><input type="radio" name="q${q.id}" value="1"> B. ${escapeHtml(q.option_b || '')}</label>
-                                        <label class="quiz-option"><input type="radio" name="q${q.id}" value="2"> C. ${escapeHtml(q.option_c || '')}</label>
-                                        <label class="quiz-option"><input type="radio" name="q${q.id}" value="3"> D. ${escapeHtml(q.option_d || '')}</label>
-                                    </div>
-                                    <button class="check-btn" onclick="window.actions.checkAnswer(${q.id}, ${q.correct_option}, '${escapeHtml(q.explanation || '').replace(/'/g, "\\'")}')">Check Answer</button>
-                                    <div class="feedback" id="feedback-${q.id}"></div>
-                                </div>`;
-                    }).join('')}
-                `;
+    (function() {
+        const MEI = window.MEIDrive;
+        
+        const STATE = {
+            user: null,
+            authModalOpen: false,
+            authMode: 'login',
+            authError: null,
+            authSuccess: null,
+            allQuestions: [],
+            categories: ['All'],
+            currentCategory: 'All',
+            loading: true
+        };
+        
+        // Escape only for text content — NOT for URLs
+        function escapeHtml(str) {
+            if (!str) return '';
+            return str.replace(/[&<>]/g, m => m === '&' ? '&amp;' : m === '<' ? '&lt;' : m === '>' ? '&gt;' : m);
+        }
+        
+        // Safely encode a URL for use in src attribute
+        function safeUrl(url) {
+            if (!url) return '';
+            return url.replace(/&/g, '&amp;');  // Only escape & for HTML, but keep the URL intact
+        }
+        
+        function renderUI() {
+            const authContainer = document.getElementById('authContainer');
+            if (STATE.user) {
+                authContainer.innerHTML = `
+                    <div class="user-info">
+                        <span class="user-email">${escapeHtml(STATE.user.email)}</span>
+                        <button class="btn-logout" onclick="window.actions.logout()">Logout</button>
+                    </div>`;
+            } else {
+                authContainer.innerHTML = `
+                    <button class="btn-login" onclick="window.actions.openModal('login')">Login</button>
+                    <button class="btn-register" onclick="window.actions.openModal('register')">Register</button>`;
             }
             
-            const actions = {
-                async login(email, password) {
-                    STATE.authError = null; STATE.authSuccess = null; renderUI();
-                    const result = await MEI.signIn(email, password);
-                    if (!result.success) STATE.authError = result.error;
-                    else { STATE.user = result.user; STATE.authSuccess = 'Login successful!'; STATE.authModalOpen = false; setTimeout(() => { STATE.authSuccess = null; renderUI(); }, 2000); }
-                    renderUI();
-                },
-                async register(email, password) {
-                    STATE.authError = null; STATE.authSuccess = null; renderUI();
-                    const result = await MEI.signUp(email, password);
-                    if (!result.success) STATE.authError = result.error;
-                    else { STATE.authSuccess = 'Registration successful! You can now login.'; setTimeout(() => { STATE.authMode = 'login'; STATE.authSuccess = null; renderUI(); }, 2000); }
-                    renderUI();
-                },
-                async logout() { await MEI.signOut(); STATE.user = null; renderUI(); window.location.href = 'index.html'; },
-                openModal(mode) { STATE.authMode = mode; STATE.authModalOpen = true; STATE.authError = null; STATE.authSuccess = null; document.getElementById('modalEmail').value = ''; document.getElementById('modalPassword').value = ''; renderUI(); },
-                closeModal() { STATE.authModalOpen = false; renderUI(); },
-                async handleAuthSubmit() {
-                    const email = document.getElementById('modalEmail').value, password = document.getElementById('modalPassword').value;
-                    if (!email || !password) { STATE.authError = 'Please enter both email and password'; renderUI(); return; }
-                    if (password.length < 6) { STATE.authError = 'Password must be at least 6 characters'; renderUI(); return; }
-                    if (STATE.authMode === 'login') await actions.login(email, password);
-                    else await actions.register(email, password);
-                },
-                setCategory(category) { STATE.currentCategory = category; renderUI(); },
-                checkAnswer(id, correct, explanation) {
-                    const selected = document.querySelector(`input[name="q${id}"]:checked`);
-                    const feedback = document.getElementById(`feedback-${id}`);
-                    if (!selected) { feedback.innerHTML = "⚠️ Please select an answer"; feedback.className = "feedback wrong"; return; }
-                    const letters = ['A', 'B', 'C', 'D'];
-                    if (parseInt(selected.value) === correct) { feedback.innerHTML = `✅ Correct! ${explanation || 'Great job!'}`; feedback.className = "feedback correct"; }
-                    else { feedback.innerHTML = `❌ Incorrect. The correct answer is ${letters[correct]}. ${explanation || 'Review and try again!'}`; feedback.className = "feedback wrong"; }
-                },
-                async loadQuestions() {
-                    STATE.loading = true; renderUI();
-                    try {
-                        STATE.allQuestions = await MEI.getAllQuizQuestions();
-                        const uniqueCats = [...new Set(STATE.allQuestions.map(q => q.category))];
-                        STATE.categories = ['All', ...uniqueCats];
-                    } catch(e) { console.error(e); }
-                    finally { STATE.loading = false; renderUI(); }
-                },
-                async syncAuth() { STATE.user = await MEI.getCurrentUser(); renderUI(); }
-            };
+            const modal = document.getElementById('authModal');
+            if (STATE.authModalOpen) {
+                modal.classList.add('active');
+                document.getElementById('modalTitle').textContent = STATE.authMode === 'login' ? 'Login' : 'Register';
+                document.getElementById('modalSubmitBtn').textContent = STATE.authMode === 'login' ? 'Login' : 'Register';
+                document.getElementById('modalSwitch').innerHTML = STATE.authMode === 'login'
+                    ? 'Don\'t have an account? <span>Register</span>'
+                    : 'Already have an account? <span>Login</span>';
+                document.getElementById('modalError').textContent = STATE.authError || '';
+                document.getElementById('modalSuccess').textContent = STATE.authSuccess || '';
+            } else {
+                modal.classList.remove('active');
+            }
             
-            window.actions = actions;
-            document.getElementById('modalSubmitBtn').onclick = () => actions.handleAuthSubmit();
-            document.getElementById('modalSwitch').onclick = () => { STATE.authMode = STATE.authMode === 'login' ? 'register' : 'login'; renderUI(); };
-            document.querySelector('.close-modal').onclick = () => actions.closeModal();
-            window.onclick = (event) => { if (event.target === document.getElementById('authModal')) actions.closeModal(); };
+            const container = document.getElementById('quizContainer');
+            if (STATE.loading) {
+                container.innerHTML = '<div class="loading"><div class="spinner"></div>Loading questions...</div>';
+                return;
+            }
             
-            async function init() { await actions.syncAuth(); await actions.loadQuestions(); }
-            init();
-        })();
-    </script>
+            const filtered = STATE.currentCategory === 'All'
+                ? STATE.allQuestions
+                : STATE.allQuestions.filter(q => q.category === STATE.currentCategory);
+            
+            container.innerHTML = `
+                <div class="stats">
+                    <div class="stat-card"><div class="stat-number">${STATE.allQuestions.length}</div><div class="stat-label">Total Questions</div></div>
+                    <div class="stat-card"><div class="stat-number">${STATE.categories.length - 1}</div><div class="stat-label">Categories</div></div>
+                    <div class="stat-card"><div class="stat-number">${filtered.length}</div><div class="stat-label">Showing</div></div>
+                </div>
+                <div class="category-filter">
+                    ${STATE.categories.map(cat =>
+                        `<button class="filter-btn ${cat === STATE.currentCategory ? 'active' : ''}"
+                                onclick="window.actions.setCategory('${cat.replace(/'/g, "\\'")}')">
+                            ${escapeHtml(cat)}
+                        </button>`
+                    ).join('')}
+                </div>
+                ${filtered.map((q, idx) => {
+                    // --- FIX: image handling with fallback ---
+                    let imageHtml = '';
+                    if (q.image_url) {
+                        // Use the real image
+                        imageHtml = `<img class="quiz-image" src="${q.image_url}" alt="Quiz illustration" loading="lazy">`;
+                    } else {
+                        // Fallback: placeholder with question text
+                        imageHtml = `<div class="quiz-image" style="background: #1a2f44; display:flex; align-items:center; justify-content:center; padding:20px; border-radius:12px; border:1px solid rgba(0,255,136,0.2); color:#8899aa; font-size:14px; min-height:80px;">
+                            📷 No image available
+                        </div>`;
+                    }
+                    
+                    return `<div class="quiz-item" id="quiz-${q.id}">
+                        ${imageHtml}
+                        <div class="quiz-question">${idx + 1}. ${escapeHtml(q.question)}</div>
+                        <div class="quiz-options">
+                            <label class="quiz-option"><input type="radio" name="q${q.id}" value="0"> A. ${escapeHtml(q.option_a || '')}</label>
+                            <label class="quiz-option"><input type="radio" name="q${q.id}" value="1"> B. ${escapeHtml(q.option_b || '')}</label>
+                            <label class="quiz-option"><input type="radio" name="q${q.id}" value="2"> C. ${escapeHtml(q.option_c || '')}</label>
+                            <label class="quiz-option"><input type="radio" name="q${q.id}" value="3"> D. ${escapeHtml(q.option_d || '')}</label>
+                        </div>
+                        <button class="check-btn" onclick="window.actions.checkAnswer(${q.id}, ${q.correct_option}, '${escapeHtml(q.explanation || '').replace(/'/g, "\\'")}')">Check Answer</button>
+                        <div class="feedback" id="feedback-${q.id}"></div>
+                    </div>`;
+                }).join('')}
+            `;
+        }
+        
+        const actions = {
+            async login(email, password) {
+                STATE.authError = null;
+                STATE.authSuccess = null;
+                renderUI();
+                const result = await MEI.signIn(email, password);
+                if (!result.success) {
+                    STATE.authError = result.error;
+                } else {
+                    STATE.user = result.user;
+                    STATE.authSuccess = 'Login successful!';
+                    STATE.authModalOpen = false;
+                    setTimeout(() => { STATE.authSuccess = null; renderUI(); }, 2000);
+                }
+                renderUI();
+            },
+            async register(email, password) {
+                STATE.authError = null;
+                STATE.authSuccess = null;
+                renderUI();
+                const result = await MEI.signUp(email, password);
+                if (!result.success) {
+                    STATE.authError = result.error;
+                } else {
+                    STATE.authSuccess = 'Registration successful! You can now login.';
+                    setTimeout(() => {
+                        STATE.authMode = 'login';
+                        STATE.authSuccess = null;
+                        renderUI();
+                    }, 2000);
+                }
+                renderUI();
+            },
+            async logout() {
+                await MEI.signOut();
+                STATE.user = null;
+                renderUI();
+                window.location.href = 'index.html';
+            },
+            openModal(mode) {
+                STATE.authMode = mode;
+                STATE.authModalOpen = true;
+                STATE.authError = null;
+                STATE.authSuccess = null;
+                document.getElementById('modalEmail').value = '';
+                document.getElementById('modalPassword').value = '';
+                renderUI();
+            },
+            closeModal() {
+                STATE.authModalOpen = false;
+                renderUI();
+            },
+            async handleAuthSubmit() {
+                const email = document.getElementById('modalEmail').value;
+                const password = document.getElementById('modalPassword').value;
+                if (!email || !password) {
+                    STATE.authError = 'Please enter both email and password';
+                    renderUI();
+                    return;
+                }
+                if (password.length < 6) {
+                    STATE.authError = 'Password must be at least 6 characters';
+                    renderUI();
+                    return;
+                }
+                if (STATE.authMode === 'login') {
+                    await actions.login(email, password);
+                } else {
+                    await actions.register(email, password);
+                }
+            },
+            setCategory(category) {
+                STATE.currentCategory = category;
+                renderUI();
+            },
+            checkAnswer(id, correct, explanation) {
+                const selected = document.querySelector(`input[name="q${id}"]:checked`);
+                const feedback = document.getElementById(`feedback-${id}`);
+                if (!selected) {
+                    feedback.innerHTML = '⚠️ Please select an answer';
+                    feedback.className = 'feedback wrong';
+                    return;
+                }
+                const letters = ['A', 'B', 'C', 'D'];
+                if (parseInt(selected.value) === correct) {
+                    feedback.innerHTML = `✅ Correct! ${explanation || 'Great job!'}`;
+                    feedback.className = 'feedback correct';
+                } else {
+                    feedback.innerHTML = `❌ Incorrect. The correct answer is ${letters[correct]}. ${explanation || 'Review and try again!'}`;
+                    feedback.className = 'feedback wrong';
+                }
+            },
+            async loadQuestions() {
+                STATE.loading = true;
+                renderUI();
+                try {
+                    STATE.allQuestions = await MEI.getAllQuizQuestions();
+                    const uniqueCats = [...new Set(STATE.allQuestions.map(q => q.category))];
+                    STATE.categories = ['All', ...uniqueCats];
+                } catch (e) {
+                    console.error(e);
+                } finally {
+                    STATE.loading = false;
+                    renderUI();
+                }
+            },
+            async syncAuth() {
+                STATE.user = await MEI.getCurrentUser();
+                renderUI();
+            }
+        };
+        
+        window.actions = actions;
+        
+        // Event listeners
+        document.getElementById('modalSubmitBtn').onclick = () => actions.handleAuthSubmit();
+        document.getElementById('modalSwitch').onclick = () => {
+            STATE.authMode = STATE.authMode === 'login' ? 'register' : 'login';
+            renderUI();
+        };
+        document.querySelector('.close-modal').onclick = () => actions.closeModal();
+        window.onclick = (event) => {
+            if (event.target === document.getElementById('authModal')) actions.closeModal();
+        };
+        
+        async function init() {
+            await actions.syncAuth();
+            await actions.loadQuestions();
+        }
+        init();
+    })();
+</script>
 </body>
 </html>
