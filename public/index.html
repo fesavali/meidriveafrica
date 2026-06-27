@@ -325,28 +325,70 @@
     // ============================================
     function renderQuiz() {
         if (quizState.questions.length === 0 && quizQuestions.length) {
-            quizState.questions = quizQuestions.map(q => ({ 
-                id: q.id, category: q.category, question: q.question, 
-                options: [q.option_a, q.option_b, q.option_c, q.option_d], 
-                correct: q.correct_option, explanation: q.explanation 
+            quizState.questions = quizQuestions.map(q => ({
+                id: q.id,
+                category: q.category,
+                question: q.question,
+                options: [q.option_a, q.option_b, q.option_c, q.option_d],
+                correct: q.correct_option,
+                explanation: q.explanation,
+                image_url: q.image_url  // <-- keep the image URL
             }));
         }
-        
-        if (quizState.questions.length === 0) { 
-            document.getElementById('page-content').innerHTML = `<div class="container" style="padding-top:100px;"><div class="card"><h2>No quiz questions available</h2></div></div>`; 
-            return; 
-        }
-        
-        if (quizState.currentIndex >= quizState.questions.length) {
-            const percent = Math.round((quizState.score / quizState.questions.length) * 100);
-            document.getElementById('page-content').innerHTML = `<div class="container" style="padding-top:100px;max-width:800px;"><div class="card" style="text-align:center;"><h2>🎉 Quiz Complete!</h2><p>Score: <strong>${quizState.score}</strong> / ${quizState.questions.length} (${percent}%)</p><div class="progress-bar"><div class="progress-fill" style="width:${percent}%;"></div></div><button class="btn btn-primary" onclick="resetQuiz()">Restart Quiz</button><button class="btn btn-outline" onclick="navigateTo('home')">Back Home</button></div></div>`;
+
+        if (quizState.questions.length === 0) {
+            document.getElementById('page-content').innerHTML =
+                `<div class="container" style="padding-top:100px;"><div class="card"><h2>No quiz questions available</h2></div></div>`;
             return;
         }
-        
+
+        if (quizState.currentIndex >= quizState.questions.length) {
+            const percent = Math.round((quizState.score / quizState.questions.length) * 100);
+            document.getElementById('page-content').innerHTML =
+                `<div class="container" style="padding-top:100px;max-width:800px;"><div class="card" style="text-align:center;"><h2>🎉 Quiz Complete!</h2><p>Score: <strong>${quizState.score}</strong> / ${quizState.questions.length} (${percent}%)</p><div class="progress-bar"><div class="progress-fill" style="width:${percent}%;"></div></div><button class="btn btn-primary" onclick="resetQuiz()">Restart Quiz</button><button class="btn btn-outline" onclick="navigateTo('home')">Back Home</button></div></div>`;
+            return;
+        }
+
         const q = quizState.questions[quizState.currentIndex];
         const hasAnswered = quizState.userAnswers[quizState.currentIndex] !== undefined;
-        
-        document.getElementById('page-content').innerHTML = `<div class="container" style="padding-top:100px;max-width:800px;"><div class="card"><div style="display:flex;justify-content:space-between;"><span class="category-tag">${escapeHtml(q.category || '')}</span><span>${quizState.currentIndex+1}/${quizState.questions.length}</span></div><h3 style="margin:1rem 0;">${escapeHtml(q.question)}</h3><div>${q.options.map((opt, idx) => `<div class="quiz-option ${hasAnswered && idx === q.correct ? 'correct' : ''} ${hasAnswered && idx === quizState.userAnswers[quizState.currentIndex] && idx !== q.correct ? 'wrong' : ''}" onclick="${!hasAnswered ? `selectAnswer(${idx})` : ''}"><span style="font-weight:600;">${String.fromCharCode(65+idx)}.</span> ${escapeHtml(opt)}</div>`).join('')}</div>${hasAnswered ? `<div style="margin-top:1rem;padding:1rem;background:rgba(0,255,136,0.1);border-radius:12px;"><i class="fas ${quizState.userAnswers[quizState.currentIndex] === q.correct ? 'fa-check-circle' : 'fa-times-circle'}"></i> <strong>${quizState.userAnswers[quizState.currentIndex] === q.correct ? 'Correct!' : 'Incorrect'}</strong><p>${escapeHtml(q.explanation)}</p><div class="quiz-nav-buttons"><button class="btn btn-outline" onclick="previousQuestion()">Previous</button><button class="btn btn-primary" onclick="nextQuestion()">Next</button></div></div>` : '<p style="margin-top:1rem;text-align:center;"><i class="fas fa-hand-pointer"></i> Click on an option to answer</p>'}</div></div>`;
+
+        // Build image HTML (fallback if no image)
+        let imageHtml = '';
+        if (q.image_url) {
+            imageHtml = `<img class="quiz-image" src="${q.image_url}" alt="Quiz illustration" loading="lazy" style="max-width:100%; border-radius:12px; margin-bottom:18px; border:1px solid rgba(0,255,136,0.2); object-fit:cover; max-height:250px; width:auto;">`;
+        } else {
+            imageHtml = `<div class="quiz-image" style="background: #1a2f44; display:flex; align-items:center; justify-content:center; padding:20px; border-radius:12px; border:1px solid rgba(0,255,136,0.2); color:#8899aa; font-size:14px; min-height:80px; margin-bottom:18px;">📷 No image available</div>`;
+        }
+
+        document.getElementById('page-content').innerHTML =
+            `<div class="container" style="padding-top:100px;max-width:800px;">
+                <div class="card">
+                    <div style="display:flex;justify-content:space-between;">
+                        <span class="category-tag">${escapeHtml(q.category || '')}</span>
+                        <span>${quizState.currentIndex+1}/${quizState.questions.length}</span>
+                    </div>
+                    ${imageHtml}  <!-- <-- image inserted here -->
+                    <h3 style="margin:1rem 0;">${escapeHtml(q.question)}</h3>
+                    <div>
+                        ${q.options.map((opt, idx) =>
+                            `<div class="quiz-option ${hasAnswered && idx === q.correct ? 'correct' : ''} ${hasAnswered && idx === quizState.userAnswers[quizState.currentIndex] && idx !== q.correct ? 'wrong' : ''}" onclick="${!hasAnswered ? `selectAnswer(${idx})` : ''}">
+                                <span style="font-weight:600;">${String.fromCharCode(65+idx)}.</span> ${escapeHtml(opt)}
+                            </div>`
+                        ).join('')}
+                    </div>
+                    ${hasAnswered ?
+                        `<div style="margin-top:1rem;padding:1rem;background:rgba(0,255,136,0.1);border-radius:12px;">
+                            <i class="fas ${quizState.userAnswers[quizState.currentIndex] === q.correct ? 'fa-check-circle' : 'fa-times-circle'}"></i>
+                            <strong>${quizState.userAnswers[quizState.currentIndex] === q.correct ? 'Correct!' : 'Incorrect'}</strong>
+                            <p>${escapeHtml(q.explanation)}</p>
+                            <div class="quiz-nav-buttons">
+                                <button class="btn btn-outline" onclick="previousQuestion()">Previous</button>
+                                <button class="btn btn-primary" onclick="nextQuestion()">Next</button>
+                            </div>
+                        </div>`
+                    : '<p style="margin-top:1rem;text-align:center;"><i class="fas fa-hand-pointer"></i> Click on an option to answer</p>'}
+                </div>
+            </div>`;
     }
     
     function selectAnswer(idx) { 
