@@ -107,6 +107,7 @@
     <footer>© 2026 MEI DRIVE AFRICA | Drive Safe, Arrive Alive</footer>
 </div>
 <div id="toast-container"></div>
+<div id="modal-root"></div>
 
 <style>@keyframes spin{to{transform:rotate(360deg)}}</style>
 
@@ -192,7 +193,11 @@
     }
     
     function showAuthModal(mode) {
-        document.getElementById('page-content').innerHTML = `<div class="modal" style="display:flex;"><div class="modal-content"><h2 style="text-align:center;">${mode === 'login' ? '🔐 Welcome Back' : '📝 Create Account'}</h2>${mode === 'signup' ? '<input type="text" id="signupName" placeholder="Full Name">' : ''}<input type="email" id="authEmail" placeholder="Email"><input type="password" id="authPassword" placeholder="Password (min 6)"><button class="btn btn-primary" style="width:100%" onclick="handleAuth('${mode}')">${mode === 'login' ? 'Login' : 'Sign Up'}</button><p style="margin-top:1rem;text-align:center;">${mode === 'login' ? 'No account? ' : 'Have account? '}<span style="color:var(--primary);cursor:pointer;" onclick="showAuthModal('${mode === 'login' ? 'signup' : 'login'}')">${mode === 'login' ? 'Sign Up' : 'Login'}</span></p><button class="btn btn-outline" style="width:100%;margin-top:0.5rem;" onclick="navigateTo('home')">Cancel</button></div></div>`;
+        document.getElementById('modal-root').innerHTML = `<div class="modal" style="display:flex;"><div class="modal-content"><h2 style="text-align:center;">${mode === 'login' ? '🔐 Welcome Back' : '📝 Create Account'}</h2>${mode === 'signup' ? '<input type="text" id="signupName" placeholder="Full Name">' : ''}<input type="email" id="authEmail" placeholder="Email"><input type="password" id="authPassword" placeholder="Password (min 6)"><button class="btn btn-primary" style="width:100%" onclick="handleAuth('${mode}')">${mode === 'login' ? 'Login' : 'Sign Up'}</button><p style="margin-top:1rem;text-align:center;">${mode === 'login' ? 'No account? ' : 'Have account? '}<span style="color:var(--primary);cursor:pointer;" onclick="showAuthModal('${mode === 'login' ? 'signup' : 'login'}')">${mode === 'login' ? 'Sign Up' : 'Login'}</span></p><button class="btn btn-outline" style="width:100%;margin-top:0.5rem;" onclick="closeAuthModal()">Cancel</button></div></div>`;
+    }
+    
+    function closeAuthModal() {
+        document.getElementById('modal-root').innerHTML = '';
     }
     
     async function handleAuth(mode) {
@@ -215,8 +220,9 @@
             const result = await MEI.signIn(email, password);
             if (result.success) {
                 await loadData();
+                closeAuthModal();
                 showToast(`Welcome back, ${email.split('@')[0]}!`, 'success');
-                navigateTo('home');
+                renderPage(currentPage);
             } else {
                 showToast(result.error, 'error');
             }
@@ -250,7 +256,13 @@
     }
     
     function showPaymentModal(course) {
-        document.getElementById('page-content').innerHTML = `<div class="payment-modal" id="paymentModal"><div class="payment-card"><div class="mpesa-logo"><i class="fas fa-money-bill-wave"></i></div><h2>M-Pesa Payment</h2><p style="margin:1rem 0;">Course: <strong>${escapeHtml(course.name)}</strong></p><p style="font-size:1.8rem;color:var(--primary);">KES ${course.price.toLocaleString()}</p><div class="phone-input"><span>+254</span><input type="tel" id="mpesaPhone" placeholder="712345678" autocomplete="off"></div><p style="font-size:12px;opacity:0.7;">Enter your M-Pesa number to receive payment prompt</p><button class="btn btn-primary" id="payNowBtn" style="width:100%;margin-top:1rem;" onclick="processPayment()"><i class="fas fa-arrow-right"></i> Pay Now</button><button class="btn btn-outline" style="width:100%;margin-top:0.5rem;" onclick="navigateTo('courses')">Cancel</button></div></div>`;
+        document.getElementById('modal-root').innerHTML = `<div class="payment-modal" id="paymentModal"><div class="payment-card"><div class="mpesa-logo"><i class="fas fa-money-bill-wave"></i></div><h2>M-Pesa Payment</h2><p style="margin:1rem 0;">Course: <strong>${escapeHtml(course.name)}</strong></p><p style="font-size:1.8rem;color:var(--primary);">KES ${course.price.toLocaleString()}</p><div class="phone-input"><span>+254</span><input type="tel" id="mpesaPhone" placeholder="712345678" autocomplete="off"></div><p style="font-size:12px;opacity:0.7;">Enter your M-Pesa number to receive payment prompt</p><button class="btn btn-primary" id="payNowBtn" style="width:100%;margin-top:1rem;" onclick="processPayment()"><i class="fas fa-arrow-right"></i> Pay Now</button><button class="btn btn-outline" style="width:100%;margin-top:0.5rem;" onclick="closePaymentModal()">Cancel</button></div></div>`;
+    }
+    
+    function closePaymentModal() {
+        if (pendingCheckoutInterval) clearInterval(pendingCheckoutInterval);
+        document.getElementById('modal-root').innerHTML = '';
+        pendingCourse = null;
     }
     
     async function processPayment() {
@@ -280,16 +292,18 @@
         if (payBtn) payBtn.innerHTML = 'Waiting for confirmation...';
         
         let attempts = 0;
+        const paidCourse = pendingCourse;
         pendingCheckoutInterval = setInterval(async () => {
             attempts++;
             const status = await MEI.checkPaymentStatus(result.checkoutRequestID);
             
             if (status.success && status.status === 'completed') {
                 clearInterval(pendingCheckoutInterval);
-                const enrollResult = await MEI.createEnrollment(currentUser.id, pendingCourse.id, pendingCourse.price, status.transaction_id);
+                const enrollResult = await MEI.createEnrollment(currentUser.id, paidCourse.id, paidCourse.price, status.transaction_id);
                 if (enrollResult.success) {
-                    userEnrollments[pendingCourse.id] = true;
+                    userEnrollments[paidCourse.id] = true;
                     showToast('✅ Payment successful! Course unlocked.', 'success');
+                    closePaymentModal();
                     navigateTo('courses');
                 }
             } else if (status.status === 'failed' || attempts > 20) {
@@ -376,7 +390,11 @@
         else enrollCourse(courseId); 
     }
     
-    async function navigateTo(page) {
+    // renderPage does the actual rendering for a virtual page. It never
+    // touches the URL — navigateTo() and the hashchange listener below are
+    // the only two things that call it, so there's exactly one source of
+    // truth for "what page is the URL pointing at".
+    async function renderPage(page) {
         currentPage = page;
         if (page === 'home') renderHome();
         else if (page === 'courses') renderCourses();
@@ -393,12 +411,32 @@
         window.scrollTo({ top: 0 });
     }
     
+    // navigateTo is what every onclick in the nav/cards calls. It updates
+    // the URL hash (giving each virtual page a real, bookmarkable,
+    // back-button-able address) and lets the hashchange listener do the
+    // actual render — this is hash routing rather than real paths
+    // (e.g. /courses) specifically so it works on static hosting with zero
+    // server rewrite rules: the path never changes, only the hash, so a
+    // hard refresh on any page still loads index.html correctly.
+    function navigateTo(page) {
+        const currentHashPage = location.hash.slice(1) || 'home';
+        if (currentHashPage === page) {
+            renderPage(page);
+        } else {
+            location.hash = page === 'home' ? '' : page;
+        }
+    }
+    
+    window.addEventListener('hashchange', () => {
+        renderPage(location.hash.slice(1) || 'home');
+    });
+    
     // ============================================
     // INITIALIZATION
     // ============================================
     async function init() { 
         await loadData(); 
-        navigateTo('home'); 
+        renderPage(location.hash.slice(1) || 'home');
     }
     
     // Expose functions to global scope
@@ -406,7 +444,9 @@
     window.enrollCourse = enrollCourse; 
     window.viewCourse = viewCourse; 
     window.showAuthModal = showAuthModal; 
+    window.closeAuthModal = closeAuthModal;
     window.handleAuth = handleAuth; 
+    window.closePaymentModal = closePaymentModal;
     window.logout = logout; 
     window.selectAnswer = selectAnswer; 
     window.previousQuestion = previousQuestion; 
