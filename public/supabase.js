@@ -151,7 +151,8 @@ async function getAllCourses() {
                     short_name: c.short_name || predefined?.short_name || c.name,
                     icon: c.icon || predefined?.icon || 'fa-car',
                     color: c.color || predefined?.color || '#00ff88',
-                    lessons_count: c.lessons_count ?? predefined?.lessons_count ?? 0
+                    lessons_count: c.lessons_count ?? predefined?.lessons_count ?? 0,
+                    price: c.price ?? predefined?.price ?? 0
                 };
             });
         }
