@@ -1,408 +1,1534 @@
+<!--
+  ============================================================
+  MEI DRIVE AFRICA — ADMIN DASHBOARD
+  Full course + quiz management with image uploads
+  ============================================================
+  USAGE:
+  1) Place this file in your project root as admin.html
+  2) Make sure supabase.js is in the same directory
+  3) Only users with is_admin = true in user_profiles can access
+  4) Quiz images are stored in the 'quiz-images' bucket
+  5) Course images are stored in the 'course-images' bucket
+  ============================================================
+-->
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Admin Dashboard | MEI DRIVE AFRICA</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.0/dist/umd/supabase.min.js"></script>
-    <script src="supabase.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.0/dist/umd/supabase.min.js">
+    </script>
+    <script src="supabase.js">
+    </script>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Inter', sans-serif; background: #0a192f; color: #ffffff; line-height: 1.5; }
-        :root { --primary: #00ff88; --primary-dark: #00cc66; --gradient-green: linear-gradient(135deg, #00ff88 0%, #00cc66 100%); --border: rgba(0, 255, 136, 0.25); --text-muted: #a0b3d9; }
-        .admin-container { display: flex; min-height: 100vh; }
-        .sidebar { width: 280px; background: #0d2137; border-right: 1px solid var(--border); position: fixed; height: 100vh; overflow-y: auto; }
-        .main-content { flex: 1; margin-left: 280px; padding: 20px; }
-        .sidebar-header { padding: 24px; border-bottom: 1px solid var(--border); }
-        .sidebar-header .logo { font-size: 1.3rem; font-weight: 800; background: var(--gradient-green); -webkit-background-clip: text; background-clip: text; color: transparent; display: flex; align-items: center; gap: 8px; cursor: pointer; }
-        .nav-item { padding: 12px 24px; display: flex; align-items: center; gap: 12px; cursor: pointer; transition: 0.2s; color: var(--text-muted); }
-        .nav-item:hover, .nav-item.active { background: rgba(0, 255, 136, 0.1); color: var(--primary); border-left: 3px solid var(--primary); }
-        .nav-item i { width: 24px; }
-        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 20px; margin-bottom: 30px; }
-        .stat-card { background: #0d2137; border: 1px solid var(--border); border-radius: 20px; padding: 20px; transition: 0.3s; }
-        .stat-card:hover { transform: translateY(-2px); border-color: var(--primary); }
-        .stat-title { color: var(--text-muted); font-size: 14px; margin-bottom: 8px; }
-        .stat-value { font-size: 28px; font-weight: 800; color: var(--primary); }
-        .card { background: #0d2137; border: 1px solid var(--border); border-radius: 20px; padding: 24px; margin-bottom: 24px; }
-        .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 12px; }
-        .card-header h2 { font-size: 1.3rem; color: var(--primary); }
-        .data-table { width: 100%; overflow-x: auto; }
-        table { width: 100%; border-collapse: collapse; }
-        th, td { padding: 12px; text-align: left; border-bottom: 1px solid var(--border); }
-        th { color: var(--primary); font-weight: 600; }
-        .btn { padding: 8px 16px; border-radius: 8px; font-weight: 600; cursor: pointer; border: none; font-size: 0.85rem; transition: 0.2s; }
-        .btn-primary { background: var(--gradient-green); color: #0a192f; }
-        .btn-danger { background: #ff4757; color: white; }
-        .btn-warning { background: #ffa502; color: #0a192f; }
-        .btn-outline { background: transparent; border: 1px solid var(--primary); color: var(--primary); }
-        .btn-sm { padding: 4px 12px; font-size: 0.75rem; }
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.96); backdrop-filter: blur(12px); z-index: 2000; justify-content: center; align-items: center; }
-        .modal.active { display: flex; }
-        .modal-content { background: #0d2137; border: 1px solid var(--primary); border-radius: 24px; width: 90%; max-width: 600px; padding: 2rem; max-height: 85vh; overflow-y: auto; }
-        .modal-content input, .modal-content textarea, .modal-content select { background: #0f1a2c; border: 1px solid var(--border); padding: 10px; border-radius: 8px; color: white; width: 100%; margin: 8px 0; }
-        .modal-content label { font-size: 0.85rem; color: var(--text-muted); margin-top: 10px; display: block; }
-        .toast-container { position: fixed; bottom: 20px; right: 20px; z-index: 2100; }
-        .toast { background: #0d2137; border-left: 4px solid var(--primary); padding: 12px 20px; border-radius: 12px; margin-top: 8px; animation: slideIn 0.3s ease; }
-        @keyframes slideIn { from { opacity: 0; transform: translateX(30px); } to { opacity: 1; transform: translateX(0); } }
-        .loading-spinner { width: 40px; height: 40px; border: 3px solid #1e2a3a; border-top-color: var(--primary); border-radius: 50%; animation: spin 1s linear infinite; margin: 40px auto; }
-        @keyframes spin { to { transform: rotate(360deg); } }
-        .badge { display: inline-block; padding: 4px 8px; border-radius: 20px; font-size: 11px; font-weight: 600; }
-        .badge-success { background: #00cc6633; color: #00ff88; border: 1px solid #00ff88; }
-        .price-edit { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
-        .price-edit input { width: 100px; margin: 0; padding: 6px; }
-        .real-time-badge { background: #00ff8822; border: 1px solid #00ff88; border-radius: 20px; padding: 4px 12px; font-size: 11px; color: #00ff88; }
-        @media (max-width: 768px) { .sidebar { width: 70px; } .sidebar .nav-text { display: none; } .main-content { margin-left: 70px; } }
+        /* ----- RESET & BASE ----- */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #0a192f;
+            color: #fff;
+            line-height: 1.5;
+        }
+        :root {
+            --primary: #00ff88;
+            --primary-dark: #00cc66;
+            --border: rgba(0, 255, 136, 0.25);
+            --text-muted: #a0b3d9;
+            --bg-card: #0d2137;
+            --danger: #ff4757;
+            --warning: #ffa502;
+            --success: #00ff88;
+        }
+
+        /* ----- LAYOUT ----- */
+        .admin-container {
+            display: flex;
+            min-height: 100vh;
+        }
+        .sidebar {
+            width: 260px;
+            background: #0d2137;
+            border-right: 1px solid var(--border);
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+            z-index: 100;
+            transition: transform 0.3s ease;
+        }
+        .main-content {
+            flex: 1;
+            margin-left: 260px;
+            padding: 24px 28px 60px;
+        }
+
+        /* ----- SIDEBAR ----- */
+        .sidebar-header {
+            padding: 22px 20px 16px;
+            border-bottom: 1px solid var(--border);
+        }
+        .sidebar-header .logo {
+            font-size: 1.2rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+        }
+        .sidebar-header .logo i {
+            -webkit-text-fill-color: var(--primary);
+            font-size: 1.4rem;
+        }
+        .nav-item {
+            padding: 12px 20px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            cursor: pointer;
+            transition: 0.2s;
+            color: var(--text-muted);
+            border-left: 3px solid transparent;
+            font-weight: 500;
+            font-size: 0.95rem;
+        }
+        .nav-item:hover {
+            background: rgba(0, 255, 136, 0.06);
+            color: var(--primary);
+        }
+        .nav-item.active {
+            background: rgba(0, 255, 136, 0.10);
+            color: var(--primary);
+            border-left-color: var(--primary);
+        }
+        .nav-item i {
+            width: 22px;
+            text-align: center;
+            font-size: 1.1rem;
+        }
+        .nav-item .badge-nav {
+            margin-left: auto;
+            background: rgba(0, 255, 136, 0.15);
+            color: var(--primary);
+            font-size: 11px;
+            padding: 2px 10px;
+            border-radius: 30px;
+        }
+
+        /* ----- TOP BAR ----- */
+        .topbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 28px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid var(--border);
+        }
+        .topbar h1 {
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+        .topbar h1 span {
+            color: var(--primary);
+        }
+        .topbar-right {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+        .real-time-badge {
+            background: rgba(0, 255, 136, 0.12);
+            border: 1px solid rgba(0, 255, 136, 0.3);
+            border-radius: 40px;
+            padding: 5px 16px;
+            font-size: 12px;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .real-time-badge i {
+            font-size: 12px;
+        }
+        .user-chip {
+            background: rgba(0, 255, 136, 0.10);
+            border-radius: 40px;
+            padding: 6px 16px 6px 14px;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--text-muted);
+        }
+        .user-chip i {
+            color: var(--primary);
+        }
+
+        /* ----- CARDS ----- */
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 18px;
+            padding: 22px 24px;
+            margin-bottom: 24px;
+            transition: 0.2s;
+        }
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 18px;
+        }
+        .card-header h2 {
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .card-header h2 i {
+            color: var(--primary);
+        }
+
+        /* ----- STATS GRID ----- */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 16px;
+            margin-bottom: 28px;
+        }
+        .stat-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 18px 20px;
+            transition: 0.2s;
+        }
+        .stat-card:hover {
+            border-color: var(--primary);
+            transform: translateY(-2px);
+        }
+        .stat-title {
+            color: var(--text-muted);
+            font-size: 13px;
+            margin-bottom: 4px;
+        }
+        .stat-value {
+            font-size: 26px;
+            font-weight: 800;
+            color: var(--primary);
+        }
+
+        /* ----- TABLE ----- */
+        .table-wrap {
+            overflow-x: auto;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.92rem;
+        }
+        th,
+        td {
+            padding: 11px 12px;
+            text-align: left;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        th {
+            color: var(--primary);
+            font-weight: 600;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        td img.thumb {
+            width: 48px;
+            height: 48px;
+            object-fit: cover;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+        }
+        td .img-placeholder {
+            width: 48px;
+            height: 48px;
+            background: #1a2f44;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-muted);
+            font-size: 18px;
+        }
+
+        /* ----- BUTTONS ----- */
+        .btn {
+            padding: 8px 18px;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            font-size: 0.82rem;
+            transition: 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: #0a192f;
+        }
+        .btn-primary:hover {
+            transform: scale(1.03);
+            box-shadow: 0 4px 16px rgba(0, 255, 136, 0.3);
+        }
+        .btn-danger {
+            background: var(--danger);
+            color: #fff;
+        }
+        .btn-danger:hover {
+            background: #e03a4a;
+        }
+        .btn-warning {
+            background: var(--warning);
+            color: #0a192f;
+        }
+        .btn-warning:hover {
+            background: #e09400;
+        }
+        .btn-outline {
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--text-muted);
+        }
+        .btn-outline:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+        .btn-sm {
+            padding: 4px 12px;
+            font-size: 0.72rem;
+        }
+        .btn-xs {
+            padding: 2px 10px;
+            font-size: 0.65rem;
+            border-radius: 6px;
+        }
+
+        /* ----- MODAL ----- */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.92);
+            backdrop-filter: blur(10px);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        .modal.active {
+            display: flex;
+        }
+        .modal-content {
+            background: var(--bg-card);
+            border: 1px solid var(--primary);
+            border-radius: 24px;
+            width: 100%;
+            max-width: 640px;
+            padding: 28px 32px;
+            max-height: 90vh;
+            overflow-y: auto;
+            position: relative;
+        }
+        .modal-content h2 {
+            font-size: 1.3rem;
+            margin-bottom: 18px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .modal-content h2 i {
+            color: var(--primary);
+        }
+        .modal-close {
+            position: absolute;
+            top: 16px;
+            right: 20px;
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-size: 1.4rem;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .modal-close:hover {
+            color: #fff;
+            transform: rotate(90deg);
+        }
+        .modal-content label {
+            display: block;
+            font-size: 0.82rem;
+            color: var(--text-muted);
+            margin-top: 14px;
+            margin-bottom: 4px;
+            font-weight: 500;
+        }
+        .modal-content label.required::after {
+            content: ' *';
+            color: var(--danger);
+        }
+        .modal-content input,
+        .modal-content textarea,
+        .modal-content select {
+            width: 100%;
+            padding: 10px 14px;
+            background: #0f1a2c;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            color: #fff;
+            font-family: inherit;
+            font-size: 0.92rem;
+            transition: 0.2s;
+        }
+        .modal-content input:focus,
+        .modal-content textarea:focus,
+        .modal-content select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(0, 255, 136, 0.10);
+        }
+        .modal-content textarea {
+            min-height: 80px;
+            resize: vertical;
+        }
+        .modal-content select option {
+            background: #0d2137;
+        }
+        .modal-actions {
+            display: flex;
+            gap: 12px;
+            margin-top: 24px;
+            flex-wrap: wrap;
+        }
+        .file-input-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+            padding: 8px 0;
+        }
+        .file-input-wrapper input[type="file"] {
+            flex: 1;
+            padding: 8px;
+            background: #0f1a2c;
+            border: 1px dashed var(--border);
+            border-radius: 10px;
+            color: var(--text-muted);
+            font-size: 0.82rem;
+        }
+        .file-input-wrapper input[type="file"]::-webkit-file-upload-button {
+            background: rgba(0, 255, 136, 0.12);
+            border: none;
+            border-radius: 6px;
+            padding: 6px 16px;
+            color: var(--primary);
+            font-weight: 600;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+        .file-preview {
+            margin-top: 8px;
+            max-width: 120px;
+            max-height: 80px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            object-fit: cover;
+        }
+        .current-image-label {
+            font-size: 0.78rem;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .current-image-label img {
+            max-height: 40px;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+        }
+
+        /* ----- TOAST ----- */
+        .toast-container {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            z-index: 3000;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .toast {
+            background: var(--bg-card);
+            border-left: 4px solid var(--primary);
+            padding: 12px 22px;
+            border-radius: 12px;
+            animation: slideUp 0.3s ease;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+            font-size: 0.9rem;
+            max-width: 400px;
+        }
+        .toast.error {
+            border-left-color: var(--danger);
+        }
+        .toast.warning {
+            border-left-color: var(--warning);
+        }
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* ----- LOADER ----- */
+        .loader {
+            width: 36px;
+            height: 36px;
+            border: 3px solid #1e2a3a;
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 0.9s linear infinite;
+            margin: 40px auto;
+        }
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* ----- MISC ----- */
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--text-muted);
+        }
+        .empty-state i {
+            font-size: 2.8rem;
+            opacity: 0.3;
+            margin-bottom: 12px;
+        }
+        .badge-status {
+            display: inline-block;
+            padding: 2px 12px;
+            border-radius: 30px;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+        .badge-active {
+            background: rgba(0, 255, 136, 0.15);
+            color: var(--primary);
+        }
+        .badge-inactive {
+            background: rgba(255, 71, 87, 0.15);
+            color: var(--danger);
+        }
+        .flex-between {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .gap-8 {
+            gap: 8px;
+        }
+        .mt-8 {
+            margin-top: 8px;
+        }
+        .mt-16 {
+            margin-top: 16px;
+        }
+        .text-muted {
+            color: var(--text-muted);
+        }
+        .text-primary {
+            color: var(--primary);
+        }
+        .fw-600 {
+            font-weight: 600;
+        }
+        .truncate {
+            max-width: 180px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            display: inline-block;
+            vertical-align: middle;
+        }
+
+        /* ----- RESPONSIVE ----- */
+        @media (max-width: 820px) {
+            .sidebar {
+                transform: translateX(-100%);
+                width: 260px;
+            }
+            .sidebar.open {
+                transform: translateX(0);
+            }
+            .main-content {
+                margin-left: 0;
+                padding: 16px;
+            }
+            .topbar h1 {
+                font-size: 1.2rem;
+            }
+            .stats-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+            .modal-content {
+                padding: 20px;
+                max-width: 100%;
+            }
+            .mobile-toggle {
+                display: flex !important;
+            }
+        }
+        @media (max-width: 480px) {
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            .topbar {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .topbar-right {
+                justify-content: space-between;
+            }
+        }
+
+        .mobile-toggle {
+            display: none;
+            background: none;
+            border: none;
+            color: var(--primary);
+            font-size: 1.4rem;
+            cursor: pointer;
+            padding: 4px 8px;
+        }
+
+        /* scrollbar */
+        ::-webkit-scrollbar {
+            width: 5px;
+            height: 5px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0a192f;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--primary);
+        }
     </style>
 </head>
 <body>
-<div class="admin-container">
-    <div class="sidebar">
-        <div class="sidebar-header">
-            <div class="logo" onclick="window.location.href='index.html'">
-                <i class="fas fa-car"></i>
-                <span class="nav-text">MEI DRIVE</span>
-            </div>
-        </div>
-        <nav>
-            <div class="nav-item active" onclick="setTab('courses')">
-                <i class="fas fa-book"></i><span class="nav-text">Courses</span>
-            </div>
-            <div class="nav-item" onclick="setTab('stats')">
-                <i class="fas fa-chart-line"></i><span class="nav-text">Statistics</span>
-            </div>
-            <div class="nav-item" onclick="logout()">
-                <i class="fas fa-sign-out-alt"></i><span class="nav-text">Logout</span>
-            </div>
-        </nav>
-    </div>
-    <div class="main-content">
-        <div style="display: flex; justify-content: flex-end; margin-bottom: 20px;">
-            <span class="real-time-badge"><i class="fas fa-sync-alt"></i> Real-time Updates Active</span>
-        </div>
-        <div id="adminContent"><div class="loading-spinner"></div></div>
-    </div>
-</div>
-<div id="toast-container" class="toast-container"></div>
 
-<script>
-    let currentUser = null;
-    let unsubscribeCourses = null;
-    let currentCourses = [];
+    <!-- ============================================================
+    ADMIN CONTAINER
+    ============================================================ -->
+    <div class="admin-container">
 
-    function showToast(msg, type = 'success') {
-        const container = document.getElementById('toast-container');
-        const toast = document.createElement('div');
-        toast.className = 'toast';
-        toast.innerHTML = `${msg} <button onclick="this.parentElement.remove()" style="background:none; border:none; color:#00ff88; cursor:pointer; margin-left:10px;">×</button>`;
-        container.appendChild(toast);
-        setTimeout(() => toast.remove(), 5000);
-    }
-    
-    function escapeHtml(str) { if (!str) return ''; return String(str).replace(/[&<>]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[m])); }
-    
-    async function init() {
-        currentUser = await MEIDrive.getCurrentUser();
-        
-        if (!currentUser) {
-            showLoginModal();
-            return;
-        }
-        
-        if (!currentUser.is_admin) {
-            document.getElementById('adminContent').innerHTML = `
-                <div class="card"><h2>⛔ Access Denied</h2><p>You don't have admin privileges.</p><button class="btn btn-primary" onclick="window.location.href='index.html'">Back to Home</button></div>
-            `;
-            return;
-        }
-        
-        // Subscribe to real-time course updates
-        unsubscribeCourses = MEIDrive.subscribeToCourses((updatedCourses) => {
-            currentCourses = updatedCourses;
-            renderCoursesList();
-            showToast('Courses updated in real-time!', 'success');
-        });
-        
-        renderCoursesList();
-    }
-    
-    async function renderCoursesList() {
-        let courses = currentCourses;
-        if (courses.length === 0) {
-            courses = await MEIDrive.getAllCourses();
-            currentCourses = courses;
-        }
-        
-        document.getElementById('adminContent').innerHTML = `
-            <div class="card">
-                <div class="card-header">
-                    <h2><i class="fas fa-book"></i> Courses Management <span class="real-time-badge" style="margin-left: 10px;"><i class="fas fa-bolt"></i> Live Sync</span></h2>
-                    <button class="btn btn-primary" onclick="showAddCourseModal()">+ Add New Course</button>
+        <!-- SIDEBAR -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="logo" onclick="window.location.href='index.html'">
+                    <i class="fas fa-car"></i>
+                    <span>MEI DRIVE</span>
                 </div>
-                <div class="data-table">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>ID</th><th>Name</th><th>Description</th><th>Price (KES)</th><th>Duration</th><th>Modules</th><th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            ${courses?.map(c => `
-                                <tr>
-                                    <td>${c.id}</td>
-                                    <td><strong>${escapeHtml(c.name)}</strong></td>
-                                    <td><small>${escapeHtml(c.description?.substring(0, 80))}${c.description?.length > 80 ? '...' : ''}</small></td>
-                                    <td>
-                                        <div class="price-edit">
-                                            <span id="priceDisplay_${c.id}">KES ${c.price.toLocaleString()}</span>
-                                            <input type="number" id="priceInput_${c.id}" value="${c.price}" style="display:none;" min="0" step="100">
-                                            <button class="btn btn-warning btn-sm" id="editPriceBtn_${c.id}" onclick="togglePriceEdit(${c.id})">Edit Price</button>
-                                            <button class="btn btn-success btn-sm" id="savePriceBtn_${c.id}" onclick="updateCoursePrice(${c.id})" style="display:none;">Save</button>
-                                            <button class="btn btn-outline btn-sm" id="cancelPriceBtn_${c.id}" onclick="cancelPriceEdit(${c.id})" style="display:none;">Cancel</button>
-                                        </div>
-                                    </td>
-                                    <td>${escapeHtml(c.duration || 'N/A')}</td>
-                                    <td>${c.lessons_count || 0}</td>
-                                    <td>
-                                        <button class="btn btn-warning btn-sm" onclick="editCourse(${c.id})">Edit</button>
-                                        <button class="btn btn-danger btn-sm" onclick="deleteCourse(${c.id})">Delete</button>
-                                    </td>
-                                </tr>
-                            `).join('') || '<tr><td colspan="7">No courses found</td></tr>'}
-                        </tbody>
-                    </table>
+                <div style="font-size:11px;color:var(--text-muted);margin-top:4px;padding-left:4px;">Admin Panel</div>
+            </div>
+            <nav>
+                <div class="nav-item active" data-tab="courses" onclick="switchTab('courses')">
+                    <i class="fas fa-book-open"></i> Courses
+                    <span class="badge-nav" id="courseCount">0</span>
+                </div>
+                <div class="nav-item" data-tab="units" onclick="switchTab('units')">
+                    <i class="fas fa-list-ul"></i> Units / Lessons
+                    <span class="badge-nav" id="unitCount">0</span>
+                </div>
+                <div class="nav-item" data-tab="quiz" onclick="switchTab('quiz')">
+                    <i class="fas fa-question-circle"></i> Quiz Questions
+                    <span class="badge-nav" id="quizCount">0</span>
+                </div>
+                <div class="nav-item" data-tab="stats" onclick="switchTab('stats')">
+                    <i class="fas fa-chart-pie"></i> Statistics
+                </div>
+                <div class="nav-item" onclick="window.location.href='index.html'">
+                    <i class="fas fa-arrow-left"></i> Back to Site
+                </div>
+                <div class="nav-item" onclick="logoutAdmin()">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </div>
+            </nav>
+        </aside>
+
+        <!-- MAIN CONTENT -->
+        <main class="main-content">
+
+            <!-- TOP BAR -->
+            <div class="topbar">
+                <div style="display:flex;align-items:center;gap:14px;">
+                    <button class="mobile-toggle" id="mobileToggle" onclick="toggleSidebar()">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <h1 id="pageTitle">📚 <span>Courses</span></h1>
+                </div>
+                <div class="topbar-right">
+                    <span class="real-time-badge"><i class="fas fa-sync-alt fa-fw"></i> Live Sync</span>
+                    <span class="user-chip" id="adminUserChip"><i class="fas fa-user-shield"></i> Admin</span>
                 </div>
             </div>
-            <div class="card">
-                <div class="card-header">
-                    <h2><i class="fas fa-info-circle"></i> Real-Time Sync Info</h2>
-                </div>
-                <p>✅ Any changes made here (Add/Edit/Delete/Price Update) will automatically sync to the main website (<strong>index.html</strong>) in real-time via Supabase.</p>
-                <p>📡 Users will see updated courses without refreshing the page.</p>
+
+            <!-- DYNAMIC CONTENT -->
+            <div id="tabContent">
+                <div class="loader"></div>
             </div>
-        `;
-    }
-    
-    async function renderStatsContent() {
-        const [usersRes, coursesRes, enrollmentsRes, paymentsRes] = await Promise.all([
-            MEIDrive.getAllUsers(),
-            MEIDrive.getAllCourses(),
-            MEIDrive.getAllEnrollments(),
-            MEIDrive.getAllPayments()
-        ]);
-        
-        const totalRevenue = paymentsRes?.reduce((sum, p) => sum + (p.amount || 0), 0) || 0;
-        
-        document.getElementById('adminContent').innerHTML = `
-            <div class="stats-grid">
-                <div class="stat-card"><div class="stat-title">Total Users</div><div class="stat-value">${usersRes.length}</div></div>
-                <div class="stat-card"><div class="stat-title">Courses</div><div class="stat-value">${coursesRes.length}</div></div>
-                <div class="stat-card"><div class="stat-title">Enrollments</div><div class="stat-value">${enrollmentsRes.length}</div></div>
-                <div class="stat-card"><div class="stat-title">Total Revenue</div><div class="stat-value">KES ${totalRevenue.toLocaleString()}</div></div>
-            </div>
-            <div class="card">
-                <h2><i class="fas fa-chart-line"></i> System Status</h2>
-                <p>✅ Real-time sync enabled - changes appear instantly on main site</p>
-                <p>✅ Supabase Single Source of Truth active</p>
-                <p>✅ M-Pesa integration ready for production</p>
-            </div>
-        `;
-    }
-    
-    // Price Edit Functions
-    window.togglePriceEdit = (courseId) => {
-        const priceSpan = document.getElementById(`priceDisplay_${courseId}`);
-        const priceInput = document.getElementById(`priceInput_${courseId}`);
-        const editBtn = document.getElementById(`editPriceBtn_${courseId}`);
-        const saveBtn = document.getElementById(`savePriceBtn_${courseId}`);
-        const cancelBtn = document.getElementById(`cancelPriceBtn_${courseId}`);
-        
-        if (priceSpan && priceInput) {
-            priceSpan.style.display = 'none';
-            priceInput.style.display = 'inline-block';
-            editBtn.style.display = 'none';
-            saveBtn.style.display = 'inline-block';
-            cancelBtn.style.display = 'inline-block';
+
+        </main>
+    </div>
+
+    <!-- ============================================================
+    TOAST CONTAINER
+    ============================================================ -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- ============================================================
+    MODAL ROOT
+    ============================================================ -->
+    <div id="modalRoot"></div>
+
+    <!-- ============================================================
+    JAVASCRIPT — Full Admin Logic
+    ============================================================ -->
+    <script>
+        // ----------------------------------------------
+        // GLOBALS
+        // ----------------------------------------------
+        const MEI = window.MEIDrive;
+        let currentUser = null;
+        let currentTab = 'courses';
+        let allCourses = [];
+        let allUnits = [];
+        let allQuiz = [];
+        let allEnrollments = [];
+        let allPayments = [];
+        let allUsers = [];
+        let unsubscribeCourses = null;
+        let editingCourseId = null;
+        let editingUnitId = null;
+        let editingQuizId = null;
+
+        // ----------------------------------------------
+        // TOAST
+        // ----------------------------------------------
+        function showToast(msg, type = 'success') {
+            const c = document.getElementById('toastContainer');
+            const t = document.createElement('div');
+            t.className = 'toast' + (type === 'error' ? ' error' : type === 'warning' ? ' warning' : '');
+            const icon = type === 'success' ? '✅' : type === 'error' ? '❌' : type === 'warning' ? '⚠️' : 'ℹ️';
+            t.innerHTML = `${icon} ${msg}`;
+            c.appendChild(t);
+            setTimeout(() => t.remove(), 4500);
         }
-    };
-    
-    window.cancelPriceEdit = (courseId) => {
-        const priceSpan = document.getElementById(`priceDisplay_${courseId}`);
-        const priceInput = document.getElementById(`priceInput_${courseId}`);
-        const editBtn = document.getElementById(`editPriceBtn_${courseId}`);
-        const saveBtn = document.getElementById(`savePriceBtn_${courseId}`);
-        const cancelBtn = document.getElementById(`cancelPriceBtn_${courseId}`);
-        
-        if (priceSpan && priceInput) {
-            const originalPrice = priceSpan.innerText.replace('KES ', '').replace(/,/g, '');
-            priceInput.value = originalPrice;
-            priceSpan.style.display = 'inline-block';
-            priceInput.style.display = 'none';
-            editBtn.style.display = 'inline-block';
-            saveBtn.style.display = 'none';
-            cancelBtn.style.display = 'none';
+
+        // ----------------------------------------------
+        // SIDEBAR / NAV
+        // ----------------------------------------------
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('open');
         }
-    };
-    
-    window.updateCoursePrice = async (courseId) => {
-        const priceInput = document.getElementById(`priceInput_${courseId}`);
-        const newPrice = parseInt(priceInput.value);
-        
-        if (isNaN(newPrice) || newPrice < 0) {
-            showToast('Please enter a valid price', 'error');
-            return;
+
+        function switchTab(tab) {
+            currentTab = tab;
+            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+            document.querySelector(`.nav-item[data-tab="${tab}"]`)?.classList.add('active');
+
+            const titles = {
+                courses: '📚 <span>Courses</span>',
+                units: '📋 <span>Units / Lessons</span>',
+                quiz: '❓ <span>Quiz Questions</span>',
+                stats: '📊 <span>Statistics</span>'
+            };
+            document.getElementById('pageTitle').innerHTML = titles[tab] || '📚 <span>Courses</span>';
+
+            // Close mobile sidebar
+            document.getElementById('sidebar').classList.remove('open');
+
+            renderTab(tab);
         }
-        
-        const result = await MEIDrive.updateCoursePrice(courseId, newPrice);
-        if (result.success) {
-            showToast('✅ Price updated! Changes will appear on main site instantly.', 'success');
-        } else {
-            showToast('Error updating price', 'error');
-        }
-    };
-    
-    window.showAddCourseModal = () => {
-        const modalHtml = `
-            <div class="modal active" id="editModal">
-                <div class="modal-content">
-                    <h2>➕ Add New Course</h2>
-                    <label>Course Name *</label>
-                    <input type="text" id="courseName" placeholder="e.g., Advanced Defensive Driving">
-                    <label>Description</label>
-                    <textarea id="courseDesc" rows="3" placeholder="Course description..."></textarea>
-                    <label>Price (KES)</label>
-                    <input type="number" id="coursePrice" placeholder="2999" min="0" step="100">
-                    <label>Duration</label>
-                    <input type="text" id="courseDuration" placeholder="e.g., 6 weeks">
-                    <label>Icon (Font Awesome class)</label>
-                    <input type="text" id="courseIcon" placeholder="fa-car" value="fa-car">
-                    <label>Number of Modules/Lessons</label>
-                    <input type="number" id="courseLessons" placeholder="10" min="1">
-                    <div style="display: flex; gap: 10px; margin-top: 20px;">
-                        <button class="btn btn-primary" onclick="saveNewCourse()">Save Course</button>
-                        <button class="btn btn-outline" onclick="closeModal()">Cancel</button>
-                    </div>
-                </div>
-            </div>
-        `;
-        document.body.insertAdjacentHTML('beforeend', modalHtml);
-    };
-    
-    window.saveNewCourse = async () => {
-        const name = document.getElementById('courseName').value;
-        const description = document.getElementById('courseDesc').value;
-        const price = parseInt(document.getElementById('coursePrice').value) || 0;
-        const duration = document.getElementById('courseDuration').value;
-        const icon = document.getElementById('courseIcon').value || 'fa-car';
-        const lessons_count = parseInt(document.getElementById('courseLessons').value) || 0;
-        
-        if (!name) {
-            showToast('Course name is required', 'error');
-            return;
-        }
-        
-        const result = await MEIDrive.addCourse({ name, description, price, duration, icon, lessons_count });
-        if (result.success) {
-            closeModal();
-            showToast('✅ Course added! Changes will appear on main site instantly.', 'success');
-        } else {
-            showToast('Error adding course', 'error');
-        }
-    };
-    
-    window.editCourse = async (id) => {
-        const course = currentCourses.find(c => c.id === id);
-        
-        const modalHtml = `
-            <div class="modal active" id="editModal">
-                <div class="modal-content">
-                    <h2>✏️ Edit Course: ${escapeHtml(course.name)}</h2>
-                    <label>Course Name</label>
-                    <input type="text" id="courseName" value="${escapeHtml(course.name || '')}">
-                    <label>Description</label>
-                    <textarea id="courseDesc" rows="3">${escapeHtml(course.description || '')}</textarea>
-                    <label>Price (KES)</label>
-                    <input type="number" id="coursePrice" value="${course.price || 0}" min="0" step="100">
-                    <label>Duration</label>
-                    <input type="text" id="courseDuration" value="${escapeHtml(course.duration || '')}">
-                    <label>Icon (Font Awesome class)</label>
-                    <input type="text" id="courseIcon" value="${escapeHtml(course.icon || 'fa-car')}">
-                    <label>Number of Modules/Lessons</label>
-                    <input type="number" id="courseLessons" value="${course.lessons_count || 0}" min="0">
-                    <div style="display: flex; gap: 10px; margin-top: 20px;">
-                        <button class="btn btn-primary" onclick="saveEditedCourse(${id})">Save Changes</button>
-                        <button class="btn btn-outline" onclick="closeModal()">Cancel</button>
-                    </div>
-                </div>
-            </div>
-        `;
-        document.body.insertAdjacentHTML('beforeend', modalHtml);
-    };
-    
-    window.saveEditedCourse = async (id) => {
-        const name = document.getElementById('courseName').value;
-        const description = document.getElementById('courseDesc').value;
-        const price = parseInt(document.getElementById('coursePrice').value) || 0;
-        const duration = document.getElementById('courseDuration').value;
-        const icon = document.getElementById('courseIcon').value || 'fa-car';
-        const lessons_count = parseInt(document.getElementById('courseLessons').value) || 0;
-        
-        const result = await MEIDrive.updateCourse(id, { name, description, price, duration, icon, lessons_count });
-        if (result.success) {
-            closeModal();
-            showToast('✅ Course updated! Changes will appear on main site instantly.', 'success');
-        } else {
-            showToast('Error updating course', 'error');
-        }
-    };
-    
-    window.deleteCourse = async (id) => {
-        if (confirm('⚠️ Are you sure you want to delete this course? This action cannot be undone.')) {
-            const result = await MEIDrive.deleteCourse(id);
-            if (result.success) {
-                showToast('✅ Course deleted! Changes will appear on main site instantly.', 'success');
-            } else {
-                showToast('Error deleting course', 'error');
+
+        // ----------------------------------------------
+        // LOAD DATA
+        // ----------------------------------------------
+        async function loadAllData() {
+            try {
+                const [courses, units, quiz, enrollments, payments, users] = await Promise.all([
+                    MEI.getAllCourses(),
+                    supabase.from('units').select('*').order('course_id, unit_number'),
+                    MEI.getAllQuizQuestions(),
+                    MEI.getAllEnrollments(),
+                    MEI.getAllPayments(),
+                    MEI.getAllUsers()
+                ]);
+                allCourses = courses;
+                allUnits = units.data || [];
+                allQuiz = quiz;
+                allEnrollments = enrollments;
+                allPayments = payments;
+                allUsers = users;
+
+                // Update badges
+                document.getElementById('courseCount').textContent = allCourses.length;
+                document.getElementById('unitCount').textContent = allUnits.length;
+                document.getElementById('quizCount').textContent = allQuiz.length;
+
+                return true;
+            } catch (e) {
+                console.error('Load data error:', e);
+                return false;
             }
         }
-    };
-    
-    window.setTab = async (tab) => {
-        document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
-        event.currentTarget.classList.add('active');
-        
-        if (tab === 'courses') {
-            renderCoursesList();
-        } else if (tab === 'stats') {
-            renderStatsContent();
+
+        // ----------------------------------------------
+        // RENDER TAB
+        // ----------------------------------------------
+        function renderTab(tab) {
+            const container = document.getElementById('tabContent');
+            if (tab === 'courses') renderCourses(container);
+            else if (tab === 'units') renderUnits(container);
+            else if (tab === 'quiz') renderQuiz(container);
+            else if (tab === 'stats') renderStats(container);
         }
-    };
-    
-    window.closeModal = () => { document.getElementById('editModal')?.remove(); };
-    
-    function showLoginModal() {
-        const modalHtml = `<div class="modal active" id="loginModal"><div class="modal-content"><h2>Admin Login Required</h2><p>Please sign in with your admin account</p><input type="email" id="adminEmail" placeholder="Email"><input type="password" id="adminPassword" placeholder="Password"><button class="btn btn-primary" onclick="adminLogin()">Login</button><button class="btn btn-outline" onclick="window.location.href='index.html'">Back to Site</button></div></div>`;
-        document.body.insertAdjacentHTML('beforeend', modalHtml);
-    }
-    
-    window.adminLogin = async () => { 
-        const email = document.getElementById('adminEmail').value; 
-        const password = document.getElementById('adminPassword').value; 
-        const result = await MEIDrive.signIn(email, password);
-        if (result.success) { 
-            window.location.reload(); 
-        } else { 
-            showToast(result.error, 'error'); 
-        } 
-    };
-    
-    window.logout = async () => { 
-        await MEIDrive.signOut(); 
-        window.location.href = 'index.html'; 
-    };
-    
-    init();
-</script>
+
+        // ============================================================
+        // COURSES TAB
+        // ============================================================
+        function renderCourses(container) {
+            container.innerHTML = `
+                <div class="card">
+                    <div class="card-header">
+                        <h2><i class="fas fa-book-open"></i> All Courses</h2>
+                        <button class="btn btn-primary" onclick="showCourseModal()"><i class="fas fa-plus"></i> Add Course</button>
+                    </div>
+                    <div class="table-wrap">
+                        <table>
+                            <thead>
+                                <tr><th>ID</th><th>Image</th><th>Name</th><th>Price</th><th>Duration</th><th>Units</th><th>Actions</th></tr>
+                            </thead>
+                            <tbody>
+                                ${allCourses.length === 0 ? `<tr><td colspan="7" class="empty-state"><i class="fas fa-inbox"></i> No courses yet</td></tr>` :
+                                allCourses.map(c => `
+                                    <tr>
+                                        <td>${c.id}</td>
+                                        <td>
+                                            ${c.image_url ? `<img src="${c.image_url}" class="thumb" alt="${c.name}" />` :
+                                            `<div class="img-placeholder"><i class="fas fa-car"></i></div>`}
+                                        </td>
+                                        <td><strong>${escapeHtml(c.short_name || c.name)}</strong></td>
+                                        <td class="text-primary fw-600">KES ${(c.price || 0).toLocaleString()}</td>
+                                        <td>${c.duration || '—'}</td>
+                                        <td>${c.lessons_count || 0}</td>
+                                        <td>
+                                            <button class="btn btn-warning btn-xs" onclick="showCourseModal(${c.id})"><i class="fas fa-edit"></i></button>
+                                            <button class="btn btn-danger btn-xs" onclick="deleteCourse(${c.id})"><i class="fas fa-trash"></i></button>
+                                        </td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="card" style="border-color:rgba(255,165,0,0.3);">
+                    <div class="card-header">
+                        <h2><i class="fas fa-database" style="color:var(--warning);"></i> Bulk Import LEARNER HUB Units</h2>
+                        <button class="btn btn-warning" onclick="bulkImportLearnerHub()"><i class="fas fa-upload"></i> Import 21 Units</button>
+                    </div>
+                    <p class="text-muted" style="font-size:0.9rem;">
+                        This will import all 21 units from the LEARNER HUB course (ID 1) into the <code>units</code> table.
+                        Existing units with the same <code>unit_number</code> will be updated.
+                    </p>
+                </div>
+            `;
+        }
+
+        // ----------------------------------------------
+        // COURSE MODAL (Add / Edit)
+        // ----------------------------------------------
+        function showCourseModal(courseId = null) {
+            editingCourseId = courseId;
+            const isEdit = !!courseId;
+            const course = isEdit ? allCourses.find(c => c.id === courseId) : null;
+
+            const modal = document.createElement('div');
+            modal.className = 'modal active';
+            modal.id = 'courseModal';
+            modal.innerHTML = `
+                <div class="modal-content">
+                    <button class="modal-close" onclick="closeModal('courseModal')">&times;</button>
+                    <h2><i class="fas ${isEdit ? 'fa-edit' : 'fa-plus-circle'}"></i> ${isEdit ? 'Edit' : 'Add'} Course</h2>
+                    <form id="courseForm" onsubmit="saveCourse(event)">
+                        <label class="required">Course Name</label>
+                        <input type="text" id="cf_name" value="${escapeHtml(course?.name || '')}" required />
+
+                        <label>Short Name (display)</label>
+                        <input type="text" id="cf_short" value="${escapeHtml(course?.short_name || '')}" placeholder="e.g. LEARNER HUB" />
+
+                        <label>Description</label>
+                        <textarea id="cf_desc" rows="3">${escapeHtml(course?.description || '')}</textarea>
+
+                        <label class="required">Price (KES)</label>
+                        <input type="number" id="cf_price" value="${course?.price || 0}" min="0" step="100" required />
+
+                        <label>Duration</label>
+                        <input type="text" id="cf_duration" value="${escapeHtml(course?.duration || '')}" placeholder="e.g. 8 weeks" />
+
+                        <label>Icon (Font Awesome class)</label>
+                        <input type="text" id="cf_icon" value="${escapeHtml(course?.icon || 'fa-car')}" placeholder="fa-car" />
+
+                        <label>Color (hex)</label>
+                        <input type="text" id="cf_color" value="${escapeHtml(course?.color || '#00ff88')}" placeholder="#00ff88" />
+
+                        <label>Lessons / Units Count</label>
+                        <input type="number" id="cf_lessons" value="${course?.lessons_count || 0}" min="0" />
+
+                        <label>Category</label>
+                        <input type="text" id="cf_category" value="${escapeHtml(course?.category || '')}" placeholder="e.g. Driver Training" />
+
+                        <label>Course Image</label>
+                        <div class="file-input-wrapper">
+                            <input type="file" id="cf_image" accept="image/jpeg,image/png,image/webp,image/gif" />
+                            ${course?.image_url ? `<span class="current-image-label">Current: <img src="${course.image_url}" alt="current" /></span>` : ''}
+                        </div>
+                        <div style="font-size:0.75rem;color:var(--text-muted);margin-top:4px;">Max 5MB, JPEG/PNG/WEBP/GIF</div>
+
+                        <div class="modal-actions">
+                            <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> ${isEdit ? 'Update' : 'Create'}</button>
+                            <button type="button" class="btn btn-outline" onclick="closeModal('courseModal')">Cancel</button>
+                        </div>
+                    </form>
+                </div>
+            `;
+            document.getElementById('modalRoot').appendChild(modal);
+        }
+
+        async function saveCourse(e) {
+            e.preventDefault();
+            const id = editingCourseId;
+            const name = document.getElementById('cf_name').value.trim();
+            const short_name = document.getElementById('cf_short').value.trim() || name;
+            const description = document.getElementById('cf_desc').value.trim();
+            const price = parseInt(document.getElementById('cf_price').value) || 0;
+            const duration = document.getElementById('cf_duration').value.trim();
+            const icon = document.getElementById('cf_icon').value.trim() || 'fa-car';
+            const color = document.getElementById('cf_color').value.trim() || '#00ff88';
+            const lessons_count = parseInt(document.getElementById('cf_lessons').value) || 0;
+            const category = document.getElementById('cf_category').value.trim();
+            const fileInput = document.getElementById('cf_image');
+            const imageFile = fileInput?.files?.[0] || null;
+
+            if (!name) { showToast('Course name is required', 'error'); return; }
+
+            const data = { name, short_name, description, price, duration, icon, color, lessons_count, category };
+
+            let result;
+            if (id) {
+                result = await MEI.updateCourse(id, data, imageFile);
+            } else {
+                result = await MEI.addCourse(data, imageFile);
+            }
+
+            if (result.success) {
+                showToast(id ? '✅ Course updated!' : '✅ Course created!');
+                closeModal('courseModal');
+                await loadAllData();
+                renderTab(currentTab);
+            } else {
+                showToast(result.error || 'Operation failed', 'error');
+            }
+        }
+
+        async function deleteCourse(id) {
+            if (!confirm('Delete this course? This will also remove its units and associated images.')) return;
+            const result = await MEI.deleteCourse(id);
+            if (result.success) {
+                showToast('✅ Course deleted');
+                await loadAllData();
+                renderTab(currentTab);
+            } else {
+                showToast(result.error || 'Delete failed', 'error');
+            }
+        }
+
+        // ============================================================
+        // UNITS TAB
+        // ============================================================
+        function renderUnits(container) {
+            const grouped = {};
+            allUnits.forEach(u => {
+                const key = u.course_id || 0;
+                if (!grouped[key]) grouped[key] = [];
+                grouped[key].push(u);
+            });
+
+            container.innerHTML = `
+                <div class="card">
+                    <div class="card-header">
+                        <h2><i class="fas fa-list-ul"></i> All Units / Lessons</h2>
+                        <button class="btn btn-primary" onclick="showUnitModal()"><i class="fas fa-plus"></i> Add Unit</button>
+                    </div>
+                    <div class="table-wrap">
+                        <table>
+                            <thead>
+                                <tr><th>ID</th><th>Course</th><th>Unit #</th><th>Title</th><th>Content</th><th>Actions</th></tr>
+                            </thead>
+                            <tbody>
+                                ${allUnits.length === 0 ? `<tr><td colspan="6" class="empty-state"><i class="fas fa-inbox"></i> No units yet</td></tr>` :
+                                allUnits.map(u => {
+                                    const course = allCourses.find(c => c.id === u.course_id);
+                                    return `
+                                        <tr>
+                                            <td>${u.id}</td>
+                                            <td>${course ? escapeHtml(course.short_name || course.name) : '—'}</td>
+                                            <td>${u.unit_number || '—'}</td>
+                                            <td><strong>${escapeHtml(u.title)}</strong></td>
+                                            <td><span class="truncate" title="${escapeHtml(u.content || '')}">${escapeHtml((u.content || '').substring(0, 60))}${(u.content || '').length > 60 ? '…' : ''}</span></td>
+                                            <td>
+                                                <button class="btn btn-warning btn-xs" onclick="showUnitModal(${u.id})"><i class="fas fa-edit"></i></button>
+                                                <button class="btn btn-danger btn-xs" onclick="deleteUnit(${u.id})"><i class="fas fa-trash"></i></button>
+                                            </td>
+                                        </tr>
+                                    `;
+                                }).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            `;
+        }
+
+        // ----------------------------------------------
+        // UNIT MODAL
+        // ----------------------------------------------
+        function showUnitModal(unitId = null) {
+            editingUnitId = unitId;
+            const isEdit = !!unitId;
+            const unit = isEdit ? allUnits.find(u => u.id === unitId) : null;
+
+            const courseOptions = allCourses.map(c =>
+                `<option value="${c.id}" ${unit?.course_id === c.id ? 'selected' : ''}>${escapeHtml(c.short_name || c.name)} (ID ${c.id})</option>`
+            ).join('');
+
+            const modal = document.createElement('div');
+            modal.className = 'modal active';
+            modal.id = 'unitModal';
+            modal.innerHTML = `
+                <div class="modal-content">
+                    <button class="modal-close" onclick="closeModal('unitModal')">&times;</button>
+                    <h2><i class="fas ${isEdit ? 'fa-edit' : 'fa-plus-circle'}"></i> ${isEdit ? 'Edit' : 'Add'} Unit</h2>
+                    <form id="unitForm" onsubmit="saveUnit(event)">
+                        <label class="required">Course</label>
+                        <select id="uf_course" required>${courseOptions}</select>
+
+                        <label class="required">Unit Number</label>
+                        <input type="number" id="uf_number" value="${unit?.unit_number || 1}" min="1" required />
+
+                        <label class="required">Title</label>
+                        <input type="text" id="uf_title" value="${escapeHtml(unit?.title || '')}" required />
+
+                        <label>Content (HTML / Markdown supported)</label>
+                        <textarea id="uf_content" rows="6">${escapeHtml(unit?.content || '')}</textarea>
+
+                        <label>Video URL (optional)</label>
+                        <input type="text" id="uf_video" value="${escapeHtml(unit?.video_url || '')}" placeholder="https://www.youtube.com/embed/..." />
+
+                        <div class="modal-actions">
+                            <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> ${isEdit ? 'Update' : 'Create'}</button>
+                            <button type="button" class="btn btn-outline" onclick="closeModal('unitModal')">Cancel</button>
+                        </div>
+                    </form>
+                </div>
+            `;
+            document.getElementById('modalRoot').appendChild(modal);
+        }
+
+        async function saveUnit(e) {
+            e.preventDefault();
+            const id = editingUnitId;
+            const course_id = parseInt(document.getElementById('uf_course').value);
+            const unit_number = parseInt(document.getElementById('uf_number').value);
+            const title = document.getElementById('uf_title').value.trim();
+            const content = document.getElementById('uf_content').value.trim();
+            const video_url = document.getElementById('uf_video').value.trim();
+
+            if (!title) { showToast('Title is required', 'error'); return; }
+            if (!course_id) { showToast('Please select a course', 'error'); return; }
+
+            const data = { course_id, unit_number, title, content, video_url };
+
+            let result;
+            if (id) {
+                result = await supabase.from('units').update(data).eq('id', id);
+            } else {
+                result = await supabase.from('units').insert(data);
+            }
+
+            if (!result.error) {
+                showToast(id ? '✅ Unit updated!' : '✅ Unit created!');
+                closeModal('unitModal');
+                await loadAllData();
+                renderTab(currentTab);
+            } else {
+                showToast(result.error.message, 'error');
+            }
+        }
+
+        async function deleteUnit(id) {
+            if (!confirm('Delete this unit?')) return;
+            const { error } = await supabase.from('units').delete().eq('id', id);
+            if (!error) {
+                showToast('✅ Unit deleted');
+                await loadAllData();
+                renderTab(currentTab);
+            } else {
+                showToast(error.message, 'error');
+            }
+        }
+
+        // ============================================================
+        // BULK IMPORT — LEARNER HUB UNITS (from docx)
+        // ============================================================
+        const LEARNER_HUB_UNITS = [
+            { unit_number: 1, title: 'INTRODUCTION TO DRIVING',
+                content: 'Motor vehicles are an important part of our day-to-day living and provide a means for people and goods to be transported from one location to another.\n\nThe goal of driver training is ensure that you, as the driver, are equipped with the right knowledge of how to handle your vehicle and how to act appropriately when using the road.\n\nMost traffic accidents are caused by human error, however this can be easily prevented when the driver is adequately prepared for the traffic situation. This training also ensures that you are prepared with the necessary skills to provide safe and efficient transport services for goods and for passengers.' },
+            { unit_number: 2, title: 'FUNDAMENTAL DRIVING RULES',
+                content: 'The road is governed by rules and regulations that ensure order is maintained on the roads at all times. These rules and regulations are derived from international, regional and Kenyan law. As a road user, you should be knowledgeable of these rules as it is the initial step in ensuring that you and other road users are safe on the road.\n\n## The Traffic Act\n\nThe Traffic Act sets out the laws that govern the use of roads and the expected conduct of road users. It also includes some of the penalties and fines for road users who do not abide by these laws.\n\n## Highway Code\n\nThe Highway Code is a set of information, advice, guides and mandatory rules for all road users in Kenya. It provides guidelines for animal, pedestrians, cyclists and motorcyclists. The purpose of the Highway Code is to promote safety, responsible behaviour and courtesy at all times.' },
+            { unit_number: 3, title: 'MODEL TOWN',
+                content: 'The model town board is an example of a road network on a board. It is a simplified representation used to explain the types of roads found in major towns of Kenya and East Africa.\n\n## Features\n\n1. One way traffic road\n2. Two way traffic road\n3. Roundabout\n4. Parking zones\n5. Yellow kerb\n6. Pedestrian crossing\n7. Stop sign\n8. Give way sign\n9. Exit from main road\n10. Exit from controlled parking zone\n11. Road markings – arrows, reflectors, and delta marks etc.' },
+            { unit_number: 4, title: 'HUMAN FACTORS IN TRAFFIC',
+                content: '## Observation\n\nWhen using the road, pay attention to your surroundings and stay alert whether you are walking, cycling, riding or driving a motor vehicle. Most accidents can be avoided when road users stay attentive.\n\n## Health and Safety\n\nHealth refers to your physical and mental wellbeing. It is important that at all times you make choices that will not interfere with your wellbeing.\n\n## Eyesight and vision\n\nCheck your eyes. If you need spectacles to meet the required eyesight standard, ensure that you wear them before starting any journey.\n\n## Fatigue\n\nFatigue is extreme tiredness as a result of mental or physical exertion. Do not start a journey if you feel tired.\n\n## Distractions\n\nDistractions in driving can be described as anything that reduces your ability to respond as quickly as you should during an emergency.' },
+            { unit_number: 5, title: 'VEHICLE CONSTRUCTIONS AND CONTROLS',
+                content: 'This chapter gives an overview of the light motor vehicle construction and controls. You will also learn where these parts are situated in the light vehicle and how they function.\n\n## Dashboard Components\n\n- Steering Wheel\n- Direction Indicator\n- Gear Lever\n- Hand Brake\n- Brake pedal\n- Accelerator\n- Clutch pedal\n- Rear-view Mirror\n- Side mirror\n- Windscreen Wipers Switch\n- Speedometer\n- Temperature Gauge' },
+            { unit_number: 6, title: 'SELF - INSPECTION OF VEHICLE',
+                content: 'Before embarking on a journey, any responsible driver should ensure that the vehicle is in the right condition for the journey. Self-inspection refers to checking on different aspects of the motor vehicle to ensure that it is safe to use.\n\n## Exterior Inspection\n\n1. Tyres\n2. Reflectors and lights\n3. Mirrors\n4. Windshield Wipers\n5. Windows\n6. The Body\n7. Cleanliness\n8. Safety Belts\n9. Emergency equipment\n10. Paperwork\n\n## Interior Inspection\n\n1. Brakes\n2. Steering\n3. Indicators\n4. Vehicle transmission\n5. Oil level\n6. Coolant Check\n7. Battery\n8. Leaks' },
+            { unit_number: 7, title: 'OBSERVATION',
+                content: 'Observation is essential for safe driving. Observation refers to using your sight and hearing ability to get a clear perception of what is around. The driver\'s ability to observe effectively is influenced by driver visibility.\n\n## Driver Visibility\n\nDriver visibility is the maximum distance at which a driver can clearly identify objects around the car.\n\n## Mirrors\n\n1. Rear View Mirror (Interior mirror)\n2. Exterior Mirror (Nearside & Offside)\n\n## Blind Spot\n\nThe blind spot is the area around the vehicle that the driver cannot directly observe while driving.' },
+            { unit_number: 8, title: 'VEHICLE CONTROL',
+                content: 'This section allows you to start putting your theoretical knowledge into practice.\n\n## Driving Preparation\n\n- Adjust your driving seat\n- Adjust the mirrors\n- Fasten your seat belt\n- Hold the steering wheel correctly\n\n## Car Movement and Control\n\n### To start the vehicle\n- Fully depress the clutch pedal\n- Put the hand brake ON\n- Turn the ignition switch ON\n- Select the appropriate gear\n\n### To stop the vehicle\n- Check mirrors\n- Signal properly\n- Apply pressure on the foot brake\n- Set the hand brake ON\n\n## Using the gears\n\n1st Gear – 0–30 km/h\n2nd Gear – Slow traffic\n3rd Gear – 35–70 km/h\n4th Gear – 60–110 km/h\n5th Gear – 80–110 km/h' },
+            { unit_number: 9, title: 'COMMUNICATION ON THE ROAD',
+                content: 'Road users communicate with each other using a prescribed set of signs and signals to avoid confusion and misunderstanding on the road.\n\n## MSM technique (Mirror, Signal and Manoeuvre)\n\n- Mirror: Check mirrors and blind spot\n- Signal: Apply signal in good time\n- Manoeuvre: Execute the manoeuvre safely\n\n## Signals Given by Road Users\n\n- Hand signals\n- Light signals\n- Traffic police signals\n- Traffic marshall signals\n- Traffic light signals' },
+            { unit_number: 10, title: 'SPEED MANAGEMENT',
+                content: 'A major cause of road accidents is reckless driving and over speeding.\n\n## The 4 Second Rule\n\nThe 4-second rule is a guideline that enables you to estimate the minimum distance you should travel behind the vehicle immediately in front in adverse weather conditions.\n\n## Braking Distance\n\nBraking distance is the distance the vehicle travels between hitting the brakes and coming to a stop.\n\n## Thinking Distance\n\nIs the distance the vehicle travels after the driver decides to hit the brakes and when the driver actually brakes.\n\n## Stopping Distance\n\nIs both the thinking distance and the braking distance added together.\n\n## Freewheeling\n\nFreewheeling is moving the vehicle without using power. It is also known as coasting.' },
+            { unit_number: 11, title: 'SPACE MANAGEMENT',
+                content: 'To drive safely, it is important to manage the space around your vehicle.\n\n## Road Conditions\n\n1. Open Condition\n2. Closed Conditions\n3. Changing Conditions\n\n## Space Recovery\n\nWhen you realize that there is insufficient space in front of the vehicle:\n- Signal\n- Turn slowly\n- Be aware of oncoming vehicles\n\n## Position to \'See and be seen\'' },
+            { unit_number: 12, title: 'EMERGENCY MANOEUVRES',
+                content: 'When driving along the road, the driver may need to make sudden and unexpected manoeuvres so as to avoid accidents or any imminent danger.\n\n## Brake failure\n\nTry pumping the brake pedal. If this does not work, apply the parking brake gently.\n\n## Blowouts\n\nKeep a firm grip on the steering wheel. Do not slam on the brakes. Let your car slow down gradually.\n\n## Defensive Driving\n\nDefensive driving is safe driving or cautious driving in cases where the driver needs to be more vigilant.' },
+            { unit_number: 13, title: 'SKID CONTROL AND RECOVERY',
+                content: 'A skid happens when the vehicle\'s wheel slides out of control on a slippery surface.\n\n## Causes of Skids\n\n- Driving faster than conditions allow\n- Sudden, hard braking\n- Turning too fast or accelerating too quickly\n\n## Types of Skidding\n\n- Front Wheel Skid\n- Rear Wheel Skid\n- Aquaplaning\n\n## Skid recovery\n\n- Take your feet off the accelerator\n- Release the brake pedal and reapply gently\n- Quickly turn the steering wheel in the direction you want to go' },
+            { unit_number: 14, title: 'ADVERSE DRIVING CONDITIONS',
+                content: 'The first step in dealing with adverse driving conditions is to be prepared.\n\n## Night Driving\n\nSlow down, use low beam headlights within 150 metres of oncoming vehicles.\n\n## Fog\n\nSlow down, use low beam headlights or fog lights.\n\n## Rain\n\nRain makes the road surface slippery and reduces visibility. Ensure your windshield wiper blades are in good condition.\n\n## Extreme driving conditions\n\n- Fog\n- Windy condition\n- Heavy rain\n- Hot weather\n- Dusty' },
+            { unit_number: 15, title: 'PREVENTIVE MAINTENANCE',
+                content: 'Preventive Maintenance (PM) refers to the different types of work done to ensure that the vehicle is in good working condition.\n\n## Driver\'s obligation\n\nCarry out regular preventive maintenance as this increases the availability and safety of the vehicle.\n\n## Common issues and solutions\n\n- Tyres/Steering: Puncture, heavy steering, vibrations\n- Brakes: Incorrect adjustment, undue wear\n- Lights: Bulb failure, fuse failure\n- Engine: Fuel or electrical fault, defective spark plugs' },
+            { unit_number: 16, title: 'CONDITIONS OF CARRIAGE',
+                content: 'Conditions of carriage refer to customers\' rights and the restrictions on these rights. It also refers to the driver\'s obligation to customers and their obligations when handling cargo.\n\n## Commercial vehicle\n\nA motor vehicle constructed or adapted for the carriage of goods or burdens.\n\n## Light vehicles licensed as PSV should:\n\n- Provide a statement of liability\n- State what fares or ticketing prices will be charged\n- Indicate if there are any exceptions with fare prices\n- Abide by a code of conduct\n- Address restricted items\n- Lost property\n- Contact details' },
+            { unit_number: 17, title: 'HAZARDOUS MATERIALS',
+                content: 'Hazardous Material is any material prescribed as such by any written law and includes explosives, petroleum products and any material involving high risk.\n\n## Characteristics of Hazardous Goods\n\n- Flammable\n- Corrosive\n- Reactive\n- Toxic\n\n## Classification of Hazardous Materials\n\n1. Explosives\n2. Gases\n3. Flammable Liquids\n4. Flammable Solids\n5. Oxidizing Substances\n6. Toxic & Infectious Substances\n7. Radioactive Material\n8. Corrosives\n9. Miscellaneous Dangerous Goods' },
+            { unit_number: 18, title: 'EMERGENCY PROCEDURES',
+                content: 'The driver should always be prepared to handle any emergencies that may occur within or outside the car.\n\n## Basic Responsibilities at a Scene of Crash\n\n- Set up reflector triangles (50 metres behind and ahead)\n- Call emergency services\n- Move uninjured people to safety\n- DO NOT move injured people unless in immediate danger\n- Give First Aid\n- Stay at the scene\n\n## First Aid\n\nRemember \"Dr A.B.C.\"\n- D = Danger\n- R = Response\n- A = Airway\n- B = Breathing\n- C = Circulation' },
+            { unit_number: 19, title: 'WORK PLANNING',
+                content: 'Work Planning ensures that the driver and the customers both get the best out of the service provided.\n\n## Preparing for the Journey (Trip Planning)\n\n- Name, address, phone and directions of the sender\n- Pick-up phone number\n- Appointment time for collecting and delivering the goods\n- Requirements for securing the load\n- Other legal requirements\n\n## Managing the trip\n\n- Distance to be travelled\n- Time/Traffic conditions\n- Meals\n- Fatigue\n- Adverse weather conditions\n\n## Legal limits on Duty hours / Driving hours\n\nNo person shall drive a public service vehicle or a commercial vehicle for more than a total of eight hours in any period of twenty-four hours.' },
+            { unit_number: 20, title: 'CUSTOMER CARE',
+                content: 'A customer refers to anyone that you have to deal with in the course of riding or driving on the road.\n\n## Essential skills\n\n- Communication skills\n- Handling customer expectations\n- Handling customers with special needs\n- Knowledge of sexual harassment and other forms of discrimination\n\n## Communication Skills\n\n- Patience\n- Attitude\n- Language\n\n## Courtesy on the road\n\n- Get the right training and license\n- Apply all road safety techniques\n- Take responsibility for your actions\n- Be visible\n- Keep vehicle clean\n\n## Sexual Harassment and Discrimination\n\nBoth are anti-social behaviours that discourage positive interaction on the road.' },
+            { unit_number: 21, title: 'THE EXAMINATION-1000 QUIZ BANK',
+                content: 'In order to get your driving licence, you should follow the exam registration procedure provided for by NTSA.\n\nPrepare adequately for both the practical and theory exam.\n\nOn the day of the exam, go to the examination centre on time to avoid disappointment.\n\n## Traffic Signs\n\nRegulatory Signs, Warning Signs, Information Signs, Guidance Signs, Traffic Signals.\n\n## Model Town Illustrations\n\nRefer to the LEARNER HUB document for detailed illustrations of model town features.' }
+        ];
+
+        async function bulkImportLearnerHub() {
+            const courseId = 1; // LEARNER HUB course ID
+            const confirmMsg =
+                `This will import/update ${LEARNER_HUB_UNITS.length} units for course ID ${courseId}.\nExisting units with matching unit_number will be updated.\n\nProceed?`;
+            if (!confirm(confirmMsg)) return;
+
+            let success = 0,
+                errors = 0;
+            for (const u of LEARNER_HUB_UNITS) {
+                const { error } = await supabase.from('units').upsert({
+                    course_id: courseId,
+                    unit_number: u.unit_number,
+                    title: u.title,
+                    content: u.content,
+                    video_url: null
+                }, { onConflict: 'course_id, unit_number' });
+
+                if (error) {
+                    console.error(`Failed unit ${u.unit_number}:`, error);
+                    errors++;
+                } else {
+                    success++;
+                }
+            }
+
+            showToast(`✅ Import complete: ${success} units added/updated, ${errors} errors`);
+            await loadAllData();
+            renderTab(currentTab);
+        }
+
+        // ============================================================
+        // QUIZ TAB
+        // ============================================================
+        function renderQuiz(container) {
+            container.innerHTML = `
+                <div class="card">
+                    <div class="card-header">
+                        <h2><i class="fas fa-question-circle"></i> All Quiz Questions</h2>
+                        <button class="btn btn-primary" onclick="showQuizModal()"><i class="fas fa-plus"></i> Add Question</button>
+                    </div>
+                    <div class="table-wrap">
+                        <table>
+                            <thead>
+                                <tr><th>ID</th><th>Image</th><th>Category</th><th>Question</th><th>Correct</th><th>Actions</th></tr>
+                            </thead>
+                            <tbody>
+                                ${allQuiz.length === 0 ? `<tr><td colspan="6" class="empty-state"><i class="fas fa-inbox"></i> No quiz questions yet</td></tr>` :
+                                allQuiz.map(q => `
+                                    <tr>
+                                        <td>${q.id}</td>
+                                        <td>
+                                            ${q.image_url ? `<img src="${q.image_url}" class="thumb" alt="quiz image" />` :
+                                            `<div class="img-placeholder"><i class="fas fa-image"></i></div>`}
+                                        </td>
+                                        <td><span class="badge-status badge-active">${escapeHtml(q.category || 'General')}</span></td>
+                                        <td><span class="truncate" title="${escapeHtml(q.question)}">${escapeHtml(q.question.substring(0, 60))}${q.question.length > 60 ? '…' : ''}</span></td>
+                                        <td>${String.fromCharCode(65 + (q.correct_option || 0))}</td>
+                                        <td>
+                                            <button class="btn btn-warning btn-xs" onclick="showQuizModal(${q.id})"><i class="fas fa-edit"></i></button>
+                                            <button class="btn btn-danger btn-xs" onclick="deleteQuiz(${q.id})"><i class="fas fa-trash"></i></button>
+                                        </td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            `;
+        }
+
+        // ----------------------------------------------
+        // QUIZ MODAL (Add / Edit) with Image Upload
+        // ----------------------------------------------
+        function showQuizModal(quizId = null) {
+            editingQuizId = quizId;
+            const isEdit = !!quizId;
+            const q = isEdit ? allQuiz.find(x => x.id === quizId) : null;
+
+            const modal = document.createElement('div');
+            modal.className = 'modal active';
+            modal.id = 'quizModal';
+            modal.innerHTML = `
+                <div class="modal-content">
+                    <button class="modal-close" onclick="closeModal('quizModal')">&times;</button>
+                    <h2><i class="fas ${isEdit ? 'fa-edit' : 'fa-plus-circle'}"></i> ${isEdit ? 'Edit' : 'Add'} Quiz Question</h2>
+                    <form id="quizForm" onsubmit="saveQuiz(event)">
+                        <label class="required">Category</label>
+                        <input type="text" id="qf_category" value="${escapeHtml(q?.category || '')}" placeholder="e.g. Road Signs" required />
+
+                        <label>Subcategory (optional)</label>
+                        <input type="text" id="qf_subcategory" value="${escapeHtml(q?.subcategory || '')}" placeholder="e.g. Warning Signs" />
+
+                        <label class="required">Question</label>
+                        <textarea id="qf_question" rows="3" required>${escapeHtml(q?.question || '')}</textarea>
+
+                        <label class="required">Option A</label>
+                        <input type="text" id="qf_a" value="${escapeHtml(q?.option_a || '')}" required />
+
+                        <label class="required">Option B</label>
+                        <input type="text" id="qf_b" value="${escapeHtml(q?.option_b || '')}" required />
+
+                        <label class="required">Option C</label>
+                        <input type="text" id="qf_c" value="${escapeHtml(q?.option_c || '')}" required />
+
+                        <label class="required">Option D</label>
+                        <input type="text" id="qf_d" value="${escapeHtml(q?.option_d || '')}" required />
+
+                        <label class="required">Correct Option</label>
+                        <select id="qf_correct" required>
+                            ${['A','B','C','D'].map((letter, idx) =>
+                                `<option value="${idx}" ${q?.correct_option === idx ? 'selected' : ''}>${letter}</option>`
+                            ).join('')}
+                        </select>
+
+                        <label>Explanation (optional)</label>
+                        <textarea id="qf_explanation" rows="3">${escapeHtml(q?.explanation || '')}</textarea>
+
+                        <label>Difficulty (1-5)</label>
+                        <input type="number" id="qf_difficulty" value="${q?.difficulty || 1}" min="1" max="5" />
+
+                        <label>Question Image</label>
+                        <div class="file-input-wrapper">
+                            <input type="file" id="qf_image" accept="image/jpeg,image/png,image/webp,image/gif" />
+                            ${q?.image_url ? `<span class="current-image-label">Current: <img src="${q.image_url}" alt="current" /></span>` : ''}
+                        </div>
+                        <div style="font-size:0.75rem;color:var(--text-muted);margin-top:4px;">Max 5MB, JPEG/PNG/WEBP/GIF</div>
+
+                        <div class="modal-actions">
+                            <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> ${isEdit ? 'Update' : 'Create'}</button>
+                            <button type="button" class="btn btn-outline" onclick="closeModal('quizModal')">Cancel</button>
+                        </div>
+                    </form>
+                </div>
+            `;
+            document.getElementById('modalRoot').appendChild(modal);
+        }
+
+        async function saveQuiz(e) {
+            e.preventDefault();
+            const id = editingQuizId;
+            const category = document.getElementById('qf_category').value.trim();
+            const subcategory = document.getElementById('qf_subcategory').value.trim();
+            const question = document.getElementById('qf_question').value.trim();
+            const option_a = document.getElementById('qf_a').value.trim();
+            const option_b = document.getElementById('qf_b').value.trim();
+            const option_c = document.getElementById('qf_c').value.trim();
+            const option_d = document.getElementById('qf_d').value.trim();
+            const correct_option = parseInt(document.getElementById('qf_correct').value);
+            const explanation = document.getElementById('qf_explanation').value.trim();
+            const difficulty = parseInt(document.getElementById('qf_difficulty').value) || 1;
+            const fileInput = document.getElementById('qf_image');
+            const imageFile = fileInput?.files?.[0] || null;
+
+            if (!category || !question || !option_a || !option_b || !option_c || !option_d) {
+                showToast('Please fill all required fields', 'error');
+                return;
+            }
+
+            const data = { category, subcategory, question, option_a, option_b, option_c, option_d, correct_option,
+                explanation, difficulty };
+
+            // If there's an image, upload it first
+            let imageUrl = null;
+            if (imageFile) {
+                try {
+                    const uploaded = await MEI.uploadCourseImage(imageFile);
+                    if (uploaded?.url) {
+                        imageUrl = uploaded.url;
+                        data.image_url = imageUrl;
+                    } else {
+                        showToast('Image upload failed', 'warning');
+                    }
+                } catch (err) {
+                    showToast('Image upload error: ' + err.message, 'error');
+                    return;
+                }
+            }
+
+            let result;
+            if (id) {
+                // Update existing — keep existing image if no new one
+                if (!imageUrl && allQuiz.find(x => x.id === id)?.image_url) {
+                    data.image_url = allQuiz.find(x => x.id === id).image_url;
+                }
+                result = await supabase.from('quiz_questions').update(data).eq('id', id);
+            } else {
+                result = await supabase.from('quiz_questions').insert(data);
+            }
+
+            if (!result.error) {
+                showToast(id ? '✅ Quiz updated!' : '✅ Quiz created!');
+                closeModal('quizModal');
+                await loadAllData();
+                renderTab(currentTab);
+            } else {
+                showToast(result.error.message, 'error');
+            }
+        }
+
+        async function deleteQuiz(id) {
+            if (!confirm('Delete this quiz question?')) return;
+            // Get image path to delete from storage
+            const q = allQuiz.find(x => x.id === id);
+            const { error } = await supabase.from('quiz_questions').delete().eq('id', id);
+            if (!error) {
+                // If there was an image, try to delete it from storage
+                if (q?.image_url) {
+                    try {
+                        const path = q.image_url.split('/').pop();
+                        await supabase.storage.from('course-images').remove([path]);
+                    } catch (e) { /* ignore */ }
+                }
+                showToast('✅ Quiz deleted');
+                await loadAllData();
+                renderTab(currentTab);
+            } else {
+                showToast(error.message, 'error');
+            }
+        }
+
+        // ============================================================
+        // STATS TAB
+        // ============================================================
+        function renderStats(container) {
+            const totalRevenue = allPayments.reduce((sum, p) => sum + (p.amount || 0), 0);
+            const totalEnrollments = allEnrollments.length;
+            const totalUsers = allUsers.length;
+            const totalCourses = allCourses.length;
+            const totalUnits = allUnits.length;
+            const totalQuiz = allQuiz.length;
+
+            container.innerHTML = `
+                <div class="stats-grid">
+                    <div class="stat-card"><div class="stat-title">Total Users</div><div class="stat-value">${totalUsers}</div></div>
+                    <div class="stat-card"><div class="stat-title">Courses</div><div class="stat-value">${totalCourses}</div></div>
+                    <div class="stat-card"><div class="stat-title">Units / Lessons</div><div class="stat-value">${totalUnits}</div></div>
+                    <div class="stat-card"><div class="stat-title">Quiz Questions</div><div class="stat-value">${totalQuiz}</div></div>
+                    <div class="stat-card"><div class="stat-title">Enrollments</div><div class="stat-value">${totalEnrollments}</div></div>
+                    <div class="stat-card"><div class="stat-title">Total Revenue</div><div class="stat-value">KES ${totalRevenue.toLocaleString()}</div></div>
+                </div>
+                <div class="card">
+                    <h2><i class="fas fa-database"></i> System Status</h2>
+                    <p>✅ Real-time sync active — changes appear instantly</p>
+                    <p>✅ Supabase Single Source of Truth</p>
+                    <p>✅ ${allPayments.length} payments processed</p>
+                    <p>✅ ${allEnrollments.length} active enrollments</p>
+                </div>
+                <div class="card">
+                    <h2><i class="fas fa-image"></i> Storage Buckets</h2>
+                    <p><code>course-images</code> — used for course &amp; quiz images</p>
+                    <p style="margin-top:4px;font-size:0.85rem;color:var(--text-muted);">
+                        Images are stored in Supabase Storage and served via public URL.
+                        Admin can upload/update images when creating or editing courses and quiz questions.
+                    </p>
+                </div>
+            `;
+        }
+
+        // ============================================================
+        // UTILITY
+        // ============================================================
+        function escapeHtml(str) {
+            if (!str) return '';
+            return String(str).replace(/[&<>]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[m]));
+        }
+
+        function closeModal(id) {
+            document.getElementById(id)?.remove();
+        }
+
+        // ============================================================
+        // AUTH
+        // ============================================================
+        async function logoutAdmin() {
+            await MEI.signOut();
+            window.location.href = 'index.html';
+        }
+
+        // ============================================================
+        // INIT
+        // ============================================================
+        async function initAdmin() {
+            // Check user
+            const user = await MEI.getCurrentUser();
+            if (!user) {
+                document.getElementById('tabContent').innerHTML = `
+                    <div class="card" style="text-align:center;padding:60px 20px;">
+                        <i class="fas fa-lock" style="font-size:3rem;color:var(--primary);"></i>
+                        <h2 style="margin:20px 0 10px;">Admin Access Required</h2>
+                        <p class="text-muted">Please sign in with an admin account</p>
+                        <button class="btn btn-primary" onclick="window.location.href='index.html'">Back to Site</button>
+                    </div>
+                `;
+                return;
+            }
+            if (!user.is_admin) {
+                document.getElementById('tabContent').innerHTML = `
+                    <div class="card" style="text-align:center;padding:60px 20px;">
+                        <i class="fas fa-ban" style="font-size:3rem;color:var(--danger);"></i>
+                        <h2 style="margin:20px 0 10px;">Access Denied</h2>
+                        <p class="text-muted">You do not have admin privileges.</p>
+                        <button class="btn btn-primary" onclick="window.location.href='index.html'">Back to Site</button>
+                    </div>
+                `;
+                return;
+            }
+
+            currentUser = user;
+            document.getElementById('adminUserChip').innerHTML = `<i class="fas fa-user-shield"></i> ${escapeHtml(user.full_name || 'Admin')}`;
+
+            await loadAllData();
+
+            // Subscribe to course changes for real-time updates
+            if (unsubscribeCourses) unsubscribeCourses();
+            unsubscribeCourses = MEI.subscribeToCourses(async (updated) => {
+                allCourses = updated;
+                document.getElementById('courseCount').textContent = allCourses.length;
+                // Also reload units & quiz in background
+                const { data: units } = await supabase.from('units').select('*').order('course_id, unit_number');
+                allUnits = units || [];
+                document.getElementById('unitCount').textContent = allUnits.length;
+                const quiz = await MEI.getAllQuizQuestions();
+                allQuiz = quiz;
+                document.getElementById('quizCount').textContent = allQuiz.length;
+                if (currentTab === 'courses' || currentTab === 'units' || currentTab === 'quiz') {
+                    renderTab(currentTab);
+                }
+            });
+
+            renderTab('courses');
+        }
+
+        // ----------------------------------------------
+        // START
+        // ----------------------------------------------
+        document.addEventListener('DOMContentLoaded', initAdmin);
+
+        // Expose to window
+        window.switchTab = switchTab;
+        window.toggleSidebar = toggleSidebar;
+        window.showCourseModal = showCourseModal;
+        window.saveCourse = saveCourse;
+        window.deleteCourse = deleteCourse;
+        window.showUnitModal = showUnitModal;
+        window.saveUnit = saveUnit;
+        window.deleteUnit = deleteUnit;
+        window.showQuizModal = showQuizModal;
+        window.saveQuiz = saveQuiz;
+        window.deleteQuiz = deleteQuiz;
+        window.bulkImportLearnerHub = bulkImportLearnerHub;
+        window.closeModal = closeModal;
+        window.logoutAdmin = logoutAdmin;
+        window.showToast = showToast;
+        window.escapeHtml = escapeHtml;
+    </script>
+
 </body>
 </html>
