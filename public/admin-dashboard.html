@@ -319,6 +319,22 @@
             font-size: 0.65rem;
             border-radius: 6px;
         }
+        .btn-success {
+            background: var(--success);
+            color: #0a192f;
+        }
+        .btn-success:hover {
+            background: #00cc66;
+            transform: scale(1.03);
+        }
+        .btn-purple {
+            background: #7c3aed;
+            color: #fff;
+        }
+        .btn-purple:hover {
+            background: #6d28d9;
+            transform: scale(1.03);
+        }
 
         /* ----- MODAL ----- */
         .modal {
@@ -343,7 +359,7 @@
             border: 1px solid var(--primary);
             border-radius: 24px;
             width: 100%;
-            max-width: 640px;
+            max-width: 720px;
             padding: 28px 32px;
             max-height: 90vh;
             overflow-y: auto;
@@ -464,6 +480,81 @@
             max-height: 40px;
             border-radius: 6px;
             border: 1px solid var(--border);
+        }
+
+        /* Bulk upload styles */
+        .bulk-upload-area {
+            border: 2px dashed var(--border);
+            border-radius: 16px;
+            padding: 30px;
+            text-align: center;
+            transition: 0.3s;
+            cursor: pointer;
+        }
+        .bulk-upload-area:hover {
+            border-color: var(--primary);
+            background: rgba(0, 255, 136, 0.05);
+        }
+        .bulk-upload-area.dragover {
+            border-color: var(--primary);
+            background: rgba(0, 255, 136, 0.10);
+        }
+        .bulk-upload-area i {
+            font-size: 3rem;
+            color: var(--text-muted);
+            margin-bottom: 12px;
+        }
+        .bulk-upload-area p {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+        }
+        .bulk-upload-area .file-types {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            opacity: 0.6;
+            margin-top: 8px;
+        }
+        .bulk-preview-table {
+            max-height: 300px;
+            overflow-y: auto;
+            margin-top: 16px;
+        }
+        .bulk-preview-table table {
+            font-size: 0.82rem;
+        }
+        .bulk-preview-table th {
+            position: sticky;
+            top: 0;
+            background: var(--bg-card);
+            z-index: 10;
+        }
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background: #1a2f44;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 12px;
+        }
+        .progress-bar .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary), var(--primary-dark));
+            transition: width 0.3s ease;
+            width: 0%;
+            border-radius: 4px;
+        }
+        .template-download {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--primary);
+            text-decoration: none;
+            font-size: 0.85rem;
+            margin-top: 8px;
+            cursor: pointer;
+        }
+        .template-download:hover {
+            text-decoration: underline;
         }
 
         /* ----- TOAST ----- */
@@ -737,6 +828,7 @@
         let editingCourseId = null;
         let editingUnitId = null;
         let editingQuizId = null;
+        let bulkCoursesData = [];
 
         // ----------------------------------------------
         // TOAST
@@ -828,7 +920,10 @@
                 <div class="card">
                     <div class="card-header">
                         <h2><i class="fas fa-book-open"></i> All Courses</h2>
-                        <button class="btn btn-primary" onclick="showCourseModal()"><i class="fas fa-plus"></i> Add Course</button>
+                        <div style="display:flex;gap:10px;flex-wrap:wrap;">
+                            <button class="btn btn-primary" onclick="showCourseModal()"><i class="fas fa-plus"></i> Add Course</button>
+                            <button class="btn btn-purple" onclick="showBulkUploadModal()"><i class="fas fa-upload"></i> Bulk Upload</button>
+                        </div>
                     </div>
                     <div class="table-wrap">
                         <table>
@@ -871,9 +966,267 @@
             `;
         }
 
-        // ----------------------------------------------
-        // COURSE MODAL (Add / Edit)
-        // ----------------------------------------------
+        // ============================================================
+        // BULK UPLOAD COURSES
+        // ============================================================
+        function showBulkUploadModal() {
+            const modal = document.createElement('div');
+            modal.className = 'modal active';
+            modal.id = 'bulkModal';
+            modal.innerHTML = `
+                <div class="modal-content" style="max-width:800px;">
+                    <button class="modal-close" onclick="closeModal('bulkModal')">&times;</button>
+                    <h2><i class="fas fa-upload"></i> Bulk Upload Courses</h2>
+                    <p class="text-muted" style="margin-bottom:16px;">
+                        Upload a CSV or JSON file with multiple courses. 
+                        <a class="template-download" onclick="downloadTemplate()">
+                            <i class="fas fa-download"></i> Download Template (CSV)
+                        </a>
+                    </p>
+
+                    <div class="bulk-upload-area" id="dropZone" onclick="document.getElementById('fileInput').click()">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                        <p><strong>Click to upload</strong> or drag and drop</p>
+                        <p class="file-types">Supported: CSV, JSON (max 5MB)</p>
+                        <input type="file" id="fileInput" accept=".csv,.json" style="display:none;" onchange="handleBulkFile(event)" />
+                    </div>
+
+                    <div id="bulkPreview" style="display:none;margin-top:16px;">
+                        <div class="flex-between">
+                            <span class="fw-600">Preview (${bulkCoursesData.length} courses)</span>
+                            <button class="btn btn-danger btn-sm" onclick="clearBulkData()">
+                                <i class="fas fa-times"></i> Clear
+                            </button>
+                        </div>
+                        <div class="bulk-preview-table">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Name</th>
+                                        <th>Short Name</th>
+                                        <th>Price</th>
+                                        <th>Duration</th>
+                                        <th>Category</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${bulkCoursesData.map((c, i) => `
+                                        <tr>
+                                            <td>${i + 1}</td>
+                                            <td>${escapeHtml(c.name || '')}</td>
+                                            <td>${escapeHtml(c.short_name || c.name || '')}</td>
+                                            <td>${c.price || 0}</td>
+                                            <td>${c.duration || '—'}</td>
+                                            <td>${c.category || '—'}</td>
+                                        </tr>
+                                    `).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+                        <div style="margin-top:12px;">
+                            <div class="progress-bar" id="bulkProgressBar">
+                                <div class="progress-fill" id="bulkProgressFill"></div>
+                            </div>
+                            <div style="display:flex;gap:10px;margin-top:12px;flex-wrap:wrap;">
+                                <button class="btn btn-success" onclick="processBulkUpload()">
+                                    <i class="fas fa-check"></i> Upload ${bulkCoursesData.length} Courses
+                                </button>
+                                <button class="btn btn-outline" onclick="closeModal('bulkModal')">Cancel</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.getElementById('modalRoot').appendChild(modal);
+
+            // Setup drag and drop
+            const dropZone = document.getElementById('dropZone');
+            dropZone.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                dropZone.classList.add('dragover');
+            });
+            dropZone.addEventListener('dragleave', () => {
+                dropZone.classList.remove('dragover');
+            });
+            dropZone.addEventListener('drop', (e) => {
+                e.preventDefault();
+                dropZone.classList.remove('dragover');
+                const files = e.dataTransfer.files;
+                if (files.length > 0) {
+                    document.getElementById('fileInput').files = files;
+                    handleBulkFile({ target: { files: files } });
+                }
+            });
+        }
+
+        function handleBulkFile(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const content = e.target.result;
+                    let data = [];
+
+                    if (file.name.endsWith('.csv')) {
+                        data = parseCSV(content);
+                    } else if (file.name.endsWith('.json')) {
+                        const jsonData = JSON.parse(content);
+                        data = Array.isArray(jsonData) ? jsonData : [jsonData];
+                    } else {
+                        showToast('Unsupported file format. Use CSV or JSON.', 'error');
+                        return;
+                    }
+
+                    // Validate and normalize data
+                    bulkCoursesData = data.map(item => ({
+                        name: item.name || item.course_name || item.title || '',
+                        short_name: item.short_name || item.name || item.course_name || '',
+                        description: item.description || '',
+                        price: parseFloat(item.price) || 0,
+                        duration: item.duration || '',
+                        icon: item.icon || 'fa-car',
+                        color: item.color || '#00ff88',
+                        category: item.category || '',
+                        lessons_count: parseInt(item.lessons_count) || 0,
+                        image_url: item.image_url || ''
+                    })).filter(item => item.name); // Remove items without name
+
+                    if (bulkCoursesData.length === 0) {
+                        showToast('No valid courses found in the file.', 'error');
+                        return;
+                    }
+
+                    showToast(`✅ Loaded ${bulkCoursesData.length} courses from ${file.name}`);
+                    document.getElementById('bulkPreview').style.display = 'block';
+                    const dropZone = document.getElementById('dropZone');
+                    dropZone.innerHTML = `
+                        <i class="fas fa-check-circle" style="color:var(--success);"></i>
+                        <p><strong>${bulkCoursesData.length} courses loaded</strong></p>
+                        <p class="file-types">${file.name} (${(file.size / 1024).toFixed(1)} KB)</p>
+                    `;
+                    updateBulkPreview();
+
+                } catch (err) {
+                    showToast('Error parsing file: ' + err.message, 'error');
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        function parseCSV(csv) {
+            const lines = csv.split('\n').filter(line => line.trim());
+            if (lines.length < 2) return [];
+
+            const headers = lines[0].split(',').map(h => h.trim().toLowerCase());
+            const results = [];
+
+            for (let i = 1; i < lines.length; i++) {
+                const values = lines[i].split(',').map(v => v.trim());
+                const obj = {};
+                headers.forEach((header, idx) => {
+                    obj[header] = values[idx] || '';
+                });
+                results.push(obj);
+            }
+            return results;
+        }
+
+        function updateBulkPreview() {
+            const preview = document.getElementById('bulkPreview');
+            if (bulkCoursesData.length === 0) {
+                preview.style.display = 'none';
+                return;
+            }
+            preview.style.display = 'block';
+
+            const tbody = preview.querySelector('tbody');
+            tbody.innerHTML = bulkCoursesData.map((c, i) => `
+                <tr>
+                    <td>${i + 1}</td>
+                    <td>${escapeHtml(c.name || '')}</td>
+                    <td>${escapeHtml(c.short_name || c.name || '')}</td>
+                    <td>${c.price || 0}</td>
+                    <td>${c.duration || '—'}</td>
+                    <td>${c.category || '—'}</td>
+                </tr>
+            `).join('');
+        }
+
+        function clearBulkData() {
+            bulkCoursesData = [];
+            document.getElementById('bulkPreview').style.display = 'none';
+            const dropZone = document.getElementById('dropZone');
+            dropZone.innerHTML = `
+                <i class="fas fa-cloud-upload-alt"></i>
+                <p><strong>Click to upload</strong> or drag and drop</p>
+                <p class="file-types">Supported: CSV, JSON (max 5MB)</p>
+                <input type="file" id="fileInput" accept=".csv,.json" style="display:none;" onchange="handleBulkFile(event)" />
+            `;
+            document.getElementById('fileInput').value = '';
+            showToast('Cleared bulk upload data');
+        }
+
+        async function processBulkUpload() {
+            if (bulkCoursesData.length === 0) {
+                showToast('No courses to upload.', 'warning');
+                return;
+            }
+
+            const progressFill = document.getElementById('bulkProgressFill');
+            let success = 0;
+            let errors = 0;
+            const total = bulkCoursesData.length;
+
+            for (let i = 0; i < total; i++) {
+                const course = bulkCoursesData[i];
+                try {
+                    const result = await MEI.addCourse(course, null);
+                    if (result.success) {
+                        success++;
+                    } else {
+                        errors++;
+                        console.error(`Failed to add course "${course.name}":`, result.error);
+                    }
+                } catch (err) {
+                    errors++;
+                    console.error(`Error adding course "${course.name}":`, err);
+                }
+                const progress = ((i + 1) / total) * 100;
+                progressFill.style.width = progress + '%';
+            }
+
+            showToast(`✅ Bulk upload complete: ${success} added, ${errors} failed`);
+            await loadAllData();
+            renderTab(currentTab);
+            closeModal('bulkModal');
+            bulkCoursesData = [];
+        }
+
+        function downloadTemplate() {
+            const headers = ['name', 'short_name', 'description', 'price', 'duration', 'icon', 'color', 'category',
+                'lessons_count'
+            ];
+            const sample = [
+                'Driving Basics', 'Basics', 'Learn fundamental driving skills', '5000', '4 weeks',
+                'fa-car', '#00ff88', 'Driver Training', '10'
+            ];
+            const csv = [headers.join(','), sample.join(',')].join('\n');
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'courses_template.csv';
+            a.click();
+            URL.revokeObjectURL(url);
+            showToast('📥 Template downloaded!');
+        }
+
+        // ============================================================
+        // COURSE CRUD (Add, Edit, Delete)
+        // ============================================================
         function showCourseModal(courseId = null) {
             editingCourseId = courseId;
             const isEdit = !!courseId;
@@ -1512,6 +1865,11 @@
         window.saveQuiz = saveQuiz;
         window.deleteQuiz = deleteQuiz;
         window.bulkImportLearnerHub = bulkImportLearnerHub;
+        window.showBulkUploadModal = showBulkUploadModal;
+        window.handleBulkFile = handleBulkFile;
+        window.processBulkUpload = processBulkUpload;
+        window.clearBulkData = clearBulkData;
+        window.downloadTemplate = downloadTemplate;
         window.closeModal = closeModal;
         window.logoutAdmin = logoutAdmin;
         window.showToast = showToast;
