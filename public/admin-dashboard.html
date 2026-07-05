@@ -1,16 +1,3 @@
-<!--
-  ============================================================
-  MEI DRIVE AFRICA — ADMIN DASHBOARD
-  Full course + quiz management with image uploads
-  ============================================================
-  USAGE:
-  1) Place this file in your project root as admin.html
-  2) Make sure supabase.js is in the same directory
-  3) Only users with is_admin = true in user_profiles can access
-  4) Quiz images are stored in the 'quiz-images' bucket
-  5) Course images are stored in the 'course-images' bucket
-  ============================================================
--->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -161,6 +148,12 @@
         }
         .real-time-badge i {
             font-size: 12px;
+            animation: spin 2s linear infinite;
+        }
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
         }
         .user-chip {
             background: rgba(0, 255, 136, 0.10);
@@ -519,11 +512,6 @@
             border-radius: 50%;
             animation: spin 0.9s linear infinite;
             margin: 40px auto;
-        }
-        @keyframes spin {
-            to {
-                transform: rotate(360deg);
-            }
         }
 
         /* ----- MISC ----- */
@@ -1165,7 +1153,7 @@
             { unit_number: 17, title: 'HAZARDOUS MATERIALS',
                 content: 'Hazardous Material is any material prescribed as such by any written law and includes explosives, petroleum products and any material involving high risk.\n\n## Characteristics of Hazardous Goods\n\n- Flammable\n- Corrosive\n- Reactive\n- Toxic\n\n## Classification of Hazardous Materials\n\n1. Explosives\n2. Gases\n3. Flammable Liquids\n4. Flammable Solids\n5. Oxidizing Substances\n6. Toxic & Infectious Substances\n7. Radioactive Material\n8. Corrosives\n9. Miscellaneous Dangerous Goods' },
             { unit_number: 18, title: 'EMERGENCY PROCEDURES',
-                content: 'The driver should always be prepared to handle any emergencies that may occur within or outside the car.\n\n## Basic Responsibilities at a Scene of Crash\n\n- Set up reflector triangles (50 metres behind and ahead)\n- Call emergency services\n- Move uninjured people to safety\n- DO NOT move injured people unless in immediate danger\n- Give First Aid\n- Stay at the scene\n\n## First Aid\n\nRemember \"Dr A.B.C.\"\n- D = Danger\n- R = Response\n- A = Airway\n- B = Breathing\n- C = Circulation' },
+                content: 'The driver should always be prepared to handle any emergencies that may occur within or outside the car.\n\n## Basic Responsibilities at a Scene of Crash\n\n- Set up reflector triangles (50 metres behind and ahead)\n- Call emergency services\n- Move uninjured people to safety\n- DO NOT move injured people unless in immediate danger\n- Give First Aid\n- Stay at the scene\n\n## First Aid\n\nRemember "Dr A.B.C."\n- D = Danger\n- R = Response\n- A = Airway\n- B = Breathing\n- C = Circulation' },
             { unit_number: 19, title: 'WORK PLANNING',
                 content: 'Work Planning ensures that the driver and the customers both get the best out of the service provided.\n\n## Preparing for the Journey (Trip Planning)\n\n- Name, address, phone and directions of the sender\n- Pick-up phone number\n- Appointment time for collecting and delivering the goods\n- Requirements for securing the load\n- Other legal requirements\n\n## Managing the trip\n\n- Distance to be travelled\n- Time/Traffic conditions\n- Meals\n- Fatigue\n- Adverse weather conditions\n\n## Legal limits on Duty hours / Driving hours\n\nNo person shall drive a public service vehicle or a commercial vehicle for more than a total of eight hours in any period of twenty-four hours.' },
             { unit_number: 20, title: 'CUSTOMER CARE',
