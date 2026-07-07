@@ -4,6 +4,8 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Admin Dashboard | MEI DRIVE AFRICA</title>
+    <!-- Favicon (real) -->
+    <link rel="icon" type="image/png" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAAAXNSR0IArs4c6QAAAARzQklUCAgICHwIZAAAAVtJREFUWEftlU9LwkAQxb9rqVlQWKiH8iBUsYcgSE+7dukLGL5bHyAjjxKEUodKpCKIVMr/awu+oQdvoQjKzK7tjgZuswtttrBz2J3fm3kzb9hCBsOMMY5xTh2NYVDf6FmZkU86A+I+IGpQQDnQXyP+pLrITwVnAK0BrGxBj1sgQeCmDnAAUh5QPyAZQJWB6QvqmwYQasB1AQoC3AegzMBUO1qAElEeoM1A7YG6IGRVoIVuFTwDbUZYU19/GJB+F9lzYJpc/iVhRsrlKltAMgBpgdUBygoMs0x9/fgL1nRgHnJXUspSp5HKakPccYq65hqixh+LGakHmhNSCKAYMHdheh2c3lG2AtscDp1GdT1N4R4Mqw4vqLrK1X2uwhZxGSS6QL4Dck7Qy3UHTIV9B8Kj9sM1kP0CHoHfLHTJjUnVb2DCWcD/7IRhMxhEGv/SdkkckDSJjmdN5CP0G9WN3soHhH0HAAAAAElFTkSuQmCC" />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.0/dist/umd/supabase.min.js">
@@ -804,6 +806,10 @@
                     <i class="fas fa-question-circle"></i> Quiz Questions
                     <span class="badge-nav" id="quizCount">0</span>
                 </div>
+                <div class="nav-item" data-tab="prices" onclick="switchTab('prices')">
+                    <i class="fas fa-tag"></i> Price Management
+                    <span class="badge-nav" id="priceCount">0</span>
+                </div>
                 <div class="nav-item" data-tab="stats" onclick="switchTab('stats')">
                     <i class="fas fa-chart-pie"></i> Statistics
                 </div>
@@ -871,6 +877,7 @@
         let editingCourseId = null;
         let editingUnitId = null;
         let editingQuizId = null;
+        let editingPriceId = null;
         let bulkCoursesData = [];
         let isImporting = false;
 
@@ -903,6 +910,7 @@
                 courses: '📚 <span>Courses</span>',
                 units: '📋 <span>Units / Lessons</span>',
                 quiz: '❓ <span>Quiz Questions</span>',
+                prices: '🏷️ <span>Price Management</span>',
                 stats: '📊 <span>Statistics</span>'
             };
             document.getElementById('pageTitle').innerHTML = titles[tab] || '📚 <span>Courses</span>';
@@ -937,6 +945,7 @@
                 document.getElementById('courseCount').textContent = allCourses.length;
                 document.getElementById('unitCount').textContent = allUnits.length;
                 document.getElementById('quizCount').textContent = allQuiz.length;
+                document.getElementById('priceCount').textContent = allCourses.length;
 
                 return true;
             } catch (e) {
@@ -953,11 +962,12 @@
             if (tab === 'courses') renderCourses(container);
             else if (tab === 'units') renderUnits(container);
             else if (tab === 'quiz') renderQuiz(container);
+            else if (tab === 'prices') renderPrices(container);
             else if (tab === 'stats') renderStats(container);
         }
 
         // ============================================================
-        // COURSES TAB
+        // COURSES TAB (unchanged)
         // ============================================================
         function renderCourses(container) {
             container.innerHTML = `
@@ -1014,7 +1024,7 @@
         }
 
         // ============================================================
-        // BULK UPLOAD COURSES
+        // BULK UPLOAD COURSES (unchanged)
         // ============================================================
         function showBulkUploadModal() {
             const modal = document.createElement('div');
@@ -1272,7 +1282,7 @@
         }
 
         // ============================================================
-        // COURSE CRUD (Add, Edit, Delete)
+        // COURSE CRUD (unchanged)
         // ============================================================
         function showCourseModal(courseId = null) {
             editingCourseId = courseId;
@@ -1380,7 +1390,7 @@
         }
 
         // ============================================================
-        // UNITS TAB
+        // UNITS TAB (unchanged)
         // ============================================================
         function renderUnits(container) {
             const grouped = {};
@@ -1426,9 +1436,6 @@
             `;
         }
 
-        // ----------------------------------------------
-        // UNIT MODAL
-        // ----------------------------------------------
         function showUnitModal(unitId = null) {
             editingUnitId = unitId;
             const isEdit = !!unitId;
@@ -1515,7 +1522,7 @@
         }
 
         // ============================================================
-        // BULK IMPORT — LEARNER HUB UNITS (FULLY WORKING)
+        // BULK IMPORT — LEARNER HUB UNITS (unchanged)
         // ============================================================
         const LEARNER_HUB_UNITS = [
             { unit_number: 1, title: 'INTRODUCTION TO DRIVING',
@@ -1563,15 +1570,13 @@
         ];
 
         async function bulkImportLearnerHub() {
-            // Prevent multiple simultaneous imports
             if (isImporting) {
                 showToast('Import already in progress. Please wait.', 'warning');
                 return;
             }
 
-            const courseId = 1; // LEARNER HUB course ID
+            const courseId = 1;
             
-            // Check if course exists
             const courseExists = allCourses.some(c => c.id === courseId);
             if (!courseExists) {
                 showToast(`❌ Course ID ${courseId} (LEARNER HUB) does not exist. Please create it first.`, 'error');
@@ -1588,7 +1593,6 @@
             const btn = document.getElementById('importUnitsBtn');
             const statusDiv = document.getElementById('importStatus');
             
-            // Disable button and show status
             btn.disabled = true;
             btn.innerHTML = '<span class="loader-sm"></span> Importing...';
             statusDiv.className = 'import-status info';
@@ -1616,25 +1620,21 @@
                     });
 
                     if (error) {
-                        console.error(`Failed unit ${u.unit_number} (${u.title}):`, error);
                         errors++;
                         failedUnits.push(`${u.unit_number}: ${u.title}`);
                     } else {
                         success++;
                     }
                     
-                    // Update progress every 5 units
                     if (i % 5 === 0 || i === total - 1) {
                         statusDiv.innerHTML = `⏳ Importing units... ${success + errors}/${total} processed (${success} successful, ${errors} failed)`;
                     }
                 } catch (err) {
-                    console.error(`Error importing unit ${u.unit_number}:`, err);
                     errors++;
                     failedUnits.push(`${u.unit_number}: ${u.title} (error: ${err.message})`);
                 }
             }
 
-            // Show final status
             let statusMessage = '';
             if (errors === 0) {
                 statusMessage = `✅ Successfully imported all ${success} units!`;
@@ -1652,12 +1652,10 @@
             statusDiv.innerHTML = statusMessage;
             statusDiv.style.display = 'block';
 
-            // Re-enable button
             btn.disabled = false;
             btn.innerHTML = '<i class="fas fa-upload"></i> Import 21 Units';
             isImporting = false;
 
-            // Show toast
             if (errors === 0) {
                 showToast(`✅ Import complete: ${success} units added/updated successfully!`);
             } else if (success === 0) {
@@ -1666,13 +1664,12 @@
                 showToast(`⚠️ Import complete: ${success} added/updated, ${errors} failed.`, 'warning');
             }
 
-            // Reload data and refresh view
             await loadAllData();
             renderTab(currentTab);
         }
 
         // ============================================================
-        // QUIZ TAB
+        // QUIZ TAB (unchanged)
         // ============================================================
         function renderQuiz(container) {
             container.innerHTML = `
@@ -1711,9 +1708,6 @@
             `;
         }
 
-        // ----------------------------------------------
-        // QUIZ MODAL (Add / Edit) with Image Upload
-        // ----------------------------------------------
         function showQuizModal(quizId = null) {
             editingQuizId = quizId;
             const isEdit = !!quizId;
@@ -1802,7 +1796,6 @@
             const data = { category, subcategory, question, option_a, option_b, option_c, option_d, correct_option,
                 explanation, difficulty };
 
-            // If there's an image, upload it first
             let imageUrl = null;
             if (imageFile) {
                 try {
@@ -1821,7 +1814,6 @@
 
             let result;
             if (id) {
-                // Update existing — keep existing image if no new one
                 if (!imageUrl && allQuiz.find(x => x.id === id)?.image_url) {
                     data.image_url = allQuiz.find(x => x.id === id).image_url;
                 }
@@ -1842,11 +1834,9 @@
 
         async function deleteQuiz(id) {
             if (!confirm('Delete this quiz question?')) return;
-            // Get image path to delete from storage
             const q = allQuiz.find(x => x.id === id);
             const { error } = await supabase.from('quiz_questions').delete().eq('id', id);
             if (!error) {
-                // If there was an image, try to delete it from storage
                 if (q?.image_url) {
                     try {
                         const path = q.image_url.split('/').pop();
@@ -1858,6 +1848,160 @@
                 renderTab(currentTab);
             } else {
                 showToast(error.message, 'error');
+            }
+        }
+
+        // ============================================================
+        // PRICE MANAGEMENT TAB (NEW)
+        // ============================================================
+        function renderPrices(container) {
+            container.innerHTML = `
+                <div class="card">
+                    <div class="card-header">
+                        <h2><i class="fas fa-tag"></i> Price Management</h2>
+                        <button class="btn btn-primary" onclick="showPriceModal()"><i class="fas fa-plus"></i> Add Price</button>
+                    </div>
+                    <p class="text-muted" style="margin-bottom:16px;">Manage course prices. Each course can have a single price.</p>
+                    <div class="table-wrap">
+                        <table>
+                            <thead>
+                                <tr><th>ID</th><th>Course</th><th>Price (KES)</th><th>Status</th><th>Actions</th></tr>
+                            </thead>
+                            <tbody>
+                                ${allCourses.length === 0 ? `<tr><td colspan="5" class="empty-state"><i class="fas fa-inbox"></i> No courses to manage prices for</td></tr>` :
+                                allCourses.map(c => `
+                                    <tr>
+                                        <td>${c.id}</td>
+                                        <td><strong>${escapeHtml(c.short_name || c.name)}</strong></td>
+                                        <td class="text-primary fw-600">KES ${(c.price || 0).toLocaleString()}</td>
+                                        <td><span class="badge-status ${(c.price || 0) > 0 ? 'badge-active' : 'badge-inactive'}">${(c.price || 0) > 0 ? 'Active' : 'Inactive'}</span></td>
+                                        <td>
+                                            <button class="btn btn-warning btn-xs" onclick="showPriceModal(${c.id})"><i class="fas fa-edit"></i></button>
+                                            <button class="btn btn-danger btn-xs" onclick="deletePrice(${c.id})"><i class="fas fa-trash"></i></button>
+                                        </td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Price Modal
+        function showPriceModal(courseId = null) {
+            editingPriceId = courseId;
+            const isEdit = !!courseId;
+            const course = isEdit ? allCourses.find(c => c.id === courseId) : null;
+
+            // For add, show a dropdown to select course
+            const courseOptions = allCourses.map(c =>
+                `<option value="${c.id}" ${course?.id === c.id ? 'selected' : ''}>${escapeHtml(c.short_name || c.name)} (ID ${c.id})</option>`
+            ).join('');
+
+            const modal = document.createElement('div');
+            modal.className = 'modal active';
+            modal.id = 'priceModal';
+            modal.innerHTML = `
+                <div class="modal-content">
+                    <button class="modal-close" onclick="closeModal('priceModal')">&times;</button>
+                    <h2><i class="fas ${isEdit ? 'fa-edit' : 'fa-plus-circle'}"></i> ${isEdit ? 'Edit' : 'Add'} Price</h2>
+                    <form id="priceForm" onsubmit="savePrice(event)">
+                        ${isEdit ? `<input type="hidden" id="pf_course_id" value="${courseId}" />` : `
+                            <label class="required">Select Course</label>
+                            <select id="pf_course_select" required>
+                                <option value="">-- Select Course --</option>
+                                ${courseOptions}
+                            </select>
+                        `}
+                        <label class="required">Price (KES)</label>
+                        <input type="number" id="pf_price" value="${course?.price || 0}" min="0" step="100" required />
+                        <div style="font-size:0.75rem;color:var(--text-muted);margin-top:4px;">Set to 0 to mark as free/inactive</div>
+
+                        <div class="modal-actions">
+                            <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> ${isEdit ? 'Update' : 'Create'}</button>
+                            <button type="button" class="btn btn-outline" onclick="closeModal('priceModal')">Cancel</button>
+                        </div>
+                    </form>
+                </div>
+            `;
+            document.getElementById('modalRoot').appendChild(modal);
+        }
+
+        // Save Price (updates course price)
+        async function savePrice(e) {
+            e.preventDefault();
+            let courseId = editingPriceId;
+            if (!courseId) {
+                // Get from select
+                const select = document.getElementById('pf_course_select');
+                courseId = parseInt(select.value);
+                if (!courseId) {
+                    showToast('Please select a course', 'error');
+                    return;
+                }
+            }
+            const price = parseInt(document.getElementById('pf_price').value) || 0;
+
+            // Find the course and update
+            const course = allCourses.find(c => c.id === courseId);
+            if (!course) {
+                showToast('Course not found', 'error');
+                return;
+            }
+
+            const data = {
+                name: course.name,
+                short_name: course.short_name,
+                description: course.description,
+                price: price,
+                duration: course.duration,
+                icon: course.icon,
+                color: course.color,
+                lessons_count: course.lessons_count,
+                category: course.category,
+                // Keep existing image
+            };
+
+            const result = await MEI.updateCourse(courseId, data, null);
+            if (result.success) {
+                showToast(`✅ Price updated for "${course.short_name || course.name}"`);
+                closeModal('priceModal');
+                await loadAllData();
+                renderTab(currentTab);
+            } else {
+                showToast(result.error || 'Failed to update price', 'error');
+            }
+        }
+
+        // Delete Price (sets to 0)
+        async function deletePrice(courseId) {
+            if (!confirm(`Reset price to 0 for this course?`)) return;
+            const course = allCourses.find(c => c.id === courseId);
+            if (!course) {
+                showToast('Course not found', 'error');
+                return;
+            }
+
+            const data = {
+                name: course.name,
+                short_name: course.short_name,
+                description: course.description,
+                price: 0,
+                duration: course.duration,
+                icon: course.icon,
+                color: course.color,
+                lessons_count: course.lessons_count,
+                category: course.category,
+            };
+
+            const result = await MEI.updateCourse(courseId, data, null);
+            if (result.success) {
+                showToast(`✅ Price reset to 0 for "${course.short_name || course.name}"`);
+                await loadAllData();
+                renderTab(currentTab);
+            } else {
+                showToast(result.error || 'Failed to reset price', 'error');
             }
         }
 
@@ -1923,7 +2067,6 @@
         // INIT
         // ============================================================
         async function initAdmin() {
-            // Check user
             const user = await MEI.getCurrentUser();
             if (!user) {
                 document.getElementById('tabContent').innerHTML = `
@@ -1953,19 +2096,18 @@
 
             await loadAllData();
 
-            // Subscribe to course changes for real-time updates
             if (unsubscribeCourses) unsubscribeCourses();
             unsubscribeCourses = MEI.subscribeToCourses(async (updated) => {
                 allCourses = updated;
                 document.getElementById('courseCount').textContent = allCourses.length;
-                // Also reload units & quiz in background
+                document.getElementById('priceCount').textContent = allCourses.length;
                 const { data: units } = await supabase.from('units').select('*').order('course_id, unit_number');
                 allUnits = units || [];
                 document.getElementById('unitCount').textContent = allUnits.length;
                 const quiz = await MEI.getAllQuizQuestions();
                 allQuiz = quiz;
                 document.getElementById('quizCount').textContent = allQuiz.length;
-                if (currentTab === 'courses' || currentTab === 'units' || currentTab === 'quiz') {
+                if (currentTab === 'courses' || currentTab === 'units' || currentTab === 'quiz' || currentTab === 'prices') {
                     renderTab(currentTab);
                 }
             });
@@ -2000,7 +2142,10 @@
         window.logoutAdmin = logoutAdmin;
         window.showToast = showToast;
         window.escapeHtml = escapeHtml;
+        window.showPriceModal = showPriceModal;
+        window.savePrice = savePrice;
+        window.deletePrice = deletePrice;
     </script>
 
 </body>
-</html> 
+</html>
