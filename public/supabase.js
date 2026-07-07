@@ -12,6 +12,15 @@ const API_BASE_URL = 'https://meidriveafrica-backend.onrender.com';
 const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 // ============================================
+// STORAGE BUCKET CONFIGURATION
+// ============================================
+const COURSE_IMAGE_BUCKET = 'course-images';
+const QUIZ_IMAGE_BUCKET = 'quiz-images';
+const QUIZ_IMAGE_FOLDER = 'questions';
+const MAX_IMAGE_BYTES = 5 * 1024 * 1024; // 5MB
+const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+
+// ============================================
 // PREDEFINED FALLBACK DATA (8 Courses)
 // ============================================
 const PREDEFINED_COURSES = [
@@ -85,9 +94,6 @@ async function signOut() {
     }
 }
 
-// Sends a password-reset email. The link in that email lands the user
-// back on update-password.html with a recovery token in the URL, which
-// the Supabase client auto-detects (detectSessionInUrl defaults to true).
 async function resetPassword(email) {
     try {
         const redirectTo = `${window.location.origin}/update-password.html`;
@@ -99,9 +105,6 @@ async function resetPassword(email) {
     }
 }
 
-// Must be called from update-password.html after following a reset-password
-// email link — relies on the recovery session Supabase establishes from the
-// token in the URL, not on the user being already logged in normally.
 async function updatePassword(newPassword) {
     try {
         const { error } = await supabase.auth.updateUser({ password: newPassword });
@@ -117,7 +120,6 @@ async function getCurrentUser() {
         const { data: { session } } = await supabase.auth.getSession();
         if (!session?.user) return null;
         
-        // Use maybeSingle() to avoid errors if profile missing
         const { data: profile } = await supabase
             .from('user_profiles')
             .select('is_admin, full_name')
@@ -179,29 +181,25 @@ async function getLessonsByCourseId(courseId) {
 }
 
 // ============================================
-// COURSE IMAGES (Supabase Storage)
+// IMAGE HELPER FUNCTIONS (shared)
 // ============================================
-const COURSE_IMAGE_BUCKET = 'course-images';
-const MAX_COURSE_IMAGE_BYTES = 5 * 1024 * 1024; // 5MB, must match the bucket's file_size_limit
-const ALLOWED_COURSE_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
-
-// Client-side check for fast feedback. The real enforcement is the
-// bucket's file_size_limit/allowed_mime_types and the Storage RLS
-// policy from migration 0002_course_images.sql — this is just UX.
-function validateCourseImageFile(file) {
-    if (!ALLOWED_COURSE_IMAGE_TYPES.includes(file.type)) {
+function validateImageFile(file) {
+    if (!ALLOWED_IMAGE_TYPES.includes(file.type)) {
         return { valid: false, error: 'Only JPEG, PNG, WEBP or GIF images are allowed' };
     }
-    if (file.size > MAX_COURSE_IMAGE_BYTES) {
+    if (file.size > MAX_IMAGE_BYTES) {
         return { valid: false, error: 'Image must be smaller than 5MB' };
     }
     return { valid: true };
 }
 
+// ============================================
+// COURSE IMAGES (Supabase Storage)
+// ============================================
 async function uploadCourseImage(file) {
     if (!file) return null;
 
-    const check = validateCourseImageFile(file);
+    const check = validateImageFile(file);
     if (!check.valid) throw new Error(check.error);
 
     const ext = (file.name.split('.').pop() || 'jpg').toLowerCase();
@@ -217,8 +215,6 @@ async function uploadCourseImage(file) {
     return { url: data.publicUrl, path };
 }
 
-// Best-effort cleanup — never throws, since a failed delete shouldn't
-// block whatever course operation triggered it.
 async function deleteCourseImage(path) {
     if (!path) return;
     try {
@@ -229,7 +225,139 @@ async function deleteCourseImage(path) {
 }
 
 // ============================================
-// QUIZ
+// QUIZ IMAGES (Supabase Storage) – NEW
+// ============================================
+async function uploadQuizImage(file) {
+    if (!file) return null;
+
+    const check = validateImageFile(file);
+    if (!check.valid) throw new Error(check.error);
+
+    const ext = (file.name.split('.').pop() || 'jpg').toLowerCase();
+    const path = `${QUIZ_IMAGE_FOLDER}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+
+    const { error } = await supabase.storage
+        .from(QUIZ_IMAGE_BUCKET)
+        .upload(path, file, { contentType: file.type, upsert: false });
+
+    if (error) throw error;
+
+    const { data } = supabase.storage.from(QUIZ_IMAGE_BUCKET).getPublicUrl(path);
+    return { url: data.publicUrl, path };
+}
+
+async function deleteQuizImage(path) {
+    if (!path) return;
+    try {
+        await supabase.storage.from(QUIZ_IMAGE_BUCKET).remove([path]);
+    } catch (error) {
+        console.error('Failed to delete quiz image:', error.message);
+    }
+}
+
+// ============================================
+// COURSE CRUD (with image support)
+// ============================================
+async function addCourse(courseData, imageFile = null) {
+    try {
+        let image_url = null;
+        let image_path = null;
+
+        if (imageFile) {
+            const uploaded = await uploadCourseImage(imageFile);
+            image_url = uploaded.url;
+            image_path = uploaded.path;
+        }
+
+        const { data, error } = await supabase
+            .from('courses')
+            .insert({ ...courseData, image_url, image_path })
+            .select()
+            .single();
+
+        if (error) {
+            if (image_path) await deleteCourseImage(image_path);
+            throw error;
+        }
+
+        return { success: true, course: data };
+    } catch (error) {
+        console.error('addCourse error:', error.message);
+        return { success: false, error: error.message };
+    }
+}
+
+async function updateCourse(id, courseData, imageFile = null) {
+    try {
+        const updates = { ...courseData };
+        let oldImagePath = null;
+
+        if (imageFile) {
+            const { data: existing } = await supabase
+                .from('courses')
+                .select('image_path')
+                .eq('id', id)
+                .maybeSingle();
+            oldImagePath = existing?.image_path || null;
+
+            const uploaded = await uploadCourseImage(imageFile);
+            updates.image_url = uploaded.url;
+            updates.image_path = uploaded.path;
+        }
+
+        const { data, error } = await supabase
+            .from('courses')
+            .update(updates)
+            .eq('id', id)
+            .select()
+            .single();
+
+        if (error) throw error;
+
+        if (imageFile && oldImagePath) {
+            await deleteCourseImage(oldImagePath);
+        }
+
+        return { success: true, course: data };
+    } catch (error) {
+        console.error('updateCourse error:', error.message);
+        return { success: false, error: error.message };
+    }
+}
+
+async function updateCoursePrice(id, price) {
+    try {
+        const { error } = await supabase.from('courses').update({ price }).eq('id', id);
+        if (error) throw error;
+        return { success: true };
+    } catch (error) {
+        console.error('updateCoursePrice error:', error.message);
+        return { success: false, error: error.message };
+    }
+}
+
+async function deleteCourse(id) {
+    try {
+        const { data: existing } = await supabase
+            .from('courses')
+            .select('image_path')
+            .eq('id', id)
+            .maybeSingle();
+
+        const { error } = await supabase.from('courses').delete().eq('id', id);
+        if (error) throw error;
+
+        if (existing?.image_path) await deleteCourseImage(existing.image_path);
+
+        return { success: true };
+    } catch (error) {
+        console.error('deleteCourse error:', error.message);
+        return { success: false, error: error.message };
+    }
+}
+
+// ============================================
+// QUIZ FUNCTIONS
 // ============================================
 async function getAllQuizQuestions() {
     try {
@@ -305,112 +433,7 @@ async function updateProgress(userId, courseId, progress) {
 }
 
 // ============================================
-// ADMIN: COURSE CRUD (with image support)
-// ============================================
-async function addCourse(courseData, imageFile = null) {
-    try {
-        let image_url = null;
-        let image_path = null;
-
-        if (imageFile) {
-            const uploaded = await uploadCourseImage(imageFile);
-            image_url = uploaded.url;
-            image_path = uploaded.path;
-        }
-
-        const { data, error } = await supabase
-            .from('courses')
-            .insert({ ...courseData, image_url, image_path })
-            .select()
-            .single();
-
-        if (error) {
-            // Don't leave an orphaned file in storage if the insert failed
-            if (image_path) await deleteCourseImage(image_path);
-            throw error;
-        }
-
-        return { success: true, course: data };
-    } catch (error) {
-        console.error('addCourse error:', error.message);
-        return { success: false, error: error.message };
-    }
-}
-
-async function updateCourse(id, courseData, imageFile = null) {
-    try {
-        const updates = { ...courseData };
-        let oldImagePath = null;
-
-        if (imageFile) {
-            const { data: existing } = await supabase
-                .from('courses')
-                .select('image_path')
-                .eq('id', id)
-                .maybeSingle();
-            oldImagePath = existing?.image_path || null;
-
-            const uploaded = await uploadCourseImage(imageFile);
-            updates.image_url = uploaded.url;
-            updates.image_path = uploaded.path;
-        }
-
-        const { data, error } = await supabase
-            .from('courses')
-            .update(updates)
-            .eq('id', id)
-            .select()
-            .single();
-
-        if (error) throw error;
-
-        // Only clean up the old image after the row update succeeded
-        if (imageFile && oldImagePath) {
-            await deleteCourseImage(oldImagePath);
-        }
-
-        return { success: true, course: data };
-    } catch (error) {
-        console.error('updateCourse error:', error.message);
-        return { success: false, error: error.message };
-    }
-}
-
-async function updateCoursePrice(id, price) {
-    try {
-        const { error } = await supabase.from('courses').update({ price }).eq('id', id);
-        if (error) throw error;
-        return { success: true };
-    } catch (error) {
-        console.error('updateCoursePrice error:', error.message);
-        return { success: false, error: error.message };
-    }
-}
-
-async function deleteCourse(id) {
-    try {
-        const { data: existing } = await supabase
-            .from('courses')
-            .select('image_path')
-            .eq('id', id)
-            .maybeSingle();
-
-        const { error } = await supabase.from('courses').delete().eq('id', id);
-        if (error) throw error;
-
-        if (existing?.image_path) await deleteCourseImage(existing.image_path);
-
-        return { success: true };
-    } catch (error) {
-        console.error('deleteCourse error:', error.message);
-        return { success: false, error: error.message };
-    }
-}
-
-// ============================================
 // REAL-TIME COURSE SUBSCRIPTION
-// Returns an unsubscribe function — call it on page teardown to
-// avoid leaking a Supabase realtime channel per page load.
 // ============================================
 function subscribeToCourses(callback) {
     const channel = supabase
@@ -425,10 +448,9 @@ function subscribeToCourses(callback) {
 }
 
 // ============================================
-// M-PESA PAYMENT - REAL PRODUCTION (NO DEMO)
+// M-PESA PAYMENT - REAL PRODUCTION
 // ============================================
 async function initiateMpesaPayment(phoneNumber, amount, courseId, userId, email, courseName) {
-    // Format phone number correctly for M-Pesa (254XXXXXXXXX)
     let formattedPhone = phoneNumber.replace(/\D/g, '');
     if (formattedPhone.startsWith('0')) {
         formattedPhone = '254' + formattedPhone.slice(1);
@@ -438,7 +460,6 @@ async function initiateMpesaPayment(phoneNumber, amount, courseId, userId, email
         formattedPhone = '254' + formattedPhone;
     }
     
-    // Final validation
     if (!formattedPhone.startsWith('254') || formattedPhone.length !== 12) {
         return { 
             success: false, 
@@ -495,7 +516,6 @@ async function initiateMpesaPayment(phoneNumber, amount, courseId, userId, email
         
     } catch (error) {
         console.error('❌ M-Pesa Error:', error.message);
-        
         return { 
             success: false, 
             error: error.message || 'Payment initiation failed. Please try again.',
@@ -541,7 +561,6 @@ async function checkPaymentStatus(checkoutRequestID) {
     }
 }
 
-// Test backend connection (for debugging)
 async function testMpesaConnection() {
     try {
         const response = await fetch(`${API_BASE_URL}/api/health`);
@@ -621,7 +640,10 @@ window.MEIDrive = {
     // Course images
     uploadCourseImage,
     deleteCourseImage,
-    validateCourseImageFile,
+    
+    // Quiz images (NEW)
+    uploadQuizImage,
+    deleteQuizImage,
     
     // Quiz
     getAllQuizQuestions,
@@ -634,7 +656,7 @@ window.MEIDrive = {
     getUserProgress, 
     updateProgress,
     
-    // M-Pesa (Real - No Demo)
+    // M-Pesa (Real)
     initiateMpesaPayment, 
     checkPaymentStatus,
     testMpesaConnection,
@@ -657,6 +679,7 @@ console.log('📚 Courses: LEARNER HUB, PSV, EV, REFRESHER, BODA, SCHOOL BUS, DE
 console.log('💰 M-Pesa Paybill: 4095377');
 console.log('⚠️  REAL MONEY will be deducted from M-Pesa accounts');
 console.log('🔗 Backend API:', API_BASE_URL);
+console.log('🖼️  Quiz images stored in: quiz-images/questions');
 console.log('==============================================================');
 
 // Test backend connection on load

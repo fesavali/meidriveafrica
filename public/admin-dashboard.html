@@ -7,7 +7,7 @@
   1) Place this file in your project root as admin.html
   2) Make sure supabase.js is in the same directory
   3) Only users with is_admin = true in user_profiles can access
-  4) Quiz images are stored in the 'quiz-images' bucket
+  4) Quiz images are stored in the 'quiz-images/questions' bucket
   5) Course images are stored in the 'course-images' bucket
   ============================================================
 -->
@@ -1245,7 +1245,7 @@
         }
 
         // ----------------------------------------------
-        // QUIZ MODAL (Add / Edit) with Image Upload
+        // QUIZ MODAL (Add / Edit) with Image Upload & Previews
         // ----------------------------------------------
         function showQuizModal(quizId = null) {
             editingQuizId = quizId;
@@ -1297,9 +1297,19 @@
                         <label>Question Image</label>
                         <div class="file-input-wrapper">
                             <input type="file" id="qf_image" accept="image/jpeg,image/png,image/webp,image/gif" />
-                            ${q?.image_url ? `<span class="current-image-label">Current: <img src="${q.image_url}" alt="current" /></span>` : ''}
+                            <span style="font-size:0.75rem;color:var(--text-muted);">Max 5MB, JPEG/PNG/WEBP/GIF</span>
                         </div>
-                        <div style="font-size:0.75rem;color:var(--text-muted);margin-top:4px;">Max 5MB, JPEG/PNG/WEBP/GIF</div>
+                        <!-- Current image preview -->
+                        ${q?.image_url ? `
+                            <div style="margin-top:6px;">
+                                <span class="current-image-label">Current: <img src="${q.image_url}" alt="current" style="max-height:60px;border-radius:6px;border:1px solid var(--border);" /></span>
+                            </div>
+                        ` : ''}
+                        <!-- New image preview (hidden until file selected) -->
+                        <div id="newImagePreviewContainer" style="display:none;margin-top:6px;">
+                            <span class="current-image-label">New: <img id="newImagePreview" src="#" alt="new preview" style="max-height:60px;border-radius:6px;border:1px solid var(--border);" /></span>
+                            <button type="button" onclick="clearNewImagePreview()" style="background:none;border:none;color:var(--danger);cursor:pointer;font-size:0.8rem;margin-left:8px;">✕</button>
+                        </div>
 
                         <div class="modal-actions">
                             <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> ${isEdit ? 'Update' : 'Create'}</button>
@@ -1309,8 +1319,40 @@
                 </div>
             `;
             document.getElementById('modalRoot').appendChild(modal);
+
+            // Attach preview handler for new image
+            const fileInput = document.getElementById('qf_image');
+            fileInput.addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                const previewContainer = document.getElementById('newImagePreviewContainer');
+                const previewImg = document.getElementById('newImagePreview');
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function(ev) {
+                        previewImg.src = ev.target.result;
+                        previewContainer.style.display = 'block';
+                    };
+                    reader.readAsDataURL(file);
+                } else {
+                    previewContainer.style.display = 'none';
+                    previewImg.src = '#';
+                }
+            });
         }
 
+        // Helper to clear the new image preview
+        function clearNewImagePreview() {
+            const fileInput = document.getElementById('qf_image');
+            if (fileInput) fileInput.value = '';
+            const container = document.getElementById('newImagePreviewContainer');
+            const img = document.getElementById('newImagePreview');
+            if (container) container.style.display = 'none';
+            if (img) img.src = '#';
+        }
+
+        // ----------------------------------------------
+        // SAVE QUIZ (with dedicated quiz image upload)
+        // ----------------------------------------------
         async function saveQuiz(e) {
             e.preventDefault();
             const id = editingQuizId;
@@ -1335,16 +1377,20 @@
             const data = { category, subcategory, question, option_a, option_b, option_c, option_d, correct_option,
                 explanation, difficulty };
 
-            // If there's an image, upload it first
+            // If there's a new image, upload it to the quiz bucket
             let imageUrl = null;
+            let imagePath = null;
             if (imageFile) {
                 try {
-                    const uploaded = await MEI.uploadCourseImage(imageFile);
+                    const uploaded = await MEI.uploadQuizImage(imageFile);
                     if (uploaded?.url) {
                         imageUrl = uploaded.url;
+                        imagePath = uploaded.path;
                         data.image_url = imageUrl;
+                        data.image_path = imagePath;
                     } else {
-                        showToast('Image upload failed', 'warning');
+                        showToast('Image upload failed – no URL returned', 'warning');
+                        return;
                     }
                 } catch (err) {
                     showToast('Image upload error: ' + err.message, 'error');
@@ -1352,38 +1398,47 @@
                 }
             }
 
-            let result;
-            if (id) {
-                // Update existing — keep existing image if no new one
-                if (!imageUrl && allQuiz.find(x => x.id === id)?.image_url) {
-                    data.image_url = allQuiz.find(x => x.id === id).image_url;
+            // If no new image, but editing and existing image exists, keep it
+            if (!imageFile && id) {
+                const existing = allQuiz.find(x => x.id === id);
+                if (existing?.image_url) {
+                    data.image_url = existing.image_url;
+                    data.image_path = existing.image_path;
                 }
-                result = await supabase.from('quiz_questions').update(data).eq('id', id);
-            } else {
-                result = await supabase.from('quiz_questions').insert(data);
             }
 
-            if (!result.error) {
+            let result;
+            try {
+                if (id) {
+                    result = await supabase.from('quiz_questions').update(data).eq('id', id);
+                } else {
+                    result = await supabase.from('quiz_questions').insert(data);
+                }
+
+                if (result.error) throw result.error;
+
                 showToast(id ? '✅ Quiz updated!' : '✅ Quiz created!');
                 closeModal('quizModal');
                 await loadAllData();
                 renderTab(currentTab);
-            } else {
-                showToast(result.error.message, 'error');
+            } catch (dbError) {
+                // If we uploaded an image but DB insert failed, try to delete the orphaned image
+                if (imagePath) {
+                    await MEI.deleteQuizImage(imagePath).catch(() => {});
+                }
+                showToast('Database error: ' + dbError.message, 'error');
+                console.error('DB error:', dbError);
             }
         }
 
         async function deleteQuiz(id) {
             if (!confirm('Delete this quiz question?')) return;
-            // Get image path to delete from storage
             const q = allQuiz.find(x => x.id === id);
             const { error } = await supabase.from('quiz_questions').delete().eq('id', id);
             if (!error) {
-                // If there was an image, try to delete it from storage
-                if (q?.image_url) {
+                if (q?.image_path) {
                     try {
-                        const path = q.image_url.split('/').pop();
-                        await supabase.storage.from('course-images').remove([path]);
+                        await MEI.deleteQuizImage(q.image_path);
                     } catch (e) { /* ignore */ }
                 }
                 showToast('✅ Quiz deleted');
@@ -1423,7 +1478,8 @@
                 </div>
                 <div class="card">
                     <h2><i class="fas fa-image"></i> Storage Buckets</h2>
-                    <p><code>course-images</code> — used for course &amp; quiz images</p>
+                    <p><code>course-images</code> — used for course images</p>
+                    <p><code>quiz-images/questions</code> — used for quiz images</p>
                     <p style="margin-top:4px;font-size:0.85rem;color:var(--text-muted);">
                         Images are stored in Supabase Storage and served via public URL.
                         Admin can upload/update images when creating or editing courses and quiz questions.
@@ -1523,6 +1579,7 @@
         window.showQuizModal = showQuizModal;
         window.saveQuiz = saveQuiz;
         window.deleteQuiz = deleteQuiz;
+        window.clearNewImagePreview = clearNewImagePreview;
         window.bulkImportLearnerHub = bulkImportLearnerHub;
         window.closeModal = closeModal;
         window.logoutAdmin = logoutAdmin;
